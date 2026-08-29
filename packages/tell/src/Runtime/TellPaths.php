@@ -28,6 +28,8 @@ final readonly class TellPaths
 
     public string $sessionTraces;
 
+    public string $blobs;
+
     public function __construct(
         public string $packageAgents,
         public string $home,
@@ -42,6 +44,7 @@ final readonly class TellPaths
         $this->logs = $this->join($home, 'logs');
         $this->executionTraces = $this->join($this->logs, 'executions');
         $this->sessionTraces = $this->join($this->logs, 'sessions');
+        $this->blobs = $this->join($this->runtime, 'blobs');
     }
 
     /** @param array<string, string>|null $environment */
@@ -79,6 +82,7 @@ final readonly class TellPaths
             'logs' => $this->logs,
             'executionTraces' => $this->executionTraces,
             'sessionTraces' => $this->sessionTraces,
+            'blobs' => $this->blobs,
         ];
     }
 
@@ -98,6 +102,19 @@ final readonly class TellPaths
             $value === null, trim($value) === '' => null,
             default => rtrim($value, '/\\'),
         };
+    }
+
+    /**
+     * Spilled tool output for one project, kept in Tell's own storage rather
+     * than the project it describes: a turn outside an initialized workspace
+     * writes no state, and that has to include this. The directory is named
+     * for the project path so two projects never share a blob store.
+     */
+    public function blobsFor(string $directory): string
+    {
+        $resolved = realpath($directory);
+
+        return $this->join($this->blobs, substr(hash('sha256', $resolved === false ? $directory : $resolved), 0, 16));
     }
 
     private function join(string $directory, string $name): string

@@ -61,7 +61,8 @@ final readonly class TellExecutionPolicy
 
     /**
      * Whether a tool result larger than `maxToolOutputChars` is written to a
-     * blob under the project and replaced with a stub the model can read back.
+     * blob in Tell's own storage and replaced with a stub the model can read
+     * back.
      */
     public function spillsToolOutput(): bool
     {

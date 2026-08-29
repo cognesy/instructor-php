@@ -14,15 +14,14 @@ namespace Cognesy\Tell\Runtime;
  * step a stub instead: what the result was, how big, where it went, and enough
  * of its head that the common case is answered without a read at all.
  *
- * The blob lives inside the project directory because that is the only place
- * the coding tools are allowed to read from; a path outside it would name a
- * file the model is sandboxed away from.
+ * Blobs live in Tell's own storage, not in the project they describe: a turn
+ * outside an initialized workspace persists nothing, and leaving a directory
+ * behind in whatever folder `tell` was run from would break that. The coding
+ * tools are given the store as an explicitly readable path so the stub's read
+ * hint still resolves.
  */
 final readonly class ToolOutputSpill
 {
-    /** Project-relative, and written with forward slashes so the stub reads the same everywhere. */
-    private const string DIRECTORY = '.tell/blobs';
-
     private const int PREVIEW_COLUMNS = 200;
 
     /** The read window the stub suggests; the read tool's own default. */
@@ -33,6 +32,7 @@ final readonly class ToolOutputSpill
     /** How much of the head is sampled to decide whether a result is text. */
     private const int SNIFF_BYTES = 8_192;
 
+    /** @param string $directory the blob store for one project, outside it */
     public function __construct(
         private string $directory,
         private int $threshold,
@@ -198,21 +198,13 @@ final readonly class ToolOutputSpill
     {
         $extension = $binary ? '.bin' : '.txt';
         $hash = substr(hash('sha256', $content), 0, self::HASH_LENGTH);
-        $relative = self::DIRECTORY.'/'.$hash.$extension;
-        $directory = rtrim($this->directory, '/\\').DIRECTORY_SEPARATOR
-            .str_replace('/', DIRECTORY_SEPARATOR, self::DIRECTORY);
+        $directory = rtrim($this->directory, '/\\');
         $path = $directory.DIRECTORY_SEPARATOR.$hash.$extension;
         if (is_file($path)) {
-            return $relative;
+            return $path;
         }
         if (! is_dir($directory) && ! @mkdir($directory, 0o700, true) && ! is_dir($directory)) {
             return null;
-        }
-        // Blobs are a byproduct of one turn, not project content. They live in
-        // the project only because that is the one place the read tool is
-        // allowed to look, so the store excludes itself from the repository.
-        if (! is_file($directory.DIRECTORY_SEPARATOR.'.gitignore')) {
-            @file_put_contents($directory.DIRECTORY_SEPARATOR.'.gitignore', "*\n");
         }
         // Written aside and renamed: a reader that arrives mid-write would
         // otherwise see a blob whose name promises bytes it does not yet hold.
@@ -226,7 +218,7 @@ final readonly class ToolOutputSpill
             return null;
         }
 
-        return $relative;
+        return $path;
     }
 
     /** @return list<string> */

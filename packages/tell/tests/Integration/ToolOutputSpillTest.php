@@ -13,13 +13,16 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Tell\Runtime\CanReadTellClock;
 use Cognesy\Tell\Runtime\TellExecutionBudgetHook;
 use Cognesy\Tell\Runtime\TellExecutionPolicy;
+use Cognesy\Tell\Runtime\TellPaths;
 use Cognesy\Tell\Runtime\TellSpillToolOutputHook;
 use Cognesy\Tell\Runtime\ToolOutputSpill;
 use Cognesy\Utils\Result\Result;
 
+/** A project directory, and separately the blob store that serves it. */
 function tellSpillProject(string $name): string
 {
     tellTestFactory();
@@ -27,6 +30,11 @@ function tellSpillProject(string $name): string
     mkdir($project, 0700, true);
 
     return $project;
+}
+
+function tellSpillStore(string $project): string
+{
+    return tellLastTemporaryRoot().'/blobstore/'.basename($project);
 }
 
 /** The two AfterToolUse hooks, registered exactly as the agent factory does. */
@@ -40,11 +48,19 @@ function tellSpillStack(string $project, TellExecutionPolicy $policy, CanReadTel
             name: 'tell:execution_budget',
         )
         ->with(
-            hook: new TellSpillToolOutputHook(ToolOutputSpill::fromPolicy($project, $policy)),
+            hook: new TellSpillToolOutputHook(ToolOutputSpill::fromPolicy(tellSpillStore($project), $policy)),
             triggerTypes: HookTriggers::of(HookTrigger::AfterToolUse),
             priority: 400,
             name: 'tell:spill_tool_output',
         );
+}
+
+/** The blob path a stub names, without the bracket or quote that follows it. */
+function tellSpillPath(string $stub, string $extension): string
+{
+    preg_match('/([^\s\]"]+\.'.$extension.')/', $stub, $matches);
+
+    return $matches[1] ?? '';
 }
 
 /** How many head lines a stub previewed, according to its own read hint. */
@@ -69,11 +85,11 @@ function tellSpillText(int $lines): string
 it('stores an oversized tool result and answers with a stub that describes it', function (): void {
     $project = tellSpillProject('spill-stub');
     $text = tellSpillText(400);
-    $stub = (string) (new ToolOutputSpill($project, 4_000, 1_000_000, 2_000))->replace($text);
+    $stub = (string) (new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 2_000))->replace($text);
     $shown = tellSpillShown($stub);
 
     expect($stub)->toStartWith('[tool output: 400 lines, ')
-        ->and($stub)->toContain('— stored at .tell/blobs/')
+        ->and($stub)->toContain('— stored at '.tellSpillStore($project))
         // The head is the point: as much of it as the stub budget buys, in
         // order, and the read hint resumes exactly where the preview stopped.
         ->and($shown)->toBeGreaterThan(10)
@@ -82,17 +98,17 @@ it('stores an oversized tool result and answers with a stub that describes it', 
         ->and($stub)->not->toContain("\n  line ".($shown + 1).' ')
         ->and(strlen($stub))->toBeLessThanOrEqual(2_000);
 
-    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.txt)/', $stub, $matches);
-    expect($matches[1] ?? '')->not->toBe('')
-        ->and(file_get_contents($project.'/'.$matches[1]))->toBe($text);
+    $blob = tellSpillPath($stub, 'txt');
+    expect($blob)->not->toBe('')
+        ->and(file_get_contents($blob))->toBe($text);
 });
 
 it('spends only the stub budget on the preview, and keeps the way back at any budget', function (): void {
     $project = tellSpillProject('spill-budget');
     $text = tellSpillText(400);
-    $wide = (string) (new ToolOutputSpill($project, 4_000, 1_000_000, 4_000))->replace($text);
-    $narrow = (string) (new ToolOutputSpill($project, 4_000, 1_000_000, 500))->replace($text);
-    $none = (string) (new ToolOutputSpill($project, 4_000, 1_000_000, 0))->replace($text);
+    $wide = (string) (new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 4_000))->replace($text);
+    $narrow = (string) (new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 500))->replace($text);
+    $none = (string) (new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 0))->replace($text);
 
     expect(tellSpillShown($wide))->toBeGreaterThan(tellSpillShown($narrow))
         ->and(tellSpillShown($narrow))->toBeGreaterThan(0)
@@ -108,11 +124,11 @@ it('spends only the stub budget on the preview, and keeps the way back at any bu
 
 it('leaves a result the model can already read where it is', function (): void {
     $project = tellSpillProject('spill-small');
-    $spill = new ToolOutputSpill($project, 40_000, 1_000_000);
+    $spill = new ToolOutputSpill(tellSpillStore($project), 40_000, 1_000_000);
 
     expect($spill->replace(tellSpillText(10)))->toBeNull()
         ->and($spill->replace(['data' => ['text' => 'short']]))->toBeNull()
-        ->and(is_dir($project.'/.tell/blobs'))->toBeFalse();
+        ->and(is_dir(tellSpillStore($project)))->toBeFalse();
 });
 
 it('replaces the payload of a structured envelope without discarding the envelope', function (): void {
@@ -126,7 +142,7 @@ it('replaces the payload of a structured envelope without discarding the envelop
         'truncated' => false,
         'partial' => false,
     ];
-    $replaced = (new ToolOutputSpill($project, 4_000, 1_000_000, 2_000))->replace($envelope);
+    $replaced = (new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 2_000))->replace($envelope);
 
     expect($replaced)->toBeArray()
         ->and($replaced['success'])->toBeTrue()
@@ -138,13 +154,13 @@ it('replaces the payload of a structured envelope without discarding the envelop
 
 it('writes one blob for one result, however many times it is produced', function (): void {
     $project = tellSpillProject('spill-addressed');
-    $spill = new ToolOutputSpill($project, 4_000, 1_000_000, 2_000);
+    $spill = new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 2_000);
     $text = tellSpillText(200);
 
     expect($spill->replace($text))->toBe($spill->replace($text))
-        ->and(glob($project.'/.tell/blobs/*.txt'))->toHaveCount(1)
-        // Blobs are a byproduct of a turn, not something to commit.
-        ->and(trim((string) file_get_contents($project.'/.tell/blobs/.gitignore')))->toBe('*');
+        ->and(glob(tellSpillStore($project).'/*.txt'))->toHaveCount(1)
+        // Nothing is written into the project the output came from.
+        ->and(is_dir($project.'/.tell'))->toBeFalse();
 });
 
 it('emits the stub whole, however small the retained-bytes limit is', function (): void {
@@ -177,10 +193,10 @@ it('stores binary output without previewing it or promising a read', function ()
     // A NUL byte is what makes `file` call something binary, and the read tool
     // refuses whatever `file` calls binary.
     $binary = str_repeat("\x89PNG\r\n\x1a\n\0\0\0\rIHDR\xff\xfe", 400);
-    $stub = (string) (new ToolOutputSpill($project, 1_000, 200_000, 2_000))->replace($binary);
+    $stub = (string) (new ToolOutputSpill(tellSpillStore($project), 1_000, 200_000, 2_000))->replace($binary);
 
     expect($stub)->toStartWith('[tool output: ')
-        ->and($stub)->toContain('of binary data — stored at .tell/blobs/')
+        ->and($stub)->toContain('of binary data — stored at '.tellSpillStore($project))
         // The extension does not claim to be text, and no read is suggested.
         ->and($stub)->toContain('.bin]')
         ->and($stub)->not->toContain('Continue: read(')
@@ -189,17 +205,17 @@ it('stores binary output without previewing it or promising a read', function ()
         ->and($stub)->not->toContain("\0")
         ->and($stub)->not->toContain('IHDR');
 
-    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.bin)/', $stub, $matches);
-    expect(file_get_contents($project.'/'.$matches[1]))->toBe($binary);
+    $blob = tellSpillPath($stub, 'bin');
+    expect(file_get_contents($blob))->toBe($binary);
 });
 
 it('does not walk a binary result byte by byte looking for a character boundary', function (): void {
     $project = tellSpillProject('spill-binary-ceiling');
     $binary = random_bytes(40_000)."\0".random_bytes(40_000);
-    $stub = (string) (new ToolOutputSpill($project, 1_000, 20_000, 2_000))->replace($binary);
+    $stub = (string) (new ToolOutputSpill(tellSpillStore($project), 1_000, 20_000, 2_000))->replace($binary);
 
-    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.bin)/', $stub, $matches);
-    $stored = (string) file_get_contents($project.'/'.$matches[1]);
+    $blob = tellSpillPath($stub, 'bin');
+    $stored = (string) file_get_contents($blob);
 
     // Backing off to a UTF-8 boundary would have eaten the whole prefix.
     expect(strlen($stored))->toBe(20_000)
@@ -210,11 +226,11 @@ it('does not walk a binary result byte by byte looking for a character boundary'
 it('stops at the spill ceiling, on a character boundary, and says so', function (): void {
     $project = tellSpillProject('spill-ceiling');
     $text = str_repeat('zażółć gęślą jaźń ', 2_000);
-    $stub = (new ToolOutputSpill($project, 1_000, 5_000))->replace($text);
+    $stub = (new ToolOutputSpill(tellSpillStore($project), 1_000, 5_000))->replace($text);
 
     expect($stub)->toContain('was discarded]');
-    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.txt)/', (string) $stub, $matches);
-    $stored = (string) file_get_contents($project.'/'.$matches[1]);
+    $blob = tellSpillPath((string) $stub, 'txt');
+    $stored = (string) file_get_contents($blob);
     expect(strlen($stored))->toBeLessThanOrEqual(5_000)
         ->and(preg_match('//u', $stored))->toBe(1)
         ->and($stored)->toBe(substr($text, 0, strlen($stored)));
@@ -225,8 +241,8 @@ it('writes nothing at all when the spill ceiling is zero', function (): void {
     $policy = new TellExecutionPolicy(maxToolOutputChars: 1_000, maxSpillBytes: 0);
 
     expect($policy->spillsToolOutput())->toBeFalse()
-        ->and(ToolOutputSpill::fromPolicy($project, $policy)->replace(tellSpillText(400)))->toBeNull()
-        ->and(is_dir($project.'/.tell/blobs'))->toBeFalse();
+        ->and(ToolOutputSpill::fromPolicy(tellSpillStore($project), $policy)->replace(tellSpillText(400)))->toBeNull()
+        ->and(is_dir(tellSpillStore($project)))->toBeFalse();
 });
 
 it('spills before the budget hook can truncate the bytes worth keeping', function (): void {
@@ -254,12 +270,36 @@ it('spills before the budget hook can truncate the bytes worth keeping', functio
 
 it('hands the model a path its own read tool can open', function (): void {
     $project = tellSpillProject('spill-readable');
-    $stub = (string) (new ToolOutputSpill($project, 4_000, 1_000_000, 2_000))->replace(tellSpillText(400));
-    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.txt)/', $stub, $matches);
+    $stub = (string) (new ToolOutputSpill(tellSpillStore($project), 4_000, 1_000_000, 2_000))->replace(tellSpillText(400));
+    $blob = tellSpillPath($stub, 'txt');
 
-    $read = (new ReadFileTool(baseDir: $project, name: 'read'))(path: $matches[1], offset: 20, limit: 5);
+    $read = ReadFileTool::fromPolicy(
+        ExecutionPolicy::in($project)
+            ->withTimeout(30)
+            ->withReadablePaths($project, tellSpillStore($project))
+            ->inheritEnvironment(),
+        'read',
+    )(path: $blob, offset: 20, limit: 5);
 
     expect($read)->toContain('line 21 ')
         ->and($read)->toContain('line 25 ')
         ->and($read)->not->toContain('Error:');
+});
+
+it('writes nothing into the project it spilled from, workspace or not', function (): void {
+    $project = tellSpillProject('spill-clean-project');
+    $home = tellLastTemporaryRoot().'/tell-home';
+    $paths = new TellPaths($home.'/package-agents', $home);
+    // The store the agent factory would hand the hook for a turn in this
+    // directory - stateless turns included, which have no workspace to write to
+    // and must leave the directory exactly as they found it.
+    $store = $paths->blobsFor($project);
+
+    $stub = (string) (new ToolOutputSpill($store, 4_000, 1_000_000, 2_000))->replace(tellSpillText(400));
+    $blob = tellSpillPath($stub, 'txt');
+
+    expect(scandir($project))->toBe(['.', '..'])
+        ->and($blob)->toStartWith($store.DIRECTORY_SEPARATOR)
+        ->and(is_file($blob))->toBeTrue()
+        ->and(substr(sprintf('%o', fileperms($store)), -3))->toBe('700');
 });

@@ -11,6 +11,7 @@ use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Agents\Capability\File\ReadFileTool;
 use Cognesy\Agents\Capability\File\WriteFileTool;
 use Cognesy\Agents\Collections\Tools;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
 use Override;
 
 /**
@@ -20,9 +21,15 @@ use Override;
  */
 final readonly class TellCodingTools implements CanProvideAgentCapability
 {
+    /**
+     * @param  string|null  $blobsDir  Tell's spilled-output store for this
+     *                                 project. It sits outside the project, so the tools that a spill stub
+     *                                 points at are granted it explicitly rather than reaching it by accident.
+     */
     public function __construct(
         private string $baseDir,
         private ?BashPolicy $bashPolicy = null,
+        private ?string $blobsDir = null,
     ) {}
 
     #[Override]
@@ -34,9 +41,27 @@ final readonly class TellCodingTools implements CanProvideAgentCapability
     #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent
     {
-        $read = new ReadFileTool(baseDir: $this->baseDir);
+        $bash = $this->bashPolicy ?? new BashPolicy;
+        $readable = array_values(array_filter(
+            [$this->baseDir, $this->blobsDir],
+            static fn (?string $path): bool => $path !== null && $path !== '',
+        ));
+        $read = ReadFileTool::fromPolicy(
+            ExecutionPolicy::in($this->baseDir)
+                ->withTimeout(30)
+                ->withReadablePaths(...$readable)
+                ->inheritEnvironment(),
+        );
         $write = new WriteFileTool(baseDir: $this->baseDir);
-        $shell = new BashTool(baseDir: $this->baseDir, outputPolicy: $this->bashPolicy);
+        $shell = BashTool::withPolicy(
+            ExecutionPolicy::in($this->baseDir)
+                ->withTimeout($bash->timeout)
+                ->withNetwork(false)
+                ->withOutputCaps($bash->stdoutLimitBytes, $bash->stderrLimitBytes)
+                ->withReadablePaths(...$readable)
+                ->inheritEnvironment(),
+            $bash,
+        );
         $patch = new PatchOperation($this->baseDir);
 
         $tools = new Tools(

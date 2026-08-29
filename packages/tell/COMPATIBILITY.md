@@ -188,17 +188,20 @@ guarantees of those surfaces are unchanged. Evidence:
 `tests/Integration/MachineProgressTest.php`, `tests/Feature/RenderingTest.php`.
 
 Tool output larger than `maxToolOutputChars` is now spilled rather than
-truncated. Tell writes the whole result to a content-addressed blob under the
-project at `.tell/blobs/`, and the step receives a stub naming the blob, its
-size, a head preview, and a `read` call that resumes where the preview stopped.
-This is on by default and reverses the previous behavior, which discarded
-everything outside a head/tail window.
+truncated. Tell writes the whole result to a content-addressed blob under
+`~/.tell/runtime/blobs/<project-hash>/`, and the step receives a stub naming
+the blob, its size, a head preview, and a `read` call that resumes where the
+preview stopped. This is on by default and reverses the previous behavior,
+which discarded everything outside a head/tail window. Nothing is written into
+the project itself, in any mode: a turn outside an initialized workspace still
+persists nothing, and the coding tools are granted the store as an explicitly
+readable path so the stub's read hint resolves.
 
 It also writes raw tool output to disk by default, which the rest of Tell does
 not do: traces exclude payloads unless asked, and normalized events carry none
-at all. Blobs carry the payload in full. The directory is created `0700` and
-writes its own `.gitignore`, nothing leaves the machine, and the blob is a
-plain file readable by anything with filesystem access. Two new policy keys
+at all. Blobs carry the payload in full. The store is created `0700` on first
+write, nothing leaves the machine, and the blob is a plain file readable by
+anything with filesystem access; nothing prunes it. Two new policy keys
 govern it, on the same CLI/branch/project/user/bundled precedence as the rest:
 `maxSpillBytes` (default 200,000, ceiling 5,000,000) is the per-result limit on
 what reaches the disk and the switch - `0` restores head/tail truncation - and
@@ -208,6 +211,14 @@ stored under a `.bin` name with no preview and no read continuation. With
 spilling on, the shell tool's own capture caps rise to the spill ceiling, so a
 result reaches the hook intact. Evidence:
 `tests/Integration/ToolOutputSpillTest.php`.
+
+`WorkspaceManager::initialize()` now keys on the schema record rather than the
+bare `.tell` directory, matching what `discover()` has always done. Anything
+else kept under that name - Tell's own storage root at `$HOME/.tell`, and
+formerly a spill store - was read as an existing workspace, so `tell init`
+failed with a broken-arena error and the directory could never be initialized.
+Initialization remains idempotent and still refuses a genuinely malformed
+workspace. Evidence: `tests/Integration/WorkspaceManagerTest.php`.
 
 `TellResult::executionMode()` is the published accessor for the same fact.
 `Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its
@@ -266,7 +277,7 @@ instances, rather than a separately maintained catalogue.
 | Execution traces | Private JSONL derived from normalized events, payloads excluded by default, credentials always redacted, trace failure does not fail the run | `tests/Integration/ExecutionTraceTest.php`, `tests/Unit/TracePayloadTest.php` |
 | One-run protocol | Request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
 | Rendering | Human default plus explicit toon, text, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
-| Spilled tool output | Blobs under the project at `.tell/blobs/`, content-addressed and git-ignored; a stub names the blob, previews its head within `maxStubBytes`, and carries a `read` continuation unless the result is binary; `maxSpillBytes` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
+| Spilled tool output | Blobs in Tell's storage at `~/.tell/runtime/blobs/<project-hash>/`, content-addressed, never under the project; a stub names the blob, previews its head within `maxStubBytes`, and carries a `read` continuation unless the result is binary; `maxSpillBytes` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
 | Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 

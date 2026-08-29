@@ -59,6 +59,18 @@ it('resolves an injected environment without reading or mutating the process', f
         ->and(getenv('TELL_HOME'))->toBe($before);
 });
 
+it('keeps a project spill store in Tell storage rather than in the project', function (): void {
+    $paths = TellPaths::installed(['TELL_HOME' => '/runtime/tell']);
+    $store = $paths->blobsFor('/srv/project-a');
+
+    expect($paths->blobs)->toBe('/runtime/tell'.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'blobs')
+        ->and($store)->toStartWith($paths->blobs.DIRECTORY_SEPARATOR)
+        ->and($store)->not->toStartWith('/srv/project-a')
+        // Named for the project path, so two projects never share a store.
+        ->and($store)->not->toBe($paths->blobsFor('/srv/project-b'))
+        ->and($paths->blobsFor('/srv/project-a'))->toBe($store);
+});
+
 /** @param Closure(): void $assertion */
 function tellWithHomeEnvironment(
     string|false $home,

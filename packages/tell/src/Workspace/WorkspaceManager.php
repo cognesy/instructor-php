@@ -14,7 +14,12 @@ final class WorkspaceManager
     public function initialize(string $directory): WorkspaceInitialization
     {
         $paths = $this->pathsForDirectory($directory);
-        if ($this->exists($paths->marker)) {
+        // Keyed on the schema record for the same reason discovery is: a bare
+        // .tell directory is not a workspace. Other things live there - spilled
+        // tool output, Tell's own user storage under $HOME - and treating one
+        // of those as an existing workspace would report a broken workspace
+        // and leave the directory permanently uninitializable.
+        if ($this->exists($paths->schema)) {
             return new WorkspaceInitialization($this->read($paths), false);
         }
 

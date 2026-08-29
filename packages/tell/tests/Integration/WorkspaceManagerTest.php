@@ -32,6 +32,23 @@ it('initializes a private versioned arena without rewriting an existing workspac
         ->and(filemtime($second->workspace->paths->mainRef))->toBe($mainMtime);
 });
 
+it('initializes over a .tell directory that holds something other than a workspace', function (): void {
+    $root = tellWorkspaceTestDirectory('unrelated-marker');
+    $manager = new WorkspaceManager;
+    // Whatever else Tell keeps under a .tell name - and $HOME/.tell is Tell's
+    // own storage root - is not a half-built workspace, and treating it as one
+    // left the directory permanently uninitializable.
+    mkdir($root.'/.tell/blobs', 0700, true);
+    file_put_contents($root.'/.tell/blobs/kept.txt', "kept\n");
+
+    $initialized = $manager->initialize($root);
+
+    expect($initialized->created)->toBeTrue()
+        ->and($initialized->workspace->schema)->toBe(1)
+        ->and(is_file($root.'/.tell/blobs/kept.txt'))->toBeTrue()
+        ->and($manager->discover($root))->not->toBeNull();
+});
+
 it('discovers the nearest valid workspace from nested paths and stops at the filesystem root', function (): void {
     $outer = tellWorkspaceTestDirectory('outer');
     $inner = $outer.'/nested';

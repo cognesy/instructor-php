@@ -152,9 +152,13 @@ final readonly class TellAgentFactory
         $diagnostics?->recordExtensionDiscovery($discovery);
 
         $policy = $options->policy ?? TellExecutionPolicy::defaults();
+        // Spilled output is stored outside the project, so the coding tools are
+        // told about the store rather than stumbling into it.
+        $blobs = $policy->spillsToolOutput() ? $this->paths->blobsFor($options->directory) : null;
         $capabilities->register('tell.coding', new TellCodingTools(
             $options->directory,
             $this->bashPolicy($policy),
+            $blobs,
         ));
         $capabilities->register('tell.ask_user', new TellAskUserCapability($options->answers));
         $capabilities->register('use_subagents', new UseSubagents(
@@ -180,7 +184,7 @@ final readonly class TellAgentFactory
             default => $loop->withDriver($this->driver),
         };
         $loop = $this->filterTools($loop, $options->tools);
-        $loop = $this->withExecutionPolicy($loop, $policy, $options->directory);
+        $loop = $this->withExecutionPolicy($loop, $policy, $blobs);
         $loop = $this->withCooperativeCancellation($loop, $cancellation);
 
         return match ($this->decorateLoop) {
@@ -382,7 +386,7 @@ final readonly class TellAgentFactory
         );
     }
 
-    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy, string $directory): AgentLoop
+    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy, ?string $blobs): AgentLoop
     {
         $driver = $loop->driver();
         if ($driver instanceof ToolCallingDriver) {
@@ -407,11 +411,11 @@ final readonly class TellAgentFactory
             priority: 300,
             name: 'tell:execution_budget',
         );
-        if ($policy->spillsToolOutput()) {
+        if ($blobs !== null) {
             // Above the budget hook, which would otherwise truncate the result
             // this one exists to preserve.
             $interceptor = $interceptor->with(
-                hook: new TellSpillToolOutputHook(ToolOutputSpill::fromPolicy($directory, $policy)),
+                hook: new TellSpillToolOutputHook(ToolOutputSpill::fromPolicy($blobs, $policy)),
                 triggerTypes: HookTriggers::of(HookTrigger::AfterToolUse),
                 priority: 400,
                 name: 'tell:spill_tool_output',

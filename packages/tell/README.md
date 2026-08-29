@@ -467,21 +467,29 @@ durable ref, while a completed answer exactly at a limit may publish.
 ### Spilled tool output
 
 A tool result larger than `maxToolOutputChars` is not cut down any more. Tell
-writes the whole result to a content-addressed blob under the project and hands
-the step a stub in its place:
+writes the whole result to a content-addressed blob and hands the step a stub
+in its place:
 
 ```text
-[tool output: 4,812 lines, 312.4 KB — stored at .tell/blobs/ab12cd34ef56a789.txt]
+[tool output: 4,812 lines, 312.4 KB — stored at ~/.tell/runtime/blobs/7f2c…/ab12cd34ef56a789.txt]
   PASS  Tests\Feature\RenderingTest
   …as much of the head as the stub budget buys…
-Continue: read(".tell/blobs/ab12cd34ef56a789.txt", offset=20, limit=200)
+Continue: read("~/.tell/runtime/blobs/7f2c…/ab12cd34ef56a789.txt", offset=20, limit=200)
 ```
 
 The head preview answers most questions without a read at all, and the `read`
 call is there for the ones it does not. The blob keeps the bytes the older
 head/tail window used to discard, so a model that needs line 900 of a test run
-can still reach it. Identical results share one blob, and the store writes its
-own `.gitignore` so blobs never enter the repository.
+can still reach it. Identical results share one blob.
+
+Blobs live in Tell's own storage, not in the project they describe. A turn run
+outside an initialized workspace persists nothing, and that has to stay true of
+spilling too - a blob directory left behind in whatever folder `tell` was run
+from would break it, and did. The store is `~/.tell/runtime/blobs/`, one
+subdirectory per project path so two projects never share a store, created
+`0700` on first write and not before. The coding tools are handed the store as
+an explicitly readable path, so the stub's `read` hint resolves without the
+tools reaching it by accident.
 
 `maxStubBytes` is what reaches the conversation, and `maxSpillBytes` is only
 what reaches the disk: however large the blob, the step sees the stub. It is
@@ -504,11 +512,11 @@ command.
 
 **This writes raw tool output to disk, and it is on by default.** Everything a
 tool printed - file contents, command output, whatever the environment happened
-to include - lands in `.tell/blobs/` under the project and stays there until
+to include - lands under `~/.tell/runtime/blobs/` and stays there until
 something removes it. That is a deliberate change of posture: Tell's traces are
 payload-free by default and its normalized events carry no payloads, and blobs
-carry the payload in full. `.tell/blobs` is created `0700`, is excluded from
-git, and never leaves the machine, but it is a plain readable file. Set
+carry the payload in full. The store is created `0700` and never leaves the
+machine, but it is a plain readable file, and nothing prunes it. Set
 `maxSpillBytes` to `0` - per invocation with `--max-spill-bytes 0`, per branch
 with `tell config set maxSpillBytes 0`, or for a project or user in the
 defaults files above - to turn spilling off and get the previous head/tail
