@@ -46,7 +46,7 @@ $table = [
         capabilities: new DriverCapabilities(responseFormatWithTools: false),
     ),
 ];
-// @doctest id="ba9a"
+// @doctest id="ddc2"
 ```
 
 Anything left out defaults to the OpenAI implementation, so a provider that differs only in its
@@ -64,7 +64,7 @@ $driver = new SpecifiedInferenceDriver(
     responseTranslator: new OpenAIResponseAdapter(new OpenAIUsageFormat()),
     capabilities: null,
 );
-// @doctest id="bc4b"
+// @doctest id="a991"
 ```
 
 Providers that assemble their own URL or headers still use bespoke request adapters, but they
@@ -86,7 +86,7 @@ interface CanTranslateInferenceRequest
 {
     public function toHttpRequest(InferenceRequest $request): HttpRequest;
 }
-// @doctest id="bee8"
+// @doctest id="ff10"
 ```
 
 Request adapters typically delegate body construction to a `CanMapRequestBody` implementation:
@@ -96,7 +96,7 @@ interface CanMapRequestBody
 {
     public function toRequestBody(InferenceRequest $request): array;
 }
-// @doctest id="3976"
+// @doctest id="f9c1"
 ```
 
 Message formatting is handled by `CanMapMessages`, which receives typed `Messages` and returns a provider-native array. Implementations compose a `MessageMapper` utility for typed iteration instead of duplicating the loop:
@@ -106,7 +106,7 @@ interface CanMapMessages
 {
     public function map(Messages $messages): array;
 }
-// @doctest id="a3ad"
+// @doctest id="2d77"
 ```
 
 A request adapter composes these together. It receives a `CanMapRequestBody` (which itself wraps
@@ -129,7 +129,7 @@ abstract class BaseHttpRequestAdapter implements CanTranslateInferenceRequest
     abstract protected function toUrl(InferenceRequest $request): string;
     abstract protected function toHeaders(InferenceRequest $request): array;
 }
-// @doctest id="5bf4"
+// @doctest id="314a"
 ```
 
 So `OpenAIRequestAdapter` is just the two hooks:
@@ -149,7 +149,7 @@ class OpenAIRequestAdapter extends BaseHttpRequestAdapter
         ];
     }
 }
-// @doctest id="4b50"
+// @doctest id="a236"
 ```
 
 Both hooks are abstract rather than defaulted to `{apiUrl}{endpoint}`. Only two of the bundled
@@ -177,7 +177,7 @@ interface CanTranslateInferenceResponse
 
     public function toEventBody(string $data): string|bool;
 }
-// @doctest id="d4df"
+// @doctest id="a41a"
 ```
 
 The `toEventBody()` method extracts the payload from an SSE line (stripping the `data:` prefix, detecting `[DONE]` markers). The `fromStreamDeltas()` method parses a sequence of those payloads into `PartialInferenceDelta` objects carrying incremental content, tool call fragments, and usage snapshots.
@@ -189,7 +189,7 @@ interface CanMapUsage
 {
     public function fromData(array $data): InferenceUsage;
 }
-// @doctest id="b429"
+// @doctest id="04f9"
 ```
 
 Different providers report token usage under different keys and with different granularity. Some include cache tokens or reasoning tokens, others do not. Each provider's usage formatter encapsulates these differences into the normalized `InferenceUsage` object.
@@ -203,7 +203,7 @@ $delta = new PartialInferenceDelta(
     contentDelta: $content,
     usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
 );
-// @doctest id="18c7"
+// @doctest id="ecae"
 ```
 
 `StreamingUsageState::apply()` already discards a zero-total `InferenceUsage`, so building one is pure waste -- one constructor call and one allocate/free cycle per delta, ten thousand of them on a long stream.
@@ -253,7 +253,7 @@ class MyProviderBodyFormat extends OpenAICompatibleBodyFormat
         return $this->toJsonObjectResponseFormat($responseFormat);
     }
 }
-// @doctest id="22d4"
+// @doctest id="c94c"
 ```
 
 Do not override `toResponseFormat()` to do this. That method decides *whether* a response
