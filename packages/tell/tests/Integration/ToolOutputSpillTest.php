@@ -158,7 +158,10 @@ it('writes one blob for one result, however many times it is produced', function
     $text = tellSpillText(200);
 
     expect($spill->replace($text))->toBe($spill->replace($text))
-        ->and(glob(tellSpillStore($project).'/*.txt'))->toHaveCount(1)
+        ->and(glob(tellSpillStore($project).'/*/*.txt'))->toHaveCount(1)
+        // Sharded on the first two characters of the blob's own name, so no
+        // one directory collects every result a project ever spilled.
+        ->and(glob(tellSpillStore($project).'/*.txt'))->toBe([])
         // Nothing is written into the project the output came from.
         ->and(is_dir($project.'/.tell'))->toBeFalse();
 });
@@ -301,5 +304,6 @@ it('writes nothing into the project it spilled from, workspace or not', function
     expect(scandir($project))->toBe(['.', '..'])
         ->and($blob)->toStartWith($store.DIRECTORY_SEPARATOR)
         ->and(is_file($blob))->toBeTrue()
-        ->and(substr(sprintf('%o', fileperms($store)), -3))->toBe('700');
+        ->and(substr(sprintf('%o', fileperms($store)), -3))->toBe('700')
+        ->and(substr(sprintf('%o', fileperms(dirname($blob))), -3))->toBe('700');
 });

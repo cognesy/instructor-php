@@ -10,9 +10,9 @@ namespace Cognesy\Tell\Runtime;
  * A long shell result costs the same tokens on every subsequent step, and the
  * older answer to that - a head/tail window - throws the rest away, so a model
  * that needed line 900 of a test run had no way back to it. Spilling keeps the
- * whole result, in a content-addressed blob under the project, and gives the
- * step a stub instead: what the result was, how big, where it went, and enough
- * of its head that the common case is answered without a read at all.
+ * whole result, in a content-addressed blob, and gives the step a stub instead:
+ * what the result was, how big, where it went, and enough of its head that the
+ * common case is answered without a read at all.
  *
  * Blobs live in Tell's own storage, not in the project they describe: a turn
  * outside an initialized workspace persists nothing, and leaving a directory
@@ -28,6 +28,16 @@ final readonly class ToolOutputSpill
     private const int CONTINUE_LINES = 200;
 
     private const int HASH_LENGTH = 16;
+
+    /**
+     * How much of the blob's name becomes its subdirectory, git-style. Nothing
+     * here ever enumerates the store - a blob is found by the exact path a stub
+     * names - so this is not for Tell's benefit. It is for everything else that
+     * walks a directory: a shell glob, a backup pass, a person who opens the
+     * folder. Two hex characters keep the fanout at 256 buckets and leave
+     * content addressing exactly as it was.
+     */
+    private const int SHARD_LENGTH = 2;
 
     /** How much of the head is sampled to decide whether a result is text. */
     private const int SNIFF_BYTES = 8_192;
@@ -198,8 +208,9 @@ final readonly class ToolOutputSpill
     {
         $extension = $binary ? '.bin' : '.txt';
         $hash = substr(hash('sha256', $content), 0, self::HASH_LENGTH);
-        $directory = rtrim($this->directory, '/\\');
-        $path = $directory.DIRECTORY_SEPARATOR.$hash.$extension;
+        $directory = rtrim($this->directory, '/\\')
+            .DIRECTORY_SEPARATOR.substr($hash, 0, self::SHARD_LENGTH);
+        $path = $directory.DIRECTORY_SEPARATOR.substr($hash, self::SHARD_LENGTH).$extension;
         if (is_file($path)) {
             return $path;
         }

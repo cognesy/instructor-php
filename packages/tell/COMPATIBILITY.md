@@ -201,7 +201,10 @@ It also writes raw tool output to disk by default, which the rest of Tell does
 not do: traces exclude payloads unless asked, and normalized events carry none
 at all. Blobs carry the payload in full. The store is created `0700` on first
 write, nothing leaves the machine, and the blob is a plain file readable by
-anything with filesystem access; nothing prunes it. Two new policy keys
+anything with filesystem access. Blobs are sharded on the first two characters
+of the blob name, so no directory collects every result a project ever spilled.
+Nothing prunes them, as with traces and sessions; reclaiming the space is the
+operator's. Two new policy keys
 govern it, on the same CLI/branch/project/user/bundled precedence as the rest:
 `maxSpillBytes` (default 200,000, ceiling 5,000,000) is the per-result limit on
 what reaches the disk and the switch - `0` restores head/tail truncation - and
@@ -277,7 +280,7 @@ instances, rather than a separately maintained catalogue.
 | Execution traces | Private JSONL derived from normalized events, payloads excluded by default, credentials always redacted, trace failure does not fail the run | `tests/Integration/ExecutionTraceTest.php`, `tests/Unit/TracePayloadTest.php` |
 | One-run protocol | Request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
 | Rendering | Human default plus explicit toon, text, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
-| Spilled tool output | Blobs in Tell's storage at `~/.tell/runtime/blobs/<project-hash>/`, content-addressed, never under the project; a stub names the blob, previews its head within `maxStubBytes`, and carries a `read` continuation unless the result is binary; `maxSpillBytes` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
+| Spilled tool output | Blobs in Tell's storage at `~/.tell/runtime/blobs/<project-hash>/<ab>/`, content-addressed and shard-fanned, never under the project; a stub names the blob, previews its head within `maxStubBytes`, and carries a `read` continuation unless the result is binary; `maxSpillBytes` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
 | Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 

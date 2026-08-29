@@ -471,10 +471,10 @@ writes the whole result to a content-addressed blob and hands the step a stub
 in its place:
 
 ```text
-[tool output: 4,812 lines, 312.4 KB — stored at ~/.tell/runtime/blobs/7f2c…/ab12cd34ef56a789.txt]
+[tool output: 4,812 lines, 312.4 KB — stored at ~/.tell/runtime/blobs/7f2c…/ab/12cd34ef56a789.txt]
   PASS  Tests\Feature\RenderingTest
   …as much of the head as the stub budget buys…
-Continue: read("~/.tell/runtime/blobs/7f2c…/ab12cd34ef56a789.txt", offset=20, limit=200)
+Continue: read("~/.tell/runtime/blobs/7f2c…/ab/12cd34ef56a789.txt", offset=20, limit=200)
 ```
 
 The head preview answers most questions without a read at all, and the `read`
@@ -490,6 +490,12 @@ subdirectory per project path so two projects never share a store, created
 `0700` on first write and not before. The coding tools are handed the store as
 an explicitly readable path, so the stub's `read` hint resolves without the
 tools reaching it by accident.
+
+Within a project's store a blob is sharded on the first two characters of its
+own name, git-style: `blobs/<project>/ab/12cd34ef56a789.txt`. Tell never
+enumerates the store - a stub names the exact path, and that lookup is as fast
+flat as sharded - so the fanout is bounded for everything else that walks a
+directory: a shell glob, a backup pass, a person opening the folder.
 
 `maxStubBytes` is what reaches the conversation, and `maxSpillBytes` is only
 what reaches the disk: however large the blob, the step sees the stub. It is
@@ -516,7 +522,9 @@ to include - lands under `~/.tell/runtime/blobs/` and stays there until
 something removes it. That is a deliberate change of posture: Tell's traces are
 payload-free by default and its normalized events carry no payloads, and blobs
 carry the payload in full. The store is created `0700` and never leaves the
-machine, but it is a plain readable file, and nothing prunes it. Set
+machine, but it is a plain readable file. Nothing prunes it, by design: Tell
+has no retention policy for blobs any more than it has one for traces or
+sessions, and reclaiming the space is yours to do. Set
 `maxSpillBytes` to `0` - per invocation with `--max-spill-bytes 0`, per branch
 with `tell config set maxSpillBytes 0`, or for a project or user in the
 defaults files above - to turn spilling off and get the previous head/tail
