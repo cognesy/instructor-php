@@ -302,7 +302,7 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
             'values' => [
                 'connection' => 'openai',
                 'model' => 'deepseek-v4-pro',
-                'output' => 'toon',
+                'output' => 'human',
                 'tools' => [],
                 'maxRetries' => 0,
                 'timeoutMs' => 30_000,

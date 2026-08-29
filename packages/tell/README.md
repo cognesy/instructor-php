@@ -30,13 +30,16 @@ tell agents
 tell sessions
 ```
 
-With no prompt, `tell` returns live workspace discovery plus useful next actions.
-The default format is TOON. Use `--output=text` for a raw final answer,
-`--output=human` for the same answer rendered as Markdown for a terminal,
-`--output=json` for JSON terminal state, or `--output=events` for a payload-free
-NDJSON stream using the versioned `tell.event.v1` envelope. `human` decorates
-only when stdout is a terminal: redirected or piped output stays the plain
-Markdown the model wrote, so it remains usable as input to something else.
+With no prompt, `tell` returns live workspace discovery plus useful next actions
+in TOON, the one structured form that screen has.
+
+A turn defaults to `--output=human`: the answer rendered as Markdown for a
+terminal. It decorates only when stdout is a terminal, so a redirected or piped
+turn stays the plain Markdown the model wrote and remains usable as input to
+something else. Use `--output=toon` for TOON, `--output=text` for the raw final
+answer undecorated, `--output=json` for JSON terminal state, or
+`--output=events` for a payload-free NDJSON stream using the versioned
+`tell.event.v1` envelope.
 List commands accept `--fields` for a smaller schema; session detail is
 bounded unless `tell sessions show ID --full` is requested.
 

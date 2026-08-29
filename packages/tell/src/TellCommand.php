@@ -60,7 +60,7 @@ Examples:
   tell "continue the review" --session review-1
   tell --transient "test a direction without recording it"
   tell --output=text "write a commit message"
-  tell --output=human "explain this design"
+  tell --output=toon "give me something to parse"
   tell -v "fix the failing test"
   tell --debug "fix the failing test" > answer.txt
 HELP)
@@ -85,7 +85,7 @@ HELP)
             ->addOption('max-tool-calls', null, InputOption::VALUE_REQUIRED, 'Maximum tool calls', '100')
             ->addOption('transient', null, InputOption::VALUE_NONE, 'Run without publishing workspace or session state')
             ->addOption('debug', null, InputOption::VALUE_NONE, 'Emit machine-readable progress lines, with parameters and results, on stderr')
-            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, human, json, or events', 'toon');
+            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: human, toon, text, json, or events', 'human');
     }
 
     #[Override]
@@ -235,8 +235,8 @@ HELP)
             'json' => new JsonRenderer($stdout),
             'events' => new EventsRenderer($stdout),
             'text' => new TextRenderer($stdout, $stderr, $options->quiet),
-            'human' => new HumanRenderer($stdout, $stderr, $options->quiet),
-            default => new ToonRenderer($stdout),
+            'toon' => new ToonRenderer($stdout),
+            default => new HumanRenderer($stdout, $stderr, $options->quiet),
         };
     }
 
@@ -252,10 +252,15 @@ HELP)
 
     private function showHome(InputInterface $input, OutputInterface $output): int
     {
+        // The home screen is an inventory, not an answer, so it has only ever
+        // had a structured form. Asking for one it cannot render is still an
+        // error; arriving with the default turn format is not, because nobody
+        // chose it here.
         $mode = (string) $input->getOption('output');
-        if (! in_array($mode, ['toon', 'json'], true)) {
+        if ($input->hasParameterOption(['--output', '-o'], true) && ! in_array($mode, ['toon', 'json'], true)) {
             throw new InvalidArgumentException('Without a prompt, --output must be toon or json.');
         }
+        $mode = in_array($mode, ['toon', 'json'], true) ? $mode : 'toon';
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -328,7 +333,7 @@ HELP)
         }
         if ($usage) {
             $payload['help'] = [
-                'Valid output modes: toon, text, human, json, events.',
+                'Valid output modes: human, toon, text, json, events.',
                 'Run `tell --help` for all options and examples.',
             ];
         }

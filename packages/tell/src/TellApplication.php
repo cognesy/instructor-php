@@ -188,15 +188,36 @@ final class TellApplication extends Application
         };
     }
 
+    /**
+     * Routing only needs to know how to parse argv, not what each option means,
+     * so two commands may declare the same option with their own default - a
+     * turn defaults `--output` to a format a tool invocation has no use for. A
+     * repeat is kept only while it parses the same way; one that would parse
+     * differently is a real conflict and still fails at boot.
+     */
     private function routingDefinition(Command ...$commands): InputDefinition
     {
         $definition = new InputDefinition;
         $definition->addOptions(array_values($this->getDefinition()->getOptions()));
         foreach ($commands as $command) {
-            $definition->addOptions(array_values($command->getDefinition()->getOptions()));
+            foreach ($command->getDefinition()->getOptions() as $option) {
+                if ($definition->hasOption($option->getName()) && $this->parsesAlike($definition->getOption($option->getName()), $option)) {
+                    continue;
+                }
+                $definition->addOption($option);
+            }
         }
 
         return $definition;
+    }
+
+    private function parsesAlike(InputOption $known, InputOption $repeat): bool
+    {
+        return $known->getShortcut() === $repeat->getShortcut()
+            && $known->isValueRequired() === $repeat->isValueRequired()
+            && $known->isValueOptional() === $repeat->isValueOptional()
+            && $known->isArray() === $repeat->isArray()
+            && $known->isNegatable() === $repeat->isNegatable();
     }
 
     /** @param list<string> $arguments */

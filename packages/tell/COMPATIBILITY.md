@@ -122,7 +122,7 @@ present transitively. Evidence: `tests/Integration/HumanOutputTest.php`.
 
 `output` is a new branch configuration key accepting the same five values, so
 a workspace branch can set its own default turn format. An explicit `--output`
-still wins, and the bundled value stays `toon`; `tell config effective` now
+still wins, and the bundled value is the turn default; `tell config effective` now
 reports `output` alongside the other branch/bundled values. Enum rejection
 messages now name the offending key's own allowed values instead of always
 naming the reasoning-effort set. Evidence:
@@ -143,6 +143,19 @@ read `ok`. Payload values are valid JSON bounded to 512 bytes; an excerpt is
 emitted as a JSON string with a companion `argsBytes`/`resultBytes` size.
 `--debug` now also accompanies `json` and `events` output, which carried no
 progress channel before.
+
+`--output=human` is now the default turn format, where it was `toon`. A turn
+invoked without `--output` renders its answer as Markdown on a terminal and as
+the plain Markdown the model wrote anywhere else, so anything parsing TOON out
+of a bare `tell "..."` must now pass `--output=toon`. The bundled branch
+default moves with it, and `tell config effective` reports `human`. The other
+formats, every explicit `--output`, and the no-prompt home screen are
+unchanged; the home screen still has only its structured forms, so it renders
+TOON when it inherits the new default and still rejects a format it cannot draw
+when one is asked for by name. Two commands may now declare the same option
+with different defaults, which the application's routing definition tolerates
+while the declarations parse alike. Evidence:
+`tests/Feature/RenderingTest.php`, `tests/Integration/BusyIndicatorTest.php`.
 
 `--output=human` on a terminal, with none of `-v`, `--debug`, or `--quiet`,
 now writes a single self-erasing status line naming the current step, the

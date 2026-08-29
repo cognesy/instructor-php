@@ -74,7 +74,7 @@ it('keeps quiet output final-only and makes machine tool progress explicit', fun
     $quietApplication->setAutoExit(false);
     $quiet = new ApplicationTester($quietApplication);
     $quiet->run(
-        ['command' => 'tell', 'prompt' => 'use a tool', '--quiet' => true],
+        ['command' => 'tell', 'prompt' => 'use a tool', '--quiet' => true, '--output' => 'toon'],
         ['capture_stderr_separately' => true],
     );
     expect(Toon::decode($quiet->getDisplay())['answer'])->toBe('tool answer')
@@ -84,10 +84,25 @@ it('keeps quiet output final-only and makes machine tool progress explicit', fun
     $debugApplication->setAutoExit(false);
     $debug = new ApplicationTester($debugApplication);
     $debug->run(
-        ['command' => 'tell', 'prompt' => 'use a tool', '--debug' => true],
+        ['command' => 'tell', 'prompt' => 'use a tool', '--debug' => true, '--output' => 'toon'],
         ['capture_stderr_separately' => true],
     );
     expect(Toon::decode($debug->getDisplay())['answer'])->toBe('tool answer')
         ->and($debug->getErrorOutput())->toContain('[tool.start] name=list_agents')
         ->toContain('[tool.complete] name=list_agents status=ok');
+});
+
+it('answers a bare invocation as prose, because the default format is for a person', function (): void {
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(
+        new FakeAgentDriver([ScenarioStep::final('plain answer')]),
+    ));
+    $application = new TellApplication($factory);
+    $application->setAutoExit(false);
+    $tester = new ApplicationTester($application);
+
+    $tester->run(['command' => 'tell', 'prompt' => 'say something'], ['capture_stderr_separately' => true]);
+
+    // An undecorated stream gets the answer as the model wrote it, so a bare
+    // `tell` stays usable as the input to something else.
+    expect(trim($tester->getDisplay()))->toBe('plain answer');
 });

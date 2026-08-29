@@ -174,6 +174,6 @@ it('reports output among the effective branch settings', function (): void {
 
     $payload = json_decode($config->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($payload['values']['output'])->toBe('toon')
+    expect($payload['values']['output'])->toBe('human')
         ->and($payload['provenance']['output'])->toBe('bundled');
 });

@@ -31,7 +31,7 @@ final readonly class BranchConfigStore
     /** @var array<string, int|list<string>|string> */
     private const array DEFAULTS = [
         'connection' => 'openai',
-        'output' => 'toon',
+        'output' => 'human',
         'tools' => [],
         'maxRetries' => 0,
         'timeoutMs' => 30_000,

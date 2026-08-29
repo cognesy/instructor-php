@@ -18,7 +18,7 @@ it('writes one private jsonl trace from the real execution event stream', functi
     $records = tellTraceRecords($files[0] ?? '');
 
     expect($status)->toBe(0)
-        ->and(Toon::decode($tester->getDisplay())['answer'])->toBe('traced answer')
+        ->and(trim($tester->getDisplay()))->toBe('traced answer')
         ->and($files)->toHaveCount(1)
         ->and($records[0]['schema'])->toBe('tell.event.v1')
         ->and($records[0]['kind'])->toBe('execution.started')
@@ -121,7 +121,7 @@ it('does not fail an agent turn when trace storage is unavailable', function ():
     $status = $tester->execute(['prompt' => 'trace failure']);
 
     expect($status)->toBe(0)
-        ->and(Toon::decode($tester->getDisplay())['answer'])->toBe('still works');
+        ->and(trim($tester->getDisplay()))->toBe('still works');
 });
 
 /** @return list<string> */

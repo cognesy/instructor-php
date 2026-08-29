@@ -116,3 +116,13 @@ it('gets out of the way while a tool is asking the person a question', function 
         ->and($busy)->toContain('working')
         ->and($busy)->toEndWith("\r\033[K");
 });
+
+it('renders the home screen structurally on the default format, and still rejects a chosen one it cannot draw', function (): void {
+    $default = tellBusyTester();
+    expect($default->execute(['--dir' => tellBusyProject()]))->toBe(0)
+        ->and($default->getDisplay())->toContain('agentCount');
+
+    $chosen = tellBusyTester();
+    expect($chosen->execute(['--dir' => tellBusyProject(), '--output' => 'text']))->toBe(2)
+        ->and($chosen->getDisplay())->toContain('Without a prompt, --output must be toon or json');
+});

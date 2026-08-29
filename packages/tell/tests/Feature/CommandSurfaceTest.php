@@ -106,7 +106,7 @@ it('routes implicit prompts and keeps named subcommands available', function ():
     $agents = json_decode($agentsOutput->fetch(), true, flags: JSON_THROW_ON_ERROR);
 
     expect($promptStatus)->toBe(0)
-        ->and(Toon::decode($promptOutput->fetch())['answer'])->toBe('implicit ok')
+        ->and(trim($promptOutput->fetch()))->toBe('implicit ok')
         ->and($agentsStatus)->toBe(0)
         ->and(array_column($agents['agents'], 'name'))->toBe(['default']);
 });
@@ -210,7 +210,7 @@ it('treats a subcommand name after the separator as a prompt', function (): void
     $status = $application->runArgv(['tell', '--', 'agents'], $output);
 
     expect($status)->toBe(0)
-        ->and(Toon::decode($output->fetch())['answer'])->toBe('literal prompt ok');
+        ->and(trim($output->fetch()))->toBe('literal prompt ok');
 });
 
 it('keeps the legacy prompt, connection, model, and dsn options', function (): void {

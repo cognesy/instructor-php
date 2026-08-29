@@ -26,7 +26,7 @@ final readonly class TellOptions
         public array $tools = [],
         public TellAnswerQueue $answers = new TellAnswerQueue,
         public int $maxSteps = 10,
-        public string $output = 'toon',
+        public string $output = 'human',
         public bool $verbose = false,
         public bool $quiet = false,
         public bool $transient = false,
