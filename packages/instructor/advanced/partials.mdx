@@ -15,7 +15,7 @@ foreach ($stream->partials() as $partial) {
     // $partial is a Person object with fields populated so far
     updateUI($partial);
 }
-// @doctest id="45fb"
+// @doctest id="25c3"
 ```
 
 Instructor is smart about updates. It calculates and compares hashes of the previous and newly deserialized version of the model, so your callback only fires when a property actually changes -- not on every token received.
@@ -32,7 +32,7 @@ $person = (new StructuredOutput)
     ->withStreaming()
     ->with(messages: $text)
     ->get();
-// @doctest id="bc30"
+// @doctest id="52c2"
 ```
 
 ## StructuredOutputStream Methods
@@ -79,7 +79,7 @@ foreach ($stream->partials() as $update) {
 // Final validated object
 $person = $stream->finalValue();
 $db->savePerson($person);
-// @doctest id="447b"
+// @doctest id="6dfa"
 ```
 
 ## Example: Streaming Sequence Items
@@ -102,7 +102,7 @@ foreach ($stream->sequence() as $person) {
 
 $people = $stream->finalValue();
 $db->savePeople($people->toArray());
-// @doctest id="57e6"
+// @doctest id="4fed"
 ```
 
 ## Streaming with Output Formats

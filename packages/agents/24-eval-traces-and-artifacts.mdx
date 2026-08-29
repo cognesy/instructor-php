@@ -20,7 +20,7 @@ $step->duration();              // float
 $step->stopSignal();            // ?StopSignal -- THIS step's signal, not the run's
 $step->errors();                 // ErrorList
 $step->hasErrors();              // bool
-// @doctest id="dc2d"
+// @doctest id="dc74"
 ```
 
 There is deliberately no `inputMessages()` accessor and no way to reach the raw `InferenceResponse` from an `EvalStep`. Two exclusions are load-bearing, not oversights:
@@ -39,14 +39,14 @@ $run->steps();      // EvalSteps -- every step across every turn, in order
 $run->usage();       // InferenceUsage accumulated across all steps of all turns
 $run->duration();     // float, summed across all turns
 $run->stepCount();     // int
-// @doctest id="725d"
+// @doctest id="9e35"
 ```
 
 `stopSignal()` is the one accessor that does **not** aggregate:
 
 ```php
 $run->stopSignal();  // the LAST turn's resolved StopSignal only
-// @doctest id="1d59"
+// @doctest id="c3a4"
 ```
 
 A three-turn conversation's `stopSignal()` reflects only how the third `send()` ended -- it is not a merge or a "worst of" across turns. If you need to know how an earlier turn stopped, read that turn's own `EvalStep::stopSignal()` from `steps()`, not `AgentRun::stopSignal()`.
@@ -61,7 +61,7 @@ use Cognesy\Agents\Evals\EvalTracePolicy;
 EvalTracePolicy::safe();                        // default everywhere
 EvalTracePolicy::safe()->withPreviewBytes(512);  // widen the preview, still shape-only
 EvalTracePolicy::full();                          // explicit opt-in: verbatim payloads
-// @doctest id="5924"
+// @doctest id="5531"
 ```
 
 `safe()` is the default on every target and every judge; `full()` is reachable only by explicit construction and is never a default anywhere in the package. This is a data-handling decision, not a debugging convenience: tool arguments and results are where customer records, file contents, API responses, and credentials live, and by default the artifact reporter writes every eval's trace to `.instructor/evals` on disk. A default that leaked those values would leak them into every CI run's filesystem.
@@ -73,7 +73,7 @@ Under `safe()`, a tool call's arguments and its (successful) result value each s
 ```php
 $policy->digest($value);
 // ['hash' => 'sha256:...', 'bytes' => <int>, 'preview' => <string>]
-// @doctest id="49d2"
+// @doctest id="0b5f"
 ```
 
 - `hash` and `bytes` are computed over the value's real JSON encoding.
@@ -82,7 +82,7 @@ $policy->digest($value);
 ```text
 {"hash": "sha256:9f2b...", "bytes": 33, "preview": "{\"card\":\"<string:23>\"}"}
 {"user": {"id": "<int>", "ssn": "<string:11>"}, "rows": "<array:40>"}
-// @doctest id="2928"
+// @doctest id="28a0"
 ```
 
 This is deliberately stronger than a bounded excerpt. An earlier revision of the policy rendered a bounded excerpt of the actual payload instead of its shape, and a short secret like `{"card": "SECRET-4111111111111111"}` (33 bytes) fit entirely inside that bound and was written out in full -- bounding a preview by size does not redact it, and credentials are short. Rendering shape instead of content closes that gap: `digest()` has **no size threshold** -- `shapeOf()` renders `<string:N>` whether the string is 4 bytes or 4 megabytes, so a short value is digested exactly like a large one. Nothing about a payload's length exempts it from digesting.
@@ -129,7 +129,7 @@ Tool **names**, call **order**, **error flags** (`hasError`/`hasErrors`), **timi
         001-steps.jsonl
         002.json
         002-steps.jsonl
-// @doctest id="3bd0"
+// @doctest id="acd6"
 ```
 
 - `summary.json` -- one document per run: verdict counts, run-level provenance, and run-level token totals.
@@ -167,7 +167,7 @@ A score is only meaningful next to another score, and once the judge is itself a
     "repeat": 1
   }
 }
-// @doctest id="033b"
+// @doctest id="57f0"
 ```
 
 - **`target`** is the resolved `LLMConfigProfile` the target loop actually built with -- driver, model, and its numeric context/output limits. It carries no API key, no base URL, and no other credential; that type exposes only those five fields. It is `null` when the underlying loop never resolved an `LLMConfig` (some test doubles) or when a remote HTTP target's payload didn't supply one -- reported as absent, never guessed.
@@ -189,7 +189,7 @@ At the `EvalResult` and `EvalRunResult` level this is largely papered over -- `p
 
 ```json
 { "tokens": { "target": 4210, "judge": 9880, "total": 14090 } }
-// @doctest id="564d"
+// @doctest id="127f"
 ```
 
 `target` sums `InferenceUsage` across the target run's own steps; `judge` sums usage across every judged assertion's own judge `AgentRun` (a lightweight judge with no run contributes `0`, never an error). The split is deliberate and never collapsed: once a judge is itself a multi-step agent with its own evidence tools, judging routinely costs several times what the target run cost, per assertion, per case, per suite run -- folding the two together would hide exactly the cost signal that matters most for controlling an agentic eval suite's spend.
@@ -201,7 +201,7 @@ At the `EvalResult` and `EvalRunResult` level this is largely papered over -- `p
 ```text
 passed=3 failed=1 scored=0 skipped=0
 TOKENS target=4210 judge=9880 total=14090
-// @doctest id="e83d"
+// @doctest id="1e2b"
 ```
 
 Verbose mode (`EvalRunOptions::default()->withVerbose(true)`) adds a target line, a judge line per judged assertion, and evidence lines underneath it:
@@ -211,7 +211,7 @@ TARGET steps=1 tools=0 tokens=142 stop=completed
 JUDGE score=0.40 steps=1 tools=1 tokens=15
   EVIDENCE no verification step observed
   EVIDENCE policy requires order-owner check
-// @doctest id="bb21"
+// @doctest id="7b46"
 ```
 
 `ConsoleEvalReporter::fromWriter(Closure $write, bool $verbose = false)` takes any `Closure(string): void` as its sink, so it can write to STDOUT, a buffer, or anywhere else you choose.
@@ -226,7 +226,7 @@ Agent eval suite failed (1 failed, 0 scored, 0 reporter errors; strict mode).
   - target: steps=1 stop=completed
   - closedQa [gate]: score 0.40, required 1.00
     - evidence: no verification step observed
-// @doctest id="8c29"
+// @doctest id="6141"
 ```
 
 ## Choosing and combining reporters
@@ -245,7 +245,7 @@ $config = EvalConfig::default()
         new ArtifactEvalReporter('.instructor/evals'),
         new JUnitEvalReporter('build/eval-results.xml'),
     );
-// @doctest id="1f3c"
+// @doctest id="cc62"
 ```
 
 `JUnitEvalReporter` writes a single JUnit XML document at `onRunCompleted`: a `<testcase>` per eval, `<failure>` for a `Failed` verdict (and for a `Scored` verdict when the run is strict), and `<skipped>` for `Skipped`. It is meant for CI systems that consume JUnit XML directly, as an alternative or complement to failing the PHPUnit/Pest process itself.
