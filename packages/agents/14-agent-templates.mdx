@@ -44,7 +44,7 @@ $definition = new AgentDefinition(
     toolsDeny: new NameList('write_file'),
     capabilities: new NameList('use_bash'),
 );
-// @doctest id="0dee"
+// @doctest id="3ae5"
 ```
 
 ### Tool Visibility Rules
@@ -71,7 +71,7 @@ $budget = new ExecutionBudget(
     maxCost: 0.50,        // maximum cost in dollars
     deadline: new DateTimeImmutable('2025-12-31'),
 );
-// @doctest id="a665"
+// @doctest id="aa99"
 ```
 
 When an `AgentDefinition` declares a budget, it is translated into `UseGuards` during loop instantiation.
@@ -111,7 +111,7 @@ You are a research assistant. Your job is to find and summarize information accu
 
 When given a topic, use the available tools to gather evidence, then synthesize your findings
 into a clear, well-structured summary. Always cite the sources you used.
-// @doctest id="ece8"
+// @doctest id="fa20"
 ```
 
 The document body (everything after the front matter) becomes the `systemPrompt` field.
@@ -132,7 +132,7 @@ budget:
 tools:
   - bash
   - read_file
-# @doctest id="13d8"
+# @doctest id="8de0"
 ```
 
 ### JSON Format
@@ -151,7 +151,7 @@ tools:
   },
   "tools": ["bash", "read_file"]
 }
-// @doctest id="cd90"
+// @doctest id="bbad"
 ```
 
 All three formats produce identical `AgentDefinition` objects when loaded.
@@ -167,7 +167,7 @@ use Cognesy\Agents\Template\AgentDefinitionLoader;
 
 $loader = new AgentDefinitionLoader();
 $definition = $loader->loadFile('/path/to/researcher.md');
-// @doctest id="f254"
+// @doctest id="d438"
 ```
 
 Supported extensions: `.md`, `.json`, `.yaml`, `.yml`. The loader throws a `RuntimeException` if the file cannot be read and an `InvalidArgumentException` for unsupported extensions.
@@ -185,7 +185,7 @@ $loader = new AgentDefinitionLoader([
     'yaml' => new YamlDefinitionParser(),
     'yml' => new YamlDefinitionParser(),
 ]);
-// @doctest id="67f0"
+// @doctest id="64f9"
 ```
 
 ### AgentDefinitionRegistry
@@ -196,7 +196,7 @@ The `AgentDefinitionRegistry` is a named collection of agent definitions. It sup
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 
 $registry = new AgentDefinitionRegistry();
-// @doctest id="5f0a"
+// @doctest id="91cd"
 ```
 
 #### Programmatic Registration
@@ -204,7 +204,7 @@ $registry = new AgentDefinitionRegistry();
 ```php
 $registry->register($definition);
 $registry->registerMany($def1, $def2, $def3);
-// @doctest id="6947"
+// @doctest id="e803"
 ```
 
 #### Loading from Files
@@ -218,7 +218,7 @@ $registry->loadFromDirectory('/agents');
 
 // Load recursively, scanning subdirectories
 $registry->loadFromDirectory('/agents', recursive: true);
-// @doctest id="b803"
+// @doctest id="5482"
 ```
 
 During directory scans, files that fail to parse are skipped rather than causing exceptions. The errors are collected and can be inspected afterward:
@@ -226,7 +226,7 @@ During directory scans, files that fail to parse are skipped rather than causing
 ```php
 $errors = $registry->errors();
 // Returns: ['path/to/broken.md' => 'Error message', ...]
-// @doctest id="f85b"
+// @doctest id="76ca"
 ```
 
 #### Auto-Discovery
@@ -239,7 +239,7 @@ $registry->autoDiscover(
     packagePath: '/package/agents',   // scans this directory directly
     userPath: '/user/agents',         // scans this directory directly
 );
-// @doctest id="92f6"
+// @doctest id="d236"
 ```
 
 Paths are scanned in order: `userPath`, `packagePath`, then `projectPath/.claude/agents`. Later registrations overwrite earlier ones with the same name, so user-level definitions take precedence over package defaults.
@@ -252,7 +252,7 @@ $exists = $registry->has('researcher');        // returns bool
 $names = $registry->names();                   // returns ['researcher', 'reviewer', ...]
 $count = $registry->count();                   // returns int
 $all = $registry->all();                       // returns ['name' => AgentDefinition, ...]
-// @doctest id="3ed4"
+// @doctest id="bba1"
 ```
 
 ## Instantiation Factories
@@ -268,7 +268,7 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
 $state = $factory->instantiateAgentState($definition);
-// @doctest id="1858"
+// @doctest id="1757"
 ```
 
 You can also pass a seed state to merge the definition's settings onto an existing state:
@@ -276,7 +276,7 @@ You can also pass a seed state to merge the definition's settings onto an existi
 ```php
 $existingState = AgentState::empty()->withUserMessage('Start here');
 $state = $factory->instantiateAgentState($definition, seed: $existingState);
-// @doctest id="2be8"
+// @doctest id="db1b"
 ```
 
 The factory applies settings in this order: system prompt, metadata merge, then LLM config. Each step is skipped if the corresponding field in the definition is empty or null.
@@ -295,7 +295,7 @@ $capabilities->register('use_bash', new UseBash());
 
 $factory = new DefinitionLoopFactory($capabilities);
 $loop = $factory->instantiateAgentLoop($definition);
-// @doctest id="efc6"
+// @doctest id="6763"
 ```
 
 The factory builds the loop by applying the definition's fields in order:
@@ -320,7 +320,7 @@ $factory = new DefinitionLoopFactory(
     capabilities: $capabilities,
     tools: $tools,
 );
-// @doctest id="ce4d"
+// @doctest id="e187"
 ```
 
 If a definition references tools and no registry is provided, `DefinitionLoopFactory` throws an `InvalidArgumentException`. Unknown tool names also cause an exception, listing which tools could not be found.
@@ -334,7 +334,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher('session');
 $factory = new DefinitionLoopFactory($capabilities, $tools, $events);
-// @doctest id="c6c6"
+// @doctest id="90ec"
 ```
 
 ## AgentCapabilityRegistry
@@ -359,7 +359,7 @@ $capabilities->has('use_bash');     // true
 $capabilities->get('use_bash');     // returns the UseBash instance
 $capabilities->names();             // ['use_bash', 'use_file_tools']
 $capabilities->count();             // 2
-// @doctest id="73e2"
+// @doctest id="9a77"
 ```
 
 Factory-registered capabilities are instantiated on first access and cached for subsequent lookups. If the factory does not return a `CanProvideAgentCapability`, an `InvalidArgumentException` is thrown.
@@ -382,7 +382,7 @@ their `composer.json`:
     }
   }
 }
-// @doctest id="20d6"
+// @doctest id="be22"
 ```
 
 Discovery is deliberately explicit. Enabling it lets installed third-party
@@ -398,7 +398,7 @@ $capabilities = new AgentCapabilityRegistry();
 $tools = new ToolRegistry();
 
 $result = CapabilityDiscovery::discover($capabilities, $tools);
-// @doctest id="9d9b"
+// @doctest id="43ac"
 ```
 
 Discovery parses metadata and registers lazy factories; it does not instantiate
@@ -421,7 +421,7 @@ $serializer = new AgentDefinitionSerializer();
 $markdown = $serializer->toMarkdown($definition);
 $yaml = $serializer->toYaml($definition);
 $json = $serializer->toJson($definition);
-// @doctest id="2032"
+// @doctest id="d5c1"
 ```
 
 Use `FileAgentDefinitionStore` for persistence policy. It accepts an existing
@@ -446,7 +446,7 @@ $writable = new UseAgentDefinitions(
     $validator,
     new FileAgentDefinitionStore('/dedicated/agent-definitions'),
 );
-// @doctest id="3fd7"
+// @doctest id="8591"
 ```
 
 `write_agent` validates the complete definition before touching disk, refuses
@@ -468,7 +468,7 @@ $registry->loadFromDirectory('/agents');
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-// @doctest id="95cd"
+// @doctest id="e840"
 ```
 
 The subagent tool's schema automatically includes the list of available agents and their descriptions, so the LLM knows which subagents it can delegate to. See [Subagents](15-subagents) for the full delegation model.
@@ -480,7 +480,7 @@ The subagent tool's schema automatically includes the list of available agents a
 ```php
 $array = $definition->toArray();
 $restored = AgentDefinition::fromArray($array);
-// @doctest id="5b1b"
+// @doctest id="c9fe"
 ```
 
 This is used internally by the session persistence layer to store agent definitions alongside session state. The `fromArray()` method also accepts `title` as an alias for `label` to support legacy formats.

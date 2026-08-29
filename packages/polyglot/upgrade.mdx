@@ -31,7 +31,7 @@ $registry = BundledInferenceDrivers::registry()->withDriver(
         driverClass: MyDriver::class,
     ),
 );
-// @doctest id="aa3e"
+// @doctest id="0d53"
 ```
 
 If you only changed the wire format, no subclass is needed — pass your own `bodyFormat`,
@@ -49,7 +49,7 @@ new InferenceDriverSpec(
     bodyFormat: MyBodyFormat::class,
     capabilities: new DriverCapabilities(responseFormatWithTools: false),
 );
-// @doctest id="4769"
+// @doctest id="69ca"
 ```
 
 `InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so drivers
@@ -91,7 +91,7 @@ updated together with the v2.7 package upgrade.
 - public function handle(EmbeddingsRequest $request): HttpResponse;
 - public function fromData(array $data): ?EmbeddingsResponse;
 + public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
-// @doctest id="2625"
+// @doctest id="6db2"
 ```
 
 Move HTTP response decoding and adaptation into `handle()`. The separate `fromData()` method
@@ -130,7 +130,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="0dcb"
+// @doctest id="ec17"
 ```
 
 ## After
@@ -146,7 +146,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('Return JSON.'))
     ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="3574"
+// @doctest id="f10f"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.
