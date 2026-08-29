@@ -65,8 +65,8 @@ HELP)
             ->addOption('max-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum total model-output bytes', '200000')
             ->addOption('max-tool-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes retained from this tool result', '40000')
             ->addOption('max-tool-calls', null, InputOption::VALUE_REQUIRED, 'Maximum tool calls', '100')
-            ->addOption('max-spill-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes spilled to a blob from this tool result (0 disables spilling)', '1000000')
-            ->addOption('max-stub-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes one spill stub may spend previewing the result it replaces', '2000')
+            ->addOption('max-spill-bytes', null, InputOption::VALUE_REQUIRED, 'Maximum bytes spilled to a blob from this tool result (0 disables spilling)', '200000')
+            ->addOption('max-stub-bytes', null, InputOption::VALUE_REQUIRED, 'Maximum bytes one spill stub may spend previewing the result it replaces', '2000')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, json, or events', 'toon')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Shortcut for --output=json');
     }

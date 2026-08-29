@@ -38,16 +38,16 @@ it('resolves finite policy values in CLI, branch, bundled precedence order', fun
         'maxOutputChars' => 4_096,
         'maxToolOutputChars' => 2_048,
         'maxToolCalls' => 3,
-        'maxSpillChars' => 1_000_000,
-        'maxStubChars' => 2_000,
+        'maxSpillBytes' => 200_000,
+        'maxStubBytes' => 2_000,
     ])->and($policy->provenance())->toBe([
         'maxRetries' => 'branch',
         'timeoutMs' => 'cli',
         'maxOutputChars' => 'branch',
         'maxToolOutputChars' => 'branch',
         'maxToolCalls' => 'cli',
-        'maxSpillChars' => 'bundled',
-        'maxStubChars' => 'bundled',
+        'maxSpillBytes' => 'bundled',
+        'maxStubBytes' => 'bundled',
     ]);
 });
 
@@ -126,8 +126,8 @@ it('keeps policy controls through fluent SDK request transformations', function 
         'maxOutputChars' => 500,
         'maxToolOutputChars' => 200,
         'maxToolCalls' => 3,
-        'maxSpillChars' => 1_000_000,
-        'maxStubChars' => 2_000,
+        'maxSpillBytes' => 200_000,
+        'maxStubBytes' => 2_000,
     ]);
 });
 

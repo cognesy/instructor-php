@@ -30,11 +30,14 @@ final readonly class ToolOutputSpill
 
     private const int HASH_LENGTH = 16;
 
+    /** How much of the head is sampled to decide whether a result is text. */
+    private const int SNIFF_BYTES = 8_192;
+
     public function __construct(
         private string $directory,
         private int $threshold,
         private int $ceiling,
-        private int $stubBudget = TellExecutionPolicy::DEFAULT_MAX_STUB_CHARS,
+        private int $stubBudget = TellExecutionPolicy::DEFAULT_MAX_STUB_BYTES,
     ) {}
 
     public static function fromPolicy(string $directory, TellExecutionPolicy $policy): self
@@ -42,8 +45,8 @@ final readonly class ToolOutputSpill
         return new self(
             $directory,
             $policy->maxToolOutputChars,
-            $policy->maxSpillChars,
-            $policy->maxStubChars,
+            $policy->maxSpillBytes,
+            $policy->maxStubBytes,
         );
     }
 
@@ -83,26 +86,52 @@ final readonly class ToolOutputSpill
         if (strlen($text) <= $this->threshold) {
             return null;
         }
-        $stored = $this->clamp($text);
-        $path = $this->write($stored);
+        $binary = self::isBinary($text);
+        $stored = $this->clamp($text, $binary);
+        $path = $this->write($stored, $binary);
         if ($path === null) {
             return null;
         }
+        $discarded = strlen($stored) < strlen($text)
+            ? '[the result was '.self::size(strlen($text)).'; everything past the '
+                .number_format($this->ceiling).'-byte spill ceiling was discarded]'
+            : null;
+
+        // Binary gets no preview and no read hint. Its bytes would be noise in
+        // the conversation, and the read tool refuses a file `file` calls
+        // binary - a stub that suggested one would promise what Tell cannot do.
+        if ($binary) {
+            return implode("\n", array_filter([
+                '[tool output: '.self::size(strlen($stored)).' of binary data — stored at '.$path.']',
+                $discarded,
+                'Not text: it has no preview, and the read tool will not open it. Inspect it with a shell command if you need its contents.',
+            ]))."\n";
+        }
+
         $lines = self::lines($stored);
-        $head = [
+        $head = array_values(array_filter([
             '[tool output: '.number_format(count($lines)).' line'.(count($lines) === 1 ? '' : 's')
                 .', '.self::size(strlen($stored)).' — stored at '.$path.']',
-        ];
-        if (strlen($stored) < strlen($text)) {
-            $head[] = '[the result was '.self::size(strlen($text)).'; everything past the '
-                .number_format($this->ceiling).'-byte spill ceiling was discarded]';
-        }
+            $discarded,
+        ]));
 
         return $this->assemble($head, $lines, $path);
     }
 
     /**
-     * The stub carries as much of the head as `maxStubChars` allows.
+     * Whether a result is something the model can be shown and the read tool
+     * can open. The read tool asks `file` for a MIME type; this is stricter,
+     * so a stub never offers a read that would come back as an error.
+     */
+    private static function isBinary(string $text): bool
+    {
+        $sample = substr($text, 0, self::SNIFF_BYTES);
+
+        return str_contains($sample, "\0") || preg_match('//u', $sample) !== 1;
+    }
+
+    /**
+     * The stub carries as much of the head as `maxStubBytes` allows.
      *
      * Its size is governed by that budget alone, not by `maxToolOutputChars`:
      * the retained-bytes limit exists to keep a tool result from crowding the
@@ -139,14 +168,21 @@ final readonly class ToolOutputSpill
         return implode("\n", [...$head, ...$preview, $continue])."\n";
     }
 
-    /** Clamping mid-character would store bytes no reader can decode. */
-    private function clamp(string $text): string
+    /**
+     * Clamping text mid-character would store bytes no reader can decode, and
+     * a UTF-8 character is at most four bytes long, so backing off is bounded.
+     * Binary has no characters to land between and is cut where it is cut.
+     */
+    private function clamp(string $text, bool $binary): string
     {
         if (strlen($text) <= $this->ceiling) {
             return $text;
         }
         $bytes = substr($text, 0, $this->ceiling);
-        while ($bytes !== '' && preg_match('//u', $bytes) !== 1) {
+        if ($binary) {
+            return $bytes;
+        }
+        for ($dropped = 0; $dropped < 3 && $bytes !== '' && preg_match('//u', $bytes) !== 1; $dropped++) {
             $bytes = substr($bytes, 0, -1);
         }
 
@@ -158,13 +194,14 @@ final readonly class ToolOutputSpill
      * stub points at the first one's bytes. Returns the project-relative path
      * the model should read, or null when the project is not writable.
      */
-    private function write(string $content): ?string
+    private function write(string $content, bool $binary): ?string
     {
+        $extension = $binary ? '.bin' : '.txt';
         $hash = substr(hash('sha256', $content), 0, self::HASH_LENGTH);
-        $relative = self::DIRECTORY.'/'.$hash.'.txt';
+        $relative = self::DIRECTORY.'/'.$hash.$extension;
         $directory = rtrim($this->directory, '/\\').DIRECTORY_SEPARATOR
             .str_replace('/', DIRECTORY_SEPARATOR, self::DIRECTORY);
-        $path = $directory.DIRECTORY_SEPARATOR.$hash.'.txt';
+        $path = $directory.DIRECTORY_SEPARATOR.$hash.$extension;
         if (is_file($path)) {
             return $relative;
         }

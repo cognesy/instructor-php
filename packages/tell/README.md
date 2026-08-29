@@ -348,7 +348,7 @@ tell config effective --branch review --json
 
 Allowed keys are `connection`, `model`, `reasoningEffort`, `output`, `tools`,
 `maxRetries`, `timeoutMs`, `maxOutputChars`, `maxToolOutputChars`,
-`maxToolCalls`, `maxSpillChars`, and `maxStubChars`. `output` selects the
+`maxToolCalls`, `maxSpillBytes`, and `maxStubBytes`. `output` selects the
 default turn format for the branch and accepts the same values as `--output`.
 Values are labels, model names, tool profiles, and bounded policy values only:
 Tell rejects credentials, tokens, headers, raw environment values, and DSNs
@@ -432,7 +432,7 @@ inspectable on its own branch.
 
 Every Tell execution has finite policy defaults: zero provider retries, a 30s
 wall deadline, 200,000 total model-output bytes, 40,000 bytes retained from one
-tool result, 100 tool calls, a 1,000,000-byte spill ceiling, and a 2,000-byte
+tool result, 100 tool calls, a 200,000-byte spill ceiling, and a 2,000-byte
 spill stub. Override one invocation without persisting it:
 
 ```bash
@@ -449,7 +449,7 @@ programmatic cancellation.
 
 The same limits are available through `TellRequest` (`maxRetries()`,
 `timeoutMs()`, `maxOutputChars()`, `maxToolOutputChars()`, `maxToolCalls()`,
-`maxSpillChars()`, and `maxStubChars()`). Policy precedence is CLI/SDK
+`maxSpillBytes()`, and `maxStubBytes()`). Policy precedence is CLI/SDK
 override, branch config, project defaults, user defaults, then bundled values.
 Project defaults live at
 `.tell/arena/config/defaults.json`; user defaults live at
@@ -483,12 +483,24 @@ head/tail window used to discard, so a model that needs line 900 of a test run
 can still reach it. Identical results share one blob, and the store writes its
 own `.gitignore` so blobs never enter the repository.
 
-`maxStubChars` is what the stub may spend, and the only limit that applies to
-it: the stub is emitted whole regardless of `maxToolOutputChars`, because that
-limit is what the stub answers rather than something it is subject to. Lower
-the budget for a shorter head, or set it to `0` for a header and a read hint
-with no preview. The header and the read hint are never dropped - a stub cut
-short would name a file and lose the instruction for opening it.
+`maxStubBytes` is what reaches the conversation, and `maxSpillBytes` is only
+what reaches the disk: however large the blob, the step sees the stub. It is
+also the only limit that applies to the stub, which is emitted whole regardless
+of `maxToolOutputChars`, because that limit is what the stub answers rather
+than something it is subject to. Lower the budget for a shorter head, or set it
+to `0` for a header and a read hint with no preview. The header and the read
+hint are never dropped - a stub cut short would name a file and lose the
+instruction for opening it.
+
+`maxSpillBytes` bounds what one command may cost in memory and on disk, since
+spilling raises the shell tool's own capture caps to it. The default holds a
+long test run or build log; the ceiling is 5,000,000.
+
+A result that is not text - a NUL byte or invalid UTF-8 in its first 8 KB - is
+stored under a `.bin` name with no preview and no read hint, because its bytes
+would be noise in the conversation and the read tool refuses a binary file. The
+stub says what it is, how big, and where, and leaves inspecting it to a shell
+command.
 
 **This writes raw tool output to disk, and it is on by default.** Everything a
 tool printed - file contents, command output, whatever the environment happened
@@ -497,8 +509,8 @@ something removes it. That is a deliberate change of posture: Tell's traces are
 payload-free by default and its normalized events carry no payloads, and blobs
 carry the payload in full. `.tell/blobs` is created `0700`, is excluded from
 git, and never leaves the machine, but it is a plain readable file. Set
-`maxSpillChars` to `0` - per invocation with `--max-spill-chars 0`, per branch
-with `tell config set maxSpillChars 0`, or for a project or user in the
+`maxSpillBytes` to `0` - per invocation with `--max-spill-bytes 0`, per branch
+with `tell config set maxSpillBytes 0`, or for a project or user in the
 defaults files above - to turn spilling off and get the previous head/tail
 truncation instead.
 

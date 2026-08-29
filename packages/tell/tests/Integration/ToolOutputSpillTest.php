@@ -151,7 +151,7 @@ it('emits the stub whole, however small the retained-bytes limit is', function (
     $project = tellSpillProject('spill-whole-stub');
     // The limit governs tool results, and the stub is the answer to it: a stub
     // cut short would name a blob and then lose the way to read it.
-    $policy = new TellExecutionPolicy(maxToolOutputChars: 300, maxSpillChars: 1_000_000);
+    $policy = new TellExecutionPolicy(maxToolOutputChars: 300, maxSpillBytes: 1_000_000);
     $clock = new class implements CanReadTellClock
     {
         public function nowMs(): int
@@ -172,6 +172,41 @@ it('emits the stub whole, however small the retained-bytes limit is', function (
         ->and($value)->not->toContain('… [truncated]');
 });
 
+it('stores binary output without previewing it or promising a read', function (): void {
+    $project = tellSpillProject('spill-binary');
+    // A NUL byte is what makes `file` call something binary, and the read tool
+    // refuses whatever `file` calls binary.
+    $binary = str_repeat("\x89PNG\r\n\x1a\n\0\0\0\rIHDR\xff\xfe", 400);
+    $stub = (string) (new ToolOutputSpill($project, 1_000, 200_000, 2_000))->replace($binary);
+
+    expect($stub)->toStartWith('[tool output: ')
+        ->and($stub)->toContain('of binary data — stored at .tell/blobs/')
+        // The extension does not claim to be text, and no read is suggested.
+        ->and($stub)->toContain('.bin]')
+        ->and($stub)->not->toContain('Continue: read(')
+        ->and($stub)->toContain('the read tool will not open it')
+        // None of the bytes themselves reach the conversation.
+        ->and($stub)->not->toContain("\0")
+        ->and($stub)->not->toContain('IHDR');
+
+    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.bin)/', $stub, $matches);
+    expect(file_get_contents($project.'/'.$matches[1]))->toBe($binary);
+});
+
+it('does not walk a binary result byte by byte looking for a character boundary', function (): void {
+    $project = tellSpillProject('spill-binary-ceiling');
+    $binary = random_bytes(40_000)."\0".random_bytes(40_000);
+    $stub = (string) (new ToolOutputSpill($project, 1_000, 20_000, 2_000))->replace($binary);
+
+    preg_match('/(\.tell\/blobs\/[0-9a-f]+\.bin)/', $stub, $matches);
+    $stored = (string) file_get_contents($project.'/'.$matches[1]);
+
+    // Backing off to a UTF-8 boundary would have eaten the whole prefix.
+    expect(strlen($stored))->toBe(20_000)
+        ->and($stored)->toBe(substr($binary, 0, 20_000))
+        ->and($stub)->toContain('was discarded]');
+});
+
 it('stops at the spill ceiling, on a character boundary, and says so', function (): void {
     $project = tellSpillProject('spill-ceiling');
     $text = str_repeat('zażółć gęślą jaźń ', 2_000);
@@ -187,7 +222,7 @@ it('stops at the spill ceiling, on a character boundary, and says so', function 
 
 it('writes nothing at all when the spill ceiling is zero', function (): void {
     $project = tellSpillProject('spill-off');
-    $policy = new TellExecutionPolicy(maxToolOutputChars: 1_000, maxSpillChars: 0);
+    $policy = new TellExecutionPolicy(maxToolOutputChars: 1_000, maxSpillBytes: 0);
 
     expect($policy->spillsToolOutput())->toBeFalse()
         ->and(ToolOutputSpill::fromPolicy($project, $policy)->replace(tellSpillText(400)))->toBeNull()
@@ -196,7 +231,7 @@ it('writes nothing at all when the spill ceiling is zero', function (): void {
 
 it('spills before the budget hook can truncate the bytes worth keeping', function (): void {
     $project = tellSpillProject('spill-ordering');
-    $policy = new TellExecutionPolicy(maxToolOutputChars: 4_000, maxSpillChars: 1_000_000);
+    $policy = new TellExecutionPolicy(maxToolOutputChars: 4_000, maxSpillBytes: 1_000_000);
     $clock = new class implements CanReadTellClock
     {
         public function nowMs(): int

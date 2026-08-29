@@ -200,11 +200,13 @@ at all. Blobs carry the payload in full. The directory is created `0700` and
 writes its own `.gitignore`, nothing leaves the machine, and the blob is a
 plain file readable by anything with filesystem access. Two new policy keys
 govern it, on the same CLI/branch/project/user/bundled precedence as the rest:
-`maxSpillChars` (default 1,000,000) is the per-result ceiling and the switch -
-`0` restores head/tail truncation - and `maxStubChars` (default 2,000) is what
-a stub may spend on its preview. A stub is emitted whole regardless of
-`maxToolOutputChars`. With spilling on, the shell tool's own capture caps rise
-to the spill ceiling, so a result reaches the hook intact. Evidence:
+`maxSpillBytes` (default 200,000, ceiling 5,000,000) is the per-result limit on
+what reaches the disk and the switch - `0` restores head/tail truncation - and
+`maxStubBytes` (default 2,000) is what reaches the conversation. A stub is
+emitted whole regardless of `maxToolOutputChars`. A result that is not text is
+stored under a `.bin` name with no preview and no read continuation. With
+spilling on, the shell tool's own capture caps rise to the spill ceiling, so a
+result reaches the hook intact. Evidence:
 `tests/Integration/ToolOutputSpillTest.php`.
 
 `TellResult::executionMode()` is the published accessor for the same fact.
@@ -264,7 +266,7 @@ instances, rather than a separately maintained catalogue.
 | Execution traces | Private JSONL derived from normalized events, payloads excluded by default, credentials always redacted, trace failure does not fail the run | `tests/Integration/ExecutionTraceTest.php`, `tests/Unit/TracePayloadTest.php` |
 | One-run protocol | Request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
 | Rendering | Human default plus explicit toon, text, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
-| Spilled tool output | Blobs under the project at `.tell/blobs/`, content-addressed and git-ignored; a stub names the blob, previews its head within `maxStubChars`, and carries a `read` continuation; `maxSpillChars` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
+| Spilled tool output | Blobs under the project at `.tell/blobs/`, content-addressed and git-ignored; a stub names the blob, previews its head within `maxStubBytes`, and carries a `read` continuation unless the result is binary; `maxSpillBytes` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
 | Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 

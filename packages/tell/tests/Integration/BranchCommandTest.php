@@ -287,7 +287,7 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
         ->and(json_decode($show->getDisplay(), true, flags: JSON_THROW_ON_ERROR))->toMatchArray([
             'version' => 1,
             'values' => ['model' => 'deepseek-v4-flash'],
-            'allowedKeys' => ['connection', 'model', 'reasoningEffort', 'output', 'tools', 'maxRetries', 'timeoutMs', 'maxOutputChars', 'maxToolOutputChars', 'maxToolCalls', 'maxSpillChars', 'maxStubChars'],
+            'allowedKeys' => ['connection', 'model', 'reasoningEffort', 'output', 'tools', 'maxRetries', 'timeoutMs', 'maxOutputChars', 'maxToolOutputChars', 'maxToolCalls', 'maxSpillBytes', 'maxStubBytes'],
         ]);
 
     $review = new CommandTester($command);
@@ -309,8 +309,8 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
                 'maxOutputChars' => 200_000,
                 'maxToolOutputChars' => 40_000,
                 'maxToolCalls' => 100,
-                'maxSpillChars' => 1_000_000,
-                'maxStubChars' => 2_000,
+                'maxSpillBytes' => 200_000,
+                'maxStubBytes' => 2_000,
             ],
             'provenance' => [
                 'connection' => 'bundled',
@@ -322,8 +322,8 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
                 'maxOutputChars' => 'bundled',
                 'maxToolOutputChars' => 'bundled',
                 'maxToolCalls' => 'bundled',
-                'maxSpillChars' => 'bundled',
-                'maxStubChars' => 'bundled',
+                'maxSpillBytes' => 'bundled',
+                'maxStubBytes' => 'bundled',
             ],
             'precedence' => ['cli', 'branch', 'project', 'user', 'bundled'],
         ])

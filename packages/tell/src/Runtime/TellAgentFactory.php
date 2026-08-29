@@ -370,7 +370,7 @@ final readonly class TellAgentFactory
      */
     private function bashPolicy(TellExecutionPolicy $policy): BashPolicy
     {
-        $bytes = $policy->spillsToolOutput() ? $policy->maxSpillChars : $policy->maxToolOutputChars;
+        $bytes = $policy->spillsToolOutput() ? $policy->maxSpillBytes : $policy->maxToolOutputChars;
 
         return new BashPolicy(
             maxOutputChars: $bytes,
