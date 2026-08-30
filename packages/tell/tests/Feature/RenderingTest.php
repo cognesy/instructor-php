@@ -7,7 +7,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Console\TellCommand;
 use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Observability\TellEventNormalizer;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 it('selects text, json, and event renderers deterministically', function (string $mode): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('rendered answer')));
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
     $status = $tester->execute(
         ['prompt' => 'hello', '--output' => $mode],
         ['capture_stderr_separately' => true],
@@ -70,7 +70,7 @@ it('keeps quiet output final-only and makes machine tool progress explicit', fun
     ]);
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver($driver));
 
-    $quietApplication = new TellApplication($factory);
+    $quietApplication = new TellConsoleApplication($factory);
     $quietApplication->setAutoExit(false);
     $quiet = new ApplicationTester($quietApplication);
     $quiet->run(
@@ -80,7 +80,7 @@ it('keeps quiet output final-only and makes machine tool progress explicit', fun
     expect(Toon::decode($quiet->getDisplay())['answer'])->toBe('tool answer')
         ->and($quiet->getErrorOutput())->toBe('');
 
-    $debugApplication = new TellApplication($factory);
+    $debugApplication = new TellConsoleApplication($factory);
     $debugApplication->setAutoExit(false);
     $debug = new ApplicationTester($debugApplication);
     $debug->run(
@@ -96,7 +96,7 @@ it('answers a bare invocation as prose, because the default format is for a pers
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(
         new FakeAgentDriver([ScenarioStep::final('plain answer')]),
     ));
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
     $tester = new ApplicationTester($application);
 

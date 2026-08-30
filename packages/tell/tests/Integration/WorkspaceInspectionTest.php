@@ -7,7 +7,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Tell\Command\WorkspaceInspectionCommand;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\ObjectHash;
@@ -33,7 +33,7 @@ it('inspects an empty workspace without inference or persistence writes', functi
     $workspace = tellInspectionWorkspace($factory, $project);
     $before = tellInspectionArenaSnapshot($workspace);
     $homeBefore = tellInspectionDirectorySnapshot($factory->paths()->home);
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -70,7 +70,7 @@ it('lists canonical turns oldest-first with bounded Unicode previews and explici
     $arena = new FilesystemArena(tellInspectionWorkspace($factory, $project));
     [, $first, $second, $longAnswer] = tellInspectionSeedHistory($arena);
     $before = tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project));
-    $command = new WorkspaceInspectionCommand('history', $factory);
+    $command = new WorkspaceInspectionCommand('history', tellTestWorkspaces());
 
     $bounded = new CommandTester($command);
     expect($bounded->execute(['--dir' => $project, '--limit' => '1', '--json' => true]))->toBe(0);
@@ -123,7 +123,7 @@ it('renders verified ordered tool call and result pairs without exposing provide
     $arena->compareAndSwap('main', null, $turn);
     $workspace = tellInspectionWorkspace($factory, $project);
     $before = tellInspectionArenaSnapshot($workspace);
-    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', $factory));
+    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestWorkspaces()));
 
     expect($tester->execute(['--dir' => $project, '--full' => true, '--json' => true]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -163,7 +163,7 @@ it('selects named canonical sessions without exposing their hashed session ref',
     ));
     $arena->compareAndSwap($sessionRef->refName(), null, $root);
     $before = tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project));
-    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', $factory));
+    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestWorkspaces()));
 
     expect($tester->execute(['--dir' => $project, '--session' => 'review-1', '--json' => true]))->toBe(0);
     $display = $tester->getDisplay();
@@ -181,7 +181,7 @@ it('fails atomically for corrupt lineage and malformed limits', function (): voi
     $workspace = tellInspectionWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [$root] = tellInspectionSeedHistory($arena);
-    $command = new WorkspaceInspectionCommand('history', $factory);
+    $command = new WorkspaceInspectionCommand('history', tellTestWorkspaces());
 
     $beforeInvalid = tellInspectionArenaSnapshot($workspace);
     $invalid = new CommandTester($command);
@@ -203,13 +203,13 @@ it('fails atomically for corrupt lineage and malformed limits', function (): voi
 function tellInspectionProject(TellAgentFactory $factory): string {
     $project = tellLastTemporaryRoot() . '/workspace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     return $project;
 }
 
 function tellInspectionWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
     }

@@ -9,7 +9,7 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\Conversation\ConversationReader;
@@ -28,10 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class ClearCommand extends Command implements CanDescribeOperationalPlane
 {
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(private readonly WorkspaceRepository $workspaces) {
         parent::__construct('clear');
     }
 
@@ -127,7 +124,7 @@ HELP)
         if (!is_dir($project)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
-        $workspace = $this->agents->workspace()->discover($project);
+        $workspace = $this->workspaces->discover($project);
         if ($workspace === null) {
             throw new WorkspaceException('Tell clear requires an initialized workspace; run `tell init` first.');
         }

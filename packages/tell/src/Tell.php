@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace Cognesy\Tell;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
+use Cognesy\Tell\Contracts\CanAccessTellConversations;
+use Cognesy\Tell\Contracts\CanDispatchTellTool;
+use Cognesy\Tell\Contracts\CanDisposeTellResources;
+use Cognesy\Tell\Contracts\CanManageTellWorkspace;
+use Cognesy\Tell\Contracts\CanResolveTellPaths;
+use Cognesy\Tell\Contracts\CanRunTell;
 use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellResult;
@@ -22,8 +28,12 @@ final readonly class Tell
 {
     private function __construct(
         private string $directory,
-        private TellAgentFactory $agents,
-        private TellHost $host,
+        private CanRunTell $runner,
+        private CanManageTellWorkspace $workspaces,
+        private CanAccessTellConversations $conversations,
+        private CanResolveTellPaths $paths,
+        private CanDispatchTellTool $toolDispatcher,
+        private CanDisposeTellResources $resources,
         private ?CanProvideCancellationSignal $cancellation,
     ) {}
 
@@ -32,18 +42,28 @@ final readonly class Tell
         ?TellAgentFactory $agents = null,
         ?CanProvideCancellationSignal $cancellation = null,
     ): self {
-        $agents ??= TellAgentFactory::installed();
-        $host = TellHost::standard(
-            directory: $directory,
-            paths: $agents->paths(),
-            agentFactory: $agents,
-            cancellation: $cancellation,
-        )->boot();
+        return StandaloneTellHost::open($directory, $agents, $cancellation);
+    }
 
+    /** @internal Composition roots construct the public facade through this seam. */
+    public static function fromCapabilities(
+        string $directory,
+        CanRunTell $runner,
+        CanManageTellWorkspace $workspaces,
+        CanAccessTellConversations $conversations,
+        CanResolveTellPaths $paths,
+        CanDispatchTellTool $tools,
+        CanDisposeTellResources $resources,
+        ?CanProvideCancellationSignal $cancellation = null,
+    ): self {
         return new self(
             directory: $directory,
-            agents: $agents,
-            host: $host,
+            runner: $runner,
+            workspaces: $workspaces,
+            conversations: $conversations,
+            paths: $paths,
+            toolDispatcher: $tools,
+            resources: $resources,
             cancellation: $cancellation,
         );
     }
@@ -64,7 +84,7 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->host->runner()->run($request);
+        return $this->runner->run($request);
     }
 
     /**
@@ -76,7 +96,7 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->host->runner()->stream($request);
+        return $this->runner->stream($request);
     }
 
     /**
@@ -90,15 +110,14 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->host->runner()->start($request);
+        return $this->runner->start($request);
     }
 
     public function workspace(): TellWorkspace {
         return new TellWorkspace(
-            $this->agents,
             $this->directory,
-            $this->host->workspace(),
-            $this->host->conversations(),
+            $this->workspaces,
+            $this->conversations,
         );
     }
 
@@ -107,20 +126,20 @@ final readonly class Tell
     }
 
     public function catalogue(): TellCatalogue {
-        return new TellCatalogue($this->agents, $this->directory);
+        $resolved = $this->paths->resolve($this->directory);
+
+        return new TellCatalogue(
+            new \Cognesy\Tell\Configuration\TellPaths($resolved->packageAgents, $resolved->home),
+            $this->directory,
+        );
     }
 
     public function tools(): TellTools {
-        return TellTools::controlled($this->host->tools(), $this->cancellation);
-    }
-
-    /** Explicit control surface for inspection and host-owned capabilities. */
-    public function host(): TellHost {
-        return $this->host;
+        return TellTools::controlled($this->toolDispatcher, $this->cancellation);
     }
 
     /** Release host-owned resources. Safe to call more than once. */
     public function dispose(): void {
-        $this->host->dispose();
+        $this->resources->dispose();
     }
 }

@@ -9,7 +9,8 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Tell\Configuration\TellExecutionPolicy;
 use Cognesy\Tell\Console\TellOptions;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Runtime\TellRuntime;
 use InvalidArgumentException;
 use JsonException;
@@ -18,7 +19,8 @@ use JsonException;
 final readonly class TellToolDispatcher
 {
     public function __construct(
-        private TellAgentFactory $agents,
+        private CanBuildTellAgent $agents,
+        private TellRuntime $runtime,
         private ?CanProvideCancellationSignal $cancellation = null,
     ) {}
 
@@ -30,13 +32,13 @@ final readonly class TellToolDispatcher
         if ($this->isCancelled()) {
             return $this->failure($name, 'cancelled', 'Tool invocation was cancelled before execution.');
         }
-        $options = (new TellRuntime($this->agents))->resolveDirectOptions($options);
+        $options = $this->runtime->resolveDirectOptions($options);
         $policy = $options->policy ?? TellExecutionPolicy::defaults();
         if ($policy->maxToolCalls === 0) {
             return $this->failure($name, 'policy_rejected', 'Tool calls are disabled by the effective execution policy.');
         }
 
-        $loop = $this->agents->build($options);
+        $loop = $this->agents->build(TellRequest::fromOptions($options), $this->cancellation);
         if (!$loop->tools()->has($name)) {
             return $this->failure($name, 'tool_unavailable', "Tool '{$name}' is not enabled for this invocation.");
         }

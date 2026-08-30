@@ -6,7 +6,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\ObjectHash;
@@ -31,7 +31,7 @@ it('clears a canonical main ref without inference or immutable object deletion',
     [$root, $head] = tellClearSeedHistory($arena, 'main');
     $objectsBefore = tellClearSnapshot($workspace->paths->objects);
     $homeBefore = tellClearSnapshot($factory->paths()->home);
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -78,7 +78,7 @@ it('clears only the selected named session ref', function (): void {
     $session = SessionId::from('review-1');
     $sessionRef = new SessionRef($session);
     [, $sessionHead] = tellClearSeedHistory($arena, $sessionRef->refName(), $sessionRef);
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -104,7 +104,7 @@ it('fails before mutation for invalid workspace selectors and corrupt canonical 
     $workspace = tellClearWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [$root] = tellClearSeedHistory($arena, 'main');
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
 
     $invalidOutput = new BufferedOutput();
@@ -127,13 +127,13 @@ it('fails before mutation for invalid workspace selectors and corrupt canonical 
 function tellClearProject(TellAgentFactory $factory): string {
     $project = tellLastTemporaryRoot() . '/clear-workspace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     return $project;
 }
 
 function tellClearWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
     }

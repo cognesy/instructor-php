@@ -1,4 +1,10 @@
-# Tell static host
+# Tell standalone composition host
+
+The framework-neutral SDK is composed by
+`Cognesy\Tell\Composition\Standalone\StandaloneTellHost`. All static graph
+machinery is isolated in that namespace. Runtime, workspace, tool, and
+configuration services depend only on focused contracts; they never receive
+the host, its provider registry, a framework container, or PSR-11.
 
 `TellHostBuilder` assembles an immutable pre-boot module graph. Definitions
 advertise interface capabilities, declare mandatory and optional dependencies,
@@ -7,8 +13,8 @@ the declared dependencies in order; module code never receives a container.
 
 The builder supports `with()`, `replace()`, `without()`, and `require()` before
 `boot()`. A booted `TellHost` has named, typed accessors and no generic service
-lookup or mutation methods. Replacement is therefore explicit and auditable,
-and never claims live hot swapping.
+lookup or mutation methods. Replacement is explicit, pre-boot, and host-local;
+Tell does not claim live hot swapping.
 
 Graph admission rejects duplicate module IDs, duplicate singleton providers,
 non-interface advertisements, missing mandatory capabilities, and dependency
@@ -23,12 +29,24 @@ cleanup failures are reported only after the remaining modules were tried.
 capability edges. It never exposes factories, instances, resolved paths,
 configuration payloads, or secrets.
 
-## Standard runtime profile
+## Standard profiles
 
-`StandardTellProfile::runtime($directory)` composes `paths.standard`,
-`secrets.standard`, `model.polyglot`, `clock.system`, `cancellation.memory`,
-`agent.cognesy`, and `execution.default`. The SDK entry is the typed
-`$host->runner()` capability.
+`StandardTellProfile::runtime($directory)` is the headless SDK and worker
+profile. It composes paths, secrets, model selection, clock, cancellation,
+tracing, agent construction, workspace and conversation access, configuration,
+extension discovery, tools, observation, runtime creation, execution, and the
+one-run protocol. It does not construct command or Symfony Console services.
+
+`StandardTellProfile::cli($directory)` extends that headless profile with the
+core command contribution and `application.symfony-console` modules. The
+`Console` namespace is a CLI adapter based on the Symfony Console component; it
+is not a Symfony Framework dependency-injection integration.
+
+`Tell::open()` is the convenience SDK entry point. It delegates once to the
+standalone root and receives explicit runner, workspace, conversation, path,
+tool, and disposal capabilities. `Tell` does not retain the host graph. A
+long-running worker should boot one profile and reuse its factories for many
+isolated executions, then dispose the host when the worker stops.
 
 Tests and applications can replace inference without subclassing Tell or
 bypassing execution policy, tools, events, and persistence:
@@ -49,3 +67,16 @@ provides `CanResolveTellModel`. Replacement is pre-boot and host-local. A model
 is resolved once into the immutable agent definition; loop construction and
 subagent re-entry reuse that definition and factory rather than opening a
 second composition root.
+
+## Future framework hosts
+
+Future Symfony and Laravel integration packages can map their native container
+bindings to the contracts under `Cognesy\Tell\Contracts` and construct the
+facade through `Tell::fromCapabilities()`. They should own their framework
+lifecycle and configuration adapters. Tell core will not expose either
+container, adopt PSR-11 as a service locator, or embed one framework container
+inside another.
+
+`tests/Integration/HostCompositionConformanceTest.php` exercises lifecycle,
+provider replacement, and execution isolation independently of the standalone
+graph implementation so future hosts can run the same contract.

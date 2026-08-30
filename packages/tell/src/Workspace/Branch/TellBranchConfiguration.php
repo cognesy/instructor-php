@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Workspace\Branch;
 
 use Cognesy\Tell\Configuration\TellExecutionPolicy;
+use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Configuration\TellPolicyDefaults;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Discovery\TellProviderCatalogue;
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
 use Cognesy\Tell\Workspace\WorkspaceState as StoredWorkspace;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use InvalidArgumentException;
 
 /**
@@ -23,7 +24,8 @@ use InvalidArgumentException;
 final readonly class TellBranchConfiguration
 {
     public function __construct(
-        private TellAgentFactory $agents,
+        private WorkspaceRepository $workspaces,
+        private TellPaths $paths,
         private string $directory,
         private ?string $branch = null,
     ) {}
@@ -49,7 +51,7 @@ final readonly class TellBranchConfiguration
         $policy = TellExecutionPolicy::resolve(
             branchValues: $store->read($branch)['values'],
             projectDefaults: TellPolicyDefaults::fromFile($workspace->paths->config . '/defaults.json'),
-            userDefaults: TellPolicyDefaults::fromFile($this->agents->paths()->configDirectory . '/execution-defaults.json'),
+            userDefaults: TellPolicyDefaults::fromFile($this->paths->configDirectory . '/execution-defaults.json'),
         );
         foreach ($policy->values() as $key => $value) {
             $effective['values'][$key] = $value;
@@ -87,7 +89,7 @@ final readonly class TellBranchConfiguration
     }
 
     private function workspace(): StoredWorkspace {
-        $workspace = $this->agents->workspace()->discover($this->directory);
+        $workspace = $this->workspaces->discover($this->directory);
         if ($workspace === null) {
             throw new InvalidArgumentException('Tell branch configuration requires an initialized workspace; call workspace()->initialize() first.');
         }
@@ -108,7 +110,7 @@ final readonly class TellBranchConfiguration
             ? $effective['values']['model']
             : '';
         try {
-            $result = (new TellProviderCatalogue($this->agents->paths()))->resolve($workspace->paths->root, $connection, $model);
+            $result = (new TellProviderCatalogue($this->paths))->resolve($workspace->paths->root, $connection, $model);
             $result['connectionSource'] = $effective['provenance']['connection'] ?? 'bundled';
             $result['modelSource'] = $model === ''
                 ? 'preset'

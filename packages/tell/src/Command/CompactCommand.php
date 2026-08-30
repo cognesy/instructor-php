@@ -10,7 +10,10 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Contracts\CanTraceTellExecution;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
@@ -34,10 +37,11 @@ final class CompactCommand extends Command implements CanDescribeOperationalPlan
 {
     private const int MAX_HINT_CHARACTERS = 500;
 
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(
+        private readonly CanBuildTellAgent $agents,
+        private readonly CanTraceTellExecution $tracer,
+        private readonly WorkspaceRepository $workspaces,
+    ) {
         parent::__construct('compact');
     }
 
@@ -85,10 +89,11 @@ HELP)
             if ($branch !== null) {
                 $options = $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
             }
-            $definition = $this->agents->definition($options);
-            $this->agents->assertReady($options);
-            $loop = $this->agents->build($options, $definition);
-            $this->agents->attachExecutionTrace($loop, $options);
+            $request = TellRequest::fromOptions($options);
+            $definition = $this->agents->definition($request);
+            $this->agents->assertReady($request);
+            $loop = $this->agents->build($request, definition: $definition);
+            $this->tracer->attach($loop, $request);
             $result = (new CompactionRunner(
                 arena: $arena,
                 ref: match ($session) {
@@ -175,7 +180,7 @@ HELP)
     }
 
     private function workspace(string $directory): WorkspaceState {
-        $workspace = $this->agents->workspace()->discover($directory);
+        $workspace = $this->workspaces->discover($directory);
         if ($workspace === null) {
             throw new WorkspaceException('Tell compact requires an initialized workspace; run `tell init` first.');
         }

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Composition\Standalone\TellHost;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
 
 $findAutoload = static function (): string {

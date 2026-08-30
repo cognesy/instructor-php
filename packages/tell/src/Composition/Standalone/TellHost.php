@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell\Composition;
+namespace Cognesy\Tell\Composition\Standalone;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
-use Cognesy\Tell\Contracts\CanBuildTellApplication;
+use Cognesy\Tell\Contracts\CanBuildTellConsoleApplication;
 use Cognesy\Tell\Contracts\CanCatalogueTellExtensions;
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\CanContributeTellExtensions;
 use Cognesy\Tell\Contracts\CanContributeTellTools;
 use Cognesy\Tell\Contracts\CanDispatchTellTool;
+use Cognesy\Tell\Contracts\CanCreateTellRuntime;
+use Cognesy\Tell\Contracts\CanDisposeTellResources;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
 use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
@@ -27,10 +29,11 @@ use Cognesy\Tell\Contracts\CanRunTellProtocol;
 use Cognesy\Tell\Data\TellHostDescription;
 use Cognesy\Tell\Runtime\CanReadTellClock;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use LogicException;
 
 /** Booted static capability host with named accessors and explicit ownership. */
-final class TellHost
+final class TellHost implements CanDisposeTellResources
 {
     private bool $disposed = false;
 
@@ -51,23 +54,29 @@ final class TellHost
         ?string $directory = null,
         ?TellPaths $paths = null,
         ?callable $driverFactory = null,
-        ?TellAgentFactory $agentFactory = null,
+        ?CanBuildTellAgent $agentBuilder = null,
         ?CanProvideCancellationSignal $cancellation = null,
+        ?WorkspaceRepository $workspaces = null,
     ): TellHostBuilder {
         $cwd = getcwd();
         $directory ??= is_string($cwd) ? $cwd : '.';
 
-        return TellHostBuilder::fromProfile(StandardTellProfile::runtime(
+        return StandaloneTellHost::cliBuilder(
             $directory,
             $paths,
             $driverFactory,
-            $agentFactory,
+            $agentBuilder,
             $cancellation,
-        ));
+            $workspaces,
+        );
     }
 
     public function runner(): CanRunTell {
         return $this->singleton(CanRunTell::class);
+    }
+
+    public function runtimeFactory(): CanCreateTellRuntime {
+        return $this->singleton(CanCreateTellRuntime::class);
     }
 
     public function agents(): CanBuildTellAgent {
@@ -129,8 +138,8 @@ final class TellHost
         return $this->contributors(CanContributeTellCommands::class);
     }
 
-    public function application(): CanBuildTellApplication {
-        return $this->singleton(CanBuildTellApplication::class);
+    public function application(): CanBuildTellConsoleApplication {
+        return $this->singleton(CanBuildTellConsoleApplication::class);
     }
 
     public function protocol(): CanRunTellProtocol {
@@ -151,6 +160,7 @@ final class TellHost
         return $this->description;
     }
 
+    #[\Override]
     public function dispose(): void {
         if ($this->disposed) {
             return;

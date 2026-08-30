@@ -10,7 +10,7 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Session\SessionCatalog;
 use Cognesy\Tell\Workspace\Session\SessionRef;
@@ -25,10 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class SessionsCommand extends Command implements CanDescribeOperationalPlane
 {
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(private readonly WorkspaceRepository $workspaces) {
         parent::__construct('sessions');
     }
 
@@ -185,6 +182,6 @@ HELP)
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
 
-        return $this->agents->workspace()->discover($project);
+        return $this->workspaces->discover($project);
     }
 }

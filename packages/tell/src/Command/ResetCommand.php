@@ -8,7 +8,7 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\ObjectHash;
 use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
@@ -27,7 +27,7 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
     private const int MAX_STEPS = 1_000;
     private const int MAX_LINEAGE_DEPTH = 1_000;
 
-    public function __construct(private readonly TellAgentFactory $agents) {
+    public function __construct(private readonly WorkspaceRepository $workspaces) {
         parent::__construct('reset');
     }
 
@@ -54,7 +54,7 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
             $directory = (string) $input->getOption('dir');
             $cwd = getcwd();
             $directory = $directory !== '' ? $directory : (is_string($cwd) ? $cwd : '.');
-            $workspace = $this->agents->workspace()->discover($directory);
+            $workspace = $this->workspaces->discover($directory);
             if ($workspace === null) {
                 throw new WorkspaceException('Tell reset requires an initialized workspace; run `tell init` first.');
             }

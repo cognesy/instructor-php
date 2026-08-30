@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell\Composition;
+namespace Cognesy\Tell\Composition\Standalone;
 
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Traversable;
 
-/** Ordered providers for one declared contribution capability. */
+/**
+ * Ordered providers for one declared contribution capability.
+ *
+ * @implements IteratorAggregate<int, object>
+ */
 final readonly class TellCapabilityProviders implements Countable, IteratorAggregate
 {
     /** @var list<object> */
@@ -25,11 +29,13 @@ final readonly class TellCapabilityProviders implements Countable, IteratorAggre
         return $this->providers;
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->providers);
     }
 
     /** @return Traversable<int, object> */
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->providers);
     }

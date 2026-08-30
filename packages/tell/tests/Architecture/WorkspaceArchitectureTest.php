@@ -33,6 +33,7 @@ it('keeps the workspace root limited to lifecycle state and top-level handles', 
     sort($files, SORT_STRING);
 
     expect($files)->toBe([
+        'FilesystemWorkspaceProvider.php',
         'InMemoryWorkspaceModule.php',
         'TellConversation.php',
         'TellRef.php',

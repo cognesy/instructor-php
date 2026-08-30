@@ -9,5 +9,6 @@ use Cognesy\Tell\Data\TellShellJobEvent;
 
 final readonly class NullTellShellJobObserver implements CanObserveTellShellJobs
 {
+    #[\Override]
     public function observe(TellShellJobEvent $event): void {}
 }

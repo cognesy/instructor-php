@@ -21,7 +21,7 @@ it('cooperatively cancels a durable execution before inference and does not publ
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/cancelled-workspace';
     mkdir($project, 0700, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
     $events = [];
     $normalizer = new TellEventNormalizer(branch: 'main');
     $loop = $factory->build(new TellOptions(prompt: 'Do not infer', directory: $project), cancellation: $source);

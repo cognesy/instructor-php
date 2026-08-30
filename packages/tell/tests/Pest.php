@@ -3,11 +3,23 @@
 declare(strict_types=1);
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Tell\Configuration\TellCredentialStore;
 use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
+use Cognesy\Tell\Console\TellConsoleApplication;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Contracts\CanCreateTellRuntime;
+use Cognesy\Tell\Contracts\CanDispatchTellTool;
 use Cognesy\Tell\Discovery\StartupScanCounter;
+use Cognesy\Tell\Runtime\StandardTellAgentBuilder;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Runtime\TellRuntime;
+use Cognesy\Tell\Observability\StandardTellExecutionTracer;
+use Cognesy\Tell\Tool\StandardTellToolDispatcher;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 
 /** @var list<string> $tellTemporaryRoots */
 $tellTemporaryRoots = [];
@@ -61,12 +73,86 @@ MD);
 
     return new TellAgentFactory(
         paths: $paths,
+        tracer: new StandardTellExecutionTracer($paths),
         decorateLoop: $decorate,
         driver: $driver,
         startupScans: $startupScans,
         composerVendorDir: $composerVendorDir,
         rootComposerPath: $rootComposerPath,
     );
+}
+
+function tellTestAgents(TellAgentFactory $factory): CanBuildTellAgent {
+    return new StandardTellAgentBuilder($factory);
+}
+
+function tellTestWorkspaces(): WorkspaceRepository {
+    return new WorkspaceRepository();
+}
+
+function tellTestCredentials(TellAgentFactory $factory): TellCredentialStore {
+    return new TellCredentialStore($factory->paths());
+}
+
+function tellTestTracer(TellAgentFactory $factory): StandardTellExecutionTracer {
+    return new StandardTellExecutionTracer($factory->paths());
+}
+
+function tellTestRuntime(
+    TellAgentFactory $factory,
+    ?CanProvideCancellationSignal $cancellation = null,
+    ?WorkspaceRepository $workspaces = null,
+): TellRuntime {
+    return new TellRuntime(
+        agents: tellTestAgents($factory),
+        workspaces: $workspaces ?? tellTestWorkspaces(),
+        paths: $factory->paths(),
+        tracer: tellTestTracer($factory),
+        cancellation: $cancellation,
+    );
+}
+
+function tellTestRuntimeFactory(TellAgentFactory $factory): CanCreateTellRuntime {
+    return new readonly class($factory) implements CanCreateTellRuntime {
+        public function __construct(private TellAgentFactory $factory) {}
+
+        public function create(?CanProvideCancellationSignal $cancellation = null): TellRuntime {
+            return tellTestRuntime($this->factory, $cancellation);
+        }
+    };
+}
+
+function tellTestCommand(TellAgentFactory $factory): TellCommand {
+    return new TellCommand(
+        tellTestRuntimeFactory($factory),
+        tellTestAgents($factory),
+        tellTestWorkspaces(),
+        $factory->paths(),
+    );
+}
+
+function tellTestToolDispatcher(TellAgentFactory $factory): CanDispatchTellTool {
+    $agents = tellTestAgents($factory);
+
+    return new StandardTellToolDispatcher(
+        $agents,
+        tellTestRuntime($factory),
+        '.',
+    );
+}
+
+function tellTestApplication(
+    TellAgentFactory $factory,
+    ?WorkspaceRepository $workspaces = null,
+): TellConsoleApplication {
+    $cwd = getcwd();
+
+    return TellConsoleApplication::fromHost(StandaloneTellHost::cli(
+        directory: is_string($cwd) ? $cwd : '.',
+        paths: $factory->paths(),
+        agentBuilder: tellTestAgents($factory),
+        workspaces: $workspaces,
+    ));
 }
 
 function tellLastTemporaryRoot(): string {

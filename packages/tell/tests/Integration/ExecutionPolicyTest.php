@@ -68,8 +68,8 @@ it('loads project and user policy defaults into effective branch configuration',
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/policy-defaults';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
-    $workspace = $factory->workspace()->discover($project) ?? throw new RuntimeException('workspace missing');
+    tellTestWorkspaces()->initialize($project);
+    $workspace = tellTestWorkspaces()->discover($project) ?? throw new RuntimeException('workspace missing');
     if (!is_dir($factory->paths()->configDirectory)) {
         mkdir($factory->paths()->configDirectory, 0700, true);
     }
@@ -86,7 +86,7 @@ it('loads project and user policy defaults into effective branch configuration',
     ], JSON_THROW_ON_ERROR));
     (new BranchConfigStore($workspace))->set('main', 'maxToolCalls', 7, 0);
 
-    $tester = new CommandTester(new ConfigCommand($factory));
+    $tester = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
     expect($tester->execute(['action' => 'effective', '--dir' => $project, '--json' => true]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -168,12 +168,12 @@ it('does not publish a durable turn when the total model-output budget is exceed
     ));
     $project = tellLastTemporaryRoot() . '/policy-workspace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     expect(fn () => Tell::open($project, $factory)->run(
         TellRequest::prompt('Answer briefly')->durable()->maxOutputChars(8),
     ))->toThrow(TurnException::class);
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
 
     expect((new FilesystemArena($workspace ?? throw new RuntimeException('workspace missing')))->readRef('main')->head)->toBeNull();
 });

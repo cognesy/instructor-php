@@ -13,7 +13,8 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Data\TellRequest;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,10 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class DescribeCommand extends Command implements CanDescribeOperationalPlane
 {
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(private readonly CanBuildTellAgent $agents) {
         parent::__construct('describe');
     }
 
@@ -49,8 +47,9 @@ HELP)
     #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $options = $this->options($input);
-        $definition = $this->agents->definition($options);
-        $loop = $this->agents->build($options, $definition);
+        $request = TellRequest::fromOptions($options);
+        $definition = $this->agents->definition($request);
+        $loop = $this->agents->build($request, definition: $definition);
         $description = $loop->describe()->toArray();
         if ((bool) $input->getOption('prompt')) {
             $description['systemPrompt'] = $this->systemPrompt($loop, $definition);

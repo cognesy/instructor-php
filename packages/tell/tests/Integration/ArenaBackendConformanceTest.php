@@ -18,7 +18,7 @@ use Cognesy\Tell\Workspace\Arena\Record\TextPart;
 dataset('arenaBackends', [
     'filesystem' => [static function (): CanUseArena {
         $project = tellTestProject();
-        $workspace = tellTestFactory()->workspace()->initialize($project)->workspace;
+        $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
         return new FilesystemArena($workspace);
     }],

@@ -26,10 +26,12 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         private ?string $id = null,
     ) {}
 
+    #[\Override]
     public function identify(string $id): void {
         $this->id = $id;
     }
 
+    #[\Override]
     public function progress(TellProgress $progress): void {
         $this->write('progress', [
             'progress' => [
@@ -41,6 +43,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         ]);
     }
 
+    #[\Override]
     public function success(TellResult $result): void {
         $answer = self::boundedAnswer($result->text());
         $this->write('result', [
@@ -61,6 +64,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         ], terminal: true);
     }
 
+    #[\Override]
     public function error(
         string $code,
         string $message,
@@ -83,6 +87,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         $this->write('error', ['error' => $payload], terminal: true);
     }
 
+    #[\Override]
     public function cancelled(TellResult $result): void {
         $this->write('cancelled', [
             'cancellation' => [
@@ -96,6 +101,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         ], terminal: true);
     }
 
+    #[\Override]
     public function hasTerminalFrame(): bool {
         return $this->terminal;
     }

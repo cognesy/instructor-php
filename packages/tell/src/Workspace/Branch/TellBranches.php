@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Workspace\Branch;
 
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\HistoryCompiler;
 use Cognesy\Tell\Workspace\Arena\ObjectHash;
@@ -16,6 +15,7 @@ use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchStore;
 use Cognesy\Tell\Workspace\WorkspaceState as StoredWorkspace;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use InvalidArgumentException;
 
 /**
@@ -30,7 +30,7 @@ final readonly class TellBranches
     private const int MAX_LINEAGE_DEPTH = 1_000;
 
     public function __construct(
-        private TellAgentFactory $agents,
+        private WorkspaceRepository $workspaces,
         private string $directory,
     ) {}
 
@@ -140,7 +140,7 @@ final readonly class TellBranches
     }
 
     private function workspace(): StoredWorkspace {
-        $workspace = $this->agents->workspace()->discover($this->directory);
+        $workspace = $this->workspaces->discover($this->directory);
         if ($workspace === null) {
             throw new InvalidArgumentException('Tell branch controls require an initialized workspace; call workspace()->initialize() first.');
         }

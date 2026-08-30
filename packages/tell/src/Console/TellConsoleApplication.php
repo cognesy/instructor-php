@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Console;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\TellHost;
 use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Runtime\StandardTellAgentBuilder;
 use Composer\InstalledVersions;
 use InvalidArgumentException;
 use Symfony\Component\Console\Application;
@@ -21,7 +23,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-final class TellApplication extends Application
+final class TellConsoleApplication extends Application
 {
     private const string PACKAGE_NAME = 'cognesy/instructor-tell';
 
@@ -35,10 +37,23 @@ final class TellApplication extends Application
         parent::__construct('Instructor Tell', self::packageVersion());
         $this->setDefaultCommand('tell');
 
-        $descriptors ??= (new CoreTellCommandContributor(
-            $agents ?? TellAgentFactory::installed(),
-            $agentCancellation,
-        ))->commands();
+        if ($descriptors === null) {
+            $cwd = getcwd();
+            $directory = is_string($cwd) ? $cwd : '.';
+            $host = match ($agents) {
+                null => StandaloneTellHost::cli(
+                    directory: $directory,
+                    cancellation: $agentCancellation,
+                ),
+                default => StandaloneTellHost::cli(
+                    directory: $directory,
+                    paths: $agents->paths(),
+                    agentBuilder: new StandardTellAgentBuilder($agents),
+                    cancellation: $agentCancellation,
+                ),
+            };
+            $descriptors = self::descriptors($host);
+        }
         $commands = array_map(static function ($descriptor): Command {
             $command = $descriptor->create();
             if (!$command instanceof Command) {
@@ -59,12 +74,16 @@ final class TellApplication extends Application
     }
 
     public static function fromHost(TellHost $host): self {
+        return self::fromDescriptors(self::descriptors($host));
+    }
+
+    private static function descriptors(TellHost $host): TellCommandDescriptors {
         $descriptors = [];
         foreach ($host->commandContributors() as $contributor) {
             array_push($descriptors, ...$contributor->commands()->all());
         }
 
-        return self::fromDescriptors(new TellCommandDescriptors(...$descriptors));
+        return new TellCommandDescriptors(...$descriptors);
     }
 
     /** @param list<string>|null $argv */

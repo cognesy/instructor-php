@@ -9,7 +9,7 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\Conversation\ConversationInspection;
@@ -32,16 +32,13 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
     private const int DEFAULT_HISTORY_LIMIT = 20;
     private const int MAX_HISTORY_LIMIT = 100;
 
-    private readonly TellAgentFactory $agents;
-
     public function __construct(
         private readonly string $view,
-        ?TellAgentFactory $agents = null,
+        private readonly WorkspaceRepository $workspaces,
     ) {
         if (!in_array($view, ['history', 'transcript'], true)) {
             throw new LogicException('Tell workspace inspection view is invalid.');
         }
-        $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct($view);
     }
 
@@ -166,7 +163,7 @@ HELP,
         if (!is_dir($project)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
-        $workspace = $this->agents->workspace()->discover($project);
+        $workspace = $this->workspaces->discover($project);
         if ($workspace === null) {
             throw new WorkspaceException("Tell {$this->view} requires an initialized workspace; run `tell init` first.");
         }

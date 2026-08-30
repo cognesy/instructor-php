@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('initializes a workspace through the public command in TOON and JSON', function (): void {
     $root = tellWorkspaceCommandDirectory('init');
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
 
     $toonOutput = new BufferedOutput();
@@ -41,7 +41,7 @@ it('reports the discovered durable workspace from a nested stateless home view',
     $root = tellWorkspaceCommandDirectory('discover');
     $nested = $root . '/deep/path';
     mkdir($nested, 0700, true);
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $initOutput = new BufferedOutput();
     $application->runArgv(['tell', 'init', $root], $initOutput);
@@ -61,7 +61,7 @@ it('reports the discovered durable workspace from a nested stateless home view',
 
 it('keeps a bare stateless invocation outside a workspace read-only and actionable', function (): void {
     $root = tellWorkspaceCommandDirectory('outside');
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $before = scandir($root);
 
@@ -78,7 +78,7 @@ it('keeps a bare stateless invocation outside a workspace read-only and actionab
 it('keeps init failures structured and non-mutating in JSON mode', function (): void {
     $root = tellWorkspaceCommandDirectory('invalid');
     file_put_contents($root . '/.tell', 'not a directory');
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $before = scandir($root);
 
@@ -92,7 +92,7 @@ it('keeps init failures structured and non-mutating in JSON mode', function (): 
 });
 
 it('keeps invalid init paths actionable in JSON mode', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $missing = sys_get_temp_dir() . '/instructor-tell-missing-' . bin2hex(random_bytes(6));
 

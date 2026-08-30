@@ -20,6 +20,7 @@ final readonly class StandardTellConfigurationResolver implements CanResolveTell
         private array $hostSettings = [],
     ) {}
 
+    #[\Override]
     public function resolve(TellRequest $request): TellEffectiveConfiguration {
         $paths = $this->paths->resolve($request->directory);
         $branch = $request->session === null ? $this->branches?->read($request->directory, $request->branch) : null;

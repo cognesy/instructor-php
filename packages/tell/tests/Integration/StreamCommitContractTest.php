@@ -26,13 +26,13 @@ use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 function commitProject(TellAgentFactory $factory): string {
     $project = tellLastTemporaryRoot() . '/workspace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     return $project;
 }
 
 function commitArenaHead(TellAgentFactory $factory, string $project): ?string {
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
     if ($workspace === null) {
         return null;
     }
@@ -62,7 +62,7 @@ it('publishes before the caller can observe the final checkpoint', function (): 
     ));
     $project = commitProject($factory);
 
-    $stream = (new TellRuntime($factory))->stream(commitDurableRequest('committed turn', $project));
+    $stream = (tellTestRuntime($factory))->stream(commitDurableRequest('committed turn', $project));
 
     // Stop exactly where a `foreach (... as $p) { if ($p->isCompleted()) break; }`
     // consumer stops: on the last checkpoint, without the advance past it.
@@ -85,7 +85,7 @@ it('still publishes exactly once when the stream is fully drained', function ():
     ));
     $project = commitProject($factory);
 
-    $run = (new TellRuntime($factory))->start(commitDurableRequest('drained turn', $project));
+    $run = (tellTestRuntime($factory))->start(commitDurableRequest('drained turn', $project));
     $checkpoints = 0;
     foreach ($run->checkpoints() as $_) {
         $checkpoints++;
@@ -104,7 +104,7 @@ it('hands an early-break consumer a result instead of an exception', function ()
     ));
     $project = commitProject($factory);
 
-    $run = (new TellRuntime($factory))->start(commitDurableRequest('early turn', $project));
+    $run = (tellTestRuntime($factory))->start(commitDurableRequest('early turn', $project));
     foreach ($run->checkpoints() as $progress) {
         if ($progress->isCompleted()) {
             break; // never advances past the final checkpoint
@@ -120,7 +120,7 @@ it('reports a run torn down before it commits', function (): void {
     $factory = commitSteppingFactory(toolSteps: 3);
     $project = commitProject($factory);
 
-    $run = (new TellRuntime($factory))->start(commitDurableRequest('abandoned turn', $project));
+    $run = (tellTestRuntime($factory))->start(commitDurableRequest('abandoned turn', $project));
     $checkpoints = $run->checkpoints();
     $checkpoints->current();
 
@@ -140,7 +140,7 @@ it('does not let a teardown failure escape the abandoning statement', function (
     $factory = commitSteppingFactory(toolSteps: 3);
     $project = commitProject($factory);
 
-    $run = (new TellRuntime($factory))->start(commitDurableRequest('teardown turn', $project));
+    $run = (tellTestRuntime($factory))->start(commitDurableRequest('teardown turn', $project));
     $checkpoints = $run->checkpoints();
     $checkpoints->current();
 

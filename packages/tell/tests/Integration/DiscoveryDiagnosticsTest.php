@@ -34,7 +34,7 @@ it('renders malformed extension discovery in structured CLI output', function ()
         driver: FakeAgentDriver::fromResponses('cli diagnostic result'),
         composerVendorDir: tellMalformedComposerVendor(),
     );
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute([
         'prompt' => 'diagnose extensions',

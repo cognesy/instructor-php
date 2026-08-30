@@ -18,7 +18,7 @@ function tellProgressProject(): string {
 }
 
 function tellProgressTester(ScenarioStep ...$steps): CommandTester {
-    return new CommandTester(new TellCommand(tellTestFactory(
+    return new CommandTester(tellTestCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromSteps(...$steps)),
     )));
 }

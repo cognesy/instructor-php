@@ -11,6 +11,7 @@ final readonly class StandardTellPathResolver implements CanResolveTellPaths
 {
     public function __construct(private TellPaths $paths) {}
 
+    #[\Override]
     public function resolve(string $directory): TellResolvedPaths {
         $project = rtrim($directory, '/\\');
 

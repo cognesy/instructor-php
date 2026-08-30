@@ -14,16 +14,17 @@ exposes:
 
 Tell adds boundary values only for effective configuration and provenance,
 resolved paths, normalized source-free event envelopes, extension discovery,
-and framework-neutral command descriptors. Contracts do not import Cordis,
-Symfony Console, filesystem workspace implementations, provider drivers, or
-private Agents implementation types.
+and framework-neutral command descriptors. Contracts do not import any
+container, Symfony Console, filesystem workspace implementations, provider
+drivers, or private Agents implementation types.
 
 ## Cardinality
 
 `TellCapabilityContracts::cardinalities()` is the executable source of truth.
-Execution, agent construction, model, secrets, workspace, conversations,
-configuration, paths, discovery, dispatch, observation, application assembly,
-protocol, cancellation, and clock capabilities are singletons. Branch
+Execution, runtime construction, agent construction, model, secrets, workspace,
+conversations, configuration, paths, discovery, dispatch, observation, tracing,
+console application assembly, protocol, cancellation, and clock capabilities
+are singletons. Branch
 configuration is an optional singleton. Extension, tool, and command
 contributions are ordered aggregators.
 
@@ -38,3 +39,16 @@ It does not know Symfony, but the standard CLI module validates that each
 factory creates a Symfony command. `CanRunTellProtocol` receives a decoded,
 bounded protocol request and a framework-neutral frame writer; stdin, stdout,
 and Symfony remain in the shell adapter.
+
+## Construction and lifecycle
+
+`CanCreateTellRuntime` is the per-execution construction seam. Runners,
+protocols, tools, and commands receive that contract rather than reaching
+through `TellAgentFactory` or booting another host. `CanDisposeTellResources`
+lets a composition root transfer deterministic cleanup ownership to the public
+facade without exposing its graph type.
+
+`CanBuildTellConsoleApplication` and `CanRunTellConsoleApplication` describe the
+CLI edge without putting Symfony types in the contract layer. Their standard
+implementations are explicitly named `SymfonyConsoleApplicationBuilder` and
+`SymfonyConsoleApplicationRunner`.

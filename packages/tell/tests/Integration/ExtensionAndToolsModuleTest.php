@@ -5,8 +5,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\StandardTellProfile;
-use Cognesy\Tell\Composition\TellHostBuilder;
+use Cognesy\Tell\Composition\Standalone\StandardTellProfile;
+use Cognesy\Tell\Composition\Standalone\TellHostBuilder;
 use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Discovery\ComposerTellExtensionCatalogue;
 

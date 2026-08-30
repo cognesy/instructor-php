@@ -8,19 +8,21 @@ use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
 use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Contracts\CanDispatchTellTool;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Data\TellToolResult;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Runtime\TellRuntime;
 use LogicException;
 
 /** Direct, model-free tool calls resolved from the same Tell configuration as agent work. */
 final readonly class TellTools
 {
     public function __construct(
-        private ?TellAgentFactory $agents,
+        private ?CanBuildTellAgent $agents,
         private string $directory,
         private ?CanProvideCancellationSignal $cancellation = null,
         private ?CanDispatchTellTool $dispatcher = null,
+        private ?TellRuntime $runtime = null,
     ) {}
 
     public static function controlled(
@@ -37,7 +39,10 @@ final readonly class TellTools
         if ($this->agents === null) {
             throw new LogicException('Tell tools require an agent factory or controlled dispatcher.');
         }
-        $result = (new TellToolDispatcher($this->agents, $this->cancellation))->dispatch(
+        if ($this->runtime === null) {
+            throw new LogicException('Direct Tell tools require an explicitly composed runtime.');
+        }
+        $result = (new TellToolDispatcher($this->agents, $this->runtime, $this->cancellation))->dispatch(
             new TellOptions(
                 prompt: 'Direct tool invocation.',
                 agent: $request->agent,
@@ -45,13 +50,14 @@ final readonly class TellTools
                 model: $request->model,
                 dsn: $request->dsn,
                 branch: $request->branch,
-                directory: $this->directory,
+                directory: $request->directory !== '' ? $request->directory : $this->directory,
                 tools: array_values($request->tools),
                 answers: new TellAnswerQueue(),
                 maxSteps: $request->maxSteps,
                 connectionExplicit: $request->connectionExplicit,
                 modelExplicit: $request->modelExplicit,
                 toolsExplicit: $request->toolsExplicit,
+                policyOverrides: $request->policyOverrides,
                 policy: $request->policy,
             ),
             $request->name,

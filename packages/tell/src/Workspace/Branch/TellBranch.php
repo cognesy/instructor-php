@@ -7,7 +7,7 @@ namespace Cognesy\Tell\Workspace\Branch;
 use Cognesy\Tell\Data\TellContext;
 use Cognesy\Tell\Data\TellConversationView;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Conversation\ContextInspector;
 use Cognesy\Tell\Workspace\Conversation\ConversationInspection;
@@ -15,6 +15,7 @@ use Cognesy\Tell\Workspace\Conversation\ConversationReader;
 use Cognesy\Tell\Workspace\TellRef;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use Cognesy\Tell\Workspace\WorkspaceState as StoredWorkspace;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use InvalidArgumentException;
 
 /** Read-only handle to one named Tell branch, independent of current checkout. */
@@ -23,7 +24,8 @@ final readonly class TellBranch
     public string $name;
 
     public function __construct(
-        private TellAgentFactory $agents,
+        private CanBuildTellAgent $agents,
+        private WorkspaceRepository $workspaces,
         private string $directory,
         string $name,
     ) {
@@ -32,7 +34,7 @@ final readonly class TellBranch
     }
 
     public function info(): TellBranchInfo {
-        return (new TellBranches($this->agents, $this->directory))->show($this->name);
+        return (new TellBranches($this->workspaces, $this->directory))->show($this->name);
     }
 
     public function history(int $limit = 20, bool $full = false): TellConversationView {
@@ -63,7 +65,7 @@ final readonly class TellBranch
     public function context(?TellRequest $request = null): TellContext {
         $request ??= TellRequest::prompt('Inspect Tell branch context.');
         $request = $request->directory === '' ? $request->withDirectory($this->directory) : $request;
-        $definition = $this->agents->definition($request->toOptions());
+        $definition = $this->agents->definition($request);
 
         return new TellContext((new ContextInspector())->inspect(
             conversation: $this->inspection(),
@@ -79,7 +81,7 @@ final readonly class TellBranch
             throw new WorkspaceException("Tell branch '{$this->name}' is empty and cannot be pinned.");
         }
 
-        return new TellRef($this->agents, $this->directory, $head->toString());
+        return new TellRef($this->agents, $this->workspaces, $this->directory, $head->toString());
     }
 
     /** Pin this branch's immutable conversation root. */
@@ -89,7 +91,7 @@ final readonly class TellBranch
             throw new WorkspaceException("Tell branch '{$this->name}' is empty and has no conversation root.");
         }
 
-        return new TellRef($this->agents, $this->directory, $root->toString());
+        return new TellRef($this->agents, $this->workspaces, $this->directory, $root->toString());
     }
 
     private function inspection(): ConversationInspection {
@@ -101,7 +103,7 @@ final readonly class TellBranch
     }
 
     private function workspace(): StoredWorkspace {
-        $workspace = $this->agents->workspace()->discover($this->directory);
+        $workspace = $this->workspaces->discover($this->directory);
         if ($workspace === null) {
             throw new WorkspaceException('Tell branch inspection requires an initialized workspace. Call workspace()->initialize() first.');
         }

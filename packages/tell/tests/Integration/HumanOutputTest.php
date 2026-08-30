@@ -31,7 +31,7 @@ function tellHumanProject(): string {
 }
 
 function tellHumanTester(): CommandTester {
-    return new CommandTester(new TellCommand(tellTestFactory(
+    return new CommandTester(tellTestCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
             new RecordingDriver(new RequestRecorder(), TELL_HUMAN_ANSWER),
         ),
@@ -71,7 +71,7 @@ it('leaves the answer as plain markdown when stdout is not a terminal', function
 });
 
 it('does not let console markup in an answer reach the formatter', function (): void {
-    $tester = new CommandTester(new TellCommand(tellTestFactory(
+    $tester = new CommandTester(tellTestCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
             new RecordingDriver(new RequestRecorder(), 'Use <error> and <T> as generic parameters.'),
         ),
@@ -100,9 +100,9 @@ it('uses the branch-configured output format when the invocation does not choose
         new RecordingDriver(new RequestRecorder(), TELL_HUMAN_ANSWER),
     ));
     $project = tellHumanProject();
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory));
+    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
     expect($config->execute([
         'action' => 'set',
         'key' => 'output',
@@ -112,7 +112,7 @@ it('uses the branch-configured output format when the invocation does not choose
         '--json' => true,
     ]))->toBe(0);
 
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
     expect($tester->execute(
         ['prompt' => 'explain', '--dir' => $project],
         ['decorated' => true],
@@ -128,15 +128,15 @@ it('lets an explicit --output win over the branch-configured format', function (
         new RecordingDriver(new RequestRecorder(), 'plain answer'),
     ));
     $project = tellHumanProject();
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory));
+    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
     $config->execute([
         'action' => 'set', 'key' => 'output', 'value' => '"human"',
         '--dir' => $project, '--if-version' => '0', '--json' => true,
     ]);
 
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
     expect($tester->execute(
         ['prompt' => 'explain', '--dir' => $project, '--output' => 'json'],
         ['decorated' => true],
@@ -149,9 +149,9 @@ it('lets an explicit --output win over the branch-configured format', function (
 it('rejects an unsupported output format at the config boundary', function (): void {
     $factory = tellTestFactory();
     $project = tellHumanProject();
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory));
+    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
     $config->execute([
         'action' => 'set', 'key' => 'output', 'value' => '"markdown"',
         '--dir' => $project, '--if-version' => '0', '--json' => true,
@@ -163,9 +163,9 @@ it('rejects an unsupported output format at the config boundary', function (): v
 it('reports output among the effective branch settings', function (): void {
     $factory = tellTestFactory();
     $project = tellHumanProject();
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory));
+    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
     expect($config->execute([
         'action' => 'effective', '--dir' => $project, '--json' => true,
     ]))->toBe(0);

@@ -12,8 +12,9 @@ use Cognesy\Tell\Data\TellConversationView;
 use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellResult;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Contracts\CanRunTell;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Contracts\CanTraceTellExecution;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Compaction\CompactionRunner;
 use Cognesy\Tell\Workspace\Conversation\ContextInspector;
@@ -29,19 +30,21 @@ final readonly class TellConversation
     private const int MAX_HINT_CHARACTERS = 500;
 
     public function __construct(
-        private Tell $tell,
-        private TellAgentFactory $agents,
+        private CanRunTell $runner,
+        private CanBuildTellAgent $agents,
+        private CanTraceTellExecution $tracer,
+        private WorkspaceRepository $workspaces,
         private string $directory,
         private ?string $name = null,
     ) {}
 
     public function send(TellRequest $request): TellResult {
-        return $this->tell->run($request->conversation($this->name)->durable());
+        return $this->runner->run($this->inDirectory($request)->conversation($this->name)->durable());
     }
 
     /** @return Generator<int, TellProgress, mixed, TellResult> */
     public function sendStream(TellRequest $request): Generator {
-        return $this->tell->runStream($request->conversation($this->name)->durable());
+        return $this->runner->stream($this->inDirectory($request)->conversation($this->name)->durable());
     }
 
     public function history(int $limit = 20, bool $full = false): TellConversationView {
@@ -74,7 +77,7 @@ final readonly class TellConversation
     public function context(?TellRequest $request = null): TellContext {
         $request ??= TellRequest::prompt('Inspect Tell context.');
         $request = $this->inDirectory($request);
-        $definition = $this->agents->definition($request->toOptions());
+        $definition = $this->agents->definition($request);
 
         return new TellContext((new ContextInspector())->inspect(
             conversation: $this->inspection(),
@@ -103,11 +106,10 @@ final readonly class TellConversation
             throw new InvalidArgumentException('Tell compact hint must be at most ' . self::MAX_HINT_CHARACTERS . ' characters.');
         }
         $request = $this->inDirectory($request);
-        $options = $request->toOptions();
-        $definition = $this->agents->definition($options);
-        $this->agents->assertReady($options);
-        $loop = $this->agents->build($options, $definition);
-        $this->agents->attachExecutionTrace($loop, $options);
+        $definition = $this->agents->definition($request);
+        $this->agents->assertReady($request);
+        $loop = $this->agents->build($request, definition: $definition);
+        $this->tracer->attach($loop, $request);
         $result = (new CompactionRunner(
             arena: new FilesystemArena($this->workspace()),
             ref: $this->refName(),
@@ -121,7 +123,7 @@ final readonly class TellConversation
     }
 
     private function workspace(): WorkspaceState {
-        $workspace = $this->agents->workspace()->discover($this->directory);
+        $workspace = $this->workspaces->discover($this->directory);
         if ($workspace === null) {
             throw new WorkspaceException('Tell workspace controls require an initialized workspace. Call workspace()->initialize() first.');
         }

@@ -5,13 +5,17 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Discovery\StartupScanCounter;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('keeps bare discovery within its semantic scan budget', function (): void {
     $scans = new StartupScanCounter();
-    $application = new TellApplication(tellTestFactory(startupScans: $scans));
+    $application = tellTestApplication(
+        tellTestFactory(startupScans: $scans),
+        new WorkspaceRepository($scans),
+    );
     $application->setAutoExit(false);
 
     $status = $application->runArgv(
@@ -29,7 +33,10 @@ it('keeps bare discovery within its semantic scan budget', function (): void {
 
 it('keeps agent listing within its semantic scan budget', function (): void {
     $scans = new StartupScanCounter();
-    $application = new TellApplication(tellTestFactory(startupScans: $scans));
+    $application = tellTestApplication(
+        tellTestFactory(startupScans: $scans),
+        new WorkspaceRepository($scans),
+    );
     $application->setAutoExit(false);
 
     $status = $application->runArgv(
@@ -51,7 +58,7 @@ it('reads the workspace once more when the invocation leaves the output format o
         decorate: static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('baseline answer')),
         startupScans: $scans,
     );
-    $application = new TellApplication($factory);
+    $application = tellTestApplication($factory, new WorkspaceRepository($scans));
     $application->setAutoExit(false);
 
     // Without --output the renderer cannot be chosen until branch configuration
@@ -75,7 +82,7 @@ it('records the current automatic stateless turn scan baseline', function (): vo
         decorate: static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('baseline answer')),
         startupScans: $scans,
     );
-    $application = new TellApplication($factory);
+    $application = tellTestApplication($factory, new WorkspaceRepository($scans));
     $application->setAutoExit(false);
 
     $status = $application->runArgv(

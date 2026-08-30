@@ -6,7 +6,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
@@ -139,9 +139,10 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
         ->not->toContain(['role' => 'user', 'content' => 'record the release decision']);
 });
 
-function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellApplication {
-    $application = new TellApplication(new TellAgentFactory(
+function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellConsoleApplication {
+    $application = new TellConsoleApplication(new TellAgentFactory(
         $paths,
+        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($paths),
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
             new RecordingDriver($recorder, 'verified semantic response'),
         ),
@@ -155,7 +156,7 @@ function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellApp
  * @param  list<string>  $arguments
  * @return array{0: int, 1: array<string, mixed>}
  */
-function tellP0Run(TellApplication $application, array $arguments): array {
+function tellP0Run(TellConsoleApplication $application, array $arguments): array {
     $output = new BufferedOutput();
     $status = $application->runArgv(['tell', ...$arguments], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
@@ -167,7 +168,7 @@ function tellP0Run(TellApplication $application, array $arguments): array {
 }
 
 function tellP0Workspace(TellAgentFactory $factory, string $project): WorkspaceState {
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected the P0 acceptance workspace.');
     }

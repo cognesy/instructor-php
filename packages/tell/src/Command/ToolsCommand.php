@@ -10,7 +10,8 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Data\TellRequest;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,10 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class ToolsCommand extends Command implements CanDescribeOperationalPlane
 {
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(private readonly CanBuildTellAgent $agents) {
         parent::__construct('tools');
     }
 
@@ -57,7 +55,7 @@ HELP)
             agent: (string) $input->getOption('agent'),
             directory: $project,
         );
-        $tools = $this->agents->build($options)->profile()->tools->toArray();
+        $tools = $this->agents->build(TellRequest::fromOptions($options))->profile()->tools->toArray();
         $rows = array_map(static fn (array $tool): array => [
             ...$tool,
             'promptVisible' => $tool['promptSnippet'] !== null,

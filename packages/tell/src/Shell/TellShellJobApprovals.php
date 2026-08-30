@@ -28,6 +28,7 @@ final readonly class TellShellJobApprovals implements CanApproveTellShellJobs
         return new self(Closure::fromCallable($approval));
     }
 
+    #[\Override]
     public function approve(TellShellJobRequest $request): TellShellJobApproval {
         return ($this->approval)($request);
     }

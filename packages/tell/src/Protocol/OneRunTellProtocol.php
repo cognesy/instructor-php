@@ -7,22 +7,23 @@ namespace Cognesy\Tell\Protocol;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Tell\Contracts\CanRunTell;
+use Cognesy\Tell\Contracts\CanCreateTellRuntime;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
 use Cognesy\Tell\Contracts\CanWriteTellProtocolFrames;
 
 /** One decoded request, one bounded run, and exactly one terminal frame. */
 final readonly class OneRunTellProtocol implements CanRunTellProtocol
 {
-    public function __construct(private CanRunTell $runner) {}
+    public function __construct(private CanCreateTellRuntime $runtime) {}
 
+    #[\Override]
     public function run(
         TellAgentProtocolRequest $request,
         CanWriteTellProtocolFrames $frames,
         ?CanProvideCancellationSignal $cancellation = null,
     ): int {
         $frames->identify($request->id);
-        $stream = $this->runner->stream($request->request);
+        $stream = $this->runtime->create($cancellation)->stream($request->request);
         foreach ($stream as $progress) {
             $frames->progress($progress);
         }

@@ -7,7 +7,7 @@ namespace Cognesy\Tell\Workspace;
 use Cognesy\Tell\Data\TellContext;
 use Cognesy\Tell\Data\TellConversationView;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\ObjectHash;
 use Cognesy\Tell\Workspace\Conversation\ContextInspector;
@@ -22,7 +22,8 @@ final readonly class TellRef
     private ObjectHash $reference;
 
     public function __construct(
-        private TellAgentFactory $agents,
+        private CanBuildTellAgent $agents,
+        private WorkspaceRepository $workspaces,
         private string $directory,
         string $hash,
     ) {
@@ -62,7 +63,7 @@ final readonly class TellRef
     public function context(?TellRequest $request = null): TellContext {
         $request ??= TellRequest::prompt('Inspect immutable Tell context.');
         $request = $request->directory === '' ? $request->withDirectory($this->directory) : $request;
-        $definition = $this->agents->definition($request->toOptions());
+        $definition = $this->agents->definition($request);
 
         return new TellContext((new ContextInspector())->inspect(
             conversation: $this->inspection(),
@@ -77,7 +78,7 @@ final readonly class TellRef
     }
 
     private function workspace(): StoredWorkspace {
-        $workspace = $this->agents->workspace()->discover($this->directory);
+        $workspace = $this->workspaces->discover($this->directory);
         if ($workspace === null) {
             throw new WorkspaceException('Tell immutable-ref inspection requires an initialized workspace. Call workspace()->initialize() first.');
         }

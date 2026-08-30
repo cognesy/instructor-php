@@ -4,10 +4,14 @@
 declare(strict_types=1);
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
 use Cognesy\Tell\Discovery\StartupScanCounter;
+use Cognesy\Tell\Observability\StandardTellExecutionTracer;
+use Cognesy\Tell\Runtime\StandardTellAgentBuilder;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 $findAutoload = static function (): string {
@@ -119,17 +123,29 @@ $runCold = static function (array $arguments) use ($iterations, $project, $home,
 
 $measureScans = static function (array $arguments) use ($project, $home): array {
     $scans = new StartupScanCounter;
+    $paths = new TellPaths(dirname(__DIR__).'/resources/agents', $home);
     $factory = new TellAgentFactory(
-        paths: new TellPaths(dirname(__DIR__).'/resources/agents', $home),
+        paths: $paths,
+        tracer: new StandardTellExecutionTracer($paths),
         driver: FakeAgentDriver::fromResponses('baseline answer'),
         startupScans: $scans,
     );
-    $application = new TellApplication($factory);
-    $application->setAutoExit(false);
-    $output = new BufferedOutput;
-    $status = $application->runArgv($arguments, $output);
-    if ($status !== 0) {
-        throw new RuntimeException("Tell scan probe exited with status {$status}: ".trim($output->fetch()));
+    $host = StandaloneTellHost::cli(
+        directory: $project,
+        paths: $paths,
+        agentBuilder: new StandardTellAgentBuilder($factory),
+        workspaces: new WorkspaceRepository($scans),
+    );
+    try {
+        $application = TellConsoleApplication::fromHost($host);
+        $application->setAutoExit(false);
+        $output = new BufferedOutput;
+        $status = $application->runArgv($arguments, $output);
+        if ($status !== 0) {
+            throw new RuntimeException("Tell scan probe exited with status {$status}: ".trim($output->fetch()));
+        }
+    } finally {
+        $host->dispose();
     }
 
     return $scans->snapshot();

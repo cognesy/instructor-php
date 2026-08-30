@@ -9,5 +9,6 @@ use Cognesy\Tell\Data\TellEventEnvelope;
 
 final readonly class NullTellObserver implements CanObserveTellExecution
 {
+    #[\Override]
     public function observe(TellEventEnvelope $event): void {}
 }

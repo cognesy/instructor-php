@@ -26,6 +26,7 @@ final readonly class StandardTellSecretResolver implements CanResolveTellSecrets
         );
     }
 
+    #[\Override]
     public function resolve(string $name): ?ResolvedSecret {
         return $this->resolver->resolve($name);
     }

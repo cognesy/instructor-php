@@ -11,7 +11,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 it('writes one private jsonl trace from the real execution event stream', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('traced answer')));
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute(['prompt' => 'private prompt']);
     $files = tellTraceFiles($factory->paths()->executionTraces);
@@ -37,7 +37,7 @@ it('includes trace payloads only when explicitly enabled in local config', funct
         'observability' => ['includePayloads' => true],
     ], JSON_THROW_ON_ERROR));
 
-    (new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'captured prompt']);
+    (new CommandTester(tellTestCommand($factory)))->execute(['prompt' => 'captured prompt']);
     $records = tellTraceRecords(tellTraceFiles($factory->paths()->executionTraces)[0] ?? '');
 
     expect($records[0]['payload']['messagePayload'])->toBeArray();
@@ -51,7 +51,7 @@ it('allows execution traces to be disabled in local config', function (): void {
         'observability' => ['executionTraces' => false],
     ], JSON_THROW_ON_ERROR));
 
-    $status = (new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'not traced']);
+    $status = (new CommandTester(tellTestCommand($factory)))->execute(['prompt' => 'not traced']);
 
     expect($status)->toBe(0)
         ->and(is_dir($factory->paths()->executionTraces))->toBeFalse();
@@ -59,7 +59,7 @@ it('allows execution traces to be disabled in local config', function (): void {
 
 it('marks transient traces without widening the existing redaction policy', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     expect($tester->execute(['prompt' => 'transient trace prompt', '--transient' => true]))->toBe(0);
     $records = tellTraceRecords(tellTraceFiles($factory->paths()->executionTraces)[0] ?? '');
@@ -71,7 +71,7 @@ it('marks transient traces without widening the existing redaction policy', func
 it('fails before inference when explicit observability config is invalid', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('must not run')));
     file_put_contents($factory->paths()->configFile, '{"observability":{"trace":true}}');
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute(['prompt' => 'invalid config']);
     $payload = Toon::decode($tester->getDisplay());
@@ -83,10 +83,10 @@ it('fails before inference when explicit observability config is invalid', funct
 
 it('uses a separate lock-safe trace file for every named session', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
-    $command = new TellCommand($factory);
+    $command = tellTestCommand($factory);
     $project = tellLastTemporaryRoot() . '/separate-session-traces';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     (new CommandTester($command))->execute(['prompt' => 'alpha turn', '--session' => 'alpha', '--dir' => $project]);
     (new CommandTester($command))->execute(['prompt' => 'beta turn', '--session' => 'beta', '--dir' => $project]);
@@ -105,10 +105,10 @@ it('uses a separate lock-safe trace file for every named session', function (): 
 
 it('appends later turns to the same named session trace', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
-    $command = new TellCommand($factory);
+    $command = tellTestCommand($factory);
     $project = tellLastTemporaryRoot() . '/appended-session-trace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     (new CommandTester($command))->execute(['prompt' => 'first', '--session' => 'review', '--dir' => $project]);
     (new CommandTester($command))->execute(['prompt' => 'second', '--session' => 'review', '--dir' => $project]);
@@ -122,7 +122,7 @@ it('appends later turns to the same named session trace', function (): void {
 it('does not fail an agent turn when trace storage is unavailable', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('still works')));
     file_put_contents($factory->paths()->logs, 'blocks the logs directory');
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute(['prompt' => 'trace failure']);
 

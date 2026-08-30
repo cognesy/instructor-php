@@ -10,7 +10,7 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Configuration\TellPaths;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class ProvidersCommand extends Command implements CanDescribeOperationalPlane
 {
-    public function __construct(private readonly TellAgentFactory $agents) {
+    public function __construct(private readonly TellPaths $paths) {
         parent::__construct('providers');
     }
 
@@ -36,7 +36,7 @@ final class ProvidersCommand extends Command implements CanDescribeOperationalPl
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = $directory !== '' ? $directory : (is_string($cwd) ? $cwd : '.');
-        $catalogue = (new TellProviderCatalogue($this->agents->paths()))->connections($project);
+        $catalogue = (new TellProviderCatalogue($this->paths))->connections($project);
         $fields = FieldSelection::from(
             (string) $input->getOption('fields'),
             ['connection', 'provider', 'defaultModel', 'source'],

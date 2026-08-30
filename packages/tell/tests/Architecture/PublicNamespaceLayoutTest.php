@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
-use Cognesy\Tell\Composition\TellHost;
-use Cognesy\Tell\Composition\TellHostBuilder;
+use Cognesy\Tell\Composition\Standalone\TellHost;
+use Cognesy\Tell\Composition\Standalone\TellHostBuilder;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
+use Cognesy\Tell\Console\SymfonyConsoleApplicationBuilder;
+use Cognesy\Tell\Console\SymfonyConsoleApplicationRunner;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Data\TellShellJobApproval;
 use Cognesy\Tell\Data\TellShellJobEvent;
 use Cognesy\Tell\Data\TellShellJobHealth;
@@ -95,10 +99,10 @@ it('keeps Runtime limited to execution machinery', function (): void {
     sort($runtimeFiles, SORT_STRING);
 
     expect($runtimeFiles)->toBe([
-        'CanOpenTellRuntime.php',
         'CanReadTellClock.php',
         'DefaultTellRunner.php',
         'StandardTellAgentBuilder.php',
+        'StandardTellRuntimeFactory.php',
         'SystemTellClock.php',
         'TellAgentFactory.php',
         'TellDelegationScope.php',
@@ -145,8 +149,12 @@ it('aligns cohesive public class families with their PSR-4 namespaces', function
         TellBranchSelection::class,
         TellBranches::class,
         TellRef::class,
+        StandaloneTellHost::class,
         TellHost::class,
         TellHostBuilder::class,
+        TellConsoleApplication::class,
+        SymfonyConsoleApplicationBuilder::class,
+        SymfonyConsoleApplicationRunner::class,
         TellCatalogue::class,
         TellShellJobEvent::class,
         TellShellJobHealth::class,

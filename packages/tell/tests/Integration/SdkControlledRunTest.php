@@ -16,7 +16,7 @@ it('streams bounded SDK checkpoints with stable redacted event envelopes', funct
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('bounded answer')));
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
     $events = [];
     $stream = Tell::open($project, $factory)->runStream(
         TellRequest::prompt('Bound this run')
@@ -50,7 +50,7 @@ it('never publishes a cancelled durable SDK run', function (): void {
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     expect(fn () => Tell::open($project, $factory, $cancellation)->run(
         TellRequest::prompt('Do not publish')->durable(),
@@ -64,7 +64,7 @@ it('does not publish durable state when a public output policy is exceeded', fun
     ));
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     expect(fn () => Tell::open($project, $factory)->run(
         TellRequest::prompt('Keep it short')->durable()->maxOutputChars(8),

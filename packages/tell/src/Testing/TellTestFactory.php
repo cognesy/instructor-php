@@ -8,7 +8,9 @@ use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Observability\StandardTellExecutionTracer;
 use Cognesy\Tell\Tell;
 use InvalidArgumentException;
 
@@ -49,9 +51,10 @@ final readonly class TellTestFactory
         );
         $agents = new TellAgentFactory(
             paths: $paths,
+            tracer: new StandardTellExecutionTracer($paths),
             driver: $this->driver,
         );
 
-        return Tell::open($directory, $agents, $cancellation);
+        return StandaloneTellHost::open($directory, $agents, $cancellation);
     }
 }

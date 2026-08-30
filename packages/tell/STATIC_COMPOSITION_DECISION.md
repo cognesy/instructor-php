@@ -54,5 +54,6 @@ contract.
 - All missing mandatory capabilities are reported in one pre-boot error.
 - Only module factories can resolve declared dependencies.
 - Runtime products and public facades never receive a general container.
-- The host owns reverse-order, exhaustive cleanup; Cordis remains outside the
-  static composition phase.
+- The host owns reverse-order, exhaustive cleanup.
+- Cordis is not a Tell dependency; dynamic reconciliation is outside the current
+  product requirements.

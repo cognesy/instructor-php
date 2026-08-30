@@ -6,6 +6,7 @@ namespace Cognesy\Tell\Contracts;
 
 use Cognesy\Tell\Workspace\Branch\TellBranch;
 use Cognesy\Tell\Workspace\Branch\TellBranches;
+use Cognesy\Tell\Workspace\Branch\TellBranchConfiguration;
 use Cognesy\Tell\Workspace\TellConversation;
 use Cognesy\Tell\Workspace\TellRef;
 
@@ -21,4 +22,6 @@ interface CanAccessTellConversations
     public function branch(string $directory, string $name): TellBranch;
 
     public function ref(string $directory, string $hash): TellRef;
+
+    public function configuration(string $directory, ?string $branch = null): TellBranchConfiguration;
 }

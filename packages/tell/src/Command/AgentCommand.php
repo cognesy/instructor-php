@@ -5,19 +5,14 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Command;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Agents\Continuation\StopReason;
-use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
-use Cognesy\Tell\Data\TellResult;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Protocol\TellAgentProtocolException;
 use Cognesy\Tell\Protocol\TellAgentProtocolRequest;
 use Cognesy\Tell\Protocol\TellAgentProtocolWriter;
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
-use Cognesy\Tell\Tell;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,9 +27,8 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
     private CanProvideCancellationSignal $cancellation;
 
     public function __construct(
-        private readonly TellAgentFactory $agents,
+        private readonly CanRunTellProtocol $protocolRunner,
         ?CanProvideCancellationSignal $cancellation = null,
-        private readonly ?CanRunTellProtocol $protocolRunner = null,
     ) {
         parent::__construct('agent');
         $this->cancellation = $cancellation ?? new TellSignalCancellationSource();
@@ -71,17 +65,7 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
                 $this->cancellation->install();
             }
 
-            if ($this->protocolRunner !== null) {
-                return $this->protocolRunner->run($protocol, $writer, $this->cancellation);
-            }
-
-            $stream = Tell::open($directory, $this->agents, $this->cancellation)->runStream($protocol->request);
-            foreach ($stream as $progress) {
-                $writer->progress($progress);
-            }
-            $result = $stream->getReturn();
-
-            return $this->writeResult($writer, $result);
+            return $this->protocolRunner->run($protocol, $writer, $this->cancellation);
         } catch (TellAgentProtocolException $error) {
             if (!$writer->hasTerminalFrame()) {
                 $writer->error($error->protocolCode, $error->getMessage());
@@ -96,30 +80,6 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
 
             return Command::FAILURE;
         }
-    }
-
-    private function writeResult(TellAgentProtocolWriter $writer, TellResult $result): int {
-        if ($result->status() === ExecutionStatus::Completed) {
-            $writer->success($result);
-
-            return Command::SUCCESS;
-        }
-
-        $reason = $result->state()->stopReason();
-        if ($result->status() === ExecutionStatus::Stopped && $reason === StopReason::UserRequested) {
-            $writer->cancelled($result);
-
-            return 130;
-        }
-        if ($result->status() === ExecutionStatus::Stopped) {
-            $writer->error('run_stopped', 'The Tell run stopped before completion.', $result, $reason?->value);
-
-            return Command::FAILURE;
-        }
-
-        $writer->error('run_failed', 'The Tell run failed.', $result);
-
-        return Command::FAILURE;
     }
 
     #[Override]

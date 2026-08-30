@@ -8,7 +8,7 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Tell\Command\ContextCommand;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
@@ -35,7 +35,7 @@ it('inspects an empty workspace context without loop construction or persistence
     $workspace = tellContextWorkspace($factory, $project);
     $arenaBefore = tellContextSnapshot($workspace->paths->arena);
     $homeBefore = tellContextSnapshot($factory->paths()->home);
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -69,7 +69,7 @@ it('reports the compiled AgentState, tool-heavy context, configured thresholds, 
     [, $discarded, $head] = tellContextSeedToolHistory($arena);
     $before = tellContextSnapshot($workspace->paths->arena);
     $homeBefore = tellContextSnapshot($factory->paths()->home);
-    $tester = new CommandTester(new ContextCommand($factory));
+    $tester = new CommandTester(new ContextCommand(tellTestAgents($factory), tellTestWorkspaces()));
 
     expect($tester->execute(['--dir' => $project, '--json' => true]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -118,7 +118,7 @@ it('inspects a named canonical session without exposing its hashed session ref',
     ));
     $arena->compareAndSwap($sessionRef->refName(), null, $root);
     $before = tellContextSnapshot($workspace->paths->arena);
-    $tester = new CommandTester(new ContextCommand($factory));
+    $tester = new CommandTester(new ContextCommand(tellTestAgents($factory), tellTestWorkspaces()));
 
     expect($tester->execute(['--dir' => $project, '--session' => 'review-1', '--json' => true]))->toBe(0);
     $display = $tester->getDisplay();
@@ -136,7 +136,7 @@ it('keeps unknown configured capacity explicit and fails corrupt contexts withou
     $workspace = tellContextWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [$root] = tellContextSeedToolHistory($arena);
-    $command = new ContextCommand($factory);
+    $command = new ContextCommand(tellTestAgents($factory), tellTestWorkspaces());
     $unknown = new CommandTester($command);
 
     expect($unknown->execute([
@@ -165,13 +165,13 @@ it('keeps unknown configured capacity explicit and fails corrupt contexts withou
 function tellContextProject(TellAgentFactory $factory): string {
     $project = tellLastTemporaryRoot() . '/context-workspace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     return $project;
 }
 
 function tellContextWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
     }

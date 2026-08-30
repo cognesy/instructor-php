@@ -8,7 +8,7 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
@@ -24,7 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class CheckoutCommand extends Command implements CanDescribeOperationalPlane
 {
-    public function __construct(private readonly TellAgentFactory $agents) {
+    public function __construct(private readonly WorkspaceRepository $workspaces) {
         parent::__construct('checkout');
     }
 
@@ -42,7 +42,7 @@ final class CheckoutCommand extends Command implements CanDescribeOperationalPla
             $directory = (string) $input->getOption('dir');
             $cwd = getcwd();
             $directory = $directory !== '' ? $directory : (is_string($cwd) ? $cwd : '.');
-            $workspace = $this->agents->workspace()->discover($directory);
+            $workspace = $this->workspaces->discover($directory);
             if ($workspace === null) {
                 throw new WorkspaceException('Tell checkout requires an initialized workspace; run `tell init` first.');
             }

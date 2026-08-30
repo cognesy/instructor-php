@@ -13,6 +13,7 @@ final readonly class PsrTellObserver implements CanObserveTellExecution
 {
     public function __construct(private LoggerInterface $logger) {}
 
+    #[\Override]
     public function observe(TellEventEnvelope $event): void {
         $this->logger->info($event->kind, $event->toArray());
     }

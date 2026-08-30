@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell\Composition;
+namespace Cognesy\Tell\Composition\Standalone;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
@@ -13,12 +13,13 @@ use Cognesy\Tell\Configuration\StandardTellPathResolver;
 use Cognesy\Tell\Configuration\StandardTellSecretResolver;
 use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Console\CoreTellCommandContributor;
-use Cognesy\Tell\Console\SymfonyTellApplicationBuilder;
+use Cognesy\Tell\Console\SymfonyConsoleApplicationBuilder;
 use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
-use Cognesy\Tell\Contracts\CanBuildTellApplication;
+use Cognesy\Tell\Contracts\CanBuildTellConsoleApplication;
 use Cognesy\Tell\Contracts\CanCatalogueTellExtensions;
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
+use Cognesy\Tell\Contracts\CanCreateTellRuntime;
 use Cognesy\Tell\Contracts\CanDispatchTellTool;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
@@ -29,16 +30,21 @@ use Cognesy\Tell\Contracts\CanResolveTellPaths;
 use Cognesy\Tell\Contracts\CanResolveTellSecrets;
 use Cognesy\Tell\Contracts\CanRunTell;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
+use Cognesy\Tell\Contracts\CanTraceTellExecution;
 use Cognesy\Tell\Discovery\ComposerTellExtensionCatalogue;
 use Cognesy\Tell\Observability\NullTellObserver;
+use Cognesy\Tell\Observability\StandardTellExecutionTracer;
 use Cognesy\Tell\Protocol\OneRunTellProtocol;
-use Cognesy\Tell\Runtime\CanOpenTellRuntime;
 use Cognesy\Tell\Runtime\CanReadTellClock;
 use Cognesy\Tell\Runtime\DefaultTellRunner;
 use Cognesy\Tell\Runtime\StandardTellAgentBuilder;
+use Cognesy\Tell\Runtime\StandardTellRuntimeFactory;
 use Cognesy\Tell\Runtime\SystemTellClock;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Tool\StandardTellToolDispatcher;
+use Cognesy\Tell\Workspace\Conversation\FilesystemTellConversations;
+use Cognesy\Tell\Workspace\FilesystemWorkspaceProvider;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 
 /** Auditable standard module definitions; every factory creates a fresh instance. */
 final readonly class StandardTellModules
@@ -108,24 +114,26 @@ final readonly class StandardTellModules
     public static function agent(
         string $directory,
         ?callable $driverFactory = null,
-        ?TellAgentFactory $agentFactory = null,
+        ?CanBuildTellAgent $agentBuilder = null,
     ): TellModuleDefinition {
         return new TellModuleDefinition(
             id: 'agent.cognesy',
-            provides: [CanBuildTellAgent::class, CanOpenTellRuntime::class],
-            requires: [CanResolveTellPaths::class, CanResolveTellModel::class, CanReadTellClock::class],
+            provides: [CanBuildTellAgent::class],
+            requires: [CanResolveTellPaths::class, CanResolveTellModel::class, CanReadTellClock::class, CanTraceTellExecution::class],
             factory: static function (
                 CanResolveTellPaths $paths,
                 CanResolveTellModel $model,
                 CanReadTellClock $clock,
-            ) use ($directory, $driverFactory, $agentFactory): object {
-                if ($agentFactory !== null) {
-                    return new StandardTellAgentBuilder($agentFactory);
+                CanTraceTellExecution $tracer,
+            ) use ($directory, $driverFactory, $agentBuilder): object {
+                if ($agentBuilder !== null) {
+                    return $agentBuilder;
                 }
                 $resolved = $paths->resolve($directory);
 
                 return new StandardTellAgentBuilder(new TellAgentFactory(
                     paths: new TellPaths($resolved->packageAgents, $resolved->home),
+                    tracer: $tracer,
                     clock: $clock,
                     driver: $driverFactory === null ? null : $driverFactory(),
                     modelResolver: $model,
@@ -135,16 +143,41 @@ final readonly class StandardTellModules
         );
     }
 
-    public static function commands(): TellModuleDefinition {
+    public static function commands(string $directory, ?WorkspaceRepository $workspaces = null): TellModuleDefinition {
         return new TellModuleDefinition(
             id: 'commands.core',
             provides: [CanContributeTellCommands::class],
-            requires: [CanOpenTellRuntime::class, CanProvideCancellationSignal::class, CanRunTellProtocol::class],
-            factory: static fn (
-                CanOpenTellRuntime $runtime,
+            requires: [
+                CanBuildTellAgent::class,
+                CanCreateTellRuntime::class,
+                CanDispatchTellTool::class,
+                CanTraceTellExecution::class,
+                CanResolveTellPaths::class,
+                CanProvideCancellationSignal::class,
+                CanRunTellProtocol::class,
+            ],
+            factory: static function (
+                CanBuildTellAgent $agents,
+                CanCreateTellRuntime $runtime,
+                CanDispatchTellTool $tools,
+                CanTraceTellExecution $tracer,
+                CanResolveTellPaths $paths,
                 CanProvideCancellationSignal $cancellation,
                 CanRunTellProtocol $protocol,
-            ): object => new CoreTellCommandContributor($runtime->agents(), $cancellation, $protocol),
+            ) use ($directory, $workspaces): object {
+                $resolved = $paths->resolve($directory);
+
+                return new CoreTellCommandContributor(
+                    $agents,
+                    $runtime,
+                    $tools,
+                    $tracer,
+                    $workspaces ?? new WorkspaceRepository(),
+                    new TellPaths($resolved->packageAgents, $resolved->home),
+                    $cancellation,
+                    $protocol,
+                );
+            },
             description: 'Canonical Symfony shell command contribution',
         );
     }
@@ -153,18 +186,54 @@ final readonly class StandardTellModules
         return new TellModuleDefinition(
             id: 'protocol.one-run',
             provides: [CanRunTellProtocol::class],
-            requires: [CanRunTell::class],
-            factory: static fn (CanRunTell $runner): object => new OneRunTellProtocol($runner),
+            requires: [CanCreateTellRuntime::class],
+            factory: static fn (CanCreateTellRuntime $runtime): object => new OneRunTellProtocol($runtime),
             description: 'Bounded one-request/one-run protocol execution',
         );
     }
 
     public static function application(): TellModuleDefinition {
         return new TellModuleDefinition(
-            id: 'application.symfony',
-            provides: [CanBuildTellApplication::class],
-            factory: static fn (): object => new SymfonyTellApplicationBuilder(),
+            id: 'application.symfony-console',
+            provides: [CanBuildTellConsoleApplication::class],
+            factory: static fn (): object => new SymfonyConsoleApplicationBuilder(),
             description: 'Symfony Console application edge',
+        );
+    }
+
+    public static function runtime(string $directory, ?WorkspaceRepository $workspaces = null): TellModuleDefinition {
+        return new TellModuleDefinition(
+            id: 'runtime.standard',
+            provides: [CanCreateTellRuntime::class],
+            requires: [
+                CanBuildTellAgent::class,
+                CanResolveTellPaths::class,
+                CanProvideCancellationSignal::class,
+                CanResolveTellConfiguration::class,
+                CanObserveTellExecution::class,
+                CanTraceTellExecution::class,
+            ],
+            factory: static function (
+                CanBuildTellAgent $agents,
+                CanResolveTellPaths $paths,
+                CanProvideCancellationSignal $cancellation,
+                CanResolveTellConfiguration $configuration,
+                CanObserveTellExecution $observer,
+                CanTraceTellExecution $tracer,
+            ) use ($directory, $workspaces): object {
+                $resolved = $paths->resolve($directory);
+
+                return new StandardTellRuntimeFactory(
+                    $agents,
+                    $workspaces ?? new WorkspaceRepository(),
+                    new TellPaths($resolved->packageAgents, $resolved->home),
+                    $tracer,
+                    $cancellation,
+                    $configuration,
+                    $observer,
+                );
+            },
+            description: 'Runtime construction from explicit execution services',
         );
     }
 
@@ -172,13 +241,8 @@ final readonly class StandardTellModules
         return new TellModuleDefinition(
             id: 'execution.default',
             provides: [CanRunTell::class],
-            requires: [CanOpenTellRuntime::class, CanProvideCancellationSignal::class, CanResolveTellConfiguration::class, CanObserveTellExecution::class],
-            factory: static fn (
-                CanOpenTellRuntime $agents,
-                CanProvideCancellationSignal $cancellation,
-                CanResolveTellConfiguration $configuration,
-                CanObserveTellExecution $observer,
-            ): object => new DefaultTellRunner($agents->runtime($cancellation, $configuration, $observer)),
+            requires: [CanCreateTellRuntime::class],
+            factory: static fn (CanCreateTellRuntime $runtime): object => new DefaultTellRunner($runtime),
             description: 'Default Tell execution modes and persistence semantics',
         );
     }
@@ -190,6 +254,20 @@ final readonly class StandardTellModules
             provides: [CanObserveTellExecution::class],
             factory: static fn (): object => $observerFactory === null ? new NullTellObserver() : $observerFactory(),
             description: 'Normalized redacted execution observation edge',
+        );
+    }
+
+    public static function tracing(string $directory): TellModuleDefinition {
+        return new TellModuleDefinition(
+            id: 'tracing.standard',
+            provides: [CanTraceTellExecution::class],
+            requires: [CanResolveTellPaths::class],
+            factory: static function (CanResolveTellPaths $paths) use ($directory): object {
+                $resolved = $paths->resolve($directory);
+
+                return new StandardTellExecutionTracer(new TellPaths($resolved->packageAgents, $resolved->home));
+            },
+            description: 'Opt-in filesystem execution tracing',
         );
     }
 
@@ -208,17 +286,36 @@ final readonly class StandardTellModules
         );
     }
 
-    public static function workspace(): TellModuleDefinition {
+    public static function workspace(?WorkspaceRepository $workspaces = null): TellModuleDefinition {
         return new TellModuleDefinition(
             id: 'workspace.filesystem',
             provides: [
                 CanManageTellWorkspace::class,
-                CanAccessTellConversations::class,
                 CanReadTellBranchConfiguration::class,
             ],
-            requires: [CanOpenTellRuntime::class],
-            factory: static fn (CanOpenTellRuntime $runtime): object => new FilesystemWorkspaceModule($runtime->agents()),
+            factory: static fn (): object => new FilesystemWorkspaceProvider($workspaces ?? new WorkspaceRepository()),
             description: 'Canonical filesystem workspace, conversations, refs, and branch configuration',
+        );
+    }
+
+    public static function conversations(string $directory, ?WorkspaceRepository $workspaces = null): TellModuleDefinition {
+        return new TellModuleDefinition(
+            id: 'conversations.filesystem',
+            provides: [CanAccessTellConversations::class],
+            requires: [CanBuildTellAgent::class, CanRunTell::class, CanTraceTellExecution::class, CanResolveTellPaths::class],
+            factory: static fn (
+                CanBuildTellAgent $agents,
+                CanRunTell $runner,
+                CanTraceTellExecution $tracer,
+                CanResolveTellPaths $paths,
+            ): object => new FilesystemTellConversations(
+                $agents,
+                $runner,
+                $tracer,
+                $workspaces ?? new WorkspaceRepository(),
+                new TellPaths($paths->resolve($directory)->packageAgents, $paths->resolve($directory)->home),
+            ),
+            description: 'Canonical filesystem conversation, ref, and branch facades',
         );
     }
 
@@ -235,11 +332,12 @@ final readonly class StandardTellModules
         return new TellModuleDefinition(
             id: 'tools.standard',
             provides: [CanDispatchTellTool::class],
-            requires: [CanOpenTellRuntime::class, CanProvideCancellationSignal::class],
+            requires: [CanBuildTellAgent::class, CanCreateTellRuntime::class, CanProvideCancellationSignal::class],
             factory: static fn (
-                CanOpenTellRuntime $runtime,
+                CanBuildTellAgent $agents,
+                CanCreateTellRuntime $runtime,
                 CanProvideCancellationSignal $cancellation,
-            ): object => new StandardTellToolDispatcher($runtime->agents(), $directory, $cancellation),
+            ): object => new StandardTellToolDispatcher($agents, $runtime->create(), $directory, $cancellation),
             description: 'Policy-bound direct tool invocation using the agent tool graph',
         );
     }

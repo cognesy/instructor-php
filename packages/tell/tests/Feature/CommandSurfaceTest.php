@@ -10,7 +10,7 @@ use Cognesy\Tell\Command\AgentsCommand;
 use Cognesy\Tell\Command\DescribeCommand;
 use Cognesy\Tell\Command\SessionsCommand;
 use Cognesy\Tell\Command\ToolsCommand;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Console\TellCommand;
 use Cognesy\Tell\Console\TellOptions;
 use Composer\InstalledVersions;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('keeps the registered route catalogue aligned with the compatibility contract', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $frameworkCommands = ['_complete', 'completion', 'help', 'list'];
     $routes = array_values(array_diff(array_keys($application->all()), $frameworkCommands));
     sort($routes);
@@ -64,7 +64,7 @@ it('keeps the registered route catalogue aligned with the compatibility contract
 });
 
 it('boots the real application without global option collisions', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $tester = new ApplicationTester($application);
 
@@ -81,7 +81,7 @@ it('boots the real application without global option collisions', function (): v
 });
 
 it('reports its Composer package version', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $package = 'cognesy/instructor-tell';
     $version = InstalledVersions::isInstalled($package)
         ? InstalledVersions::getPrettyVersion($package)
@@ -93,7 +93,7 @@ it('reports its Composer package version', function (): void {
 
 it('routes implicit prompts and keeps named subcommands available', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('implicit ok')));
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
 
     $promptOutput = new BufferedOutput();
@@ -112,7 +112,7 @@ it('routes implicit prompts and keeps named subcommands available', function ():
 });
 
 it('uses bare invocations for content-first discovery', function (array $arguments): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -143,7 +143,7 @@ it('uses bare invocations for content-first discovery', function (array $argumen
 ]);
 
 it('renders unknown option errors as structured usage data', function (array $arguments): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -163,7 +163,7 @@ it('renders unknown option errors as structured usage data', function (array $ar
 ]);
 
 it('reports valid flags for the addressed command', function (array $arguments, string $flag, string $other): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -179,7 +179,7 @@ it('reports valid flags for the addressed command', function (array $arguments, 
 ]);
 
 it('resolves a subcommand that follows an option value', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -190,7 +190,7 @@ it('resolves a subcommand that follows an option value', function (): void {
 });
 
 it('never mistakes an option value for a command name', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -206,7 +206,7 @@ it('never mistakes an option value for a command name', function (): void {
 
 it('treats a subcommand name after the separator as a prompt', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('literal prompt ok')));
-    $application = new TellApplication($factory);
+    $application = new TellConsoleApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -218,7 +218,7 @@ it('treats a subcommand name after the separator as a prompt', function (): void
 
 it('keeps the legacy prompt, connection, model, and dsn options', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('legacy ok')));
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute([
         'prompt' => 'hello',
@@ -233,7 +233,7 @@ it('keeps the legacy prompt, connection, model, and dsn options', function (): v
 });
 
 it('validates option combinations with usage exit code two', function (array $arguments): void {
-    $tester = new CommandTester(new TellCommand(tellTestFactory()));
+    $tester = new CommandTester(tellTestCommand(tellTestFactory()));
     $status = $tester->execute(['prompt' => 'hello', ...$arguments], ['capture_stderr_separately' => true]);
 
     $error = Toon::decode($tester->getDisplay())['error'];
@@ -246,7 +246,7 @@ it('validates option combinations with usage exit code two', function (array $ar
 ]);
 
 it('returns usage exit code two for invalid session commands', function (array $arguments, string $message): void {
-    $tester = new CommandTester(new SessionsCommand(tellTestFactory()));
+    $tester = new CommandTester(new SessionsCommand(tellTestWorkspaces()));
     $status = $tester->execute($arguments, ['capture_stderr_separately' => true]);
 
     expect($status)->toBe(2)
@@ -305,7 +305,7 @@ it('lists valid definitions and reports malformed files', function (): void {
         'reviewer.md' => "---\nname: reviewer\ndescription: Reviews code\n---\nReview carefully.\n",
         'broken.md' => 'not frontmatter',
     ]);
-    $tester = new CommandTester(new AgentsCommand($factory));
+    $tester = new CommandTester(new AgentsCommand(tellTestAgents($factory)));
     $tester->execute(['--json' => true]);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -316,7 +316,7 @@ it('lists valid definitions and reports malformed files', function (): void {
 
 it('derives tools output from the built loop profile', function (): void {
     $factory = tellTestFactory();
-    $tester = new CommandTester(new ToolsCommand($factory));
+    $tester = new CommandTester(new ToolsCommand(tellTestAgents($factory)));
     $tester->execute(['--json' => true, '--dir' => tellLastTemporaryRoot()]);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $options = new TellOptions(prompt: 'tools', directory: tellLastTemporaryRoot());
@@ -327,7 +327,7 @@ it('derives tools output from the built loop profile', function (): void {
 
 it('derives describe json from the built loop profile', function (): void {
     $factory = tellTestFactory();
-    $tester = new CommandTester(new DescribeCommand($factory));
+    $tester = new CommandTester(new DescribeCommand(tellTestAgents($factory)));
     $tester->execute(['--json' => true, '--dir' => tellLastTemporaryRoot()]);
     $actual = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $options = new TellOptions(prompt: 'describe', directory: tellLastTemporaryRoot());
@@ -341,11 +341,11 @@ it('describes the effective runtime system prompt in json and text', function ()
     $factory = tellTestFactory();
     $directory = tellLastTemporaryRoot();
 
-    $jsonTester = new CommandTester(new DescribeCommand($factory));
+    $jsonTester = new CommandTester(new DescribeCommand(tellTestAgents($factory)));
     $jsonTester->execute(['--json' => true, '--prompt' => true, '--dir' => $directory]);
     $payload = json_decode($jsonTester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    $toonTester = new CommandTester(new DescribeCommand($factory));
+    $toonTester = new CommandTester(new DescribeCommand(tellTestAgents($factory)));
     $toonTester->execute(['--prompt' => true, '--dir' => $directory]);
     $toon = Toon::decode($toonTester->getDisplay());
 
@@ -358,7 +358,7 @@ it('describes the effective runtime system prompt in json and text', function ()
 });
 
 it('selects compact list fields without changing the output format', function (): void {
-    $tester = new CommandTester(new AgentsCommand(tellTestFactory()));
+    $tester = new CommandTester(new AgentsCommand(tellTestAgents(tellTestFactory())));
     $status = $tester->execute(['--fields' => 'name,label']);
     $payload = Toon::decode($tester->getDisplay());
 
@@ -368,7 +368,7 @@ it('selects compact list fields without changing the output format', function ()
 });
 
 it('makes empty session state explicit and actionable', function (): void {
-    $tester = new CommandTester(new SessionsCommand(tellTestFactory()));
+    $tester = new CommandTester(new SessionsCommand(tellTestWorkspaces()));
     $status = $tester->execute([]);
     $payload = Toon::decode($tester->getDisplay());
 
@@ -380,7 +380,7 @@ it('makes empty session state explicit and actionable', function (): void {
 });
 
 it('fails loudly when a requested list field is unknown', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -393,7 +393,7 @@ it('fails loudly when a requested list field is unknown', function (): void {
 });
 
 it('preserves explicit json for application-level errors', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -406,7 +406,7 @@ it('preserves explicit json for application-level errors', function (): void {
 });
 
 it('exposes an honest typed map of tell operational planes', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -444,7 +444,7 @@ it('exposes an honest typed map of tell operational planes', function (): void {
 });
 
 it('keeps the default plane map compact', function (): void {
-    $application = new TellApplication(tellTestFactory());
+    $application = new TellConsoleApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 

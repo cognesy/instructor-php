@@ -7,7 +7,6 @@ namespace Cognesy\Tell\Workspace;
 use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
 use Cognesy\Tell\Data\TellWorkspaceInfo;
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\Branch\TellBranch;
 use Cognesy\Tell\Workspace\Branch\TellBranchConfiguration;
 use Cognesy\Tell\Workspace\Branch\TellBranches;
@@ -16,7 +15,6 @@ use Cognesy\Tell\Workspace\Branch\TellBranches;
 final readonly class TellWorkspace
 {
     public function __construct(
-        private TellAgentFactory $agents,
         private string $directory,
         private CanManageTellWorkspace $workspaces,
         private CanAccessTellConversations $conversations,
@@ -53,6 +51,6 @@ final readonly class TellWorkspace
     }
 
     public function configuration(?string $branch = null): TellBranchConfiguration {
-        return new TellBranchConfiguration($this->agents, $this->directory, $branch);
+        return $this->conversations->configuration($this->directory, $branch);
     }
 }

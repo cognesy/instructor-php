@@ -37,7 +37,7 @@ it('continues a deterministic agent tool call from a supplied answer without exp
         ScenarioStep::toolCall('ask_user', ['question' => 'Secret selection?']),
         ScenarioStep::final('continued after answer'),
     )));
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute([
         'prompt' => 'Choose.',
@@ -58,7 +58,7 @@ it('loads bounded structured answers and reports extras without revealing their 
     $directory = tellLastTemporaryRoot();
     $answers = $directory . '/answers.json';
     file_put_contents($answers, '[{"id":"choice","value":"file-canary"},"extra-canary"]');
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute([
         'prompt' => 'No tool call.',
@@ -95,7 +95,7 @@ it('rejects duplicate, oversized, and conflicting supplied-answer inputs before 
     $directory = tellLastTemporaryRoot();
     $file = $directory . '/answers.json';
     file_put_contents($file, '[]');
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     expect($duplicate)->toThrow(InvalidArgumentException::class, 'unique non-empty')
         ->and($oversized)->toThrow(InvalidArgumentException::class, '8192 bytes')
@@ -116,7 +116,7 @@ it('persists a durable semantic answer but never publishes a transient one', fun
     )));
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
     $tell = Tell::open($project, $factory);
 
     $durable = $tell->run(
@@ -135,7 +135,7 @@ it('persists a durable semantic answer but never publishes a transient one', fun
     )));
     $transientProject = tellLastTemporaryRoot() . '/transient-project';
     mkdir($transientProject, 0755, true);
-    $transientWorkspace = $transientFactory->workspace()->initialize($transientProject)->workspace;
+    $transientWorkspace = tellTestWorkspaces()->initialize($transientProject)->workspace;
     $transient = Tell::open($transientProject, $transientFactory)->run(
         TellRequest::prompt('Inspect without publishing')
             ->transient()

@@ -20,7 +20,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 it('reports a stateless mode for a turn run outside any workspace', function (): void {
     $factory = tellExecutionModeFactory();
     $project = tellExecutionModeProject();
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     expect($tester->execute([
         'prompt' => 'no workspace here',
@@ -31,15 +31,15 @@ it('reports a stateless mode for a turn run outside any workspace', function ():
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
     expect($payload['execution'])->toBe(['mode' => 'stateless', 'durable' => false])
-        ->and($factory->workspace()->discover($project))->toBeNull();
+        ->and(tellTestWorkspaces()->discover($project))->toBeNull();
 });
 
 it('reports a durable mode only when the turn published an arena turn', function (): void {
     $factory = tellExecutionModeFactory();
     $project = tellExecutionModeProject();
-    $factory->workspace()->initialize($project);
-    $workspace = $factory->workspace()->discover($project);
-    $tester = new CommandTester(new TellCommand($factory));
+    tellTestWorkspaces()->initialize($project);
+    $workspace = tellTestWorkspaces()->discover($project);
+    $tester = new CommandTester(tellTestCommand($factory));
 
     expect($tester->execute([
         'prompt' => 'workspace turn',
@@ -56,7 +56,7 @@ it('reports a durable mode only when the turn published an arena turn', function
 it('reports a transient mode for an explicitly transient turn outside any workspace', function (): void {
     $factory = tellExecutionModeFactory();
     $project = tellExecutionModeProject();
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     expect($tester->execute([
         'prompt' => 'no workspace here',

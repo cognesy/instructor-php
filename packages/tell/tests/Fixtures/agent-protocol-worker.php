@@ -10,9 +10,9 @@ require file_exists($monorepoAutoload) ? $monorepoAutoload : $packageAutoload;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Composition\Standalone\TellHost;
 use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellConsoleApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 
 $scenario = getenv('TELL_RPC_SCENARIO') ?: 'success';
@@ -46,6 +46,10 @@ $factory = new TellAgentFactory(
         packageAgents: $packageRoot . '/resources/agents',
         home: $project . '/.tell-rpc-testing',
     ),
+    tracer: new \Cognesy\Tell\Observability\StandardTellExecutionTracer(new TellPaths(
+        packageAgents: $packageRoot . '/resources/agents',
+        home: $project . '/.tell-rpc-testing',
+    )),
     driver: $driver,
     composerVendorDir: is_string($composerVendorDir) && $composerVendorDir !== '' ? $composerVendorDir : null,
 );
@@ -53,10 +57,10 @@ $factory = new TellAgentFactory(
 $host = TellHost::standard(
     directory: $project,
     paths: $factory->paths(),
-    agentFactory: $factory,
+    agentBuilder: new \Cognesy\Tell\Runtime\StandardTellAgentBuilder($factory),
     cancellation: $cancellation,
 )->boot();
-$application = TellApplication::fromHost($host);
+$application = TellConsoleApplication::fromHost($host);
 $application->setAutoExit(false);
 try {
     $exitCode = $application->runArgv();

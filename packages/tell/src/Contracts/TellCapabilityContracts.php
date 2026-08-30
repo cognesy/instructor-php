@@ -14,6 +14,7 @@ final readonly class TellCapabilityContracts
     public static function cardinalities(): array {
         return [
             CanRunTell::class => TellCapabilityCardinality::Singleton,
+            CanCreateTellRuntime::class => TellCapabilityCardinality::Singleton,
             CanBuildTellAgent::class => TellCapabilityCardinality::Singleton,
             CanResolveTellModel::class => TellCapabilityCardinality::Singleton,
             CanResolveTellSecrets::class => TellCapabilityCardinality::Singleton,
@@ -27,8 +28,9 @@ final readonly class TellCapabilityContracts
             CanContributeTellTools::class => TellCapabilityCardinality::OrderedContribution,
             CanDispatchTellTool::class => TellCapabilityCardinality::Singleton,
             CanObserveTellExecution::class => TellCapabilityCardinality::Singleton,
+            CanTraceTellExecution::class => TellCapabilityCardinality::Singleton,
             CanContributeTellCommands::class => TellCapabilityCardinality::OrderedContribution,
-            CanBuildTellApplication::class => TellCapabilityCardinality::Singleton,
+            CanBuildTellConsoleApplication::class => TellCapabilityCardinality::Singleton,
             CanRunTellProtocol::class => TellCapabilityCardinality::Singleton,
             CanProvideCancellationSignal::class => TellCapabilityCardinality::Singleton,
             CanReadTellClock::class => TellCapabilityCardinality::Singleton,

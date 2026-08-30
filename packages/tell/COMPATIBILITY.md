@@ -36,7 +36,7 @@ objects returned by these facades are part of the same obligation.
 | Explicit policy and answers | `Configuration\TellExecutionPolicy` and `Capability\AskUser\TellAnswerQueue` when supplied through `Data\TellRequest` | `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
 <!-- markdownlint-enable MD013 -->
 
-`Console\TellApplication`, `Console\TellCommand`, command classes, runtime
+`Console\TellConsoleApplication`, `Console\TellCommand`, command classes, runtime
 builders, stores, and Arena records are implementation seams rather than a
 second SDK. Their
 observable CLI and persistence behavior is supported as described below; their

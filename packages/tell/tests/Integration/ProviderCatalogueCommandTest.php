@@ -23,7 +23,7 @@ contextLength: 123456
 maxOutputLength: 789
 YAML);
 
-    $tester = new CommandTester(new ProvidersCommand($factory));
+    $tester = new CommandTester(new ProvidersCommand($factory->paths()));
     expect($tester->execute(['--dir' => $project, '--fields' => 'connection,provider,source,defaultModel,contextCapacity,capabilities,unknown', '--json' => true]))->toBe(Command::SUCCESS);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $qwen = array_values(array_filter($payload['providers'], static fn (array $row): bool => $row['connection'] === 'qwen'))[0];
@@ -43,7 +43,7 @@ it('filters models by provider or connection and rejects an unknown selector', f
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/models-project';
     mkdir($project, 0700, true);
-    $tester = new CommandTester(new ModelsCommand($factory));
+    $tester = new CommandTester(new ModelsCommand($factory->paths()));
 
     expect($tester->execute(['provider-or-connection' => 'deepseek', '--dir' => $project, '--fields' => 'connection,provider,defaultModel,availableModels,capabilities', '--json' => true]))->toBe(Command::SUCCESS);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);

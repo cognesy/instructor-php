@@ -19,6 +19,7 @@ final readonly class PolyglotTellModelResolver implements CanResolveTellModel
         private CanResolveTellSecrets $secrets,
     ) {}
 
+    #[\Override]
     public function resolve(TellRequest $request): LLMConfig {
         $config = match ($request->dsn) {
             '' => $this->fromPreset($request),

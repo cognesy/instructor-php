@@ -25,4 +25,21 @@ final readonly class TellToolResult
     public function execution(): array {
         return ['mode' => 'direct', 'inference' => false, 'durable' => false];
     }
+
+    /** @return array<string, mixed> */
+    public function toArray(): array {
+        return [
+            'tool' => $this->tool,
+            'success' => $this->success,
+            'operation' => $this->operation,
+            'invokedAs' => $this->invokedAs,
+            'data' => $this->data,
+            'error' => $this->error,
+            'truncated' => $this->truncated,
+            'partial' => $this->partial,
+            'durationClass' => $this->durationClass,
+            'effect' => $this->effect,
+            'execution' => $this->execution(),
+        ];
+    }
 }

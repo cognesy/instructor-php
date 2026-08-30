@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Command;
 
 use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Contracts\CanDispatchTellTool;
+use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
-use Cognesy\Tell\Tool\TellToolDispatcher;
 use InvalidArgumentException;
 use JsonException;
 use Override;
@@ -28,7 +28,7 @@ final class ToolCommand extends Command implements CanDescribeOperationalPlane
 {
     private const int MAX_INPUT_BYTES = 1_048_576;
 
-    public function __construct(private readonly TellAgentFactory $agents) {
+    public function __construct(private readonly CanDispatchTellTool $tools) {
         parent::__construct('tool');
     }
 
@@ -76,10 +76,11 @@ HELP)
             $arguments = $this->arguments($input);
             $cancellation = new TellSignalCancellationSource();
             $cancellation->install();
-            $result = (new TellToolDispatcher($this->agents, $cancellation))->dispatch($options, $name, $arguments);
-            $this->render($output, $options->output, $name, $result);
+            $result = $this->tools->dispatch(TellToolRequest::fromOptions($options, $name, $arguments), $cancellation);
+            $payload = $result->toArray();
+            $this->render($output, $options->output, $name, $payload);
 
-            return $result['success'] === true ? Command::SUCCESS : Command::FAILURE;
+            return $result->success ? Command::SUCCESS : Command::FAILURE;
         } catch (InvalidArgumentException $error) {
             $this->error($output, $this->output($input), $error->getMessage());
 

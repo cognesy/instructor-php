@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Data;
 
 use Cognesy\Tell\Configuration\TellExecutionPolicy;
+use Cognesy\Tell\Console\TellOptions;
 use InvalidArgumentException;
 
 /** One direct Tell tool invocation, without model inference or conversation publication. */
@@ -14,6 +15,7 @@ final readonly class TellToolRequest
     private function __construct(
         public string $name,
         public array $arguments,
+        public string $directory = '',
         public string $agent = 'default',
         public string $connection = 'openai',
         public string $model = '',
@@ -25,6 +27,8 @@ final readonly class TellToolRequest
         public bool $connectionExplicit = false,
         public bool $modelExplicit = false,
         public bool $toolsExplicit = false,
+        /** @var array<string, int> */
+        public array $policyOverrides = [],
         public ?TellExecutionPolicy $policy = null,
     ) {
         if ($name === '') {
@@ -40,10 +44,32 @@ final readonly class TellToolRequest
         return new self($name, $arguments);
     }
 
+    /** @param array<string, mixed> $arguments */
+    public static function fromOptions(TellOptions $options, string $name, array $arguments): self {
+        return new self(
+            name: $name,
+            arguments: $arguments,
+            directory: $options->directory,
+            agent: $options->agent,
+            connection: $options->connection,
+            model: $options->model,
+            dsn: $options->dsn,
+            branch: $options->branch,
+            tools: $options->tools,
+            maxSteps: $options->maxSteps,
+            connectionExplicit: $options->connectionExplicit,
+            modelExplicit: $options->modelExplicit,
+            toolsExplicit: $options->toolsExplicit,
+            policyOverrides: $options->policyOverrides,
+            policy: $options->policy ?? TellExecutionPolicy::resolve([], $options->policyOverrides),
+        );
+    }
+
     public function branch(?string $branch): self {
         return new self(
             name: $this->name,
             arguments: $this->arguments,
+            directory: $this->directory,
             agent: $this->agent,
             connection: $this->connection,
             model: $this->model,
@@ -54,6 +80,7 @@ final readonly class TellToolRequest
             connectionExplicit: $this->connectionExplicit,
             modelExplicit: $this->modelExplicit,
             toolsExplicit: $this->toolsExplicit,
+            policyOverrides: $this->policyOverrides,
             policy: $this->policy,
         );
     }
@@ -85,6 +112,7 @@ final readonly class TellToolRequest
         return new self(
             name: $this->name,
             arguments: $this->arguments,
+            directory: $this->directory,
             agent: $this->agent,
             connection: $connection ?? $this->connection,
             model: $model ?? $this->model,
@@ -95,6 +123,7 @@ final readonly class TellToolRequest
             connectionExplicit: $connection !== null || $this->connectionExplicit,
             modelExplicit: $model !== null || $this->modelExplicit,
             toolsExplicit: $tools !== null || $this->toolsExplicit,
+            policyOverrides: $this->policyOverrides,
             policy: $policy ?? $this->policy,
         );
     }

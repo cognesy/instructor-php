@@ -15,7 +15,9 @@ use Cognesy\Tell\Configuration\TellExecutionPolicy;
 use Cognesy\Tell\Configuration\TellPolicyDefaults;
 use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
+use Cognesy\Tell\Contracts\CanTraceTellExecution;
 use Cognesy\Tell\Data\TellEventEnvelope;
 use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Data\TellProgress;
@@ -29,6 +31,8 @@ use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
 use Cognesy\Tell\Workspace\Execution\TransientRunner;
 use Cognesy\Tell\Workspace\Execution\TurnRunner;
 use Cognesy\Tell\Workspace\Session\SessionRunner;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Configuration\TellPaths;
 use Generator;
 use InvalidArgumentException;
 use RuntimeException;
@@ -36,7 +40,10 @@ use RuntimeException;
 final readonly class TellRuntime
 {
     public function __construct(
-        private TellAgentFactory $agents,
+        private CanBuildTellAgent $agents,
+        private WorkspaceRepository $workspaces,
+        private TellPaths $paths,
+        private CanTraceTellExecution $tracer,
         private ?CanProvideCancellationSignal $cancellation = null,
         private ?CanResolveTellConfiguration $configuration = null,
         private ?CanObserveTellExecution $observer = null,
@@ -121,7 +128,7 @@ final readonly class TellRuntime
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
     private function streamAutomatic(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator {
-        $workspace = $this->agents->workspace()->discover($request->directory);
+        $workspace = $this->workspaces->discover($request->directory);
         if ($workspace === null) {
             if ($request->branch !== null) {
                 throw new RuntimeException('Tell branch selection requires an initialized workspace. Call tell init or initialize the workspace first.');
@@ -164,7 +171,7 @@ final readonly class TellRuntime
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
     private function streamDurable(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator {
-        $workspace = $this->agents->workspace()->discover($request->directory);
+        $workspace = $this->workspaces->discover($request->directory);
         if ($workspace === null) {
             throw new RuntimeException('Tell durable execution requires an initialized workspace. Call tell init or initialize the workspace first.');
         }
@@ -179,7 +186,7 @@ final readonly class TellRuntime
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
     private function streamTransient(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator {
-        $workspace = $this->agents->workspace()->discover($request->directory);
+        $workspace = $this->workspaces->discover($request->directory);
         if ($workspace === null) {
             [$definition, $loop] = $this->definitionAndLoop($request, $prepareLoop, diagnostics: $diagnostics);
             $state = $this->seed($definition, $request);
@@ -294,13 +301,13 @@ final readonly class TellRuntime
         $delegation = match ($workspace) {
             null => null,
             default => new TellDelegationScope(
-                $this->agents->workspace()->discover($workspace) ?? throw new RuntimeException('Tell delegation requires a valid workspace.'),
+                $this->workspaces->discover($workspace) ?? throw new RuntimeException('Tell delegation requires a valid workspace.'),
                 new ResolvedBranch($selectedBranch ?? 'main', $selectedBranch === null || $selectedBranch === 'main' ? 'main' : 'branches/' . $selectedBranch, false),
                 cancellation: $this->cancellation,
             ),
         };
-        $loop = $this->agents->build($request->toOptions(), $definition, $this->cancellation, $delegation, $diagnostics);
-        $this->agents->attachExecutionTrace($loop, $request->toOptions());
+        $loop = $this->agents->build($request, $this->cancellation, $definition, $delegation, $diagnostics);
+        $this->tracer->attach($loop, $request);
         if ($this->observer !== null) {
             $observer = $this->observer;
             $normalized = new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session);
@@ -339,7 +346,7 @@ final readonly class TellRuntime
         ?string $selectedBranch = null,
         ?TellDiagnostics $diagnostics = null,
     ): array {
-        $definition = $this->agents->definition($request->toOptions());
+        $definition = $this->agents->definition($request);
 
         return [$definition, $this->loop($request, $definition, $prepareLoop, $workspace, $selectedBranch, $diagnostics)];
     }
@@ -357,7 +364,7 @@ final readonly class TellRuntime
     }
 
     private function withBranchConfig(TellRequest $request): TellRequest {
-        $workspace = $this->agents->workspace()->discover($request->directory);
+        $workspace = $this->workspaces->discover($request->directory);
         $userDefaults = $this->userPolicyDefaults();
         $projectDefaults = $workspace === null
             ? []
@@ -392,6 +399,6 @@ final readonly class TellRuntime
 
     /** @return array<string, int> */
     private function userPolicyDefaults(): array {
-        return TellPolicyDefaults::fromFile($this->agents->paths()->configDirectory . '/execution-defaults.json');
+        return TellPolicyDefaults::fromFile($this->paths->configDirectory . '/execution-defaults.json');
     }
 }

@@ -7,6 +7,10 @@ namespace Cognesy\Tell\Console;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Tell\Configuration\TellConfig;
+use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Contracts\CanCreateTellRuntime;
 use Cognesy\Tell\Data\TellDiagnostic;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Observability\TellEventNormalizer;
@@ -24,12 +28,11 @@ use Cognesy\Tell\Render\StepTrace;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Render\TextRenderer;
 use Cognesy\Tell\Render\ToonRenderer;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellRuntime;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -42,10 +45,12 @@ use Throwable;
 
 final class TellCommand extends Command implements CanDescribeOperationalPlane
 {
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(
+        private readonly CanCreateTellRuntime $runtime,
+        private readonly CanBuildTellAgent $agents,
+        private readonly WorkspaceRepository $workspaces,
+        private readonly TellPaths $paths,
+    ) {
         parent::__construct('tell');
     }
 
@@ -112,7 +117,7 @@ HELP)
             $cancellation = new TellSignalCancellationSource();
             $signalsEnabled = $cancellation->install();
             try {
-                $result = (new TellRuntime($this->factory(), $cancellation))->run(
+                $result = $this->runtime->create($cancellation)->run(
                     TellRequest::fromOptions($options),
                     static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer, $trace, $progress, $busy): void {
                         $events = new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session);
@@ -188,7 +193,7 @@ HELP)
         if ($options->outputExplicit || $options->session !== null) {
             return $options;
         }
-        $workspace = $this->factory()->workspace()->discover($options->directory);
+        $workspace = $this->workspaces->discover($options->directory);
         if ($workspace === null) {
             return $options;
         }
@@ -266,8 +271,8 @@ HELP)
         if (!is_dir($project)) {
             throw new InvalidArgumentException("Working directory does not exist: {$project}");
         }
-        $workspace = $this->factory()->workspace()->discover($project);
-        $registry = $this->factory()->definitions($project);
+        $workspace = $this->workspaces->discover($project);
+        $registry = $this->agents->definitions($project);
         $agents = [];
         foreach ($registry->all() as $definition) {
             $agents[] = [
@@ -282,8 +287,8 @@ HELP)
             'description' => 'Run and inspect Instructor agents in the current workspace.',
             'directory' => $project,
             'workspace' => $workspace?->toArray(),
-            'storage' => $this->factory()->paths()->toArray(),
-            'observability' => $this->factory()->config()->toArray(),
+            'storage' => $this->paths->toArray(),
+            'observability' => TellConfig::fromFile($this->paths->configFile)->toArray(),
             'agentCount' => count($agents),
             'agents' => $agents,
             'discoveryErrors' => count($registry->errors()),
@@ -315,10 +320,6 @@ HELP)
         }
 
         return $binary;
-    }
-
-    private function factory(): TellAgentFactory {
-        return $this->agents;
     }
 
     private function writeError(

@@ -6,11 +6,13 @@ namespace Cognesy\Tell\Command;
 
 use Closure;
 use Cognesy\Tell\Configuration\TellCredentialNames;
+use Cognesy\Tell\Configuration\TellCredentialStore;
+use Cognesy\Tell\Configuration\StandardTellSecretResolver;
+use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
@@ -24,12 +26,14 @@ final class AuthCommand extends Command implements CanDescribeOperationalPlane
 {
     /** @var Closure(): string */
     private readonly Closure $readInput;
+    private readonly TellCredentialStore $credentials;
 
     /** @param callable(): string|null $readInput */
     public function __construct(
-        private readonly TellAgentFactory $agents,
+        private readonly TellPaths $paths,
         ?callable $readInput = null,
     ) {
+        $this->credentials = new TellCredentialStore($paths);
         $this->readInput = match ($readInput) {
             null => static function (): string {
                 $content = file_get_contents('php://stdin');
@@ -104,7 +108,7 @@ HELP)
             throw new InvalidArgumentException('--stdin is valid only for auth set.');
         }
         $provider = $this->optionalProvider($input);
-        $resolver = $this->agents->secretResolver($this->workspace($input));
+        $resolver = new StandardTellSecretResolver($this->paths, $this->workspace($input));
         if ($provider !== null) {
             $variable = $this->variable($input, $provider);
             $resolved = $resolver->resolve($variable);
@@ -125,7 +129,7 @@ HELP)
         }
         $variables = array_values(array_unique([
             ...TellCredentialNames::known(),
-            ...$this->agents->credentials()->variables(),
+            ...$this->credentials->variables(),
         ]));
         sort($variables);
         $credentials = [];
@@ -152,7 +156,7 @@ HELP)
         }
         $variable = $this->variable($input, $provider);
         $value = rtrim(($this->readInput)(), "\r\n");
-        $changed = $this->agents->credentials()->set($variable, $value);
+        $changed = $this->credentials->set($variable, $value);
         $this->write($input, $output, [
             'provider' => $provider,
             'variable' => $variable,
@@ -171,7 +175,7 @@ HELP)
             throw new InvalidArgumentException('--stdin is valid only for auth set.');
         }
         $variable = $this->variable($input, $provider);
-        $removed = $this->agents->credentials()->remove($variable);
+        $removed = $this->credentials->remove($variable);
         $this->write($input, $output, [
             'provider' => $provider,
             'variable' => $variable,

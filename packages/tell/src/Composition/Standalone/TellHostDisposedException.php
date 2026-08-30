@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell\Composition;
+namespace Cognesy\Tell\Composition\Standalone;
 
 use LogicException;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell\Composition;
+namespace Cognesy\Tell\Composition\Standalone;
 
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\TellCapabilityCardinality;

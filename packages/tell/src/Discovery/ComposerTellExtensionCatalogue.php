@@ -22,6 +22,7 @@ final readonly class ComposerTellExtensionCatalogue implements CanCatalogueTellE
         private ?string $rootComposerPath = null,
     ) {}
 
+    #[\Override]
     public function catalogue(string $directory): TellExtensionCatalogue {
         $result = CapabilityDiscovery::discover(
             new AgentCapabilityRegistry(),

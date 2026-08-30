@@ -56,7 +56,7 @@ it('publishes a fresh delegated child on an isolated Tell-owned branch with insp
     });
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     $result = Tell::open($project, $factory)->run(TellRequest::prompt('Delegate this')->durable());
     $arena = new FilesystemArena($workspace);
@@ -65,7 +65,7 @@ it('publishes a fresh delegated child on an isolated Tell-owned branch with insp
     $ref = $arena->readRef('branches/' . $child->toString());
     $provenance = $ref->provenance?->toArray();
 
-    $history = new CommandTester(new WorkspaceInspectionCommand('history', $factory));
+    $history = new CommandTester(new WorkspaceInspectionCommand('history', tellTestWorkspaces()));
     $history->execute(['--dir' => $project, '--branch' => $child->toString(), '--json' => true]);
     $payload = json_decode($history->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $branchProcess = tellChildProcess($project, ['branch', 'show', $child->toString(), '--dir', $project, '--json']);
@@ -116,7 +116,7 @@ it('forks a child from the parent head before the parent advances', function ():
     });
     $project = tellLastTemporaryRoot() . '/fork-project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
     $tell = Tell::open($project, $factory);
 
     $tell->run(TellRequest::prompt('Create context')->durable());
@@ -149,12 +149,12 @@ it('runs a child coding tool under the inherited Tell policy and persists its se
     $project = tellLastTemporaryRoot() . '/child-tool-project';
     mkdir($project, 0755, true);
     file_put_contents($project . '/evidence.txt', "bounded evidence\n");
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     $result = Tell::open($project, $factory)->run(TellRequest::prompt('Delegate tool work')->durable());
     $arena = new FilesystemArena($workspace);
     $child = (new BranchStore($arena, new BranchCurrentSelectionStore($workspace)))->names()[0];
-    $transcript = new CommandTester(new WorkspaceInspectionCommand('transcript', $factory));
+    $transcript = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestWorkspaces()));
     $transcript->execute(['--dir' => $project, '--branch' => $child->toString(), '--full' => true, '--json' => true]);
     $payload = json_decode($transcript->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $toolRows = array_values(array_filter(
@@ -203,7 +203,7 @@ it('rejects a stale child-head publication without moving the parent ref', funct
     });
     $project = tellLastTemporaryRoot() . '/stale-child-project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
     $tell = Tell::open($project, $factory);
 
     $tell->run(TellRequest::prompt('Create parent context')->durable());
@@ -227,7 +227,7 @@ it('does not reserve a child ref for an invalid delegated definition', function 
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver($parent));
     $project = tellLastTemporaryRoot() . '/invalid-definition-project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     expect(fn () => Tell::open($project, $factory)->run(
         TellRequest::prompt('Reject invalid child')->durable(),
@@ -250,7 +250,7 @@ it('leaves a failed child at its initial head without publishing parent or child
     });
     $project = tellLastTemporaryRoot() . '/failed-child-project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     expect(fn () => Tell::open($project, $factory)->run(
         TellRequest::prompt('Delegate failing child')->durable(),
@@ -279,7 +279,7 @@ it('propagates cancellation into a child and leaves both refs unpublished', func
     });
     $project = tellLastTemporaryRoot() . '/cancelled-child-project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     expect(fn () => Tell::open($project, $factory, $cancellation)->run(
         TellRequest::prompt('Delegate cancelled child')->durable(),
@@ -305,7 +305,7 @@ it('rejects delegation from a child without reserving a grandchild branch', func
     });
     $project = tellLastTemporaryRoot() . '/depth-limited-child-project';
     mkdir($project, 0755, true);
-    $workspace = $factory->workspace()->initialize($project)->workspace;
+    $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
     expect(fn () => Tell::open($project, $factory)->run(
         TellRequest::prompt('Reject recursive delegation')->durable(),

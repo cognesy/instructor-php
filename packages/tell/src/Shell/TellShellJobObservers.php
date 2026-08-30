@@ -18,6 +18,7 @@ final readonly class TellShellJobObservers implements CanObserveTellShellJobs
         return new self(Closure::fromCallable($listener));
     }
 
+    #[\Override]
     public function observe(TellShellJobEvent $event): void {
         ($this->listener)($event);
     }

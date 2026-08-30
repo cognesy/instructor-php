@@ -38,7 +38,6 @@
     },
     "require": {
         "php": "^8.3|^8.4|^8.5",
-        "cordis-php/cordis": "^1.0.1",
         "ext-ctype": "*",
         "adbario/php-dot-notation": "^3.3",
         "aimeos/map": "^3.8",

@@ -41,15 +41,16 @@ it('continues a canonical workspace transcript with a fresh Tell process', funct
     $firstFactory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($firstDriver));
     $project = tellWorkspaceProject($firstFactory);
 
-    $first = new CommandTester(new TellCommand($firstFactory));
+    $first = new CommandTester(tellTestCommand($firstFactory));
     expect($first->execute(['prompt' => 'first turn', '--dir' => $project]))->toBe(0);
 
     $secondDriver = new RecordingDriver($recorder, 'second answer');
     $freshFactory = new TellAgentFactory(
         $firstFactory->paths(),
+        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($firstFactory->paths()),
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($secondDriver),
     );
-    $second = new CommandTester(new TellCommand($freshFactory));
+    $second = new CommandTester(tellTestCommand($freshFactory));
     expect($second->execute(['prompt' => 'second turn', '--dir' => $project]))->toBe(0);
 
     $secondRequest = array_map(
@@ -83,7 +84,7 @@ it('continues a canonical workspace transcript with a fresh Tell process', funct
 it('compiles the same canonical head independently of provider selection', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('durable answer')));
     $project = tellWorkspaceProject($factory);
-    (new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'durable prompt', '--dir' => $project]);
+    (new CommandTester(tellTestCommand($factory)))->execute(['prompt' => 'durable prompt', '--dir' => $project]);
 
     $store = new FilesystemArena(tellWorkspace($factory, $project));
     $head = $store->readRef()->head;
@@ -123,7 +124,7 @@ it('writes only semantic canonical data and excludes provider observations', fun
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($driver));
     $project = tellWorkspaceProject($factory);
 
-    expect((new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'persist only semantics', '--dir' => $project]))->toBe(0);
+    expect((new CommandTester(tellTestCommand($factory)))->execute(['prompt' => 'persist only semantics', '--dir' => $project]))->toBe(0);
 
     $arena = implode('', tellWorkspaceArenaSnapshot(tellWorkspace($factory, $project)));
     expect($arena)->toContain('persist only semantics')
@@ -141,7 +142,7 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
     $project = tellWorkspaceProject($factory);
     $workspace = tellWorkspace($factory, $project);
     $before = tellWorkspaceArenaSnapshot($workspace);
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
 
     $status = $tester->execute([
         'prompt' => 'must not publish',
@@ -195,7 +196,7 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
 it('keeps the competing canonical head when a compare-and-swap race loses', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('first answer')));
     $project = tellWorkspaceProject($factory);
-    expect((new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'first turn', '--dir' => $project]))->toBe(0);
+    expect((new CommandTester(tellTestCommand($factory)))->execute(['prompt' => 'first turn', '--dir' => $project]))->toBe(0);
 
     $workspace = tellWorkspace($factory, $project);
     $store = new FilesystemArena($workspace);
@@ -218,6 +219,7 @@ it('keeps the competing canonical head when a compare-and-swap race loses', func
 
     $racingFactory = new TellAgentFactory(
         $factory->paths(),
+        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($factory->paths()),
         static function (AgentLoop $loop) use ($store, $previousHead, $winningHead): AgentLoop {
             return $loop
                 ->withDriver(FakeAgentDriver::fromResponses('lost update'))
@@ -226,7 +228,7 @@ it('keeps the competing canonical head when a compare-and-swap race loses', func
                 });
         },
     );
-    $tester = new CommandTester(new TellCommand($racingFactory));
+    $tester = new CommandTester(tellTestCommand($racingFactory));
     $status = $tester->execute([
         'prompt' => 'concurrent turn',
         '--dir' => $project,
@@ -242,7 +244,7 @@ it('keeps the competing canonical head when a compare-and-swap race loses', func
 it('keeps successful workspace output contracts intact', function (string $mode): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('workspace answer')));
     $project = tellWorkspaceProject($factory);
-    $tester = new CommandTester(new TellCommand($factory));
+    $tester = new CommandTester(tellTestCommand($factory));
     $status = $tester->execute(
         ['prompt' => 'render workspace answer', '--dir' => $project, '--output' => $mode],
         ['capture_stderr_separately' => true],
@@ -270,13 +272,13 @@ it('keeps successful workspace output contracts intact', function (string $mode)
 function tellWorkspaceProject(TellAgentFactory $factory): string {
     $project = tellLastTemporaryRoot() . '/workspace';
     mkdir($project, 0700, true);
-    $factory->workspace()->initialize($project);
+    tellTestWorkspaces()->initialize($project);
 
     return $project;
 }
 
 function tellWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
-    $workspace = $factory->workspace()->discover($project);
+    $workspace = tellTestWorkspaces()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
     }

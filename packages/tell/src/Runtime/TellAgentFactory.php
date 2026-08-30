@@ -24,9 +24,6 @@ use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
-use Cognesy\Agents\Session\SessionRepository;
-use Cognesy\Agents\Session\SessionRuntime;
-use Cognesy\Agents\Session\Store\FileSessionStore;
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\AgentDefinitionValidator;
 use Cognesy\Agents\Template\Data\AgentDefinition;
@@ -37,26 +34,23 @@ use Cognesy\Config\EnvTemplate;
 use Cognesy\Config\Secrets\DotenvFileSecretSource;
 use Cognesy\Config\Secrets\EnvironmentSecretSource;
 use Cognesy\Config\Secrets\SecretResolver;
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Tell\Capability\AskUser\TellAskUserCapability;
 use Cognesy\Tell\Capability\Coding\TellCodingTools;
-use Cognesy\Tell\Configuration\TellConfig;
 use Cognesy\Tell\Configuration\TellCredentialNames;
 use Cognesy\Tell\Configuration\TellCredentialStore;
 use Cognesy\Tell\Configuration\TellExecutionPolicy;
 use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Configuration\TellStorage;
 use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Contracts\CanResolveTellModel;
+use Cognesy\Tell\Contracts\CanTraceTellExecution;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Discovery\StartupScanCounter;
 use Cognesy\Tell\Discovery\TellProviderCatalogue;
-use Cognesy\Tell\Observability\ExecutionTraceWriter;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Observability\StandardTellExecutionTracer;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -70,6 +64,7 @@ final readonly class TellAgentFactory
     /** @param callable(AgentLoop): AgentLoop|null $decorateLoop */
     public function __construct(
         private TellPaths $paths,
+        private CanTraceTellExecution $tracer,
         ?callable $decorateLoop = null,
         ?CanReadTellClock $clock = null,
         private ?CanUseTools $driver = null,
@@ -86,7 +81,9 @@ final readonly class TellAgentFactory
     }
 
     public static function installed(): self {
-        return new self(TellPaths::installed());
+        $paths = TellPaths::installed();
+
+        return new self($paths, new StandardTellExecutionTracer($paths));
     }
 
     public function definitions(string $projectPath): AgentDefinitionRegistry {
@@ -177,7 +174,7 @@ final readonly class TellAgentFactory
         $capabilities->register('use_subagents', new UseSubagents(
             provider: $definitions,
             policy: new SubagentPolicy(maxDepth: 1),
-            executor: $delegation === null ? null : new TellSubagentExecutor($this, $options, $delegation, $diagnostics),
+            executor: $delegation === null ? null : new TellSubagentExecutor($this, $this->tracer, $options, $delegation, $diagnostics),
             currentDepth: $delegation === null ? 0 : $delegation->depth,
         ));
         $capabilities->register('tell.system_prompt', new UseSystemPrompt());
@@ -207,32 +204,11 @@ final readonly class TellAgentFactory
         };
     }
 
-    public function sessions(): SessionRuntime {
-        return new SessionRuntime(
-            sessions: $this->sessionRepository(),
-            events: new EventDispatcher('tell-sessions'),
-        );
-    }
-
-    public function sessionRepository(): SessionRepository {
-        (new TellStorage($this->paths))->ensureSessions();
-
-        return new SessionRepository(new FileSessionStore($this->paths->sessions));
-    }
-
-    public function attachExecutionTrace(AgentLoop $loop, TellOptions $options): void {
-        (new ExecutionTraceWriter($this->paths, $this->config(), $options))->attach($loop);
-    }
-
-    public function config(): TellConfig {
-        return TellConfig::fromFile($this->paths->configFile);
-    }
-
-    public function credentials(): TellCredentialStore {
+    private function credentials(): TellCredentialStore {
         return new TellCredentialStore($this->paths);
     }
 
-    public function secretResolver(string $projectPath): SecretResolver {
+    private function secretResolver(string $projectPath): SecretResolver {
         return new SecretResolver(
             new EnvironmentSecretSource(),
             DotenvFileSecretSource::optional(
@@ -245,10 +221,6 @@ final readonly class TellAgentFactory
 
     public function paths(): TellPaths {
         return $this->paths;
-    }
-
-    public function workspace(): WorkspaceRepository {
-        return new WorkspaceRepository($this->startupScans);
     }
 
     public function assertReady(TellOptions $options): void {

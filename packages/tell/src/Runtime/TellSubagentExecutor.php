@@ -8,6 +8,8 @@ use Cognesy\Agents\Capability\Subagent\CanExecuteSubagent;
 use Cognesy\Agents\Capability\Subagent\SubagentExecutionResult;
 use Cognesy\Agents\Capability\Subagent\SubagentInvocation;
 use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Contracts\CanTraceTellExecution;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Workspace\Arena\Exception\RefConflict;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\Provenance;
@@ -25,6 +27,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
 {
     public function __construct(
         private TellAgentFactory $agents,
+        private CanTraceTellExecution $tracer,
         private TellOptions $parentOptions,
         private TellDelegationScope $scope,
         private ?TellDiagnostics $diagnostics = null,
@@ -55,7 +58,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
             ),
             diagnostics: $this->diagnostics,
         );
-        $this->agents->attachExecutionTrace($loop, $options);
+        $this->tracer->attach($loop, TellRequest::fromOptions($options));
 
         try {
             $state = (new TurnRunner($arena, ref: 'branches/' . $child->toString()))->execute($loop, $definition, $invocation->prompt);

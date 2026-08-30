@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Shell;
 
-use Closure;
 use Cognesy\Tell\Contracts\CanApproveTellShellJobs;
 use Cognesy\Tell\Contracts\CanManageTellShellJobs;
 use Cognesy\Tell\Contracts\CanObserveTellShellJobs;
 use Cognesy\Tell\Data\TellShellJobHealth;
 use Cognesy\Tell\Shell\Exception\TellShellJobHostDisposedException;
-use CordisPhp\Runtime\Fiber;
-use CordisPhp\Runtime\Runtime;
 
 /** Opt-in host for shell jobs that must remain alive beyond one Tell call. */
 final class TellShellJobHost
 {
     private bool $disposed = false;
 
-    /** @param Closure(): void $unsubscribe */
     public function __construct(
-        private readonly Runtime $runtime,
-        private readonly CanManageTellShellJobs $manager,
-        private readonly Closure $unsubscribe,
+        private readonly TellShellJobs $manager,
+        private readonly TellShellJobEventEmitter $events,
     ) {}
 
     public static function shellJobs(
@@ -49,15 +44,10 @@ final class TellShellJobHost
     public function health(): array {
         $this->assertActive();
 
-        return array_map(
-            static fn (Fiber $fiber): TellShellJobHealth => new TellShellJobHealth(
-                module: $fiber->label(),
-                state: $fiber->state()->value,
-                missing: $fiber->missing(),
-                error: $fiber->error() === null ? null : $fiber->error()::class,
-            ),
-            $this->runtime->fibers(),
-        );
+        return [
+            new TellShellJobHealth(module: 'shell.jobs', state: 'active'),
+            ...$this->manager->health(),
+        ];
     }
 
     public function dispose(): void {
@@ -66,9 +56,12 @@ final class TellShellJobHost
         }
         $this->disposed = true;
         try {
-            $this->runtime->dispose();
+            $this->manager->dispose();
         } finally {
-            ($this->unsubscribe)();
+            $this->events->emit('module.disposed', 'shell.jobs', [
+                'previous' => 'active',
+                'current' => 'disposed',
+            ], 'disposed');
         }
     }
 

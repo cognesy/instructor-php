@@ -10,7 +10,9 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Contracts\CanBuildTellAgent;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
@@ -30,10 +32,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class ContextCommand extends Command implements CanDescribeOperationalPlane
 {
-    private readonly TellAgentFactory $agents;
-
-    public function __construct(?TellAgentFactory $agents = null) {
-        $this->agents = $agents ?? TellAgentFactory::installed();
+    public function __construct(
+        private readonly CanBuildTellAgent $agents,
+        private readonly WorkspaceRepository $workspaces,
+    ) {
         parent::__construct('context');
     }
 
@@ -82,7 +84,7 @@ HELP)
                 $options = $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
             }
             $conversation = (new ConversationReader($arena))->read($session, $branch);
-            $definition = $this->agents->definition($options);
+            $definition = $this->agents->definition(TellRequest::fromOptions($options));
             $payload = (new ContextInspector())->inspect(
                 conversation: $conversation,
                 definition: $definition,
@@ -139,7 +141,7 @@ HELP)
     }
 
     private function workspace(string $directory): WorkspaceState {
-        $workspace = $this->agents->workspace()->discover($directory);
+        $workspace = $this->workspaces->discover($directory);
         if ($workspace === null) {
             throw new WorkspaceException('Tell context requires an initialized workspace; run `tell init` first.');
         }

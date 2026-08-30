@@ -15,6 +15,13 @@ Application replacement seams and their dependency rules are documented in
 The minimal factory-backed composition boundary is documented in
 [HOST.md](HOST.md).
 
+Tell core is framework-neutral. Its default headless and CLI profiles use one
+small static composition root under `Composition\Standalone`; runtime services
+receive focused contracts, never a container or provider registry. The CLI adds
+Symfony Console only at its adapter edge. Native Symfony and Laravel integration
+packages are intentionally deferred until a concrete host application needs
+them.
+
 `tell` is a small, non-interactive reference frontend for `cognesy/agents`.
 It loads an agent template, builds the runtime through public APIs, and follows
 the [Agent eXperience Interface](https://axi.md/) at its shell boundary.

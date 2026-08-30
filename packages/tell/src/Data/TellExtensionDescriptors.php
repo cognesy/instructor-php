@@ -24,11 +24,13 @@ final readonly class TellExtensionDescriptors implements Countable, IteratorAggr
         return $this->descriptors;
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->descriptors);
     }
 
     /** @return Traversable<int, TellExtensionDescriptor> */
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->descriptors);
     }

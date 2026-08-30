@@ -9,18 +9,16 @@ use Cognesy\Tell\Contracts\CanManageTellShellJobs;
 use Cognesy\Tell\Data\TellShellJobOutput;
 use Cognesy\Tell\Data\TellShellJobRequest;
 use Cognesy\Tell\Data\TellShellJobSnapshot;
+use Cognesy\Tell\Data\TellShellJobHealth;
 use Cognesy\Tell\Shell\Exception\TellShellJobDeniedException;
 use Cognesy\Tell\Shell\Exception\TellShellJobHostDisposedException;
 use Cognesy\Tell\Shell\Exception\TellShellJobNotFoundException;
 use Cognesy\Tell\Shell\Exception\TellShellJobStartException;
-use CordisPhp\Plugin\PluginDefinition;
-use CordisPhp\Runtime\Context;
-use CordisPhp\Runtime\FiberState;
 use InvalidArgumentException;
 use Throwable;
 
 /** @internal */
-final class CordisTellShellJobs implements CanManageTellShellJobs
+final class TellShellJobs implements CanManageTellShellJobs
 {
     /** @var array<string, TellShellJobRecord> */
     private array $jobs = [];
@@ -28,13 +26,13 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
     private bool $disposed = false;
 
     public function __construct(
-        private readonly Context $context,
         private readonly string $projectDirectory,
         private readonly TellShellJobPolicy $policy,
         private readonly CanApproveTellShellJobs $approval,
         private readonly TellShellJobEventEmitter $events,
     ) {}
 
+    #[\Override]
     public function start(TellShellJobRequest $request): TellShellJobSnapshot {
         $this->assertActive();
         $this->refreshAll();
@@ -47,54 +45,27 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         }
 
         $id = bin2hex(random_bytes(12));
-        $process = null;
-        $fiber = $this->context->plugin(
-            PluginDefinition::fromClosure(function (Context $context) use (
-                &$process,
-                $id,
-                $request,
-                $workingDirectory,
-                $timeoutMs,
-                $maxOutputBytes,
-            ): null {
-                $process = TellShellJobProcess::start(
-                    id: $id,
-                    request: $request,
-                    workingDirectory: $workingDirectory,
-                    timeoutMs: $timeoutMs,
-                    maxRetainedOutputBytes: $maxOutputBytes,
-                    maxReadBytes: $this->policy->maxReadBytes,
-                    cancellationGraceMs: $this->policy->cancellationGraceMs,
-                );
-                $context->scope()->defer(
-                    static function () use ($process): void {
-                        $process->dispose();
-                    },
-                    'shell-job-process',
-                );
-
-                return null;
-            }),
-            label: 'shell.job.' . $id,
-        );
-
-        if (!$process instanceof TellShellJobProcess || $fiber->state() !== FiberState::Active) {
-            $error = $fiber->error();
-            try {
-                $fiber->dispose();
-            } catch (Throwable) {
-                // The startup error remains the primary failure.
-            }
+        try {
+            $process = TellShellJobProcess::start(
+                id: $id,
+                request: $request,
+                workingDirectory: $workingDirectory,
+                timeoutMs: $timeoutMs,
+                maxRetainedOutputBytes: $maxOutputBytes,
+                maxReadBytes: $this->policy->maxReadBytes,
+                cancellationGraceMs: $this->policy->cancellationGraceMs,
+            );
+        } catch (Throwable $error) {
             $this->events->emit(
                 'shell.job.start_failed',
                 'shell.jobs',
-                ['error' => $error === null ? 'unknown' : $error::class],
+                ['error' => $error::class],
                 'failed',
             );
             throw new TellShellJobStartException('The shell job could not be started.', $error);
         }
 
-        $this->jobs[$id] = new TellShellJobRecord($process, $fiber);
+        $this->jobs[$id] = new TellShellJobRecord($process);
         $this->events->emit('shell.job.running', $id, [
             'commandHash' => hash('sha256', $request->command),
             'commandBytes' => strlen($request->command),
@@ -105,6 +76,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         return $process->snapshot();
     }
 
+    #[\Override]
     public function status(string $jobId): TellShellJobSnapshot {
         $this->assertActive();
         $record = $this->record($jobId);
@@ -113,6 +85,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         return $record->process->snapshot();
     }
 
+    #[\Override]
     public function read(string $jobId, int $after = 0): TellShellJobOutput {
         $this->assertActive();
         if ($after < 0) {
@@ -124,6 +97,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         return $record->process->read($after);
     }
 
+    #[\Override]
     public function wait(string $jobId, int $timeoutMs = 30_000): TellShellJobSnapshot {
         $this->assertActive();
         if ($timeoutMs < 1) {
@@ -142,6 +116,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         return $this->status($jobId);
     }
 
+    #[\Override]
     public function cancel(string $jobId): TellShellJobSnapshot {
         $this->assertActive();
         $record = $this->record($jobId);
@@ -151,6 +126,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         return $record->process->snapshot();
     }
 
+    #[\Override]
     public function all(): array {
         $this->assertActive();
         $this->refreshAll();
@@ -168,9 +144,27 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
 
         foreach (array_reverse($this->jobs, true) as $jobId => $record) {
             $record->process->dispose();
-            $this->refresh($jobId, $record, disposeFiber: false);
+            $this->refresh($jobId, $record);
         }
         $this->disposed = true;
+    }
+
+    /** @return list<TellShellJobHealth> */
+    public function health(): array {
+        $this->assertActive();
+        $this->refreshAll();
+        $health = [];
+        foreach ($this->jobs as $jobId => $record) {
+            if ($record->process->snapshot()->isTerminal()) {
+                continue;
+            }
+            $health[] = new TellShellJobHealth(
+                module: 'shell.job.' . $jobId,
+                state: 'active',
+            );
+        }
+
+        return $health;
     }
 
     /** @return array{string, int, int} */
@@ -216,7 +210,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
         }
     }
 
-    private function refresh(string $jobId, TellShellJobRecord $record, bool $disposeFiber = true): void {
+    private function refresh(string $jobId, TellShellJobRecord $record): void {
         $snapshot = $record->process->snapshot();
         if (!$snapshot->isTerminal() || $record->terminalObserved) {
             return;
@@ -234,9 +228,6 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
             ],
             $snapshot->state->value,
         );
-        if ($disposeFiber) {
-            $record->fiber->dispose();
-        }
     }
 
     private function record(string $jobId): TellShellJobRecord {

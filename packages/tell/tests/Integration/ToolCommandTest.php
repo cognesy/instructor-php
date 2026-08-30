@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Command\ToolCommand;
 use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Runtime\TellRuntime;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
@@ -17,7 +18,7 @@ it('invokes the resolved canonical tool directly without inference or workspace 
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(new RecordingDriver($recorder)));
     $directory = tellLastTemporaryRoot();
     file_put_contents($directory . '/note.txt', "direct evidence\n");
-    $tester = new CommandTester(new ToolCommand($factory));
+    $tester = new CommandTester(new ToolCommand(tellTestToolDispatcher($factory)));
 
     $status = $tester->execute([
         'name' => 'read_file',
@@ -39,7 +40,7 @@ it('invokes the resolved canonical tool directly without inference or workspace 
 it('uses the exact resolved allow-list and strict tool schema', function (): void {
     $factory = tellTestFactory();
     $directory = tellLastTemporaryRoot();
-    $tester = new CommandTester(new ToolCommand($factory));
+    $tester = new CommandTester(new ToolCommand(tellTestToolDispatcher($factory)));
 
     $disabled = $tester->execute([
         'name' => 'shell',
@@ -68,7 +69,7 @@ it('uses the exact resolved allow-list and strict tool schema', function (): voi
 it('honours direct policy rejection and emits normalized payload-free events', function (): void {
     $factory = tellTestFactory();
     $directory = tellLastTemporaryRoot();
-    $tester = new CommandTester(new ToolCommand($factory));
+    $tester = new CommandTester(new ToolCommand(tellTestToolDispatcher($factory)));
 
     $blocked = $tester->execute([
         'name' => 'shell',
@@ -101,7 +102,7 @@ it('honours direct policy rejection and emits normalized payload-free events', f
 
 it('rejects ambiguous and malformed argument sources with usage exit code two', function (): void {
     $factory = tellTestFactory();
-    $tester = new CommandTester(new ToolCommand($factory));
+    $tester = new CommandTester(new ToolCommand(tellTestToolDispatcher($factory)));
 
     $ambiguous = $tester->execute([
         'name' => 'read_file',
@@ -130,7 +131,7 @@ it('reports bounded timeouts and pre-cancelled direct work without inference', f
     $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(new RecordingDriver($recorder)));
     $directory = tellLastTemporaryRoot();
-    $tester = new CommandTester(new ToolCommand($factory));
+    $tester = new CommandTester(new ToolCommand(tellTestToolDispatcher($factory)));
 
     $timeout = $tester->execute([
         'name' => 'shell',
@@ -143,7 +144,17 @@ it('reports bounded timeouts and pre-cancelled direct work without inference', f
 
     $cancellation = new TellSignalCancellationSource();
     $cancellation->cancel();
-    $cancelled = (new TellToolDispatcher($factory, $cancellation))->dispatch(
+    $agents = tellTestAgents($factory);
+    $cancelled = (new TellToolDispatcher(
+        $agents,
+        new TellRuntime(
+            agents: $agents,
+            workspaces: tellTestWorkspaces(),
+            paths: $factory->paths(),
+            tracer: new \Cognesy\Tell\Observability\StandardTellExecutionTracer($factory->paths()),
+        ),
+        $cancellation,
+    ))->dispatch(
         new TellOptions(prompt: 'direct', directory: $directory),
         'shell',
         ['command' => 'printf never'],
