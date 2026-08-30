@@ -207,10 +207,8 @@
             "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
             "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
             "Tests\\": "tests/",
-            "Tests\\Addons\\": "packages/addons/tests/",
             "Evals\\": "evals/",
-            "Examples\\": "examples/",
-            "Tests\\Addons\\Support\\": "packages/addons/tests/Support/"
+            "Examples\\": "examples/"
         },
         "files": [
             "packages/addons/tests/Examples/Call/test_functions.php",

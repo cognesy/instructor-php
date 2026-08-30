@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Tools;
+namespace Cognesy\Addons\Tests\Unit\Tools;
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
@@ -25,7 +25,7 @@ use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Result\Result;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;

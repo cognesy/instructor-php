@@ -21,7 +21,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 
 function react_add_numbers(int $a, int $b): int {

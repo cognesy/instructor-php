@@ -13,7 +13,7 @@ use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 
 function _noop_feat(): string { return 'ok'; }

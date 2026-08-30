@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Drivers;
+namespace Cognesy\Addons\Tests\Unit\Drivers;
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
@@ -21,7 +21,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 
 function _react_add(int $a, int $b): int { return $a + $b; }

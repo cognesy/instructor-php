@@ -10,7 +10,7 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     $human = new ExternalParticipant(

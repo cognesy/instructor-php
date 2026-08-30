@@ -14,7 +14,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Tokenizer;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 it('moves overflow messages into buffer while keeping recent messages', function () {
     $messages = Messages::fromString('First message.', 'user')

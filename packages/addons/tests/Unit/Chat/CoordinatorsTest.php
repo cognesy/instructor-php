@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Chat;
+namespace Cognesy\Addons\Tests\Unit\Chat;
 
 use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
@@ -11,7 +11,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 it('LLMBasedCoordinator selects participant by LLM response', function () {
     $p1 = new class implements CanParticipateInChat {

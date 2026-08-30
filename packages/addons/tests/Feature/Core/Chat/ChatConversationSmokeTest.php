@@ -12,7 +12,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 it('runs multi-participant chat with proper turn-taking and conversation history', function () {
     // Setup participants similar to the ChatWithManyParticipants example

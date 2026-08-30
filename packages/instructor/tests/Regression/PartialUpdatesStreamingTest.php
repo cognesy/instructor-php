@@ -4,7 +4,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 
 class StreamUser
 {

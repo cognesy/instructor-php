@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Collaboration;
+namespace Cognesy\Addons\Tests\Unit\Collaboration;
 
 use Cognesy\Addons\Collaboration\Collaboration;
 use Cognesy\Addons\Collaboration\Collections\Collaborators;

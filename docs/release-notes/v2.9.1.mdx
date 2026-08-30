@@ -1,0 +1,21 @@
+---
+title: 'v2.9.1'
+---
+
+v2.9.1 corrects the standalone test namespace of the Addons package. The
+v2.9.0 package split was published successfully, but its post-publication
+package matrix exposed a test-only PSR-4 mismatch that the monorepo root
+autoload configuration had masked.
+
+## Addons Package Verification
+
+- Addons tests now use the package's declared `Cognesy\\Addons\\Tests`
+  namespace consistently.
+- Root-only autoload aliases for the old test namespace are removed, so local
+  verification exercises the same boundary as the split package.
+- Instructor regression tests import the corrected Addons test support
+  namespace.
+
+This patch does not change the Addons runtime API. It restores clean standalone
+package verification for the architecture and reasoning changes released in
+v2.9.0.

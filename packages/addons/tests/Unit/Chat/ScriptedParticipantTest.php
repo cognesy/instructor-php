@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Chat;
+namespace Cognesy\Addons\Tests\Unit\Chat;
 
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\ChatResponseRequested;

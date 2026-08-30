@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Addons\Tests\Unit\Core;
 
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
