@@ -1,0 +1,16 @@
+---
+title: 'v2.9.5'
+---
+
+v2.9.5 makes Tell's subprocess integration tests portable to standalone
+package installations.
+
+## Standalone Tell Verification
+
+- Arena concurrency workers receive the active package-aware Composer
+  autoloader explicitly instead of inferring a monorepo layout.
+- The ordinary-host isolation test uses the same package-aware test autoloader.
+- Released-package verification now exercises these subprocess contracts on
+  PHP 8.3, 8.4, and 8.5.
+
+No runtime API changes or application migration steps are required.

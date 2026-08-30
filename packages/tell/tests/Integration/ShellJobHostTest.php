@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
+use Cognesy\Tell\Tests\Support\TestAutoload;
 use Cognesy\Tell\Data\TellShellJobApproval;
 use Cognesy\Tell\Data\TellShellJobEvent;
 use Cognesy\Tell\Data\TellShellJobRequest;
@@ -259,7 +260,7 @@ it('abandons a running process before disposing its owner module', function (): 
 it('keeps the ordinary deterministic Tell host Cordis-free', function (): void {
     $project = tellTestProject();
     $worker = dirname(__DIR__) . '/Fixtures/ordinary-host-worker.php';
-    $process = new Process([PHP_BINARY, $worker, dirname(__DIR__, 4) . '/vendor/autoload.php', $project]);
+    $process = new Process([PHP_BINARY, $worker, TestAutoload::path(), $project]);
     $process->mustRun();
 
     expect(trim($process->getOutput()))->toBe('cordis=not-loaded');

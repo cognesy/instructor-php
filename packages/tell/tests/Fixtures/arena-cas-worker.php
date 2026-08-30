@@ -13,23 +13,18 @@ use Cognesy\Tell\Workspace\Branch\Storage\BranchStore;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use Cognesy\Tell\Workspace\WorkspaceRepository;
 
-$packageRoot = dirname(__DIR__, 2);
-$monorepoRoot = dirname(__DIR__, 4);
-$autoload = is_dir($monorepoRoot . '/packages/tell')
-    ? $monorepoRoot . '/vendor/autoload.php'
-    : $packageRoot . '/vendor/autoload.php';
-
+$autoload = $argv[1] ?? throw new RuntimeException('Missing Composer autoloader path.');
 require $autoload;
 
-$workspace = (new WorkspaceRepository())->discover($argv[1] ?? '');
+$workspace = (new WorkspaceRepository())->discover($argv[2] ?? '');
 if ($workspace === null) {
     fwrite(STDERR, "workspace not found\n");
     exit(2);
 }
 $store = new FilesystemArena($workspace);
 $branches = new BranchStore($store, new BranchCurrentSelectionStore($workspace));
-$mode = $argv[2] ?? '';
-$gate = $argv[4] ?? '';
+$mode = $argv[3] ?? '';
+$gate = $argv[5] ?? '';
 
 if ($gate !== '') {
     if (file_put_contents($gate . '.' . getmypid() . '.ready', 'ready') === false) {
@@ -53,7 +48,7 @@ if ($mode === 'put') {
 
 if ($mode === 'publish') {
     try {
-        $store->compareAndSwap('main', null, new ObjectHash($argv[3] ?? ''));
+        $store->compareAndSwap('main', null, new ObjectHash($argv[4] ?? ''));
         echo "published\n";
     } catch (RefConflict) {
         echo "conflict\n";
@@ -63,7 +58,7 @@ if ($mode === 'publish') {
 
 if ($mode === 'clear') {
     try {
-        $store->compareAndSwapToEmpty('main', new ObjectHash($argv[3] ?? ''));
+        $store->compareAndSwapToEmpty('main', new ObjectHash($argv[4] ?? ''));
         echo "cleared\n";
     } catch (RefConflict) {
         echo "conflict\n";
@@ -73,7 +68,7 @@ if ($mode === 'clear') {
 
 if ($mode === 'branch-create') {
     try {
-        $branches->create(BranchName::from($argv[3] ?? ''), $store->readRef());
+        $branches->create(BranchName::from($argv[4] ?? ''), $store->readRef());
         echo "created\n";
     } catch (RefConflict) {
         echo "conflict\n";
@@ -82,7 +77,7 @@ if ($mode === 'branch-create') {
 }
 
 if ($mode === 'checkout') {
-    $branches->checkout($argv[3] ?? '');
+    $branches->checkout($argv[4] ?? '');
     echo "checked-out\n";
     exit(0);
 }
@@ -94,7 +89,7 @@ if ($mode === 'branch-current') {
 
 if ($mode === 'config-set') {
     try {
-        (new BranchConfigStore($workspace))->set($argv[3] ?? 'main', 'model', 'worker-' . getmypid(), 0);
+        (new BranchConfigStore($workspace))->set($argv[4] ?? 'main', 'model', 'worker-' . getmypid(), 0);
         echo "configured\n";
     } catch (WorkspaceException) {
         echo "conflict\n";

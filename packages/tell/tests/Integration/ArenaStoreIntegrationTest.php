@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
+use Cognesy\Tell\Tests\Support\TestAutoload;
 use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Cognesy\Tell\Workspace\Arena\ObjectHash;
 use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
@@ -153,7 +154,7 @@ function tellArenaWorkers(string $root, string $mode, ?string $hash = null): arr
 
 /** @return array{process: resource, pipes: array<int, resource>} */
 function tellArenaStartWorker(string $root, string $mode, ?string $hash, string $gate): array {
-    $command = [PHP_BINARY, __DIR__ . '/../Fixtures/arena-cas-worker.php', $root, $mode, $hash ?? ''];
+    $command = [PHP_BINARY, __DIR__ . '/../Fixtures/arena-cas-worker.php', TestAutoload::path(), $root, $mode, $hash ?? ''];
     $command[] = $gate;
     $process = proc_open($command, [
         0 => ['pipe', 'r'],
@@ -170,7 +171,7 @@ function tellArenaStartWorker(string $root, string $mode, ?string $hash, string 
 
 /** @return array{0: string, 1: int} */
 function tellArenaSingleWorker(string $root, string $mode, ?string $value = null): array {
-    $command = [PHP_BINARY, __DIR__ . '/../Fixtures/arena-cas-worker.php', $root, $mode, $value ?? ''];
+    $command = [PHP_BINARY, __DIR__ . '/../Fixtures/arena-cas-worker.php', TestAutoload::path(), $root, $mode, $value ?? ''];
     $process = proc_open($command, [
         0 => ['pipe', 'r'],
         1 => ['pipe', 'w'],
