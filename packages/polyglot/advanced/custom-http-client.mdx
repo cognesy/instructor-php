@@ -42,7 +42,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="94bb"
+// @doctest id="149a"
 ```
 
 When no HTTP client is provided, Polyglot creates a default one with sensible timeouts. The
@@ -79,7 +79,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $http = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="656d"
+// @doctest id="6779"
 ```
 
 You can also inject a pre-configured client instance from your application's service container:
@@ -97,7 +97,7 @@ $guzzleClient = new \GuzzleHttp\Client([
 $http = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzleClient)
     ->create();
-// @doctest id="1044"
+// @doctest id="fed4"
 ```
 
 This is particularly useful when your application requires proxy configuration, custom SSL
@@ -126,7 +126,7 @@ $httpClient = (new HttpClientBuilder())
         maxDelayMs: 8000,
     ))
     ->create();
-// @doctest id="66fc"
+// @doctest id="18d7"
 ```
 
 ### Circuit Breaker
@@ -145,7 +145,7 @@ $httpClient = (new HttpClientBuilder())
         openForSec: 30,
     ))
     ->create();
-// @doctest id="27d2"
+// @doctest id="c936"
 ```
 
 ### Combining Multiple Middleware
@@ -166,7 +166,7 @@ $httpClient = (new HttpClientBuilder())
         openForSec: 30,
     ))
     ->create();
-// @doctest id="de69"
+// @doctest id="9333"
 ```
 
 ### Custom Middleware
@@ -182,7 +182,7 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 $httpClient = (new HttpClientBuilder())
     ->withMiddleware(new MyLoggingMiddleware(), new MyMetricsMiddleware())
     ->create();
-// @doctest id="ef30"
+// @doctest id="3aaa"
 ```
 
 
@@ -214,7 +214,7 @@ $runtime = EmbeddingsRuntime::fromConfig(
 );
 
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="f445"
+// @doctest id="864b"
 ```
 
 
@@ -246,7 +246,7 @@ $inference = Inference::fromRuntime(
 $embeddings = Embeddings::fromRuntime(
     EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromPreset('openai'), httpClient: $http)
 );
-// @doctest id="7114"
+// @doctest id="9404"
 ```
 
 This ensures both services share the same retry policy, circuit breaker state, and
