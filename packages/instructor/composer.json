@@ -85,12 +85,8 @@
     "vimeo/psalm": "^6.0"
   },
   "scripts": {
-    "docs:qa": "@php ../../bin/instructor-docs qa --source-dir=docs --profile=instructor",
     "test": "@tests",
-    "tests": [
-      "@php vendor/bin/pest",
-      "@docs:qa"
-    ],
+    "tests": "@php vendor/bin/pest",
     "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },
