@@ -18,7 +18,7 @@ $text = Inference::using('openai')
         ReasoningSelection::effort(ReasoningEffort::High),
     )
     ->get();
-// @doctest id="7b90"
+// @doctest id="d5c0"
 ```
 
 The portable effort vocabulary is `minimal`, `low`, `medium`, `high`,
@@ -40,7 +40,7 @@ ReasoningSelection::effort(ReasoningEffort::Medium);
 ReasoningSelection::budget(4096);
 ReasoningSelection::adaptive();
 ReasoningSelection::adaptive(ReasoningEffort::High);
-// @doctest id="2c48"
+// @doctest id="bf14"
 ```
 
 `providerDefault()` is non-invasive: Polyglot emits no reasoning field, so
