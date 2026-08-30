@@ -14,6 +14,7 @@ use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
 
 /**
@@ -162,7 +163,7 @@ final class BusyIndicator
      * state the parent changes after the fork.
      */
     private function spawn(): void {
-        if (!self::canAnimate()) {
+        if (!$this->canAnimateOnOutput()) {
             return;
         }
         $pair = @stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
@@ -234,6 +235,12 @@ final class BusyIndicator
 
     private function erase(): void {
         $this->write("\r\033[K");
+    }
+
+    private function canAnimateOnOutput(): bool {
+        return $this->stderr instanceof StreamOutput
+            && $this->stderr->getStream() === STDERR
+            && self::canAnimate();
     }
 
     private function elapsed(float $seconds): string {

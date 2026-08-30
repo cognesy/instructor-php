@@ -1,0 +1,20 @@
+---
+title: 'v2.9.3'
+---
+
+v2.9.3 corrects the HTTP Client integration-test server used by split-package
+verification. v2.9.2 published the standalone package contracts successfully,
+but its released-artifact matrix exposed a monorepo-relative autoloader path in
+the HTTP Client test server.
+
+## HTTP Client Package Verification
+
+- The integration server resolves Composer's autoloader in both standalone
+  packages and the monorepo.
+- Test servers use a package-owned process instead of a shell child, allowing
+  deterministic teardown after the suite.
+- Test ports are allocated dynamically and failure diagnostics retain the
+  actual attempted port.
+
+No runtime API changes or application migration steps are required. Consumers
+adopting the v2.9 Tell and reasoning changes should use v2.9.3.

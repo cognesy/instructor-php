@@ -1,177 +1,126 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Cognesy\Http\Tests\Support;
 
-/**
- * Local HTTP test server for integration tests
- * Provides fast, reliable HTTPBin-like endpoints for real HTTP testing
- */
-class IntegrationTestServer
+/** Local HTTP server owned by the http-client integration test suite. */
+final class IntegrationTestServer
 {
-    private static $process = null;
+    private static mixed $process = null;
     private static int $port = 0;
     private static string $baseUrl = '';
-    private static bool $started = false;
-    
+
     public static function start(): string
     {
-        if (self::$started && self::isServerRunning()) {
+        if (self::isRunning()) {
             return self::$baseUrl;
         }
-        
-        self::stop(); // Clean up any existing process
-        
-        // Find available port
-        self::$port = self::findAvailablePort();
-        self::$baseUrl = 'http://localhost:' . self::$port;
-        
-        // Create server script
-        $serverScript = self::createServerScript();
-        
-        // Start PHP built-in server with output suppression
-        $command = sprintf('php -S localhost:%d %s 2>/dev/null', self::$port, $serverScript);
-        
-        $descriptorSpec = [
-            0 => ['pipe', 'r'],  // stdin
-            1 => ['pipe', 'w'],  // stdout 
-            2 => ['pipe', 'w'],  // stderr
-        ];
-        
-        self::$process = proc_open($command, $descriptorSpec, $pipes, __DIR__);
-        
+
+        self::stop();
+        self::$port = self::availablePort();
+        self::$baseUrl = sprintf('http://127.0.0.1:%d', self::$port);
+        self::$process = proc_open(
+            [PHP_BINARY, '-S', sprintf('127.0.0.1:%d', self::$port), __DIR__ . '/HttpTestServer.php'],
+            [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ],
+            $pipes,
+            __DIR__,
+        );
+
         if (!is_resource(self::$process)) {
-            throw new \RuntimeException('Failed to start integration test HTTP server');
+            throw new \RuntimeException('Failed to start the HTTP client test server');
         }
-        
-        // Close pipes to prevent hanging
-        foreach ($pipes as $pipe) {
-            fclose($pipe);
-        }
-        
-        // Give PHP server more time to start and bind to port
-        usleep(200000); // 200ms initial wait
-        
-        // Wait for server to start with timeout and longer intervals
-        $maxRetries = 25; // 5 seconds max (25 * 200ms)
-        for ($i = 0; $i < $maxRetries; $i++) {
-            if (self::isServerRunning()) {
-                self::$started = true;
+
+        array_walk($pipes, static fn($pipe) => fclose($pipe));
+
+        for ($attempt = 0; $attempt < 25; $attempt++) {
+            if (self::responds()) {
                 return self::$baseUrl;
             }
-            usleep(200000); // 200ms between checks
+            usleep(200_000);
         }
-        
-        // Get process status for debugging
+
+        $port = self::$port;
         $status = proc_get_status(self::$process);
         self::stop();
-        
-        throw new \RuntimeException(
-            "Integration test HTTP server failed to start on port " . self::$port . 
-            ". Process running: " . ($status['running'] ? 'yes' : 'no') .
-            ". Exit code: " . ($status['exitcode'] ?? 'unknown')
-        );
+
+        throw new \RuntimeException(sprintf(
+            'HTTP client test server failed to start on port %d. Process running: %s. Exit code: %d',
+            $port,
+            $status['running'] ? 'yes' : 'no',
+            $status['exitcode'],
+        ));
     }
-    
+
     public static function stop(): void
     {
-        if (self::$process !== null) {
-            $status = proc_get_status(self::$process);
-            if ($status['running']) {
-                // Try graceful termination first
-                proc_terminate(self::$process, 15); // SIGTERM
-                
-                // Wait for graceful shutdown
-                for ($i = 0; $i < 10; $i++) {
-                    usleep(100000); // 100ms
-                    $status = proc_get_status(self::$process);
-                    if (!$status['running']) {
-                        break;
-                    }
-                }
-                
-                // Force kill if still running
-                if ($status['running']) {
-                    proc_terminate(self::$process, 9); // SIGKILL
-                    usleep(100000); // Give it time to die
-                }
-            }
-            proc_close(self::$process);
-            self::$process = null;
+        if (!is_resource(self::$process)) {
+            self::reset();
+            return;
         }
-        
-        // Note: HttpTestServer.php is a permanent file, no cleanup needed
-        
-        // Reset state
-        self::$started = false;
-        self::$port = 0;
-        self::$baseUrl = '';
+
+        proc_terminate(self::$process);
+        proc_close(self::$process);
+        self::reset();
     }
-    
+
     public static function getBaseUrl(): string
     {
         return self::$baseUrl;
     }
-    
+
     public static function isRunning(): bool
     {
-        return self::$started && self::isServerRunning();
+        return is_resource(self::$process) && self::responds();
     }
-    
-    private static function isServerRunning(): bool
+
+    private static function responds(): bool
     {
-        if (empty(self::$baseUrl) || self::$port === 0) {
+        if (self::$baseUrl === '') {
             return false;
         }
-        
-        // First check if the port is responding at all
-        $connection = @fsockopen('localhost', self::$port, $errno, $errstr, 1);
-        if (!$connection) {
+
+        set_error_handler(static fn(): bool => true);
+        $connection = fsockopen('127.0.0.1', self::$port, $errorCode, $errorMessage, 1);
+        restore_error_handler();
+        if (!is_resource($connection)) {
             return false;
         }
         fclose($connection);
-        
-        // Then check if it's actually our HTTP server
-        $context = stream_context_create([
-            'http' => [
-                'timeout' => 2,
-                'method' => 'GET',
-                'ignore_errors' => true
-            ]
-        ]);
-        
-        $result = @file_get_contents(self::$baseUrl . '/health', false, $context);
-        return $result !== false && trim($result) === 'OK';
+
+        $context = stream_context_create(['http' => ['timeout' => 1]]);
+        set_error_handler(static fn(): bool => true);
+        $response = file_get_contents(self::$baseUrl . '/health', false, $context);
+        restore_error_handler();
+
+        return $response === 'OK';
     }
-    
-    private static function findAvailablePort(int $startPort = 8950): int
+
+    private static function availablePort(): int
     {
-        // Use a simple deterministic port based on process ID to avoid conflicts
-        $basePort = $startPort + (getmypid() % 50);
-        
-        // Try a few ports starting from our base
-        for ($i = 0; $i < 10; $i++) {
-            $port = $basePort + $i;
-            
-            // Simple check without generating warnings
-            $errno = $errstr = null;
-            set_error_handler(function() {}); // Temporary error handler
-            $connection = fsockopen('localhost', $port, $errno, $errstr, 0.1);
-            restore_error_handler(); // Restore original error handler
-            
-            if (!$connection) {
-                return $port; // Port is available
-            } else {
-                fclose($connection);
-            }
+        $socket = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
+        if (!is_resource($socket)) {
+            throw new \RuntimeException(sprintf('Failed to reserve test server port: %s', $errorMessage));
         }
-        
-        // Fallback to a random high port
-        return rand(9000, 9999);
+
+        $address = stream_socket_get_name($socket, false);
+        fclose($socket);
+
+        if (!is_string($address)) {
+            throw new \RuntimeException('Failed to determine test server port');
+        }
+
+        return (int) substr($address, (int) strrpos($address, ':') + 1);
     }
-    
-    private static function createServerScript(): string
+
+    private static function reset(): void
     {
-        // Use the separate HttpTestServer.php file
-        return __DIR__ . '/HttpTestServer.php';
+        self::$process = null;
+        self::$port = 0;
+        self::$baseUrl = '';
     }
 }

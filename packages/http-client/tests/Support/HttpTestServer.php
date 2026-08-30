@@ -1,10 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 // HTTP Test Server - Entry point for integration testing
 // This script is executed by PHP's built-in server
 
-// Include the autoloader
-require_once __DIR__ . '/../../../../vendor/autoload.php';
+$autoloaders = [
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../../../../vendor/autoload.php',
+];
+$autoloader = null;
+foreach ($autoloaders as $candidate) {
+    if (is_file($candidate)) {
+        $autoloader = $candidate;
+        break;
+    }
+}
+
+if ($autoloader === null) {
+    throw new RuntimeException('Unable to locate the Composer autoloader');
+}
+
+require_once $autoloader;
 
 use Cognesy\Http\Tests\Support\HttpTestRouter;
 
