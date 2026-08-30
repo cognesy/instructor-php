@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.9.3",
                 "release-notes/v2.9.2",
                 "release-notes/v2.9.1",
                 "release-notes/v2.9.0",
