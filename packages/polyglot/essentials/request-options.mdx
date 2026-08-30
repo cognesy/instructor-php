@@ -22,7 +22,7 @@ $text = Inference::using('openai')
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="cfe6"
+// @doctest id="412c"
 ```
 
 Options are merged additively -- calling `withOptions()` multiple times will merge the
@@ -41,7 +41,7 @@ $options = [
     'presence_penalty' => 0.0,    // Penalize repeated topics
     'stop' => ["\n\n", "User:"],  // Stop sequences
 ];
-// @doctest id="6f6b"
+// @doctest id="6122"
 ```
 
 ## Dedicated Helpers Over Raw Options
@@ -49,14 +49,19 @@ $options = [
 For common behaviors, prefer the dedicated fluent helpers instead of manually placing
 values in the `options` array. The helpers ensure correct handling across all providers:
 
-| Instead of this...                         | Use this...                   |
-|--------------------------------------------|-------------------------------|
-| `withOptions(['stream' => true])`          | `withStreaming(true)`         |
-| `withOptions(['max_tokens' => 256])`       | `withMaxTokens(256)`         |
-| `withOptions(['retryPolicy' => [...]])`    | `withRetryPolicy($policy)`   |
+| Instead of this... | Use this... |
+| --- | --- |
+| `withOptions(['stream' => true])` | `withStreaming(true)` |
+| `withOptions(['max_tokens' => 256])` | `withMaxTokens(256)` |
+| `withOptions(['reasoning_effort' => ...])` | `withReasoning(...)` |
+| `withOptions(['retryPolicy' => [...]])` | `withRetryPolicy($policy)` |
 
 These helpers set values that the request builder manages separately from the raw
 options array, ensuring they are applied correctly regardless of the provider.
+
+Do not combine typed reasoning with raw reasoning keys. Polyglot rejects that
+ambiguous request instead of silently allowing one setting to override the
+other.
 
 ## Provider-Specific Options
 
@@ -74,7 +79,7 @@ $response = Inference::using('openai')
         'presence_penalty' => 0.3,
     ])
     ->get();
-// @doctest id="76a2"
+// @doctest id="977e"
 ```
 
 ### Anthropic
@@ -88,7 +93,7 @@ $response = Inference::using('anthropic')
         'top_k' => 40,
     ])
     ->get();
-// @doctest id="36c5"
+// @doctest id="1936"
 ```
 
 ## Retry Policy
@@ -113,7 +118,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('Summarize this article.'))
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="e2b8"
+// @doctest id="d0ec"
 ```
 
 The retry policy supports exponential backoff with configurable jitter and can also
@@ -145,7 +150,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
-// @doctest id="3282"
+// @doctest id="3e04"
 ```
 
 Available policies:
@@ -178,7 +183,7 @@ $base = Inference::using('openai')->withCachedContext(
 // Each call inherits the cached context automatically
 $response1 = $base->withMessages(Messages::fromString('Explain SOLID principles.'))->get();
 $response2 = $base->withMessages(Messages::fromString('What is the Repository pattern?'))->get();
-// @doctest id="986b"
+// @doctest id="9466"
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

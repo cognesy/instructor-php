@@ -18,7 +18,7 @@ interface CanProcessInferenceRequest
 
     public function capabilities(?string $model = null): DriverCapabilities;
 }
-// @doctest id="9a53"
+// @doctest id="30c2"
 ```
 
 | Method | Purpose |
@@ -55,7 +55,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config, drivers: $drivers)
     ->withMessages(Messages::fromString('Hello from Acme!'))
     ->get();
-// @doctest id="a91a"
+// @doctest id="7043"
 ```
 
 ### Registering a Driver Spec
@@ -76,7 +76,7 @@ $drivers = BundledInferenceDrivers::registry()
         bodyFormat: AcmeBodyFormat::class,
         capabilities: new DriverCapabilities(responseFormatWithTools: false),
     ));
-// @doctest id="864f"
+// @doctest id="5bed"
 ```
 
 The spec's other fields -- `requestAdapter`, `responseAdapter`, `usageFormat`, `messageFormat`
@@ -107,7 +107,7 @@ $drivers = BundledInferenceDrivers::registry()
         bodyFormat: OpenAIBodyFormat::class,
         driverClass: LoggingDriver::class,
     ));
-// @doctest id="7234"
+// @doctest id="d536"
 ```
 
 ### Registering a Driver Factory
@@ -125,7 +125,7 @@ use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 $drivers = BundledInferenceDrivers::registry()
     ->withDriver('custom', fn($config, $httpClient, $events) => new AcmeDriver($config, $httpClient, $events))
     ->withDriver('custom-by-name', AcmeDriver::class);
-// @doctest id="fd5d"
+// @doctest id="7e82"
 ```
 
 ### Using the Registry with InferenceRuntime
@@ -145,7 +145,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="c1e2"
+// @doctest id="37be"
 ```
 
 Or use the `drivers` parameter on `Inference::fromConfig()` or `Inference::using()`:
@@ -158,7 +158,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('acme', drivers: $drivers)
     ->withMessages(Messages::fromString('Hello!'))
     ->get();
-// @doctest id="9898"
+// @doctest id="d70b"
 ```
 
 ### Implementing a Full Driver
@@ -197,7 +197,7 @@ final class AcmeRequestAdapter extends BaseHttpRequestAdapter
         ];
     }
 }
-// @doctest id="dd20"
+// @doctest id="8b5e"
 ```
 
 All bundled providers follow this modular adapter pattern and are declared as an
@@ -215,7 +215,7 @@ interface CanHandleVectorization
 {
     public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
 }
-// @doctest id="954f"
+// @doctest id="7172"
 ```
 
 The driver owns its complete provider boundary: translating the request, sending it, decoding
@@ -231,7 +231,7 @@ the same deployment that upgrades Polyglot:
 - public function handle(EmbeddingsRequest $request): HttpResponse;
 - public function fromData(array $data): ?EmbeddingsResponse;
 + public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
-// @doctest id="c19b"
+// @doctest id="b28f"
 ```
 
 Move the HTTP response decoding and response-adapter call into `handle()`. Drivers extending
@@ -265,7 +265,7 @@ $config = new EmbeddingsConfig(
 $embeddings = Embeddings::fromRuntime(
     EmbeddingsRuntime::fromConfig($config, drivers: $drivers)
 );
-// @doctest id="9433"
+// @doctest id="4227"
 ```
 
 Like inference drivers, you can also pass a callable factory instead of a class string:
@@ -280,7 +280,7 @@ $drivers = BundledEmbeddingsDrivers::registry()
     ->withDriver('acme', function ($config, $httpClient, $events) {
         return new AcmeEmbeddingsDriver($config, $httpClient, $events);
     });
-// @doctest id="eab1"
+// @doctest id="0c73"
 ```
 
 > **Note:** The `EmbeddingsDriverRegistry` is immutable -- each mutation returns a new instance,
@@ -304,7 +304,7 @@ $drivers = BundledInferenceDrivers::registry()
 // Replace a driver
 $drivers = BundledInferenceDrivers::registry()
     ->withDriver('openai', MyCustomOpenAIDriver::class);
-// @doctest id="1065"
+// @doctest id="20f8"
 ```
 
 
@@ -379,5 +379,5 @@ $runtime->wiretap(function ($event) {
 $response = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Hello!'))
     ->get();
-// @doctest id="75b7"
+// @doctest id="3e31"
 ```

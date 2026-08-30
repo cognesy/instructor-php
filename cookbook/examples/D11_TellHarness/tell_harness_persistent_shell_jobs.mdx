@@ -1,6 +1,6 @@
 ## Overview
 
-Boot the opt-in Tell resource host, approve a bounded shell job, read its output
+Boot the opt-in Tell shell-job host, approve a bounded shell job, read its output
 after `start()` returns, and release every process with one explicit owner. The
 ordinary Tell SDK and CLI do not boot this Cordis-backed host.
 
@@ -11,16 +11,16 @@ ordinary Tell SDK and CLI do not boot this Cordis-backed host.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Resource\TellResourceObservers;
-use Cognesy\Tell\Resource\TellShellJobApprovals;
-use Cognesy\Tell\Resource\TellResourceEvent;
-use Cognesy\Tell\Resource\TellResourceHost;
+use Cognesy\Tell\Shell\TellShellJobObservers;
+use Cognesy\Tell\Shell\TellShellJobApprovals;
+use Cognesy\Tell\Data\TellShellJobEvent;
+use Cognesy\Tell\Shell\TellShellJobHost;
 use Cognesy\Tell\Shell\TellShellJobPolicy;
-use Cognesy\Tell\Shell\TellShellJobRequest;
+use Cognesy\Tell\Data\TellShellJobRequest;
 
 $project = TellHarnessExample::project();
 $events = new ArrayObject;
-$host = TellResourceHost::shellJobs(
+$host = TellShellJobHost::shellJobs(
     project: $project,
     policy: new TellShellJobPolicy(
         maxConcurrentJobs: 2,
@@ -28,8 +28,8 @@ $host = TellResourceHost::shellJobs(
         maxRetainedOutputBytes: 16_384,
     ),
     approval: TellShellJobApprovals::allowAll(),
-    observer: TellResourceObservers::callback(
-        static fn (TellResourceEvent $event) => $events->append($event->toArray()),
+    observer: TellShellJobObservers::callback(
+        static fn (TellShellJobEvent $event) => $events->append($event->toArray()),
     ),
 )->boot();
 
@@ -55,7 +55,7 @@ PHP;
 
     echo $output->text();
     echo 'State: '.$finished->state->value."\n";
-    echo 'Resource events: '.count($events)."\n";
+    echo 'Shell-job events: '.count($events)."\n";
 
     assert($finished->isTerminal());
     assert($finished->exitCode === 0);
@@ -70,7 +70,7 @@ PHP;
 
 ## Key Points
 
-- `TellResourceHost::shellJobs(...)->boot()` is deliberately separate from
+- `TellShellJobHost::shellJobs(...)->boot()` is deliberately separate from
   `Tell::open()` and `TellHost::standard()`.
 - Denial is the default. An embedding application must supply an approval
   policy before the host creates a job identity or starts a process.
@@ -78,7 +78,7 @@ PHP;
   retained-output, read, and cancellation-grace bounds.
 - Snapshots and cursored output are immutable. Raw Cordis contexts, fibers,
   process handles, and pipes do not escape the owner scope.
-- Resource events use `tell.resource.event.v1`; they contain hashes, counts,
+- Shell-job events use `tell.shell-job.event.v1`; they contain hashes, counts,
   states, and error classes, never commands or output.
 - Always call `dispose()` in `finally`; disposal is idempotent and cancels work
   that has not reached a terminal state.

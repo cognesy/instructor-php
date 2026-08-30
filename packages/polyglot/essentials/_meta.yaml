@@ -2,5 +2,6 @@ order:
   - overview
   - inference-class
   - creating-requests
+  - reasoning
   - request-options
   - response-handling

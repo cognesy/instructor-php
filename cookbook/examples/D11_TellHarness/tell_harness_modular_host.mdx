@@ -15,10 +15,10 @@ require_once dirname(__DIR__).'/Support.php';
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Composition\TellModuleDefinition;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
-use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
-use Cognesy\Tell\Runtime\TellPaths;
+use Cognesy\Tell\Data\TellEventEnvelope;
+use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Composition\TellHost;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 $events = new ArrayObject;

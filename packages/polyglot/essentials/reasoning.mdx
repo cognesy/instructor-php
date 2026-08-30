@@ -1,0 +1,82 @@
+Reasoning controls are model and protocol capabilities, not one universal
+provider option. Polyglot represents caller intent with `ReasoningSelection`
+and translates it only at the provider request-body boundary.
+
+## Named Effort
+
+```php
+<?php
+
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
+
+$text = Inference::using('openai')
+    ->withModel('gpt-5.6')
+    ->withMessages('Check whether this argument is logically sound.')
+    ->withReasoning(
+        ReasoningSelection::effort(ReasoningEffort::High),
+    )
+    ->get();
+// @doctest id="8134"
+```
+
+The portable effort vocabulary is `minimal`, `low`, `medium`, `high`,
+`xhigh`, and `max`. This vocabulary is a superset, not a promise that every
+model accepts every value. Polyglot checks the selected model's curated
+capability profile and rejects unsupported or lossy mappings before sending
+the request.
+
+## Other Selection Kinds
+
+Providers expose several distinct reasoning controls, so the unified type is a
+tagged selection rather than a nullable effort string:
+
+```php
+ReasoningSelection::providerDefault();
+ReasoningSelection::disabled();
+ReasoningSelection::enabled();
+ReasoningSelection::effort(ReasoningEffort::Medium);
+ReasoningSelection::budget(4096);
+ReasoningSelection::adaptive();
+ReasoningSelection::adaptive(ReasoningEffort::High);
+// @doctest id="ab12"
+```
+
+`providerDefault()` is non-invasive: Polyglot emits no reasoning field, so
+existing raw options and provider defaults remain unchanged. An explicit typed
+selection conflicts with raw keys such as `reasoning_effort`, `reasoning`, or
+`thinking`; remove the raw key before using `withReasoning()`.
+
+## Curated Capability Matrix
+
+Capabilities are resolved for the model and protocol together. Unknown model
+IDs fail closed for explicit reasoning selections; Polyglot does not infer
+support from a provider name or a model-name substring.
+
+| Bundled route | Curated model family | Portable selection |
+| --- | --- | --- |
+| OpenAI Chat Completions | GPT-5.6 | disabled; low, medium, high, xhigh |
+| OpenAI Responses | GPT-5.6 | disabled; low, medium, high, xhigh, max |
+| Anthropic | Claude 4.6 | modes, budget; low, medium, high, max |
+| DeepSeek | DeepSeek V4 | disabled; low, high, max |
+| Gemini native | Gemini 3 / 2.5 | 3: low/high; 2.5: modes and budget |
+| GLM | GLM-4.7 | disabled, enabled, adaptive |
+| Qwen | Qwen3.8 | disabled, enabled, adaptive, budget; low, medium, xhigh |
+| Cohere | Command A Reasoning | disabled, enabled, adaptive, budget |
+| Mistral | Magistral Medium | disabled; high |
+| Moonshot | Kimi K2.5/K2.6 | disabled, enabled, adaptive |
+| xAI | Grok 4.6 | low, medium, high, xhigh; reasoning is mandatory |
+| OpenRouter | OpenAI GPT-OSS 120B | all selection kinds and named efforts |
+
+DeepSeek documents `medium` and `xhigh` as aliases that behave like `high`.
+Polyglot records those as lossy mappings and does not accept them by default;
+callers can select `high` explicitly and retain truthful effective intent.
+
+## Capability Inspection
+
+Driver capabilities expose a structured `reasoning()` value. It reports
+whether the profile is known, accepted selection kinds, effort mappings,
+budget bounds, provider-default behavior, and visibility of reasoning content
+or token counts. The legacy `supportsReasoningEffort()` accessor remains as a
+derived compatibility projection.

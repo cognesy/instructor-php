@@ -16,7 +16,7 @@ $response = Inference::using('openai')
     ->get();
 
 echo $response; // "Paris."
-// @doctest id="00f3"
+// @doctest id="d069"
 ```
 
 `Messages::fromString()` wraps a plain string as a user message. You can also use
@@ -42,7 +42,7 @@ $text = Inference::using('openai')
         options: ['temperature' => 0.2],
     )
     ->get();
-// @doctest id="1901"
+// @doctest id="6011"
 ```
 
 All parameters on `with()` are optional -- pass only what you need:
@@ -55,6 +55,10 @@ All parameters on `with()` are optional -- pass only what you need:
 | `toolChoice`     | `?ToolChoice`           | Tool selection preference                  |
 | `responseFormat` | `?ResponseFormat`       | Response format specification              |
 | `options`        | `?array`                | Provider-specific request options          |
+
+Reasoning is configured separately with `withReasoning()`. See
+[Reasoning](./reasoning) for model-aware effort, budget, and adaptive
+selections.
 
 ## Focused Helper Methods
 
@@ -76,7 +80,7 @@ $response = Inference::using('anthropic')
     ]))
     ->withOptions(['temperature' => 0.5])
     ->get();
-// @doctest id="e9a8"
+// @doctest id="ec93"
 ```
 
 Each helper returns a new immutable instance, so you can safely branch from a shared base:
@@ -86,7 +90,7 @@ $base = Inference::using('openai')->withModel('gpt-4.1-nano');
 
 $creative = $base->withOptions(['temperature' => 0.9]);
 $precise  = $base->withOptions(['temperature' => 0.0]);
-// @doctest id="5ebb"
+// @doctest id="018d"
 ```
 
 The full list of fluent helpers:
@@ -99,6 +103,7 @@ The full list of fluent helpers:
 - `withOptions(...)` -- set provider-specific options
 - `withStreaming(...)` -- enable or disable streaming
 - `withMaxTokens(...)` -- set the maximum token count
+- `withReasoning(...)` -- set portable, model-validated reasoning intent
 - `withCachedContext(...)` -- attach reusable cached context
 - `withRetryPolicy(...)` -- configure retry behavior
 - `withResponseCachePolicy(...)` -- configure response caching
@@ -125,7 +130,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
     ->withMessages($messages)
     ->get();
-// @doctest id="b85a"
+// @doctest id="1530"
 ```
 
 > The `asDeveloper()` method maps to OpenAI's developer role and is automatically
@@ -172,7 +177,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="e715"
+// @doctest id="c055"
 ```
 
 ## Using `InferenceRequest` Directly
@@ -195,7 +200,7 @@ $request = new InferenceRequest(
 $text = Inference::using('openai')
     ->withRequest($request)
     ->get();
-// @doctest id="ab2f"
+// @doctest id="3dcf"
 ```
 
 `InferenceRequest` objects are immutable value objects. Use `with()` or the dedicated
@@ -208,5 +213,5 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="7db5"
+// @doctest id="d2a9"
 ```
