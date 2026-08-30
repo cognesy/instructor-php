@@ -74,7 +74,7 @@ instructor:
     exclude_events: []
     include_events: []
     templates: {}
-# @doctest id="7138"
+# @doctest id="5e05"
 ```
 
 Current defaults:
@@ -112,7 +112,7 @@ If your app currently enables the legacy bundle:
 return [
     Cognesy\Logging\Integrations\Symfony\InstructorLoggingBundle::class => ['all' => true],
 ];
-// @doctest id="0f7e"
+// @doctest id="daa0"
 ```
 
 Replace it with:
@@ -121,7 +121,7 @@ Replace it with:
 return [
     Cognesy\Instructor\Symfony\InstructorSymfonyBundle::class => ['all' => true],
 ];
-// @doctest id="b9a7"
+// @doctest id="b798"
 ```
 
 If your config currently uses the old root:
@@ -131,7 +131,7 @@ instructor_logging:
   enabled: true
   preset: default
   event_bus_service: Cognesy\Events\Contracts\CanHandleEvents
-# @doctest id="ede0"
+# @doctest id="f6f8"
 ```
 
 Move it under the package root:
@@ -142,7 +142,7 @@ instructor:
     enabled: true
     preset: development
     event_bus_service: Cognesy\Events\Contracts\CanHandleEvents
-# @doctest id="79aa"
+# @doctest id="9772"
 ```
 
 Migration notes:

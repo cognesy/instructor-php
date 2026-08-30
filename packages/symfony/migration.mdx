@@ -42,7 +42,7 @@ You should end up with less app-local Symfony glue, not more wrappers around the
 
 ```bash
 composer require cognesy/instructor-symfony
-# @doctest id="ed8d"
+# @doctest id="20ff"
 ```
 
 Then enable the bundle:
@@ -53,7 +53,7 @@ Then enable the bundle:
 return [
     Cognesy\Instructor\Symfony\InstructorSymfonyBundle::class => ['all' => true],
 ];
-// @doctest id="fd4e"
+// @doctest id="88ca"
 ```
 
 If you still have the legacy logging bundle registered, remove it from `config/bundles.php`.
@@ -64,7 +64,7 @@ The supported config root is now:
 
 ```yaml
 instructor:
-# @doctest id="e803"
+# @doctest id="080e"
 ```
 
 Move Symfony-related app config under these subtrees as needed:
@@ -98,7 +98,7 @@ After:
 instructor:
   events:
     dispatch_to_symfony: true
-# @doctest id="c35a"
+# @doctest id="a61e"
 ```
 
 Important boundary:
@@ -118,14 +118,14 @@ Before:
 return [
     Cognesy\Logging\Integrations\Symfony\InstructorLoggingBundle::class => ['all' => true],
 ];
-// @doctest id="2cc1"
+// @doctest id="61fa"
 ```
 
 ```yaml
 instructor_logging:
   enabled: true
   preset: default
-# @doctest id="2639"
+# @doctest id="6f9a"
 ```
 
 After:
@@ -136,7 +136,7 @@ After:
 return [
     Cognesy\Instructor\Symfony\InstructorSymfonyBundle::class => ['all' => true],
 ];
-// @doctest id="8e99"
+// @doctest id="0dc7"
 ```
 
 ```yaml
@@ -144,7 +144,7 @@ instructor:
   logging:
     enabled: true
     preset: development
-# @doctest id="6145"
+# @doctest id="a77f"
 ```
 
 Migration notes:
@@ -163,7 +163,7 @@ instructor:
   telemetry:
     enabled: true
     driver: otel
-# @doctest id="958c"
+# @doctest id="6510"
 ```
 
 The package now owns:
@@ -196,7 +196,7 @@ instructor:
       bus_service: message_bus
       observe_events:
         - Cognesy\Agents\Events\AgentExecutionCompleted
-# @doctest id="a108"
+# @doctest id="f7af"
 ```
 
 This makes the ownership split clear:
@@ -215,7 +215,7 @@ instructor:
     store: file
     file:
       directory: '%kernel.cache_dir%/instructor/agent-sessions'
-# @doctest id="011d"
+# @doctest id="41e2"
 ```
 
 Only replace `Cognesy\Agents\Session\Contracts\CanStoreSessions` directly if you truly need a custom backend.

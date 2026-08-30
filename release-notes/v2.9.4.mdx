@@ -1,0 +1,19 @@
+v2.9.4 completes deterministic teardown for the local HTTP servers used by
+standalone package verification.
+
+## Laravel Package Verification
+
+- The Laravel integration suite launches PHP's built-in server as a directly
+  owned process instead of through a shell child.
+- Test ports are allocated dynamically and the exact process is terminated at
+  suite teardown.
+- Server readiness checks avoid leaking connection warnings into Pest.
+
+## Standalone Instructor Verification
+
+- The `instructor-struct` test contract no longer invokes the monorepo-only
+  documentation tool from a released package checkout.
+- Package documentation remains covered by the root documentation QA lane
+  before release.
+
+No runtime API changes or application migration steps are required.
