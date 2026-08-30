@@ -2,7 +2,7 @@
 
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Tests\Support\IntegrationTestServer;
+use Cognesy\HttpPool\Tests\Support\IntegrationTestServer;
 use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\HttpPool\HttpPool;
 use Cognesy\HttpPool\PendingHttpPool;

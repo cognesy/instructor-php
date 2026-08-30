@@ -9,7 +9,7 @@ use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
-use Cognesy\Http\Tests\Support\IntegrationTestServer;
+use Cognesy\HttpPool\Tests\Support\IntegrationTestServer;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;

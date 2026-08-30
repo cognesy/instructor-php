@@ -152,10 +152,12 @@ class TwigDriver implements CanHandleTemplate
 
         if ($requestedPath === '.') {
             $candidates[] = 'packages/templates/resources';
+            $candidates[] = __DIR__ . '/../../resources';
         }
 
         if ($requestedPath === 'prompts' || str_starts_with($requestedPath, 'prompts/')) {
             $candidates[] = 'packages/templates/resources/' . $requestedPath;
+            $candidates[] = __DIR__ . '/../../resources/' . $requestedPath;
         }
 
         $paths = [];

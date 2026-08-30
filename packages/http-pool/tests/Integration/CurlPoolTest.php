@@ -9,7 +9,7 @@ use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\HttpPool\Drivers\Curl\Pool\CurlPool;
-use Cognesy\Http\Tests\Support\IntegrationTestServer;
+use Cognesy\HttpPool\Tests\Support\IntegrationTestServer;
 use Cognesy\Utils\Result\Success;
 
 beforeEach(function () {

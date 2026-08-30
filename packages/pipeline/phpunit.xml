@@ -12,8 +12,8 @@
         <testsuite name="Feature">
             <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
-        <testsuite name="Integration">
-            <directory suffix="Test.php">./tests/Integration</directory>
+        <testsuite name="Regression">
+            <directory suffix="Test.php">./tests/Regression</directory>
         </testsuite>
     </testsuites>
     <source>

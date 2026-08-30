@@ -58,7 +58,7 @@
   "scripts": {
     "docs:self-knowledge:check": "@php scripts/sync-self-knowledge-docs.php --check",
     "docs:self-knowledge:write": "@php scripts/sync-self-knowledge-docs.php --write",
-    "tests": "@php ../../vendor/bin/pest --configuration=phpunit.xml --bootstrap=../../vendor/autoload.php tests",
+    "tests": "@php vendor/bin/pest",
     "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=2G",
     "psalm": "@php ../../vendor/bin/psalm --root=../.. --config=psalm.xml",
     "pint": "@php ../../vendor/bin/pint --config pint.json src/",

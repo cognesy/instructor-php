@@ -52,6 +52,8 @@ namespace {
         {
             return false;
         }
+
+        public function newLine(int $count = 1): void {}
     }
 
     final class TestableInstructorTestCommand extends InstructorTestCommand

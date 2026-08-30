@@ -61,7 +61,7 @@
     "phpstan/phpstan": "^1.11"
   },
   "scripts": {
-    "tests": "@php ../../vendor/bin/pest --configuration=phpunit.xml --bootstrap=../../vendor/autoload.php tests",
+    "tests": "@php vendor/bin/pest",
     "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon"
   },
   "config": {

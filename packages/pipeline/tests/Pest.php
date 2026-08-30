@@ -32,9 +32,9 @@ expect()->extend('toBeCloseTo', function (float $expected, int $precision = 8) {
     $diff = abs($expected - (float) $actual);
     $message = "Failed asserting that %.{$precision}f matches expected %.{$precision}f within epsilon %.{$precision}f.";
     PHPUnit\Framework\Assert::assertLessThanOrEqual(
-        expected: $epsilon,
-        actual: $diff,
-        message: sprintf($message, (float) $actual, $expected, $epsilon)
+        $epsilon,
+        $diff,
+        sprintf($message, (float) $actual, $expected, $epsilon)
     );
     return expect($actual);
 });

@@ -39,7 +39,7 @@
     "vimeo/psalm": "^6.0"
   },
   "scripts": {
-    "tests": "@php -r \"\\$paths=['vendor/bin/pest','../../vendor/bin/pest']; foreach(\\$paths as \\$path){ if(is_file(\\$path)){ passthru(PHP_BINARY.' '.\\$path.' tests', \\$code); exit(\\$code);} } fwrite(STDERR, 'Could not open pest binary'.PHP_EOL); exit(1);\""
+    "tests": "@php vendor/bin/pest"
   },
   "config": {
     "allow-plugins": {

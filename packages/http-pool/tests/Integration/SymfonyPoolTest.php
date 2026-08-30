@@ -8,7 +8,7 @@ use Cognesy\HttpPool\Drivers\Symfony\SymfonyPool;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
-use Cognesy\Http\Tests\Support\IntegrationTestServer;
+use Cognesy\HttpPool\Tests\Support\IntegrationTestServer;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;

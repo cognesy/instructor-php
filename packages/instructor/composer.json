@@ -74,13 +74,14 @@
     "twig/twig": "^3.0"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest",
-    "mockery/mockery": "^1.6",
+    "cognesy/instructor-dynamic": "^2.9",
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
+    "mockery/mockery": "^1.6",
     "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
     "vimeo/psalm": "^6.0"
   },
   "scripts": {

@@ -99,6 +99,11 @@ class BladeDriver implements CanHandleTemplate
 
         if ($requestedPath === 'prompts' || str_starts_with($requestedPath, 'prompts/')) {
             $candidates[] = 'packages/templates/resources/' . $requestedPath;
+            $candidates[] = __DIR__ . '/../../resources/' . $requestedPath;
+        }
+
+        if ($requestedPath === '.') {
+            $candidates[] = __DIR__ . '/../../resources';
         }
 
         foreach (array_unique($candidates) as $candidate) {

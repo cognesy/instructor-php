@@ -308,7 +308,7 @@ jobs:
     if: github.ref_type == 'tag' || inputs.release_tag != ''
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         # Every split package currently declares php ^8.3. Keep this matrix in
         # lockstep with those package-level constraints.
@@ -371,6 +371,30 @@ jobs:
             exit 1
           fi
 
+      - name: Verify released packages have standalone test contracts
+        run: |
+          status=0
+          for dir in packages/*; do
+            [ -f "$dir/composer.json" ] || continue
+            name="$(basename "$dir")"
+            case " $UNRELEASED_PACKAGES " in *" $name "*) continue ;; esac
+
+            test_script="$(jq -r '.scripts.tests // "" | if type == "array" then join(" ") else . end' "$dir/composer.json")"
+            if [ -z "$test_script" ]; then
+              echo "$dir must define a Composer tests script." >&2
+              status=1
+            fi
+            if printf '%s' "$test_script" | grep -q '\.\./\.\./vendor'; then
+              echo "$dir tests script depends on the monorepo root vendor directory." >&2
+              status=1
+            fi
+            if [ ! -f "$dir/phpunit.xml" ] && [ ! -f "$dir/phpunit.xml.dist" ]; then
+              echo "$dir must provide standalone PHPUnit configuration." >&2
+              status=1
+            fi
+          done
+          exit "$status"
+
       - name: Install dependencies in all released packages
         run: |
           for dir in packages/*; do
@@ -392,5 +416,5 @@ jobs:
               *" $name "*) echo "⏭️  Skipping $dir (not released)"; continue ;;
             esac
             echo "🔍 Running tests in $dir"
-            composer --working-dir="$dir" test
+            composer --working-dir="$dir" run tests
           done

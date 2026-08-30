@@ -11,7 +11,7 @@ use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\ServerErrorException;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 
 beforeEach(function () {
     $this->baseUrl = IntegrationTestServer::start();

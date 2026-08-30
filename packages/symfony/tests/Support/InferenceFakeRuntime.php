@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Symfony\Tests\Support;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;

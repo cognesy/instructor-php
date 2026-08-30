@@ -9,6 +9,8 @@ if (!class_exists('GeneratorCommandTestStub', false)) {
     {
         protected mixed $laravel = null;
 
+        public function __construct(mixed $files = null) {}
+
         public function setLaravel(mixed $laravel): void
         {
             $this->laravel = $laravel;
@@ -33,6 +35,11 @@ if (!class_exists(\Illuminate\Console\GeneratorCommand::class)) {
 if (!class_exists(TestableMakeResponseModelCommand::class, false)) {
     final class TestableMakeResponseModelCommand extends MakeResponseModelCommand
     {
+        public function __construct()
+        {
+            parent::__construct(new \Illuminate\Filesystem\Filesystem());
+        }
+
         public function resolveStubPublic(string $stub): string
         {
             return $this->resolveStubPath($stub);

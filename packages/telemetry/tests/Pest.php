@@ -1,3 +1,3 @@
 <?php declare(strict_types=1);
 
-uses(TestCase::class)->in('Unit', 'Integration');
+uses(Cognesy\Telemetry\Tests\TestCase::class)->in('Unit', 'Integration');

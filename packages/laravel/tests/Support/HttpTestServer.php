@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../../../vendor/autoload.php';
+$packageAutoloader = __DIR__ . '/../../vendor/autoload.php';
+$rootAutoloader = __DIR__ . '/../../../../vendor/autoload.php';
+
+require_once file_exists($packageAutoloader) ? $packageAutoloader : $rootAutoloader;
 require_once __DIR__ . '/HttpTestRouter.php';
 
 use Cognesy\Instructor\Laravel\Tests\Support\HttpTestRouter;

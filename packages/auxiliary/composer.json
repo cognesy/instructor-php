@@ -25,13 +25,14 @@
   },
   "require": {
     "php": "^8.3",
+    "ext-dom": "*",
     "cognesy/instructor-config": "^2.9",
+    "cognesy/instructor-messages": "^2.9",
     "cognesy/instructor-pipeline": "^2.9",
     "cognesy/instructor-polyglot": "^2.9",
-    "ext-dom": "*",
-    "cognesy/instructor-messages": "^2.9",
     "cognesy/instructor-sandbox": "^2.9",
     "cognesy/instructor-utils": "^2.9",
+    "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.7",
     "league/html-to-markdown": "^5.1",
     "phpdocumentor/reflection-docblock": "^5.4 || ^6.0",
@@ -40,12 +41,13 @@
     "symfony/dom-crawler": "^7.1"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest",
+    "cognesy/agent-ctrl": "^2.9",
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
     "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
     "vimeo/psalm": "^6.0"
   },
   "scripts": {

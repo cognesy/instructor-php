@@ -1,0 +1,33 @@
+---
+title: 'v2.9.2'
+---
+
+v2.9.2 restores reliable standalone verification for every published package.
+It supersedes v2.9.0 and v2.9.1 for consumers adopting the Tell workspace
+refactor and unified reasoning controls introduced in v2.9.0.
+
+## Standalone Package Verification
+
+- Every released package now exposes an exact Composer `tests` script and a
+  package-local PHPUnit configuration.
+- Tests no longer depend on the monorepo root vendor directory or hidden root
+  test support.
+- Package manifests now declare the runtime and test dependencies required by
+  their own source and test suites.
+- Package-local support fixtures and resource resolution work in both the
+  monorepo and split repositories.
+
+## Release Pipeline
+
+- The split-package workflow invokes the exact `tests` script instead of
+  Composer's fuzzy script matching.
+- Release verification rejects missing or monorepo-relative test contracts
+  before dependency installation.
+- PHP 8.3, 8.4, and 8.5 package matrices run independently so one failure does
+  not hide compatibility results from the other versions.
+
+## Upgrade Notes
+
+No runtime API migration is required from v2.9.0 or v2.9.1. Upgrade related
+Instructor packages together to v2.9.2 so their synchronized constraints and
+standalone package metadata remain aligned.
