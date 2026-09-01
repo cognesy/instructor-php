@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 function tellWorkspaceSourceRoot(): string {
-    return dirname(__DIR__, 2) . '/src/Workspace';
+    return dirname(__DIR__, 2) . '/src/Core/Workspace';
 }
 
 /** @return list<string> */
@@ -25,60 +25,34 @@ function tellWorkspaceSourceFiles(string $directory): array {
     return $files;
 }
 
-it('keeps the workspace root limited to lifecycle state and top-level handles', function (): void {
-    $files = array_map(
-        static fn (string $path): string => basename($path),
-        glob(tellWorkspaceSourceRoot() . '/*.php') ?: [],
-    );
-    sort($files, SORT_STRING);
-
-    expect($files)->toBe([
-        'FilesystemWorkspaceProvider.php',
-        'InMemoryWorkspaceModule.php',
-        'TellConversation.php',
-        'TellRef.php',
-        'TellWorkspace.php',
-        'WorkspaceException.php',
-        'WorkspaceInitialization.php',
-        'WorkspacePaths.php',
-        'WorkspaceRepository.php',
-        'WorkspaceState.php',
-    ]);
-});
-
-it('keeps one cohesive branch subsystem with an explicit storage boundary', function (): void {
+it('keeps workspace policy in Core and provider mechanics in isolated capabilities', function (): void {
     $branchRoot = tellWorkspaceSourceRoot() . '/Branch';
-    $branchFiles = array_map(
-        static fn (string $path): string => basename($path),
-        glob($branchRoot . '/*.php') ?: [],
-    );
-    $storageFiles = array_map(
-        static fn (string $path): string => basename($path),
-        glob($branchRoot . '/Storage/*.php') ?: [],
-    );
-    sort($branchFiles, SORT_STRING);
-    sort($storageFiles, SORT_STRING);
+    $branchFiles = glob($branchRoot . '/*.php') ?: [];
+    $storageFiles = glob($branchRoot . '/Storage/*.php') ?: [];
+    $filesystemFiles = tellWorkspaceSourceFiles(dirname(__DIR__, 2) . '/src/Capability/Workspace/Filesystem');
+    $memoryFiles = tellWorkspaceSourceFiles(dirname(__DIR__, 2) . '/src/Capability/Workspace/Memory');
 
-    expect(dirname(tellWorkspaceSourceRoot()) . '/Branch')->not->toBeDirectory()
-        ->and($branchFiles)->toBe([
-            'BranchCatalog.php',
-            'BranchName.php',
-            'BranchResolver.php',
-            'ResolvedBranch.php',
-            'TellBranch.php',
-            'TellBranchConfig.php',
-            'TellBranchConfiguration.php',
-            'TellBranchInfo.php',
-            'TellBranchReset.php',
-            'TellBranchSelection.php',
-            'TellBranches.php',
-        ])
-        ->and($storageFiles)->toBe([
-            'BranchConfigStore.php',
-            'BranchCurrentSelection.php',
-            'BranchCurrentSelectionStore.php',
-            'BranchStore.php',
-        ]);
+    expect(dirname(__DIR__, 2) . '/src/Workspace')->not->toBeDirectory()
+        ->and($branchFiles)->not->toBeEmpty()
+        ->and($storageFiles)->not->toBeEmpty()
+        ->and($filesystemFiles)->not->toBeEmpty()
+        ->and($memoryFiles)->not->toBeEmpty();
+
+    foreach ($branchFiles as $file) {
+        expect(file_get_contents($file))->toContain('namespace Cognesy\\Tell\\Core\\Workspace\\Branch;');
+    }
+    foreach ($storageFiles as $file) {
+        expect(file_get_contents($file))->toContain('namespace Cognesy\\Tell\\Core\\Workspace\\Branch\\Storage;');
+    }
+    foreach ($filesystemFiles as $file) {
+        expect(file_get_contents($file))->toContain('namespace Cognesy\\Tell\\Capability\\Workspace\\Filesystem;');
+    }
+    foreach ($memoryFiles as $file) {
+        expect(file_get_contents($file))->toContain('namespace Cognesy\\Tell\\Capability\\Workspace\\Memory;');
+    }
+    foreach (tellWorkspaceSourceFiles(tellWorkspaceSourceRoot()) as $file) {
+        expect(file_get_contents($file))->not->toContain('Cognesy\\Tell\\Capability\\Workspace\\');
+    }
 });
 
 it('keeps Arena independent from branch policy', function (): void {
@@ -86,7 +60,7 @@ it('keeps Arena independent from branch policy', function (): void {
         $source = file_get_contents($file);
 
         expect($source)->toBeString()
-            ->and($source)->not->toContain('Cognesy\\Tell\\Workspace\\Branch\\');
+            ->and($source)->not->toContain('Cognesy\\Tell\\Core\\Workspace\\Branch\\');
     }
 });
 

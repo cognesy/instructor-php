@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Observability\TracePayload;
+use Cognesy\Tell\Capability\Observation\FilesystemTrace\TracePayload;
 
 it('omits execution payloads and always redacts credential fields', function (): void {
     $payload = TracePayload::sanitize([

@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Cognesy\Tell\Adapter\Console\Render;
+
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Core\Observation\TellEventNormalizer;
+use Override;
+use Symfony\Component\Console\Output\OutputInterface;
+
+final readonly class TextRenderer implements OutputRenderer
+{
+    public function __construct(
+        private OutputInterface $stdout,
+        private OutputInterface $stderr,
+        private bool $quiet = false,
+    ) {}
+
+    /**
+     * Progress channels belong to the invocation, not to one output format, so
+     * they are attached alongside this renderer rather than by it.
+     */
+    #[Override]
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
+
+    #[Override]
+    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void {
+        $verbosity = match ($this->quiet) {
+            true => OutputInterface::VERBOSITY_QUIET,
+            false => OutputInterface::VERBOSITY_NORMAL,
+        };
+        $answer = AgentResult::answer($state);
+        if ($answer !== '') {
+            $this->stdout->writeln($answer, $verbosity);
+        }
+        if ($state->stopSignal() !== null) {
+            $this->stderr->writeln('[tell] execution stopped: ' . $state->stopSignal()->toString(), $verbosity);
+        }
+        if ($mode === TellExecutionMode::Transient) {
+            $this->stderr->writeln('[tell] transient: no conversation or session state was persisted.', $verbosity);
+        }
+        if ($branch !== null) {
+            $this->stderr->writeln("[tell] branch: {$branch['name']} ({$branch['source']}).", $verbosity);
+        }
+        foreach ($warnings as $warning) {
+            $this->stderr->writeln('[tell] ' . $warning, $verbosity);
+        }
+        foreach ($diagnostics as $diagnostic) {
+            $this->stderr->writeln("[tell] {$diagnostic['severity']} {$diagnostic['code']}: {$diagnostic['message']}", $verbosity);
+        }
+    }
+}

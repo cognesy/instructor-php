@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Protocol\TellAgentProtocolRequest;
-use Cognesy\Tell\Protocol\TellAgentProtocolWriter;
+use Cognesy\Tell\Adapter\Protocol\OneRun\TellAgentProtocolDecoder;
+use Cognesy\Tell\Adapter\Protocol\OneRun\TellAgentProtocolWriter;
 
 /**
  * @return array{code: int, output: string, errors: string, frames: list<array<string, mixed>>}
@@ -60,7 +60,7 @@ function tellAgentProtocolProcess(
 /** @param array<string, mixed> $overrides */
 function tellAgentProtocolRequest(array $overrides = []): string {
     return json_encode([
-        'schema' => TellAgentProtocolRequest::SCHEMA,
+        'schema' => TellAgentProtocolDecoder::SCHEMA,
         'id' => 'controller-1',
         'prompt' => 'prompt-secret-canary',
         ...$overrides,
@@ -155,7 +155,7 @@ it('enforces bounded input and output frames', function (): void {
     $project = tellTestProject();
     $oversized = tellAgentProtocolProcess(
         $project,
-        str_repeat('x', TellAgentProtocolRequest::MAX_INPUT_BYTES + 1),
+        str_repeat('x', TellAgentProtocolDecoder::MAX_INPUT_BYTES + 1),
     );
     $large = tellAgentProtocolProcess($project, tellAgentProtocolRequest([
         'policy' => ['maxOutputChars' => 1_000_000],

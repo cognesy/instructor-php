@@ -1,0 +1,13 @@
+<?php
+
+namespace Cognesy\Tell\Capability\Observation\Psr;
+
+use Cognesy\Tell\Capability\Observation\Psr\PsrEventNormalizer;
+
+final class ValidProviderPrivateHelper
+{
+    public function normalizer(): PsrEventNormalizer
+    {
+        return new PsrEventNormalizer();
+    }
+}

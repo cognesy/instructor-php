@@ -10,7 +10,6 @@ it('keeps command descriptors framework neutral while supporting Symfony adapter
         name: 'fixture:inspect',
         factory: static fn (): object => new Command('fixture:inspect'),
         description: 'Inspect a fixture',
-        aliases: ['fixture:i'],
     );
 
     $first = $descriptor->create();
@@ -18,8 +17,7 @@ it('keeps command descriptors framework neutral while supporting Symfony adapter
 
     expect($first)->toBeInstanceOf(Command::class)
         ->and($first)->not->toBe($second)
-        ->and($first->getName())->toBe('fixture:inspect')
-        ->and($descriptor->aliases)->toBe(['fixture:i']);
+        ->and($first->getName())->toBe('fixture:inspect');
 });
 
 it('rejects invalid command identities before shell assembly', function (string $name): void {

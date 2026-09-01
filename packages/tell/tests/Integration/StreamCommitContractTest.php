@@ -11,11 +11,11 @@ use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellRuntime;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Core\Execution\TellRuntime;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
 
 /**
  * A Tell runner must not use its generator as a transaction. Observing the

@@ -22,13 +22,13 @@ does not delete canonical history.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Testing\TellTestFactory;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = Tell::testing($project, 'deterministic workspace result');
+    $tell = TellTestFactory::responses('deterministic workspace result')->open($project);
     $workspace = $tell->workspace();
     $workspace->initialize();
 
@@ -64,6 +64,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points

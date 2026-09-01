@@ -1,0 +1,10 @@
+<?php
+
+namespace Cognesy\Tell\Capability\Observation\Psr;
+
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemTellWorkspaceProvider;
+
+final class InvalidCapabilitySiblingImport
+{
+    public function __construct(public FilesystemTellWorkspaceProvider $workspace) {}
+}

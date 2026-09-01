@@ -5,23 +5,23 @@ declare(strict_types=1);
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\Composition\Standalone\CanDisposeTellModule;
-use Cognesy\Tell\Composition\Standalone\TellCapabilityProviders;
-use Cognesy\Tell\Composition\Standalone\TellHost;
-use Cognesy\Tell\Composition\Standalone\TellHostBootException;
-use Cognesy\Tell\Composition\Standalone\TellHostBuilder;
-use Cognesy\Tell\Composition\Standalone\TellHostDisposalException;
-use Cognesy\Tell\Composition\Standalone\TellHostDisposedException;
-use Cognesy\Tell\Composition\Standalone\TellHostGraphException;
-use Cognesy\Tell\Composition\Standalone\TellHostProfile;
-use Cognesy\Tell\Composition\Standalone\TellModuleDefinition;
-use Cognesy\Tell\Contracts\CanContributeTellCommands;
-use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
-use Cognesy\Tell\Contracts\CanResolveTellPaths;
+use Cognesy\Tell\Composition\Standalone\Host\CanDisposeTellModule;
+use Cognesy\Tell\Composition\Standalone\Host\TellCapabilityProviders;
+use Cognesy\Tell\Composition\Standalone\Host\TellHost;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostBootException;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostBuilder;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostDisposalException;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostDisposedException;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostGraphException;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostProfile;
+use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
+use Cognesy\Tell\Adapter\Console\Symfony\Contract\CanContributeTellCommands;
+use Cognesy\Tell\Core\Contract\Workspace\CanReadTellBranchConfiguration;
+use Cognesy\Tell\Core\Contract\Paths\CanResolveTellPaths;
 use Cognesy\Tell\Data\TellCommandDescriptor;
 use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Data\TellResolvedPaths;
-use Cognesy\Tell\Runtime\CanReadTellClock;
+use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
 
 interface MissingHostFixtureOne {}
 

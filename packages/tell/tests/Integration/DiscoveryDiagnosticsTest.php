@@ -5,9 +5,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Tell;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('returns malformed extension discovery as typed SDK diagnostics', function (): void {
@@ -18,7 +17,7 @@ it('returns malformed extension discovery as typed SDK diagnostics', function ()
         composerVendorDir: $vendor,
     );
 
-    $result = Tell::open($project, $factory)->run(TellRequest::prompt('diagnose extensions'));
+    $result = tellTestOpen($project, $factory)->run(TellRequest::prompt('diagnose extensions'));
 
     expect(trim($result->text()))->toBe('sdk diagnostic result')
         ->and($result->diagnostics())->toHaveCount(1)
@@ -56,8 +55,8 @@ it('keeps explicit drivers and path configuration isolated between runtimes', fu
     $first = tellTestFactory(driver: FakeAgentDriver::fromResponses('tenant one'));
     $second = tellTestFactory(driver: FakeAgentDriver::fromResponses('tenant two'));
 
-    $firstResult = Tell::open($project, $first)->run(TellRequest::prompt('first'));
-    $secondResult = Tell::open($project, $second)->run(TellRequest::prompt('second'));
+    $firstResult = tellTestOpen($project, $first)->run(TellRequest::prompt('first'));
+    $secondResult = tellTestOpen($project, $second)->run(TellRequest::prompt('second'));
 
     expect(trim($firstResult->text()))->toBe('tenant one')
         ->and(trim($secondResult->text()))->toBe('tenant two')

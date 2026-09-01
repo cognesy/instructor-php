@@ -1,0 +1,11 @@
+<?php
+
+namespace Cognesy\Tell\Core\Execution;
+
+final class InvalidFullyQualifiedProviderSelection
+{
+    public function observer(): object
+    {
+        return new \Cognesy\Tell\Capability\Observation\Psr\PsrTellObserver();
+    }
+}

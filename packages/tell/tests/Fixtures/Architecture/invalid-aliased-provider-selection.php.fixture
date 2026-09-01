@@ -1,0 +1,13 @@
+<?php
+
+namespace Cognesy\Tell\Core\Execution;
+
+use Cognesy\Tell\Capability\Observation\Psr\PsrTellObserver as Observer;
+
+final class InvalidAliasedProviderSelection
+{
+    public function observer(): Observer
+    {
+        return new Observer();
+    }
+}

@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Workspace\Arena\CanUseArena;
-use Cognesy\Tell\Workspace\Arena\Exception\ArenaIntegrityException;
-use Cognesy\Tell\Workspace\Arena\Exception\RefConflict;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\InMemoryArena;
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Contract\Workspace\CanUseTellWorkspaceArena;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\ArenaIntegrityException;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\RefConflict;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Capability\Workspace\Memory\InMemoryArena;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
 
 dataset('arenaBackends', [
-    'filesystem' => [static function (): CanUseArena {
+    'filesystem' => [static function (): CanUseTellWorkspaceArena {
         $project = tellTestProject();
         $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
         return new FilesystemArena($workspace);
     }],
-    'memory' => [static fn (): CanUseArena => new InMemoryArena()],
+    'memory' => [static fn (): CanUseTellWorkspaceArena => new InMemoryArena()],
 ]);
 
 it('shares content addressing, generic refs, CAS, and failure atomicity', function (Closure $factory): void {

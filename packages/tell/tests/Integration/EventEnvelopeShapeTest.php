@@ -10,7 +10,7 @@ use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Tell\Data\TellEventEnvelope;
 use Cognesy\Tell\Data\TellExecutionMode;
-use Cognesy\Tell\Observability\TellEventNormalizer;
+use Cognesy\Tell\Core\Observation\TellEventNormalizer;
 
 /**
  * The envelope is a wire format: `--output events` writes it to stdout, traces
@@ -39,7 +39,7 @@ it('emits the normalized envelope keys in a fixed order', function (): void {
         executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
-        tool: 'read',
+        tool: 'read_file',
         success: true,
         error: null,
         startedAt: $now,
@@ -62,7 +62,7 @@ it('numbers events from one and marks exactly the terminal one', function (): vo
         executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
-        tool: 'read',
+        tool: 'read_file',
         success: true,
         error: null,
         startedAt: $now,
@@ -91,7 +91,7 @@ it('carries invocation context only on the boundary projection', function (): vo
         executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
-        tool: 'read',
+        tool: 'read_file',
         success: true,
         error: null,
         startedAt: $now,
@@ -116,7 +116,7 @@ it('keeps every metadata value a scalar, whatever the source event carried', fun
         executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
-        tool: 'read',
+        tool: 'read_file',
         success: true,
         error: null,
         startedAt: $now,

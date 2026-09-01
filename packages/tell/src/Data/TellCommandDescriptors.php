@@ -19,6 +19,15 @@ final readonly class TellCommandDescriptors implements Countable, IteratorAggreg
         $this->descriptors = array_values($descriptors);
     }
 
+    public static function merge(self ...$collections): self {
+        $descriptors = [];
+        foreach ($collections as $collection) {
+            array_push($descriptors, ...$collection->all());
+        }
+
+        return new self(...$descriptors);
+    }
+
     /** @return list<TellCommandDescriptor> */
     public function all(): array {
         return $this->descriptors;

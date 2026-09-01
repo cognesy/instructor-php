@@ -20,22 +20,21 @@ use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Tell\Command\CompactCommand;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Console\TellCommand;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Adapter\Console\Command\CompactCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\Session\SessionRef;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Core\Workspace\Session\SessionRef;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -46,7 +45,7 @@ it('compacts a canonical history into a provenance-linked summary and keeps its 
     $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $sourceBytes = file_get_contents($arena->objectPath($sourceHead));
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($factory), tellTestTracer($factory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($factory)));
 
     $status = $tester->execute([
         'hint' => 'Prioritize release work',
@@ -79,12 +78,10 @@ it('compacts a canonical history into a provenance-linked summary and keeps its 
         ->and(file_get_contents($arena->objectPath($sourceHead)))->toBe($sourceBytes);
 
     $recorder = new RequestRecorder();
-    $freshFactory = new TellAgentFactory(
-        $factory->paths(),
-        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($factory->paths()),
+    $freshFactory = $factory->withLoopDecorator(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(new RecordingDriver($recorder, 'continued after compaction')),
     );
-    $freshApplication = new TellConsoleApplication($freshFactory);
+    $freshApplication = tellTestApplication($freshFactory);
     $freshApplication->setAutoExit(false);
     $historyOutput = new BufferedOutput();
     $transcriptOutput = new BufferedOutput();
@@ -129,7 +126,7 @@ it('compacts only the selected named workspace session', function (): void {
     $session = SessionId::from('review-1');
     $sessionRef = new SessionRef($session);
     [, $sourceHead] = tellCompactSeedHistory($arena, $sessionRef->refName(), $sessionRef);
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($factory), tellTestTracer($factory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($factory)));
 
     $status = $tester->execute([
         '--dir' => $project,
@@ -156,7 +153,7 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
     $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $before = tellCompactArenaSnapshot($workspace);
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($factory), tellTestTracer($factory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($factory)));
 
     $status = $tester->execute(['--dir' => $project, '--json' => true]);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -214,7 +211,7 @@ it('does not persist focus hints or provider wire data in a compacted canonical 
     $workspace = tellCompactWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     tellCompactSeedHistory($arena);
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($factory), tellTestTracer($factory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($factory)));
 
     expect($tester->execute([
         'hint' => 'hint-secret-should-not-be-persisted',
@@ -236,7 +233,7 @@ it('preserves explicit compaction provenance when compacted again', function ():
     $workspace = tellCompactWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($factory), tellTestTracer($factory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($factory)));
 
     expect($tester->execute(['--dir' => $project, '--json' => true]))->toBe(0);
     $firstHead = $arena->readRef()->head;
@@ -273,9 +270,7 @@ it('keeps a competing head when explicit compaction loses its final compare-and-
         lineage: new Lineage($source->lineage()->root(), $sourceHead),
         messages: [new RecordMessage(Role::Assistant, [new TextPart('Competing winner.')])],
     ));
-    $racingFactory = new TellAgentFactory(
-        $factory->paths(),
-        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($factory->paths()),
+    $racingFactory = $factory->withLoopDecorator(
         static function (AgentLoop $loop) use ($arena, $sourceHead, $winner): AgentLoop {
             return $loop
                 ->withDriver(FakeAgentDriver::fromResponses('Lost compacted summary.'))
@@ -284,7 +279,7 @@ it('keeps a competing head when explicit compaction loses its final compare-and-
                 });
         },
     );
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($racingFactory), tellTestTracer($racingFactory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($racingFactory)));
 
     $status = $tester->execute(['--dir' => $project, '--json' => true]);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -300,7 +295,7 @@ it('returns usage code two for a bounded compact hint', function (): void {
     $workspace = tellCompactWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
-    $tester = new CommandTester(new CompactCommand(tellTestAgents($factory), tellTestTracer($factory), tellTestWorkspaces()));
+    $tester = new CommandTester(new CompactCommand(tellTestConversations($factory)));
 
     $status = $tester->execute([
         'hint' => str_repeat('a', 501),

@@ -23,12 +23,12 @@ the previous read, so concurrent callers must re-read rather than overwrite.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = Tell::open($project);
+    $tell = StandaloneTellHost::open($project);
     $workspace = $tell->workspace();
     $workspace->initialize();
     $workspace->branches()->create('review', empty: true);
@@ -51,6 +51,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points

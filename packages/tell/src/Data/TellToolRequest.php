@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Data;
 
-use Cognesy\Tell\Configuration\TellExecutionPolicy;
-use Cognesy\Tell\Console\TellOptions;
 use InvalidArgumentException;
 
 /** One direct Tell tool invocation, without model inference or conversation publication. */
@@ -45,23 +43,43 @@ final readonly class TellToolRequest
     }
 
     /** @param array<string, mixed> $arguments */
-    public static function fromOptions(TellOptions $options, string $name, array $arguments): self {
+    public static function fromRequest(TellRequest $request, string $name, array $arguments): self {
         return new self(
             name: $name,
             arguments: $arguments,
-            directory: $options->directory,
-            agent: $options->agent,
-            connection: $options->connection,
-            model: $options->model,
-            dsn: $options->dsn,
-            branch: $options->branch,
-            tools: $options->tools,
-            maxSteps: $options->maxSteps,
-            connectionExplicit: $options->connectionExplicit,
-            modelExplicit: $options->modelExplicit,
-            toolsExplicit: $options->toolsExplicit,
-            policyOverrides: $options->policyOverrides,
-            policy: $options->policy ?? TellExecutionPolicy::resolve([], $options->policyOverrides),
+            directory: $request->directory,
+            agent: $request->agent,
+            connection: $request->connection,
+            model: $request->model,
+            dsn: $request->dsn,
+            branch: $request->branch,
+            tools: $request->tools,
+            maxSteps: $request->maxSteps,
+            connectionExplicit: $request->connectionExplicit,
+            modelExplicit: $request->modelExplicit,
+            toolsExplicit: $request->toolsExplicit,
+            policyOverrides: $request->policyOverrides,
+            policy: $request->policy,
+        );
+    }
+
+    public function asRequest(string $defaultDirectory = ''): TellRequest {
+        return new TellRequest(
+            prompt: 'Direct tool invocation.',
+            directory: $this->directory !== '' ? $this->directory : $defaultDirectory,
+            agent: $this->agent,
+            connection: $this->connection,
+            model: $this->model,
+            dsn: $this->dsn,
+            branch: $this->branch,
+            tools: $this->tools,
+            maxSteps: $this->maxSteps,
+            mode: TellExecutionMode::Automatic,
+            connectionExplicit: $this->connectionExplicit,
+            modelExplicit: $this->modelExplicit,
+            toolsExplicit: $this->toolsExplicit,
+            policyOverrides: $this->policyOverrides,
+            policy: $this->policy,
         );
     }
 

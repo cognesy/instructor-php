@@ -7,9 +7,8 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
-use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Tell;
 
 it('keeps typed request reasoning intent immutable across request builders', function (): void {
     $request = TellRequest::prompt('Reason deliberately.')
@@ -19,15 +18,14 @@ it('keeps typed request reasoning intent immutable across request builders', fun
         ->maxSteps(3);
 
     expect($request->reasoningEffort)->toBe(ReasoningEffort::High)
-        ->and($request->reasoningEffortExplicit)->toBeTrue()
-        ->and($request->toOptions()->reasoningEffortSource())->toBe('invocation');
+        ->and($request->reasoningEffortExplicit)->toBeTrue();
 });
 
 it('persists branch reasoning intent and reports branch and invocation provenance', function (): void {
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/reasoning-workspace';
     mkdir($project, 0700, true);
-    $tell = Tell::open($project, $factory);
+    $tell = tellTestOpen($project, $factory);
     $tell->workspace()->initialize();
     $configuration = $tell->workspace()->configuration();
     $connection = $configuration->set('connection', 'deepseek', 0);
@@ -48,8 +46,10 @@ it('persists branch reasoning intent and reports branch and invocation provenanc
 
 it('exposes model-specific reasoning capability through the public catalogue', function (): void {
     $project = tellTestProject();
-    $deepseek = Tell::open($project, tellTestFactory())->catalogue()->models('deepseek');
-    $qwen = Tell::open($project, tellTestFactory())->catalogue()->models('qwen');
+    $deepseekFactory = tellTestFactory();
+    $qwenFactory = tellTestFactory();
+    $deepseek = tellTestOpen($project, $deepseekFactory)->catalogue()->models('deepseek');
+    $qwen = tellTestOpen($project, $qwenFactory)->catalogue()->models('qwen');
 
     expect($deepseek[0]['capabilities']['reasoningEffort'])->toBeTrue()
         ->and($qwen[0]['capabilities']['reasoningEffort'])->toBeTrue();
@@ -90,8 +90,9 @@ it('passes typed effort to Polyglot without provider options in Tell', function 
         modelExplicit: true,
         reasoningEffortExplicit: true,
     );
-    $definition = $factory->definition($options);
-    $loop = $factory->build($options, $definition);
+    $request = $options->request();
+    $definition = $factory->definition($request);
+    $loop = $factory->build($request, definition: $definition);
     $driver = $loop->driver();
 
     expect($definition->llmConfig?->options)->not()->toHaveKeys([
@@ -108,7 +109,7 @@ it('passes typed effort to Polyglot without provider options in Tell', function 
 
 it('rejects invalid branch values and unsupported models before fake inference', function (): void {
     $project = tellTestProject();
-    $tell = Tell::testing($project, 'must remain unused');
+    $tell = tellTestResponses($project, 'must remain unused');
     $tell->workspace()->initialize();
     $configuration = $tell->workspace()->configuration();
 

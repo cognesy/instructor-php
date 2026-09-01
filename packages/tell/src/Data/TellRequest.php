@@ -6,9 +6,6 @@ namespace Cognesy\Tell\Data;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
-use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
-use Cognesy\Tell\Configuration\TellExecutionPolicy;
-use Cognesy\Tell\Console\TellOptions;
 use InvalidArgumentException;
 
 final readonly class TellRequest
@@ -28,7 +25,7 @@ final readonly class TellRequest
         public ?string $session = null,
         public ?string $branch = null,
         public array $tools = [],
-        public TellAnswerQueue $answers = new TellAnswerQueue(),
+        public TellAnswers $answers = new TellAnswers(),
         public int $maxSteps = 10,
         public TellExecutionMode $mode = TellExecutionMode::Stateless,
         private array $listeners = [],
@@ -56,33 +53,6 @@ final readonly class TellRequest
 
     public static function prompt(string $prompt): self {
         return new self(prompt: $prompt);
-    }
-
-    public static function fromOptions(TellOptions $options): self {
-        return new self(
-            prompt: $options->prompt,
-            directory: $options->directory,
-            agent: $options->agent,
-            connection: $options->connection,
-            model: $options->model,
-            reasoningEffort: $options->reasoningEffort,
-            dsn: $options->dsn,
-            session: $options->session,
-            branch: $options->branch,
-            tools: $options->tools,
-            answers: $options->answers,
-            maxSteps: $options->maxSteps,
-            mode: match (true) {
-                $options->transient => TellExecutionMode::Transient,
-                default => TellExecutionMode::Automatic,
-            },
-            connectionExplicit: $options->connectionExplicit,
-            modelExplicit: $options->modelExplicit,
-            reasoningEffortExplicit: $options->reasoningEffortExplicit,
-            toolsExplicit: $options->toolsExplicit,
-            policyOverrides: $options->policyOverrides,
-            policy: $options->policy ?? TellExecutionPolicy::resolve([], $options->policyOverrides),
-        );
     }
 
     public function withDirectory(string $directory): self {
@@ -236,7 +206,7 @@ final readonly class TellRequest
     }
 
     /** Supply bounded answers for the Tell-owned non-interactive ask_user tool. */
-    public function withAnswers(TellAnswerQueue $answers): self {
+    public function withAnswers(TellAnswers $answers): self {
         return new self(
             prompt: $this->prompt,
             directory: $this->directory,
@@ -412,35 +382,6 @@ final readonly class TellRequest
 
     public function durable(?string $session = null): self {
         return $this->withMode(TellExecutionMode::Durable, $session ?? $this->session);
-    }
-
-    public function toOptions(): TellOptions {
-        if ($this->directory === '') {
-            throw new InvalidArgumentException('Tell request has no working directory. Open Tell for a directory first.');
-        }
-
-        return new TellOptions(
-            prompt: $this->prompt,
-            agent: $this->agent,
-            connection: $this->connection,
-            model: $this->model,
-            reasoningEffort: $this->reasoningEffort,
-            dsn: $this->dsn,
-            session: $this->session,
-            branch: $this->branch,
-            directory: $this->directory,
-            tools: $this->tools,
-            answers: $this->answers,
-            maxSteps: $this->maxSteps,
-            output: 'text',
-            transient: $this->mode === TellExecutionMode::Transient,
-            connectionExplicit: $this->connectionExplicit,
-            modelExplicit: $this->modelExplicit,
-            reasoningEffortExplicit: $this->reasoningEffortExplicit,
-            toolsExplicit: $this->toolsExplicit,
-            policyOverrides: $this->policyOverrides,
-            policy: $this->policy,
-        );
     }
 
     public function maxRetries(int $maxRetries): self {

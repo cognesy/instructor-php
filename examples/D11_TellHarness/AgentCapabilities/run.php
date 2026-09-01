@@ -23,8 +23,8 @@ conversation head.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Capability\Tool\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellToolRequest;
 
@@ -32,7 +32,7 @@ $project = TellHarnessExample::project();
 file_put_contents($project.'/evidence.txt', "release evidence\n");
 
 try {
-    $tell = Tell::open($project);
+    $tell = StandaloneTellHost::open($project);
     $catalogue = $tell->catalogue()->connections();
     $direct = $tell->tools()->dispatch(
         TellToolRequest::invoke('read_file', ['path' => 'evidence.txt']),
@@ -56,6 +56,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points

@@ -8,9 +8,8 @@ use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Data\TellEventEnvelope;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Tell;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Execution\TurnException;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Execution\TurnException;
 
 it('streams bounded SDK checkpoints with stable redacted event envelopes', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('bounded answer')));
@@ -18,7 +17,7 @@ it('streams bounded SDK checkpoints with stable redacted event envelopes', funct
     mkdir($project, 0755, true);
     tellTestWorkspaces()->initialize($project);
     $events = [];
-    $stream = Tell::open($project, $factory)->runStream(
+    $stream = tellTestOpen($project, $factory)->runStream(
         TellRequest::prompt('Bound this run')
             ->durable()
             ->maxSteps(2)
@@ -52,7 +51,7 @@ it('never publishes a cancelled durable SDK run', function (): void {
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
-    expect(fn () => Tell::open($project, $factory, $cancellation)->run(
+    expect(fn () => tellTestOpen($project, $factory, $cancellation)->run(
         TellRequest::prompt('Do not publish')->durable(),
     ))->toThrow(TurnException::class)
         ->and((new FilesystemArena($workspace))->readRef()->head)->toBeNull();
@@ -66,7 +65,7 @@ it('does not publish durable state when a public output policy is exceeded', fun
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
-    expect(fn () => Tell::open($project, $factory)->run(
+    expect(fn () => tellTestOpen($project, $factory)->run(
         TellRequest::prompt('Keep it short')->durable()->maxOutputChars(8),
     ))->toThrow(TurnException::class)
         ->and((new FilesystemArena($workspace))->readRef()->head)->toBeNull();

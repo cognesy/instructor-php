@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Tell;
 
 it('configures branch-local runtime intent through the public SDK', function (): void {
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $workspace = Tell::open($project, $factory)->workspace();
+    $workspace = tellTestOpen($project, $factory)->workspace();
     $workspace->initialize();
 
     $main = $workspace->configuration();
@@ -38,7 +37,7 @@ it('rejects stale and secret-bearing public branch configuration writes', functi
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $configuration = Tell::open($project, $factory)->workspace();
+    $configuration = tellTestOpen($project, $factory)->workspace();
     $configuration->initialize();
     $configuration = $configuration->configuration();
     $configuration->set('model', 'deepseek-v4-flash', 0);

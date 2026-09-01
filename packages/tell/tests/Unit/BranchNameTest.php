@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Workspace\Branch\BranchName;
+use Cognesy\Tell\Core\Workspace\Branch\BranchName;
 use PHPUnit\Framework\Assert;
 
 beforeEach(function (): void {

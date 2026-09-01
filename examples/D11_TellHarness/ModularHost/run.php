@@ -13,7 +13,7 @@ tags:
 Boot Tell as an explicit application host, replace one capability before boot,
 run through the stable SDK contract, inspect the admitted graph, and dispose the
 host deterministically. This is the programmable path for applications that
-need more control than `Tell::open()`.
+need more control than `StandaloneTellHost::open()`.
 
 ## Example
 
@@ -23,11 +23,11 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\TellModuleDefinition;
-use Cognesy\Tell\Contracts\CanObserveTellExecution;
+use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Core\Contract\Observation\CanObserveTellExecution;
+use Cognesy\Tell\Core\Paths\TellPaths;
 use Cognesy\Tell\Data\TellEventEnvelope;
-use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
@@ -49,14 +49,18 @@ $paths = new TellPaths(
     packageAgents: dirname(__DIR__, 3).'/packages/tell/resources/agents',
     home: $project.'/.tell-host-example',
 );
-$host = TellHost::standard(
+$host = StandaloneTellHost::builder(
     directory: $project,
     paths: $paths,
-    driverFactory: static fn () => FakeAgentDriver::fromResponses('host-controlled answer'),
+    driverFactory: static fn () => FakeAgentDriver::fromResponses(
+        'host-controlled answer',
+    ),
 )->replace('observation.standard', $observation)->boot();
 
 try {
-    $result = $host->runner()->run(TellRequest::prompt('Run through the host.')->withDirectory($project));
+    $result = $host->runner()->run(
+        TellRequest::prompt('Run through the host.')->withDirectory($project),
+    );
     $description = $host->describe();
 
     echo trim($result->text())."\n";
@@ -69,12 +73,13 @@ try {
     $host->dispose();
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points
 
-- `TellHost::standard()` returns an immutable pre-boot builder with `with()`,
-  `replace()`, and `without()` operations.
+- `StandaloneTellHost::builder()` returns an immutable pre-boot builder with
+  `with()`, `replace()`, and `without()` operations.
 - Replacement is static: the graph validates once during `boot()` and cannot
   be mutated while a run is active.
 - Host descriptions expose module identities and contracts, never secrets or

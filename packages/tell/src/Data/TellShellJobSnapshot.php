@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 namespace Cognesy\Tell\Data;
-
-use Cognesy\Tell\Shell\TellShellJobState;
 use DateTimeImmutable;
 
 final readonly class TellShellJobSnapshot

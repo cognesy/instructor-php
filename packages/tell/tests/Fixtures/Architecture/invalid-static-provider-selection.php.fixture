@@ -1,0 +1,13 @@
+<?php
+
+namespace Cognesy\Tell\Core\Execution;
+
+use Cognesy\Tell\Capability\Observation\Psr\PsrTellObserver;
+
+final class InvalidStaticProviderSelection
+{
+    public function observer(): object
+    {
+        return PsrTellObserver::create();
+    }
+}

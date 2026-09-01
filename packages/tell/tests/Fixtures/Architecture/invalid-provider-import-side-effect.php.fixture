@@ -1,0 +1,7 @@
+<?php
+
+namespace Cognesy\Tell\Capability\Observation\Psr;
+
+registerTellObserver();
+
+final class InvalidProviderImportSideEffect {}

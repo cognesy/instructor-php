@@ -22,16 +22,16 @@ ordinary Tell SDK and CLI do not boot this Cordis-backed host.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Shell\TellShellJobObservers;
-use Cognesy\Tell\Shell\TellShellJobApprovals;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobApprovals;
+use Cognesy\Tell\Composition\Standalone\Profile\ShellJob\StandardTellShellJobProfile;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobObservers;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobPolicy;
 use Cognesy\Tell\Data\TellShellJobEvent;
-use Cognesy\Tell\Shell\TellShellJobHost;
-use Cognesy\Tell\Shell\TellShellJobPolicy;
 use Cognesy\Tell\Data\TellShellJobRequest;
 
 $project = TellHarnessExample::project();
 $events = new ArrayObject;
-$host = TellShellJobHost::shellJobs(
+$host = StandardTellShellJobProfile::builder(
     project: $project,
     policy: new TellShellJobPolicy(
         maxConcurrentJobs: 2,
@@ -77,12 +77,13 @@ PHP;
     $host->dispose();
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points
 
-- `TellShellJobHost::shellJobs(...)->boot()` is deliberately separate from
-  `Tell::open()` and `TellHost::standard()`.
+- `StandardTellShellJobProfile::builder(...)->boot()` is deliberately separate
+  from `StandaloneTellHost::open()` and `StandaloneTellHost::cliBuilder()`.
 - Denial is the default. An embedding application must supply an approval
   policy before the host creates a job identity or starts a process.
 - The host enforces project-directory containment, concurrency, lifetime,

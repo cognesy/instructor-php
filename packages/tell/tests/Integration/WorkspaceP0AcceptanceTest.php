@@ -5,13 +5,13 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
-use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Core\Paths\TellPaths;
+use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('keeps the complete P0 workspace lifecycle durable across fresh Tell applications', function (): void {
@@ -140,13 +140,14 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
 });
 
 function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellConsoleApplication {
-    $application = new TellConsoleApplication(new TellAgentFactory(
+    $factory = tellAgentFactoryForPaths(
         $paths,
-        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($paths),
+        dirname($paths->home),
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
             new RecordingDriver($recorder, 'verified semantic response'),
         ),
-    ));
+    );
+    $application = tellTestApplication($factory);
     $application->setAutoExit(false);
 
     return $application;

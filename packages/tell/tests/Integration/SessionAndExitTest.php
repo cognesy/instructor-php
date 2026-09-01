@@ -8,12 +8,12 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Command\SessionsCommand;
-use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Adapter\Console\Command\SessionsCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Session\SessionRef;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -63,10 +63,10 @@ it('bounds session detail until full content is requested', function (): void {
         '--dir' => $project,
     ]);
 
-    $summary = new CommandTester(new SessionsCommand(tellTestWorkspaces()));
+    $summary = new CommandTester(new SessionsCommand(tellTestConversations($factory)));
     $summary->execute(['action' => 'show', 'id' => 'long-session', '--dir' => $project]);
     $summaryPayload = Toon::decode($summary->getDisplay());
-    $full = new CommandTester(new SessionsCommand(tellTestWorkspaces()));
+    $full = new CommandTester(new SessionsCommand(tellTestConversations($factory)));
     $full->execute(['action' => 'show', 'id' => 'long-session', '--full' => true, '--dir' => $project]);
     $fullPayload = Toon::decode($full->getDisplay());
 

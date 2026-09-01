@@ -1,0 +1,10 @@
+<?php
+
+namespace Cognesy\Tell\Core\Execution;
+
+use Psr\Container\ContainerInterface;
+
+final class InvalidCoreFrameworkImport
+{
+    public function __construct(public ContainerInterface $container) {}
+}

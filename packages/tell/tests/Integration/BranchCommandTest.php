@@ -5,24 +5,24 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Command\BranchCommand;
-use Cognesy\Tell\Command\CheckoutCommand;
-use Cognesy\Tell\Command\ConfigCommand;
-use Cognesy\Tell\Command\ResetCommand;
-use Cognesy\Tell\Console\TellCommand;
-use Cognesy\Tell\Console\TellOptions;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\Branch\BranchResolver;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Adapter\Console\Command\BranchCommand;
+use Cognesy\Tell\Adapter\Console\Command\CheckoutCommand;
+use Cognesy\Tell\Adapter\Console\Command\ConfigCommand;
+use Cognesy\Tell\Adapter\Console\Command\ResetCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Core\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchConfigurationStore;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchSelectionStore;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('creates independent refs from main, another branch, and empty state without copying objects', function (): void {
@@ -36,7 +36,7 @@ it('creates independent refs from main, another branch, and empty state without 
     ));
     $arena->compareAndSwap('main', null, $head);
     $objectSnapshot = tellBranchSnapshot($workspace->paths->objects);
-    $command = new BranchCommand(tellTestWorkspaces());
+    $command = new BranchCommand(tellTestConversations($factory));
 
     $current = new CommandTester($command);
     $fromBranch = new CommandTester($command);
@@ -78,7 +78,7 @@ it('lists and shows deterministic verified branch views without inference or wri
     $arena = new FilesystemArena($workspace);
     $head = $arena->put(new ConversationRoot('branch-list'));
     $arena->compareAndSwap('main', null, $head);
-    $command = new BranchCommand(tellTestWorkspaces());
+    $command = new BranchCommand(tellTestConversations($factory));
     (new CommandTester($command))->execute(['action' => 'create', 'name' => 'zeta', '--dir' => $project]);
     (new CommandTester($command))->execute(['action' => 'create', 'name' => 'alpha', '--empty' => true, '--dir' => $project]);
     $before = tellBranchSnapshot($workspace->paths->arena);
@@ -112,7 +112,7 @@ it('rejects invalid conflicting and missing branch operations without mutation',
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $command = new BranchCommand(tellTestWorkspaces());
+    $command = new BranchCommand(tellTestConversations($factory));
     $create = new CommandTester($command);
     expect($create->execute(['action' => 'create', 'name' => 'review', '--empty' => true, '--dir' => $project, '--json' => true]))->toBe(0);
     $before = tellBranchSnapshot($workspace->paths->arena);
@@ -140,11 +140,11 @@ it('fails show when the referenced canonical head is corrupt or dangling', funct
     $arena = new FilesystemArena($workspace);
     $head = $arena->put(new ConversationRoot('branch-corrupt'));
     $arena->compareAndSwap('main', null, $head);
-    (new CommandTester(new BranchCommand(tellTestWorkspaces())))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
+    (new CommandTester(new BranchCommand(tellTestConversations($factory))))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
     file_put_contents($arena->objectPath($head), '{"truncated"');
     $before = tellBranchSnapshot($workspace->paths->arena);
 
-    $tester = new CommandTester(new BranchCommand(tellTestWorkspaces()));
+    $tester = new CommandTester(new BranchCommand(tellTestConversations($factory)));
     expect($tester->execute(['action' => 'show', 'name' => 'review', '--dir' => $project, '--json' => true]))->toBe(1)
         ->and(json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['error'])->toContain('object bytes do not match')
         ->and(tellBranchSnapshot($workspace->paths->arena))->toBe($before);
@@ -157,9 +157,9 @@ it('persists checkout while an invocation-local branch resolution leaves it unch
     $arena = new FilesystemArena($workspace);
     $head = $arena->put(new ConversationRoot('checkout'));
     $arena->compareAndSwap('main', null, $head);
-    (new CommandTester(new BranchCommand(tellTestWorkspaces())))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
+    (new CommandTester(new BranchCommand(tellTestConversations($factory))))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
 
-    $tester = new CommandTester(new CheckoutCommand(tellTestWorkspaces()));
+    $tester = new CommandTester(new CheckoutCommand(tellTestConversations($factory)));
     expect($tester->execute(['name' => 'review', '--dir' => $project, '--json' => true]))->toBe(0)
         ->and(json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR))->toMatchArray([
             'previous' => ['name' => 'main', 'source' => 'current'],
@@ -170,9 +170,9 @@ it('persists checkout while an invocation-local branch resolution leaves it unch
     $reopened = tellTestWorkspaces()->discover($project);
     expect($reopened)->not->toBeNull();
     $store = new FilesystemArena($reopened);
-    $current = new BranchCurrentSelectionStore($reopened);
+    $current = new FilesystemBranchSelectionStore($reopened);
     expect($current->read()->branch)->toBe('review')
-        ->and((new BranchResolver($store, $reopened))->resolve('main')->toArray())->toBe([
+        ->and((new BranchResolver($store, $current))->resolve('main')->toArray())->toBe([
             'name' => 'main', 'source' => 'invocation',
         ])
         ->and($current->read()->branch)->toBe('review');
@@ -181,13 +181,13 @@ it('persists checkout while an invocation-local branch resolution leaves it unch
 it('reports current or invocation-local branch selection in terminal output and rejects session ambiguity before inference', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('branch answer', 'current answer')));
     $project = tellBranchProject($factory);
-    (new CommandTester(new BranchCommand(tellTestWorkspaces())))->execute(['action' => 'create', 'name' => 'review', '--empty' => true, '--dir' => $project]);
+    (new CommandTester(new BranchCommand(tellTestConversations($factory))))->execute(['action' => 'create', 'name' => 'review', '--empty' => true, '--dir' => $project]);
 
     $invocation = new CommandTester(tellTestCommand($factory));
     expect($invocation->execute(['prompt' => 'on review', '--branch' => 'review', '--dir' => $project, '--output' => 'json']))->toBe(0, $invocation->getDisplay())
         ->and(json_decode($invocation->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['branch'])->toBe(['name' => 'review', 'source' => 'invocation']);
 
-    expect((new CommandTester(new CheckoutCommand(tellTestWorkspaces())))->execute(['name' => 'review', '--dir' => $project]))->toBe(0);
+    expect((new CommandTester(new CheckoutCommand(tellTestConversations($factory))))->execute(['name' => 'review', '--dir' => $project]))->toBe(0);
     $current = new CommandTester(tellTestCommand($factory));
     expect($current->execute(['prompt' => 'on current', '--dir' => $project, '--output' => 'json']))->toBe(0)
         ->and(json_decode($current->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['branch'])->toBe(['name' => 'review', 'source' => 'current']);
@@ -196,7 +196,7 @@ it('reports current or invocation-local branch selection in terminal output and 
         throw new RuntimeException('Invalid selection must fail before agent construction.');
     });
     $invalid = new CommandTester(tellTestCommand($noInference));
-    expect($invalid->execute(['prompt' => 'ambiguous', '--branch' => 'review', '--session' => 'legacy', '--dir' => $project, '--output' => 'json']))->toBe(2)
+    expect($invalid->execute(['prompt' => 'ambiguous', '--branch' => 'review', '--session' => 'named', '--dir' => $project, '--output' => 'json']))->toBe(2)
         ->and(json_decode($invalid->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['error'])->toContain('--branch and --session cannot be used together');
 });
 
@@ -207,10 +207,10 @@ it('resets only the selected branch ref and retains immutable objects', function
     $arena = new FilesystemArena($workspace);
     $head = $arena->put(new ConversationRoot('reset-root'));
     $arena->compareAndSwap('main', null, $head);
-    (new CommandTester(new BranchCommand(tellTestWorkspaces())))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
+    (new CommandTester(new BranchCommand(tellTestConversations($factory))))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
     $before = tellBranchSnapshot($workspace->paths->objects);
 
-    $tester = new CommandTester(new ResetCommand(tellTestWorkspaces()));
+    $tester = new CommandTester(new ResetCommand(tellTestConversations($factory)));
     expect($tester->execute(['--branch' => 'review', '--steps' => '1', '--dir' => $project, '--json' => true]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -237,10 +237,10 @@ it('resets only verified reachable ancestors and leaves invalid targets untouche
         [new RecordMessage(Role::User, [new TextPart('second')])],
     ));
     $arena->compareAndSwap('main', null, $second);
-    (new CommandTester(new BranchCommand(tellTestWorkspaces())))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
+    (new CommandTester(new BranchCommand(tellTestConversations($factory))))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
     $objects = tellBranchSnapshot($workspace->paths->objects);
 
-    $reset = new CommandTester(new ResetCommand(tellTestWorkspaces()));
+    $reset = new CommandTester(new ResetCommand(tellTestConversations($factory)));
     expect($reset->execute(['--branch' => 'review', '--to' => $first->toString(), '--dir' => $project, '--json' => true]))->toBe(0)
         ->and(json_decode($reset->getDisplay(), true, flags: JSON_THROW_ON_ERROR))->toMatchArray([
             'previousHead' => $second->toString(),
@@ -258,7 +258,7 @@ it('resets only verified reachable ancestors and leaves invalid targets untouche
         [new RecordMessage(Role::User, [new TextPart('future')])],
     ));
     $before = $arena->readRef('branches/review')->toBytes();
-    $noOp = new CommandTester(new ResetCommand(tellTestWorkspaces()));
+    $noOp = new CommandTester(new ResetCommand(tellTestConversations($factory)));
     expect($noOp->execute(['--branch' => 'review', '--to' => $first->toString(), '--dir' => $project, '--json' => true]))->toBe(0)
         ->and(json_decode($noOp->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['changed'])->toBeFalse()
         ->and($arena->readRef('branches/review')->toBytes())->toBe($before);
@@ -270,7 +270,7 @@ it('resets only verified reachable ancestors and leaves invalid targets untouche
         ['--steps' => '1001'],
         ['--steps' => '1', '--to' => $first->toString()],
     ] as $arguments) {
-        $tester = new CommandTester(new ResetCommand(tellTestWorkspaces()));
+        $tester = new CommandTester(new ResetCommand(tellTestConversations($factory)));
         expect($tester->execute($arguments + ['--branch' => 'review', '--dir' => $project, '--json' => true]))->toBe(2)
             ->and($arena->readRef('branches/review')->toBytes())->toBe($before);
     }
@@ -280,8 +280,8 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $branch = new CommandTester(new BranchCommand(tellTestWorkspaces()));
-    $command = new ConfigCommand($factory->paths(), tellTestWorkspaces());
+    $branch = new CommandTester(new BranchCommand(tellTestConversations($factory)));
+    $command = new ConfigCommand(tellTestConversations($factory));
     $set = new CommandTester($command);
     expect($set->execute(['action' => 'set', 'key' => 'model', 'value' => '"deepseek-v4-flash"', '--if-version' => '0', '--dir' => $project, '--json' => true]))->toBe(0)
         ->and($branch->execute(['action' => 'create', 'name' => 'review', '--dir' => $project, '--json' => true]))->toBe(0);
@@ -331,17 +331,17 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
             ],
             'precedence' => ['cli', 'branch', 'project', 'user', 'bundled'],
         ])
-        ->and((new BranchConfigStore(tellTestWorkspaces()->discover($project) ?? throw new RuntimeException('workspace missing')))->read('review')['values']['model'])->toBe('deepseek-v4-pro')
-        ->and((new BranchConfigStore($workspace))->read('main')['values']['model'])->toBe('deepseek-v4-flash');
+        ->and((new FilesystemBranchConfigurationStore(tellTestWorkspaces()->discover($project) ?? throw new RuntimeException('workspace missing')))->read('review')['values']['model'])->toBe('deepseek-v4-pro')
+        ->and((new FilesystemBranchConfigurationStore($workspace))->read('main')['values']['model'])->toBe('deepseek-v4-flash');
 });
 
 it('rejects unsafe and invalid branch configuration without leaking secrets or partial writes', function (): void {
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
-    $command = new ConfigCommand($factory->paths(), tellTestWorkspaces());
+    $command = new ConfigCommand(tellTestConversations($factory));
     $set = new CommandTester($command);
     expect($set->execute(['action' => 'set', 'key' => 'tools', 'value' => '["tell.coding"]', '--if-version' => '0', '--dir' => $project, '--json' => true]))->toBe(0);
-    $before = (new BranchConfigStore(tellBranchWorkspace($factory, $project)))->read('main');
+    $before = (new FilesystemBranchConfigurationStore(tellBranchWorkspace($factory, $project)))->read('main');
 
     $bad = new CommandTester($command);
     foreach ([
@@ -353,11 +353,11 @@ it('rejects unsafe and invalid branch configuration without leaking secrets or p
     ] as $arguments) {
         expect($bad->execute(['action' => 'set', '--if-version' => '1', '--dir' => $project, '--json' => true] + $arguments))->toBe(2)
             ->and($bad->getDisplay())->not->toContain('sk-secret-canary')
-            ->and((new BranchConfigStore(tellBranchWorkspace($factory, $project)))->read('main'))->toBe($before);
+            ->and((new FilesystemBranchConfigurationStore(tellBranchWorkspace($factory, $project)))->read('main'))->toBe($before);
     }
     $stale = new CommandTester($command);
     expect($stale->execute(['action' => 'delete', 'key' => 'tools', '--if-version' => '0', '--dir' => $project, '--json' => true]))->toBe(1)
-        ->and((new BranchConfigStore(tellBranchWorkspace($factory, $project)))->read('main'))->toBe($before);
+        ->and((new FilesystemBranchConfigurationStore(tellBranchWorkspace($factory, $project)))->read('main'))->toBe($before);
 });
 
 it('applies branch runtime intent only where an invocation did not explicitly override it', function (): void {
@@ -388,7 +388,7 @@ it('applies branch runtime intent only where an invocation did not explicitly ov
 it('persists every allowed typed branch config value through a fresh workspace reader', function (): void {
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
-    $config = new BranchConfigStore(tellBranchWorkspace($factory, $project));
+    $config = new FilesystemBranchConfigurationStore(tellBranchWorkspace($factory, $project));
     $values = [
         'connection' => 'ollama',
         'model' => 'local-model',
@@ -405,7 +405,7 @@ it('persists every allowed typed branch config value through a fresh workspace r
         $version = $config->set('main', $key, $value, $version)['version'];
     }
     ksort($values, SORT_STRING);
-    $fresh = new BranchConfigStore(tellTestWorkspaces()->discover($project) ?? throw new RuntimeException('workspace missing'));
+    $fresh = new FilesystemBranchConfigurationStore(tellTestWorkspaces()->discover($project) ?? throw new RuntimeException('workspace missing'));
 
     expect($fresh->read('main'))->toBe(['version' => 9, 'values' => $values]);
 });

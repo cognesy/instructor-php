@@ -5,23 +5,25 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\Standalone\TellHost;
-use Cognesy\Tell\Composition\Standalone\TellHostGraphException;
-use Cognesy\Tell\Composition\Standalone\TellModuleDefinition;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Contracts\CanContributeTellCommands;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostGraphException;
+use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
+use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
+use Cognesy\Tell\Adapter\Console\Symfony\Contract\CanContributeTellCommands;
 use Cognesy\Tell\Data\TellCommandDescriptor;
 use Cognesy\Tell\Data\TellCommandDescriptors;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-it('assembles the complete compatible CLI surface from the standard host', function (): void {
+it('assembles the complete CLI surface from the standalone host', function (): void {
     $project = tellTestProject();
-    $host = TellHost::standard(
+    $host = StandaloneTellHost::cliBuilder(
         $project,
         standardHostPaths($project),
         static fn () => FakeAgentDriver::fromResponses('unused'),
     )->boot();
-    $application = TellConsoleApplication::fromHost($host);
+    $application = new TellConsoleApplication(TellCommandDescriptors::merge(
+        ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
+    ));
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -69,7 +71,7 @@ it('rejects duplicate contributed command names before returning a booted host',
         },
     );
 
-    expect(fn () => TellHost::standard(
+    expect(fn () => StandaloneTellHost::cliBuilder(
         $project,
         standardHostPaths($project),
         static fn () => FakeAgentDriver::fromResponses('unused'),

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\ToolCall;
-use Cognesy\Tell\Workspace\Arena\Record\ToolResult;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\Arena\RecordCodec;
-use Cognesy\Tell\Workspace\Arena\RecordException;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ToolCall;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ToolResult;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Core\Workspace\Arena\RecordCodec;
+use Cognesy\Tell\Core\Workspace\Arena\RecordException;
 
 beforeEach(function (): void {
     global $tellTemporaryRoots;

@@ -6,19 +6,18 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\Conversation\ConversationReader;
-use Cognesy\Tell\Workspace\Session\SessionRef;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Core\Workspace\Conversation\ConversationReader;
+use Cognesy\Tell\Core\Workspace\Session\SessionRef;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('clears a canonical main ref without inference or immutable object deletion', function (): void {
@@ -31,7 +30,7 @@ it('clears a canonical main ref without inference or immutable object deletion',
     [$root, $head] = tellClearSeedHistory($arena, 'main');
     $objectsBefore = tellClearSnapshot($workspace->paths->objects);
     $homeBefore = tellClearSnapshot($factory->paths()->home);
-    $application = new TellConsoleApplication($factory);
+    $application = tellTestApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -78,7 +77,7 @@ it('clears only the selected named session ref', function (): void {
     $session = SessionId::from('review-1');
     $sessionRef = new SessionRef($session);
     [, $sessionHead] = tellClearSeedHistory($arena, $sessionRef->refName(), $sessionRef);
-    $application = new TellConsoleApplication($factory);
+    $application = tellTestApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -104,7 +103,7 @@ it('fails before mutation for invalid workspace selectors and corrupt canonical 
     $workspace = tellClearWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [$root] = tellClearSeedHistory($arena, 'main');
-    $application = new TellConsoleApplication($factory);
+    $application = tellTestApplication($factory);
     $application->setAutoExit(false);
 
     $invalidOutput = new BufferedOutput();

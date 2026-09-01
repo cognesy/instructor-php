@@ -13,7 +13,7 @@ tags:
 ## Overview
 
 A transient request compiles the selected durable conversation as context but
-cannot publish objects, refs, or legacy-session updates. This lets an
+cannot publish objects, refs, or named-session updates. This lets an
 application test an alternative prompt or implementation plan without
 contaminating the conversation it may later resume.
 
@@ -24,13 +24,13 @@ contaminating the conversation it may later resume.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = Tell::open($project);
+    $tell = StandaloneTellHost::open($project);
     $tell->workspace()->initialize();
     $review = $tell->conversation('release-review');
 
@@ -59,6 +59,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points

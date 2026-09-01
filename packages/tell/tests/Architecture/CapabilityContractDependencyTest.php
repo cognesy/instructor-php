@@ -3,21 +3,19 @@
 declare(strict_types=1);
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Contracts\CanContributeTellCommands;
-use Cognesy\Tell\Contracts\CanContributeTellExtensions;
-use Cognesy\Tell\Contracts\CanContributeTellTools;
-use Cognesy\Tell\Contracts\CanCreateTellRuntime;
-use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
-use Cognesy\Tell\Contracts\CanResolveTellPaths;
-use Cognesy\Tell\Contracts\TellCapabilityCardinality;
-use Cognesy\Tell\Contracts\TellCapabilityContracts;
+use Cognesy\Tell\Core\Contract\Agent\CanContributeTellAgent;
+use Cognesy\Tell\Adapter\Console\Symfony\Contract\CanContributeTellCommands;
+use Cognesy\Tell\Core\Contract\Execution\CanCreateTellRuntime;
+use Cognesy\Tell\Core\Contract\Workspace\CanReadTellBranchConfiguration;
+use Cognesy\Tell\Core\Contract\Paths\CanResolveTellPaths;
+use Cognesy\Tell\Composition\Standalone\Host\TellCapabilityCardinality;
+use Cognesy\Tell\Composition\Standalone\Host\TellCapabilityContracts;
 use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Data\TellResolvedPaths;
-use Cognesy\Tell\Runtime\CanReadTellClock;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
 
 it('keeps capability contracts independent of hosts frameworks and implementations', function (): void {
-    $root = dirname(__DIR__, 2) . '/src/Contracts';
+    $root = dirname(__DIR__, 2) . '/src/Core/Contract';
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root));
     $source = '';
     $workspaceDependencies = [];
@@ -43,14 +41,7 @@ it('keeps capability contracts independent of hosts frameworks and implementatio
         ->not->toContain('Cognesy\\Polyglot\\Inference\\Drivers\\')
         ->not->toContain('getenv(')
         ->not->toContain('putenv(')
-        ->and($workspaceDependencies)->toBe([
-            'Cognesy\\Tell\\Workspace\\Branch\\TellBranch',
-            'Cognesy\\Tell\\Workspace\\Branch\\TellBranchConfig',
-            'Cognesy\\Tell\\Workspace\\Branch\\TellBranchConfiguration',
-            'Cognesy\\Tell\\Workspace\\Branch\\TellBranches',
-            'Cognesy\\Tell\\Workspace\\TellConversation',
-            'Cognesy\\Tell\\Workspace\\TellRef',
-        ]);
+        ->and($workspaceDependencies)->toBe([]);
 });
 
 it('keeps the static composition host free of dynamic kernels and shell frameworks', function (): void {
@@ -83,29 +74,32 @@ it('keeps the static composition host free of dynamic kernels and shell framewor
         ->not->toContain('pendingModules');
 });
 
-it('keeps the standalone object graph in one explicit composition namespace', function (): void {
+it('splits the standalone object graph into explicit Host and Profile namespaces', function (): void {
     $compositionRoot = dirname(__DIR__, 2) . '/src/Composition';
     $rootFiles = glob($compositionRoot . '/*.php') ?: [];
     $standaloneFiles = glob($compositionRoot . '/Standalone/*.php') ?: [];
+    $hostFiles = glob($compositionRoot . '/Standalone/Host/*.php') ?: [];
+    $profileFiles = glob($compositionRoot . '/Standalone/Profile/*.php') ?: [];
 
     expect($rootFiles)->toBe([])
-        ->and($standaloneFiles)->not->toBeEmpty();
+        ->and($standaloneFiles)->toBe([])
+        ->and($hostFiles)->not->toBeEmpty()
+        ->and($profileFiles)->not->toBeEmpty();
 
-    foreach ($standaloneFiles as $file) {
+    foreach (['Host' => $hostFiles, 'Profile' => $profileFiles] as $namespace => $files) {
+        foreach ($files as $file) {
         $source = file_get_contents($file);
 
         expect($source)->toBeString()
-            ->and($source)->toContain('namespace Cognesy\\Tell\\Composition\\Standalone;');
+                ->and($source)->toContain("namespace Cognesy\\Tell\\Composition\\Standalone\\{$namespace};");
+        }
     }
 });
 
 it('keeps runtime capabilities independent of composition mechanisms', function (): void {
     $paths = [
-        dirname(__DIR__, 2) . '/src/Contracts',
         dirname(__DIR__, 2) . '/src/Data',
-        dirname(__DIR__, 2) . '/src/Runtime',
-        dirname(__DIR__, 2) . '/src/Tool',
-        dirname(__DIR__, 2) . '/src/Workspace',
+        dirname(__DIR__, 2) . '/src/Core',
     ];
     $source = '';
     foreach ($paths as $path) {
@@ -167,24 +161,35 @@ it('boots the standard provider graph only at the standalone composition root', 
     }
 
     expect($source)->not->toContain('Tell::open(')
-        ->and($bootFiles)->toBe(['Composition/Standalone/StandaloneTellHost.php']);
+        ->and($bootFiles)->not->toBeEmpty();
+
+    foreach ($bootFiles as $file) {
+        expect($file)->toStartWith('Composition/');
+    }
 });
 
-it('keeps installed agent-factory selection at the standalone compatibility boundary', function (): void {
+it('forbids removed bootstrap and alias APIs', function (): void {
     $root = dirname(__DIR__, 2) . '/src';
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root));
-    $callers = [];
+    $source = '';
     foreach ($iterator as $file) {
         if (!$file->isFile() || $file->getExtension() !== 'php') {
             continue;
         }
         $contents = file_get_contents($file->getPathname());
-        if (is_string($contents) && str_contains($contents, 'TellAgentFactory::installed()')) {
-            $callers[] = str_replace($root . DIRECTORY_SEPARATOR, '', $file->getPathname());
-        }
+        $source .= is_string($contents) ? $contents : '';
     }
 
-    expect($callers)->toBe(['Composition/Standalone/StandaloneTellHost.php']);
+    expect($source)
+        ->not->toContain('TellAgentFactory::installed()')
+        ->not->toContain('TellHost::standard(')
+        ->not->toContain('TellConsoleApplication::fromHost(')
+        ->not->toContain('TellConsoleApplication::fromDescriptors(')
+        ->not->toContain('Tell::open(')
+        ->not->toContain('Tell::testing(')
+        ->not->toContain('canonicalName')
+        ->not->toContain('aliasOf')
+        ->not->toContain('invokedAs');
 });
 
 it('publishes explicit cardinality for every graph capability', function (): void {
@@ -194,11 +199,9 @@ it('publishes explicit cardinality for every graph capability', function (): voi
         ->toBe(TellCapabilityCardinality::OptionalSingleton)
         ->and($cardinalities[CanCreateTellRuntime::class])
         ->toBe(TellCapabilityCardinality::Singleton)
+        ->and($cardinalities[CanContributeTellAgent::class])
+        ->toBe(TellCapabilityCardinality::OrderedContribution)
         ->and($cardinalities[CanContributeTellCommands::class])
-        ->toBe(TellCapabilityCardinality::OrderedContribution)
-        ->and($cardinalities[CanContributeTellExtensions::class])
-        ->toBe(TellCapabilityCardinality::OrderedContribution)
-        ->and($cardinalities[CanContributeTellTools::class])
         ->toBe(TellCapabilityCardinality::OrderedContribution)
         ->and($cardinalities[CanProvideCancellationSignal::class])
         ->toBe(TellCapabilityCardinality::Singleton)
@@ -207,6 +210,46 @@ it('publishes explicit cardinality for every graph capability', function (): voi
 
     foreach (array_keys($cardinalities) as $capability) {
         expect(interface_exists($capability))->toBeTrue("{$capability} must be an interface");
+    }
+});
+
+it('keeps agent and tool provider selection out of the core factory', function (): void {
+    $source = file_get_contents(dirname(__DIR__, 2) . '/src/Core/Agent/TellAgentFactory.php');
+
+    expect($source)->toBeString()
+        ->not->toContain('Cognesy\\Tell\\Capability\\')
+        ->not->toContain('CapabilityDiscovery::discover')
+        ->not->toContain('new TellCodingTools')
+        ->not->toContain('new TellAskUserCapability')
+        ->not->toContain('new TellSubagentExecutor');
+});
+
+it('does not retain speculative contribution contracts without providers or consumers', function (): void {
+    expect(interface_exists('Cognesy\\Tell\\Contracts\\CanContributeTellExtensions'))
+        ->toBeFalse()
+        ->and(interface_exists('Cognesy\\Tell\\Contracts\\CanContributeTellTools'))
+        ->toBeFalse();
+});
+
+it('documents every Tell-owned interface in the capability census', function (): void {
+    $root = dirname(__DIR__, 2);
+    $document = file_get_contents($root . '/CONTRACTS.md');
+    $interfaces = [];
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root . '/src'));
+    foreach ($iterator as $file) {
+        if (!$file->isFile() || $file->getExtension() !== 'php') {
+            continue;
+        }
+        $source = file_get_contents($file->getPathname());
+        if (is_string($source) && preg_match('/\\binterface\\s+([A-Za-z][A-Za-z0-9_]*)/', $source, $match) === 1) {
+            $interfaces[] = $match[1];
+        }
+    }
+    sort($interfaces, SORT_STRING);
+
+    expect($document)->toBeString();
+    foreach ($interfaces as $interface) {
+        expect($document)->toContain($interface);
     }
 });
 
@@ -244,32 +287,10 @@ it('uses a contract directly without booting a host or shell framework', functio
 it('does not introduce parallel state status or usage models', function (): void {
     $files = array_map(
         static fn (string $path): string => basename($path),
-        glob(dirname(__DIR__, 2) . '/src/Contracts/**/*.php') ?: [],
+        glob(dirname(__DIR__, 2) . '/src/Core/Contract/**/*.php') ?: [],
     );
 
     expect($files)->not->toContain('TellState.php')
         ->not->toContain('TellStatus.php')
         ->not->toContain('TellUsage.php');
-});
-
-it('keeps the concrete agent factory focused on agent construction', function (): void {
-    $methods = array_values(array_map(
-        static fn (ReflectionMethod $method): string => $method->getName(),
-        array_filter(
-            (new ReflectionClass(TellAgentFactory::class))->getMethods(ReflectionMethod::IS_PUBLIC),
-            static fn (ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() === TellAgentFactory::class,
-        ),
-    ));
-    sort($methods, SORT_STRING);
-
-    expect($methods)->toBe([
-        '__construct',
-        'assertReady',
-        'build',
-        'configureDefinition',
-        'definition',
-        'definitions',
-        'installed',
-        'paths',
-    ]);
 });

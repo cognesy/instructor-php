@@ -1,0 +1,10 @@
+<?php
+
+namespace Cognesy\Tell\Capability\Observation\Psr;
+
+use Cognesy\Tell\Capability\Observation\FilesystemTrace\ExecutionTraceWriter;
+
+final class InvalidCapabilityStrategyImport
+{
+    public function __construct(public ExecutionTraceWriter $writer) {}
+}

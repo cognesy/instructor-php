@@ -5,14 +5,13 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Tell;
-use Cognesy\Tell\Workspace\Arena\Exception\ArenaIntegrityException;
-use Cognesy\Tell\Workspace\Arena\RecordException;
-use Cognesy\Tell\Workspace\WorkspaceException;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\ArenaIntegrityException;
+use Cognesy\Tell\Core\Workspace\Arena\RecordException;
+use Cognesy\Tell\Core\Workspace\WorkspaceException;
 
 it('reads a named branch independently and keeps an immutable snapshot reproducible', function (): void {
     $project = tellTestProject();
-    $tell = Tell::testing($project, 'recorded');
+    $tell = tellTestResponses($project, 'recorded');
     $workspace = $tell->workspace();
     $workspace->initialize();
 
@@ -45,7 +44,7 @@ it('reads a named branch independently and keeps an immutable snapshot reproduci
 
 it('rejects missing branches and malformed or non-existent immutable refs', function (): void {
     $project = tellTestProject();
-    $workspace = Tell::testing($project, 'unused')->workspace();
+    $workspace = tellTestResponses($project, 'unused')->workspace();
     $workspace->initialize();
 
     expect(fn () => $workspace->branch('missing'))

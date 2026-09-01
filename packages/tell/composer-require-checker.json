@@ -1,0 +1,18 @@
+{
+  "symbol-whitelist": [
+    "pcntl_async_signals",
+    "pcntl_fork",
+    "pcntl_signal",
+    "pcntl_waitpid",
+    "posix_getpid",
+    "posix_getppid",
+    "posix_kill",
+    "SIGINT",
+    "SIGKILL",
+    "SIGTERM",
+    "WNOHANG"
+  ],
+  "scan-files": [
+    "bin/tell"
+  ]
+}

@@ -54,6 +54,7 @@ if ($errors !== '') {
 if ($exit !== 0) {
     throw new RuntimeException("Tell agent protocol exited with {$exit}.");
 }
+?>
 ```
 
 ## Key Points

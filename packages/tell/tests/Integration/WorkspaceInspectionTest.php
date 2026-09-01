@@ -6,21 +6,20 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Command\WorkspaceInspectionCommand;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\ToolCall;
-use Cognesy\Tell\Workspace\Arena\Record\ToolResult;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\Session\SessionRef;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Adapter\Console\Command\WorkspaceInspectionCommand;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ToolCall;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ToolResult;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Core\Workspace\Session\SessionRef;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -33,7 +32,7 @@ it('inspects an empty workspace without inference or persistence writes', functi
     $workspace = tellInspectionWorkspace($factory, $project);
     $before = tellInspectionArenaSnapshot($workspace);
     $homeBefore = tellInspectionDirectorySnapshot($factory->paths()->home);
-    $application = new TellConsoleApplication($factory);
+    $application = tellTestApplication($factory);
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -70,7 +69,7 @@ it('lists canonical turns oldest-first with bounded Unicode previews and explici
     $arena = new FilesystemArena(tellInspectionWorkspace($factory, $project));
     [, $first, $second, $longAnswer] = tellInspectionSeedHistory($arena);
     $before = tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project));
-    $command = new WorkspaceInspectionCommand('history', tellTestWorkspaces());
+    $command = new WorkspaceInspectionCommand('history', tellTestConversations($factory));
 
     $bounded = new CommandTester($command);
     expect($bounded->execute(['--dir' => $project, '--limit' => '1', '--json' => true]))->toBe(0);
@@ -123,7 +122,7 @@ it('renders verified ordered tool call and result pairs without exposing provide
     $arena->compareAndSwap('main', null, $turn);
     $workspace = tellInspectionWorkspace($factory, $project);
     $before = tellInspectionArenaSnapshot($workspace);
-    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestWorkspaces()));
+    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestConversations($factory)));
 
     expect($tester->execute(['--dir' => $project, '--full' => true, '--json' => true]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -163,7 +162,7 @@ it('selects named canonical sessions without exposing their hashed session ref',
     ));
     $arena->compareAndSwap($sessionRef->refName(), null, $root);
     $before = tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project));
-    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestWorkspaces()));
+    $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', tellTestConversations($factory)));
 
     expect($tester->execute(['--dir' => $project, '--session' => 'review-1', '--json' => true]))->toBe(0);
     $display = $tester->getDisplay();
@@ -181,7 +180,7 @@ it('fails atomically for corrupt lineage and malformed limits', function (): voi
     $workspace = tellInspectionWorkspace($factory, $project);
     $arena = new FilesystemArena($workspace);
     [$root] = tellInspectionSeedHistory($arena);
-    $command = new WorkspaceInspectionCommand('history', tellTestWorkspaces());
+    $command = new WorkspaceInspectionCommand('history', tellTestConversations($factory));
 
     $beforeInvalid = tellInspectionArenaSnapshot($workspace);
     $invalid = new CommandTester($command);

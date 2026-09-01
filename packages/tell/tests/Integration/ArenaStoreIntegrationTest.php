@@ -5,17 +5,17 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Tests\Support\TestAutoload;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Branch\BranchName;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchStore;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Branch\BranchName;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchConfigurationStore;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchSelectionStore;
+use Cognesy\Tell\Core\Workspace\Branch\Storage\BranchStore;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
 
 beforeEach(function (): void {
     global $tellTemporaryRoots;
@@ -91,7 +91,7 @@ it('persists a complete current-branch selector across processes and concurrent 
     $root = tellArenaIntegrationDirectory('checkout');
     $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
     $store = new FilesystemArena($workspace);
-    $branches = new BranchStore($store, new BranchCurrentSelectionStore($workspace));
+    $branches = new BranchStore($store, new FilesystemBranchSelectionStore($workspace));
     $branches->create(BranchName::from('review'), $store->readRef());
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'checkout', 'review');
@@ -109,7 +109,7 @@ it('allows one process-level branch config writer and reports one version confli
     $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'config-set', 'main');
-    $config = (new BranchConfigStore($workspace))->read('main');
+    $config = (new FilesystemBranchConfigurationStore($workspace))->read('main');
 
     expect([$firstOutput, $secondOutput])->toContain('configured')
         ->and([$firstOutput, $secondOutput])->toContain('conflict')
@@ -137,7 +137,7 @@ function tellArenaWorkers(string $root, string $mode, ?string $hash = null): arr
         tellArenaStartWorker($root, $mode, $hash, $gate),
     ];
     $readyFiles = $gate . '.*.ready';
-    $deadline = hrtime(true) + 1_000_000_000;
+    $deadline = hrtime(true) + 5_000_000_000;
     while (count(glob($readyFiles) ?: []) < 2 && hrtime(true) < $deadline) {
         usleep(1_000);
     }

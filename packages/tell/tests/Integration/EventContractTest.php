@@ -6,14 +6,13 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Observability\TellEventNormalizer;
-use Cognesy\Tell\Runtime\TellSignalCancellationSource;
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Core\Observation\TellEventNormalizer;
+use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 use Cognesy\Tell\Tests\Support\TestAutoload;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Execution\TurnException;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Execution\TurnException;
 
 it('cooperatively cancels a durable execution before inference and does not publish', function (): void {
     $source = new InMemoryCancellationSource();
@@ -24,13 +23,16 @@ it('cooperatively cancels a durable execution before inference and does not publ
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
     $events = [];
     $normalizer = new TellEventNormalizer(branch: 'main');
-    $loop = $factory->build(new TellOptions(prompt: 'Do not infer', directory: $project), cancellation: $source);
+    $loop = $factory->build(
+        (new TellOptions(prompt: 'Do not infer', directory: $project))->request(),
+        cancellation: $source,
+    );
     $loop->wiretap(static function (object $event) use (&$events, $normalizer): void {
         $events[] = $normalizer->normalize($event);
     });
     $loop->execute(AgentState::empty()->withUserMessage('Do not infer'));
 
-    expect(fn () => Tell::open($project, $factory, $source)->run(
+    expect(fn () => tellTestOpen($project, $factory, $source)->run(
         TellRequest::prompt('Do not infer')->durable(),
     ))->toThrow(TurnException::class);
 
@@ -49,7 +51,7 @@ it('receives SIGINT in a short subprocess when pcntl is available', function ():
     }
     $script = <<<'PHP'
 require $argv[1];
-$source = new \Cognesy\Tell\Runtime\TellSignalCancellationSource();
+$source = new \Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource();
 $source->install();
 echo "ready\n";
 flush();

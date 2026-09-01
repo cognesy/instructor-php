@@ -1,0 +1,10 @@
+<?php
+
+namespace Cognesy\Tell\Core\Contract\Fixture;
+
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
+
+interface InvalidContractImport
+{
+    public function runtime(): TellRuntime;
+}

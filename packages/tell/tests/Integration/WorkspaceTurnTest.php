@@ -20,18 +20,18 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Tell\Console\TellCommand;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\HistoryCompiler;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\HistoryCompiler;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -45,9 +45,7 @@ it('continues a canonical workspace transcript with a fresh Tell process', funct
     expect($first->execute(['prompt' => 'first turn', '--dir' => $project]))->toBe(0);
 
     $secondDriver = new RecordingDriver($recorder, 'second answer');
-    $freshFactory = new TellAgentFactory(
-        $firstFactory->paths(),
-        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($firstFactory->paths()),
+    $freshFactory = $firstFactory->withLoopDecorator(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($secondDriver),
     );
     $second = new CommandTester(tellTestCommand($freshFactory));
@@ -217,9 +215,7 @@ it('keeps the competing canonical head when a compare-and-swap race loses', func
         ],
     ));
 
-    $racingFactory = new TellAgentFactory(
-        $factory->paths(),
-        new \Cognesy\Tell\Observability\StandardTellExecutionTracer($factory->paths()),
+    $racingFactory = $factory->withLoopDecorator(
         static function (AgentLoop $loop) use ($store, $previousHead, $winningHead): AgentLoop {
             return $loop
                 ->withDriver(FakeAgentDriver::fromResponses('lost update'))

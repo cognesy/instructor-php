@@ -7,7 +7,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 

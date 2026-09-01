@@ -1,0 +1,10 @@
+<?php
+
+namespace Cognesy\Tell\Adapter\Console;
+
+use Cognesy\Tell\Capability\Observation\Psr\PsrTellObserver;
+
+final class InvalidAdapterImport
+{
+    public function __construct(public PsrTellObserver $observer) {}
+}

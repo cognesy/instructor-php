@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Configuration\TellConfig;
+use Cognesy\Tell\Core\Configuration\TellConfig;
 
 it('uses privacy-preserving trace defaults without a config file', function (): void {
     $config = TellConfig::fromFile(tellTestFactory()->paths()->configFile);

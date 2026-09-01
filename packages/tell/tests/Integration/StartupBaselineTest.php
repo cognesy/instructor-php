@@ -5,9 +5,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Discovery\StartupScanCounter;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Core\Discovery\StartupScanCounter;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('keeps bare discovery within its semantic scan budget', function (): void {

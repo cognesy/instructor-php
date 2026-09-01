@@ -12,19 +12,19 @@ use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Console\TellCommand;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Lineage;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\Arena\Record\Turn;
-use Cognesy\Tell\Workspace\Session\SessionRef;
-use Cognesy\Tell\Workspace\WorkspaceState;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Core\Workspace\Session\SessionRef;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('runs transient and durable turns with the same compiled workspace context while only the durable turn publishes', function (): void {
@@ -108,7 +108,7 @@ it('reads named canonical workspace session history without changing the arena',
 
 it('keeps transient text and events explicitly non-durable while leaving tool-enabled workspace state unchanged', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromSteps(
-        ScenarioStep::toolCall('read', ['path' => 'notes.txt']),
+        ScenarioStep::toolCall('read_file', ['path' => 'notes.txt']),
         ScenarioStep::final('tool-assisted transient answer'),
     )));
     $project = tellTransientProject($factory);

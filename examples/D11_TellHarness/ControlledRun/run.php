@@ -26,7 +26,7 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 use Cognesy\Tell\Data\TellEventEnvelope;
 use Cognesy\Tell\Data\TellRequest;
 
@@ -34,7 +34,7 @@ $project = TellHarnessExample::project();
 $cancellation = new InMemoryCancellationSource();
 
 try {
-    $tell = Tell::open($project, cancellation: $cancellation);
+    $tell = StandaloneTellHost::open($project, cancellation: $cancellation);
     $tell->workspace()->initialize();
     $stream = $tell->runStream(
         TellRequest::prompt('Inspect the project and report only actionable findings.')
@@ -64,6 +64,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points
@@ -73,5 +74,5 @@ try {
 - Keep the cancellation source in the controlling process. Cancellation is
   cooperative, so currently executing provider or tool work stops at its next
   safe checkpoint.
-- `TellEventEnvelope::toArray()` is the stable redacted boundary projection. Do not
-  forward raw provider/framework event data to logs or clients.
+- `TellEventEnvelope::toArray()` is the stable redacted boundary projection.
+  Do not forward raw provider/framework event data to logs or clients.

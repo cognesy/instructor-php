@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Data;
 
-use Cognesy\Tell\Workspace\Branch\TellBranchConfig;
-
 /** Immutable effective request intent and its non-secret provenance. */
 final readonly class TellEffectiveConfiguration
 {

@@ -5,50 +5,44 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Collections\Tools;
-use Cognesy\Tell\Console\TellOptions;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
 
 function tellCodingTools(TellAgentFactory $factory, string $project): Tools {
-    return $factory->build(new TellOptions(prompt: 'Inspect coding tools.', directory: $project))->tools();
+    return $factory->build(
+        (new TellOptions(prompt: 'Inspect coding tools.', directory: $project))->request(),
+    )->tools();
 }
 
-it('exposes canonical coding tools with explicit legacy aliases', function (): void {
+it('exposes one canonical name for each coding operation', function (): void {
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $tools = tellCodingTools($factory, $project);
 
-    expect($tools->names())
-        ->toContain('read_file', 'write_file', 'apply_patch', 'shell', 'read', 'write', 'edit', 'bash')
-        ->and($tools->get('read')->descriptor()->metadata()['aliasOf'])->toBe('read_file')
-        ->and($tools->get('edit')->descriptor()->metadata()['aliasOf'])->toBe('apply_patch')
-        ->and($tools->get('bash')->descriptor()->metadata()['aliasOf'])->toBe('shell')
+    expect($tools->names())->toContain('read_file', 'write_file', 'apply_patch', 'shell')
+        ->not->toContain('read', 'write', 'edit', 'bash')
         ->and($tools->get('apply_patch')->descriptor()->metadata()['effect'])->toBe('write')
         ->and($tools->get('shell')->descriptor()->metadata()['bounds']['network'])->toBeFalse();
 });
 
-it('runs canonical and legacy read write and shell names through equivalent operations', function (): void {
+it('runs read write and shell operations through their canonical names', function (): void {
     $factory = tellTestFactory();
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     file_put_contents($project . '/notes.txt', "Zażółć\n");
     $tools = tellCodingTools($factory, $project);
 
-    $canonicalRead = $tools->get('read_file')->use(path: $project . '/notes.txt')->unwrap();
-    $legacyRead = $tools->get('read')->use(path: $project . '/notes.txt')->unwrap();
-    $canonicalWrite = $tools->get('write_file')->use(path: $project . '/canonical.txt', content: "one\n")->unwrap();
-    $legacyWrite = $tools->get('write')->use(path: $project . '/legacy.txt', content: "one\n")->unwrap();
-    $canonicalShell = $tools->get('shell')->use(command: 'printf ready')->unwrap();
-    $legacyShell = $tools->get('bash')->use(command: 'printf ready')->unwrap();
+    $read = $tools->get('read_file')->use(path: $project . '/notes.txt')->unwrap();
+    $write = $tools->get('write_file')->use(path: $project . '/written.txt', content: "one\n")->unwrap();
+    $shell = $tools->get('shell')->use(command: 'printf ready')->unwrap();
 
-    expect($canonicalRead['success'])->toBeTrue()
-        ->and($canonicalRead['data'])->toBe($legacyRead['data'])
-        ->and($canonicalWrite['success'])->toBeTrue()
-        ->and($legacyWrite['success'])->toBeTrue()
-        ->and($canonicalWrite['data']['text'])->toContain('Successfully wrote 4 bytes')
-        ->and($legacyWrite['data']['text'])->toContain('Successfully wrote 4 bytes')
-        ->and($canonicalShell['data'])->toBe($legacyShell['data'])
-        ->and($canonicalShell['truncated'])->toBeFalse();
+    expect($read['success'])->toBeTrue()
+        ->and($read['data']['text'])->toContain('Zażółć')
+        ->and($write['success'])->toBeTrue()
+        ->and($write['data']['text'])->toContain('Successfully wrote 4 bytes')
+        ->and($shell['data']['text'])->toBe('ready')
+        ->and($shell['truncated'])->toBeFalse();
 });
 
 it('applies unicode multi-hunk patches only after all hunks validate', function (): void {
@@ -69,25 +63,6 @@ it('applies unicode multi-hunk patches only after all hunks validate', function 
         ->and($failed['success'])->toBeFalse()
         ->and($failed['error']['code'])->toBe('hunk_failed')
         ->and(file_get_contents($project . '/notes.txt'))->toBe($beforeFailure);
-});
-
-it('keeps the legacy edit schema on the same bounded patch operation', function (): void {
-    $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot() . '/project';
-    mkdir($project, 0755, true);
-    file_put_contents($project . '/notes.txt', "draft\n");
-    $tools = tellCodingTools($factory, $project);
-
-    $result = $tools->get('edit')->use(
-        path: $project . '/notes.txt',
-        old_string: 'draft',
-        new_string: 'verified',
-    )->unwrap();
-
-    expect($result['success'])->toBeTrue()
-        ->and($result['operation'])->toBe('apply_patch')
-        ->and($result['partial'])->toBeFalse()
-        ->and(file_get_contents($project . '/notes.txt'))->toBe("verified\n");
 });
 
 it('denies traversal and symlink patch targets and rejects malformed or oversized patches', function (): void {

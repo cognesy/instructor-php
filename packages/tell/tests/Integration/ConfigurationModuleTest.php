@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Configuration\StandardTellConfigurationResolver;
-use Cognesy\Tell\Configuration\StandardTellPathResolver;
-use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
+use Cognesy\Tell\Capability\Configuration\Standard\StandardTellConfigurationResolver;
+use Cognesy\Tell\Capability\Paths\Installed\StandardTellPathResolver;
+use Cognesy\Tell\Core\Paths\TellPaths;
+use Cognesy\Tell\Core\Contract\Workspace\CanReadTellBranchConfiguration;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Workspace\Branch\TellBranchConfig;
+use Cognesy\Tell\Data\TellBranchConfig;
 
 it('resolves one explicit request branch host user bundled precedence with provenance', function (): void {
     $project = tellTestProject();

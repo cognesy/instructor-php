@@ -1,10 +1,12 @@
 # Tell standalone composition host
 
 The framework-neutral SDK is composed by
-`Cognesy\Tell\Composition\Standalone\StandaloneTellHost`. All static graph
-machinery is isolated in that namespace. Runtime, workspace, tool, and
-configuration services depend only on focused contracts; they never receive
-the host, its provider registry, a framework container, or PSR-11.
+`Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost`. Default
+provider selection is isolated in `Composition\Standalone\Profile`; reusable
+graph and lifecycle machinery is isolated in `Composition\Standalone\Host`.
+Runtime, workspace, tool, and configuration services depend only on focused
+contracts; they never receive the host, its provider registry, a framework
+container, or PSR-11.
 
 `TellHostBuilder` assembles an immutable pre-boot module graph. Definitions
 advertise interface capabilities, declare mandatory and optional dependencies,
@@ -34,17 +36,18 @@ configuration payloads, or secrets.
 `StandardTellProfile::runtime($directory)` is the headless SDK and worker
 profile. It composes paths, secrets, model selection, clock, cancellation,
 tracing, agent construction, workspace and conversation access, configuration,
-extension discovery, tools, observation, runtime creation, execution, and the
-one-run protocol. It does not construct command or Symfony Console services.
+extension and Polyglot provider discovery, tools, observation, runtime creation,
+execution, and the one-run protocol. It does not construct command or Symfony
+Console services.
 
 `StandardTellProfile::cli($directory)` extends that headless profile with the
 core command contribution and `application.symfony-console` modules. The
-`Console` namespace is a CLI adapter based on the Symfony Console component; it
-is not a Symfony Framework dependency-injection integration.
+`Adapter\Console` namespace is a CLI adapter based on the Symfony Console
+component; it is not a Symfony Framework dependency-injection integration.
 
-`Tell::open()` is the convenience SDK entry point. It delegates once to the
-standalone root and receives explicit runner, workspace, conversation, path,
-tool, and disposal capabilities. `Tell` does not retain the host graph. A
+`StandaloneTellHost::open()` is the standalone SDK entry point. It boots the
+runtime profile and constructs `Tell` from explicit runner, workspace,
+conversation, provider-catalogue, tool, and disposal capabilities. A
 long-running worker should boot one profile and reuse its factories for many
 isolated executions, then dispose the host when the worker stops.
 
@@ -71,8 +74,8 @@ second composition root.
 ## Future framework hosts
 
 Future Symfony and Laravel integration packages can map their native container
-bindings to the contracts under `Cognesy\Tell\Contracts` and construct the
-facade through `Tell::fromCapabilities()`. They should own their framework
+bindings to the contracts under `Cognesy\Tell\Core\Contract` and construct `Tell`
+directly. They should own their framework
 lifecycle and configuration adapters. Tell core will not expose either
 container, adopt PSR-11 as a service locator, or embed one framework container
 inside another.

@@ -1,0 +1,15 @@
+<?php
+
+namespace Cognesy\Tell\Capability\ShellJob\Process;
+
+final class InvalidTellShellJobHost
+{
+    public static function standard(): self
+    {
+        $policy = new TellShellJobPolicy();
+        $approvals = TellShellJobApprovals::denyAll();
+        $observer = new NullTellShellJobObserver();
+
+        return new self();
+    }
+}

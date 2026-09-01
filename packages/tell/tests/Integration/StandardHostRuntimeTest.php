@@ -8,15 +8,19 @@ use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Tell\Composition\Standalone\StandardTellProfile;
-use Cognesy\Tell\Composition\Standalone\TellHostBuilder;
-use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
-use Cognesy\Tell\Composition\Standalone\TellModuleDefinition;
-use Cognesy\Tell\Contracts\CanObserveTellExecution;
-use Cognesy\Tell\Contracts\CanResolveTellModel;
+use Cognesy\Tell\Composition\Standalone\Profile\StandardTellProfile;
+use Cognesy\Tell\Composition\Standalone\Host\TellHostBuilder;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
+use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
+use Cognesy\Tell\Capability\Workspace\Memory\InMemoryTellWorkspaceProvider;
+use Cognesy\Tell\Core\Contract\Observation\CanObserveTellExecution;
+use Cognesy\Tell\Core\Contract\Model\CanResolveTellModel;
 use Cognesy\Tell\Data\TellEventEnvelope;
+use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 it('runs the standard modular host with a replaced driver factory', function (): void {
     $project = tellTestProject();
@@ -34,23 +38,86 @@ it('runs the standard modular host with a replaced driver factory', function ():
             'paths.standard',
             'secrets.standard',
             'model.polyglot',
+            'provider-catalogue.polyglot',
             'clock.system',
             'cancellation.memory',
             'tracing.standard',
+            'agent-definitions.filesystem',
+            'agent-contribution.composer-discovery',
+            'agent-contribution.coding-tools',
+            'agent-contribution.ask-user',
+            'agent-contribution.subagents',
+            'agent-contribution.standard',
             'agent.cognesy',
             'workspace.filesystem',
+            'workspace.execution',
             'configuration.standard',
             'extensions.composer',
             'tools.standard',
             'observation.standard',
             'runtime.standard',
             'execution.default',
-            'conversations.filesystem',
+            'conversations.standard',
             'protocol.one-run',
         ])
         ->and(json_encode($host->describe()->toArray(), JSON_THROW_ON_ERROR))->not->toContain('host response');
 
     $host->dispose();
+});
+
+it('runs complete headless and CLI profiles on the in-memory workspace backend', function (): void {
+    $project = tellTestProject();
+    $paths = standardHostPaths($project);
+    $memory = new InMemoryTellWorkspaceProvider();
+    $headless = StandaloneTellHost::builder(
+        directory: $project,
+        paths: $paths,
+        driverFactory: static fn () => FakeAgentDriver::fromResponses('memory response'),
+        workspaces: $memory,
+    )->boot();
+
+    $headless->workspace()->initialize($project);
+    $result = $headless->runner()->run(TellRequest::prompt('Persist in memory')
+        ->withDirectory($project)
+        ->durable());
+    $branch = $headless->conversations()->branches($project)->create('review');
+    $configured = $headless->conversations()->configuration($project)->set('maxToolCalls', 7, 0);
+
+    expect(trim($result->text()))->toBe('memory response')
+        ->and($result->isDurable())->toBeTrue()
+        ->and($headless->conversations()->main($project)->history()->totalCount)->toBe(1)
+        ->and($branch->name)->toBe('review')
+        ->and($configured->values)->toBe(['maxToolCalls' => 7])
+        ->and($headless->branchConfiguration()?->read($project)?->values)->toBe(['maxToolCalls' => 7]);
+
+    $headless->dispose();
+
+    $cliMemory = new InMemoryTellWorkspaceProvider();
+    $cli = StandaloneTellHost::cliBuilder(
+        directory: $project,
+        paths: $paths,
+        driverFactory: static fn () => FakeAgentDriver::fromResponses('unused'),
+        workspaces: $cliMemory,
+    )->boot();
+    $application = new TellConsoleApplication(TellCommandDescriptors::merge(
+        ...array_map(static fn ($contributor) => $contributor->commands(), $cli->commandContributors()),
+    ));
+    $application->setAutoExit(false);
+    $output = new BufferedOutput();
+
+    $init = $application->runArgv(['tell', 'init', $project, '--json'], $output);
+    $output->fetch();
+    $create = $application->runArgv(['tell', 'branch', 'create', 'scratch', '--empty', '--dir', $project, '--json'], $output);
+    $output->fetch();
+    $configure = $application->runArgv(['tell', 'config', 'set', 'maxToolCalls', '9', '--if-version', '0', '--dir', $project, '--json'], $output);
+
+    expect($init)->toBe(0)
+        ->and($create)->toBe(0)
+        ->and($configure)->toBe(0, $output->fetch())
+        ->and($cliMemory->read($project)?->values)->toBe(['maxToolCalls' => 9])
+        ->and(array_column($cli->describe()->modules, 'id'))->toContain('workspace.execution', 'conversations.standard');
+
+    $cli->dispose();
 });
 
 it('resolves a model once when an immutable definition is handed to loop construction', function (): void {
@@ -71,15 +138,15 @@ it('resolves a model once when an immutable definition is handed to loop constru
             ]);
         }
     };
-    $factory = new TellAgentFactory(
+    $factory = tellAgentFactoryForPaths(
         paths: $paths,
-        tracer: new \Cognesy\Tell\Observability\StandardTellExecutionTracer($paths),
+        directory: $project,
         modelResolver: $resolver,
     );
     $request = TellRequest::prompt('Resolve exactly once')->withDirectory($project);
-    $definition = $factory->definition($request->toOptions());
+    $definition = $factory->definition($request);
 
-    $factory->build($request->toOptions(), $definition);
+    $factory->build($request, definition: $definition);
 
     expect($calls)->toHaveCount(1);
 });
@@ -134,10 +201,15 @@ it('keeps the headless profile free of CLI providers while CLI extends it explic
     $headlessModules = array_column($headless->describe()->modules, 'id');
     $cliModules = array_column($cli->describe()->modules, 'id');
 
-    expect($headlessModules)->not->toContain('commands.core', 'application.symfony-console')
+    expect($headlessModules)->not->toContain('credentials.filesystem', 'commands.core', 'application.symfony-console')
         ->and($headless->commandContributors())->toBe([])
         ->and(fn () => $headless->application())->toThrow(LogicException::class)
-        ->and($cliModules)->toBe([...$headlessModules, 'commands.core', 'application.symfony-console']);
+        ->and($cliModules)->toBe([
+            ...$headlessModules,
+            'credentials.filesystem',
+            'commands.core',
+            'application.symfony-console',
+        ]);
 
     $headless->dispose();
     $cli->dispose();

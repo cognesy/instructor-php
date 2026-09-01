@@ -27,13 +27,19 @@
     "php": "^8.3",
     "cognesy/agents": "^2.9",
     "cognesy/instructor-config": "^2.9",
+    "cognesy/instructor-events": "^2.9",
+    "cognesy/instructor-messages": "^2.9",
     "cognesy/instructor-polyglot": "^2.9",
+    "cognesy/instructor-sandbox": "^2.9",
     "cognesy/instructor-utils": "^2.9",
     "composer-runtime-api": "^2.0",
+    "ext-ctype": "*",
+    "ext-mbstring": "*",
     "helgesverre/toon": "^3.2",
     "psr/log": "^3.0",
     "symfony/console": "^7.3 || ^8.0",
-    "symfony/process": "^7.3 || ^8.0"
+    "symfony/process": "^7.3 || ^8.0",
+    "vlucas/phpdotenv": "^5.6.1"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -53,6 +59,10 @@
   "bin": [
     "bin/tell"
   ],
+  "suggest": {
+    "ext-pcntl": "Enables signal handling and non-blocking console progress rendering",
+    "ext-posix": "Enables process-group cancellation and console progress rendering"
+  },
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true

@@ -7,7 +7,6 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Tell;
 use Cognesy\Tell\Testing\TellTestFactory;
 
 it('runs deterministic SDK responses without external provider credentials', function (): void {
@@ -16,7 +15,7 @@ it('runs deterministic SDK responses without external provider credentials', fun
     putenv('OPENAI_API_KEY');
 
     try {
-        $result = Tell::testing($project, 'deterministic answer')->run(
+        $result = tellTestResponses($project, 'deterministic answer')->run(
             TellRequest::prompt('This prompt never leaves the process.'),
         );
 

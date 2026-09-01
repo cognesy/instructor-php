@@ -8,19 +8,20 @@ use Cognesy\Tell\Tests\Support\TestAutoload;
 use Cognesy\Tell\Data\TellShellJobApproval;
 use Cognesy\Tell\Data\TellShellJobEvent;
 use Cognesy\Tell\Data\TellShellJobRequest;
-use Cognesy\Tell\Shell\Exception\TellShellJobDeniedException;
-use Cognesy\Tell\Shell\Exception\TellShellJobHostDisposedException;
-use Cognesy\Tell\Shell\Exception\TellShellJobStartException;
-use Cognesy\Tell\Shell\TellShellJobApprovals;
-use Cognesy\Tell\Shell\TellShellJobHost;
-use Cognesy\Tell\Shell\TellShellJobObservers;
-use Cognesy\Tell\Shell\TellShellJobPolicy;
-use Cognesy\Tell\Shell\TellShellJobState;
+use Cognesy\Tell\Capability\ShellJob\Process\Exception\TellShellJobDeniedException;
+use Cognesy\Tell\Capability\ShellJob\Process\Exception\TellShellJobsDisposedException;
+use Cognesy\Tell\Capability\ShellJob\Process\Exception\TellShellJobStartException;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobApprovals;
+use Cognesy\Tell\Composition\Standalone\Profile\ShellJob\StandardTellShellJobProfile;
+use Cognesy\Tell\Composition\Standalone\Profile\ShellJob\TellShellJobHostDisposedException;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobObservers;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobPolicy;
+use Cognesy\Tell\Data\TellShellJobState;
 use Symfony\Component\Process\Process;
 
 it('runs a shell job beyond the start call and preserves both output streams', function (): void {
     $project = tellTestProject();
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         $project,
         approval: TellShellJobApprovals::allowAll(),
     )->boot();
@@ -43,7 +44,7 @@ it('runs a shell job beyond the start call and preserves both output streams', f
 });
 
 it('denies by default before allocating a visible job identity', function (): void {
-    $host = TellShellJobHost::shellJobs(tellTestProject())->boot();
+    $host = StandardTellShellJobProfile::builder(tellTestProject())->boot();
 
     try {
         expect(fn () => $host->jobs()->start(TellShellJobRequest::command('printf denied')))
@@ -64,7 +65,7 @@ it('validates containment and resource bounds before asking for approval', funct
             return TellShellJobApproval::allow();
         },
     );
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         $project,
         policy: new TellShellJobPolicy(maxLifetimeMs: 100, maxRetainedOutputBytes: 20),
         approval: $approval,
@@ -88,7 +89,7 @@ it('validates containment and resource bounds before asking for approval', funct
 });
 
 it('enforces timeout and bounded retained output', function (): void {
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         tellTestProject(),
         policy: new TellShellJobPolicy(
             maxLifetimeMs: 5_000,
@@ -118,7 +119,7 @@ it('enforces timeout and bounded retained output', function (): void {
 });
 
 it('cancels idempotently and invalidates retained manager handles on disposal', function (): void {
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         tellTestProject(),
         policy: new TellShellJobPolicy(cancellationGraceMs: 25),
         approval: TellShellJobApprovals::allowAll(),
@@ -132,14 +133,14 @@ it('cancels idempotently and invalidates retained manager handles on disposal', 
 
     expect($first->state)->toBe(TellShellJobState::Cancelled)
         ->and($second->state)->toBe(TellShellJobState::Cancelled)
-        ->and(fn () => $jobs->all())->toThrow(TellShellJobHostDisposedException::class)
+        ->and(fn () => $jobs->all())->toThrow(TellShellJobsDisposedException::class)
         ->and(fn () => $host->health())->toThrow(TellShellJobHostDisposedException::class);
 });
 
 it('keeps independent hosts and their job catalogues isolated', function (): void {
     $project = tellTestProject();
-    $firstHost = TellShellJobHost::shellJobs($project, approval: TellShellJobApprovals::allowAll())->boot();
-    $secondHost = TellShellJobHost::shellJobs($project, approval: TellShellJobApprovals::allowAll())->boot();
+    $firstHost = StandardTellShellJobProfile::builder($project, approval: TellShellJobApprovals::allowAll())->boot();
+    $secondHost = StandardTellShellJobProfile::builder($project, approval: TellShellJobApprovals::allowAll())->boot();
 
     try {
         $job = $firstHost->jobs()->start(TellShellJobRequest::command('printf isolated'));
@@ -160,7 +161,7 @@ it('emits normalized redacted resource events without exposing commands or outpu
     $observer = TellShellJobObservers::callback(
         static fn (TellShellJobEvent $event) => $events->append($event->toArray()),
     );
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         tellTestProject(),
         approval: TellShellJobApprovals::allowAll(),
         observer: $observer,
@@ -188,7 +189,7 @@ it('emits normalized redacted resource events without exposing commands or outpu
 });
 
 it('contains observer failures instead of corrupting shell-job lifecycle', function (): void {
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         tellTestProject(),
         approval: TellShellJobApprovals::allowAll(),
         observer: TellShellJobObservers::callback(static fn () => throw new RuntimeException('observer failed')),
@@ -206,7 +207,7 @@ it('contains observer failures instead of corrupting shell-job lifecycle', funct
 it('publishes no partial job when process startup fails after approval', function (): void {
     $project = tellTestProject();
     $events = new ArrayObject();
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         $project,
         approval: TellShellJobApprovals::callback(
             static function () use ($project): TellShellJobApproval {
@@ -235,7 +236,7 @@ it('abandons a running process before disposing its owner module', function (): 
     $project = tellTestProject();
     $marker = $project . '/leaked.txt';
     $events = new ArrayObject();
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         $project,
         policy: new TellShellJobPolicy(cancellationGraceMs: 25),
         approval: TellShellJobApprovals::allowAll(),
@@ -267,7 +268,7 @@ it('keeps the ordinary deterministic Tell host Cordis-free', function (): void {
 });
 
 it('boots a fresh isolated runtime each time a reusable builder is booted', function (): void {
-    $builder = TellShellJobHost::shellJobs(
+    $builder = StandardTellShellJobProfile::builder(
         tellTestProject(),
         approval: TellShellJobApprovals::allowAll(),
     );
@@ -293,7 +294,7 @@ it('boots a fresh isolated runtime each time a reusable builder is booted', func
 it('cancels multiple running jobs in reverse ownership order on shutdown', function (): void {
     $project = tellTestProject();
     $events = new ArrayObject();
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         $project,
         policy: new TellShellJobPolicy(cancellationGraceMs: 25),
         approval: TellShellJobApprovals::allowAll(),
@@ -324,7 +325,7 @@ it('cancels multiple running jobs in reverse ownership order on shutdown', funct
 
 it('reports useful health without commands output or raw runtime objects', function (): void {
     $secret = 'health-must-not-leak';
-    $host = TellShellJobHost::shellJobs(
+    $host = StandardTellShellJobProfile::builder(
         tellTestProject(),
         approval: TellShellJobApprovals::allowAll(),
     )->boot();

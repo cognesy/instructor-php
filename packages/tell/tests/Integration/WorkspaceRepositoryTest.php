@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Workspace\WorkspaceException;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Core\Workspace\WorkspaceException;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
 use PHPUnit\Framework\Assert;
 
 it('initializes a private versioned arena without rewriting an existing workspace', function (): void {

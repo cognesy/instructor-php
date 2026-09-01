@@ -5,9 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
-use Cognesy\Tell\Command\ConfigCommand;
-use Cognesy\Tell\Console\TellCommand;
-use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Adapter\Console\Command\ConfigCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -102,7 +102,7 @@ it('uses the branch-configured output format when the invocation does not choose
     $project = tellHumanProject();
     tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
+    $config = new CommandTester(new ConfigCommand(tellTestConversations($factory)));
     expect($config->execute([
         'action' => 'set',
         'key' => 'output',
@@ -130,7 +130,7 @@ it('lets an explicit --output win over the branch-configured format', function (
     $project = tellHumanProject();
     tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
+    $config = new CommandTester(new ConfigCommand(tellTestConversations($factory)));
     $config->execute([
         'action' => 'set', 'key' => 'output', 'value' => '"human"',
         '--dir' => $project, '--if-version' => '0', '--json' => true,
@@ -151,7 +151,7 @@ it('rejects an unsupported output format at the config boundary', function (): v
     $project = tellHumanProject();
     tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
+    $config = new CommandTester(new ConfigCommand(tellTestConversations($factory)));
     $config->execute([
         'action' => 'set', 'key' => 'output', 'value' => '"markdown"',
         '--dir' => $project, '--if-version' => '0', '--json' => true,
@@ -165,7 +165,7 @@ it('reports output among the effective branch settings', function (): void {
     $project = tellHumanProject();
     tellTestWorkspaces()->initialize($project);
 
-    $config = new CommandTester(new ConfigCommand($factory->paths(), tellTestWorkspaces()));
+    $config = new CommandTester(new ConfigCommand(tellTestConversations($factory)));
     expect($config->execute([
         'action' => 'effective', '--dir' => $project, '--json' => true,
     ]))->toBe(0);

@@ -1,8 +1,9 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Cognesy\Tell\Composition\Standalone\TellHost;
-use Cognesy\Tell\Runtime\TellSignalCancellationSource;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Data\TellCommandDescriptors;
+use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 
 $findAutoload = static function (): string {
     $monorepoAutoload = dirname(__DIR__, 3).'/vendor/autoload.php';
@@ -27,13 +28,16 @@ $findAutoload = static function (): string {
 
 require $findAutoload();
 
-$host = TellHost::standard(cancellation: new TellSignalCancellationSource)->boot();
+$cwd = getcwd();
+$host = StandaloneTellHost::cli(
+    directory: is_string($cwd) ? $cwd : '.',
+    cancellation: new TellSignalCancellationSource,
+);
 try {
-    $commands = [];
-    foreach ($host->commandContributors() as $contributor) {
-        array_push($commands, ...$contributor->commands()->all());
-    }
-    $application = $host->application()->build(new \Cognesy\Tell\Data\TellCommandDescriptors(...$commands));
+    $commands = TellCommandDescriptors::merge(
+        ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
+    );
+    $application = $host->application()->build($commands);
     $argv = array_values($_SERVER['argv'] ?? []);
     exit($application->run($argv));
 } finally {

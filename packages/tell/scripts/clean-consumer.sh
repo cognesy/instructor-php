@@ -56,9 +56,9 @@ declare(strict_types=1);
 
 require __DIR__.'/vendor/autoload.php';
 
-use Cognesy\Tell\Tell;
-use Cognesy\Tell\Shell\TellShellJobApprovals;
-use Cognesy\Tell\Shell\TellShellJobHost;
+use Cognesy\Tell\Testing\TellTestFactory;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobApprovals;
+use Cognesy\Tell\Composition\Standalone\Profile\ShellJob\StandardTellShellJobProfile;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellShellJobRequest;
 use Cognesy\Utils\Cli\CliMarkdown;
@@ -69,20 +69,17 @@ if (!class_exists(CliMarkdown::class)) {
 
 $project = sys_get_temp_dir().'/tell-clean-consumer-'.bin2hex(random_bytes(6));
 mkdir($project, 0755, true);
-$tell = Tell::testing($project, 'clean consumer answer');
+$tell = TellTestFactory::responses('clean consumer answer')->open($project);
 try {
     $result = $tell->run(TellRequest::prompt('local deterministic smoke'));
     if (trim($result->text()) !== 'clean consumer answer') {
         throw new RuntimeException('Unexpected clean-consumer result.');
     }
-    if ($tell->host()->describe()->profile !== 'standard') {
-        throw new RuntimeException('Tell SDK did not boot the standard host.');
-    }
 } finally {
     $tell->dispose();
 }
 
-$host = TellShellJobHost::shellJobs(
+$host = StandardTellShellJobProfile::builder(
     project: $project,
     approval: TellShellJobApprovals::allowAll(),
 )->boot();

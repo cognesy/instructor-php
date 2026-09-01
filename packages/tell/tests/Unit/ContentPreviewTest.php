@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Render\ContentPreview;
+use Cognesy\Tell\Core\Workspace\ContentPreview;
 
 it('bounds long content without splitting multibyte characters', function (): void {
     $preview = ContentPreview::from(str_repeat('ż', 20), full: false, limit: 10);

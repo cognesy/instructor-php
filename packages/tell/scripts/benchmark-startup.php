@@ -4,14 +4,24 @@
 declare(strict_types=1);
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\Standalone\StandaloneTellHost;
-use Cognesy\Tell\Discovery\StartupScanCounter;
-use Cognesy\Tell\Observability\StandardTellExecutionTracer;
-use Cognesy\Tell\Runtime\StandardTellAgentBuilder;
-use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
-use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Console\TellConsoleApplication;
+use Cognesy\Tell\Capability\Agent\ComposerDiscovery\ComposerTellAgentContribution;
+use Cognesy\Tell\Capability\Agent\Definitions\FilesystemTellAgentDefinitions;
+use Cognesy\Tell\Capability\Agent\Standard\StandardTellAgentContribution;
+use Cognesy\Tell\Capability\Agent\Subagent\TellSubagentContribution;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Capability\Observation\FilesystemTrace\StandardTellExecutionTracer;
+use Cognesy\Tell\Capability\Tool\AskUser\AskUserToolContribution;
+use Cognesy\Tell\Capability\Tool\Coding\CodingToolContribution;
+use Cognesy\Tell\Capability\Model\Polyglot\PolyglotTellModelResolver;
+use Cognesy\Tell\Capability\Secrets\Standard\StandardTellSecretResolver;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemTellWorkspaceProvider;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
+use Cognesy\Tell\Core\Paths\TellPaths;
+use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
+use Cognesy\Tell\Data\TellCommandDescriptors;
+use Cognesy\Tell\Core\Discovery\StartupScanCounter;
+use Cognesy\Tell\Capability\Execution\System\SystemTellClock;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 $findAutoload = static function (): string {
@@ -127,17 +137,31 @@ $measureScans = static function (array $arguments) use ($project, $home): array 
     $factory = new TellAgentFactory(
         paths: $paths,
         tracer: new StandardTellExecutionTracer($paths),
+        clock: new SystemTellClock(),
+        modelResolver: new PolyglotTellModelResolver(
+            $paths,
+            new StandardTellSecretResolver($paths, $project),
+        ),
+        definitionLoader: new FilesystemTellAgentDefinitions($paths, $scans),
+        contributions: [
+            new ComposerTellAgentContribution($scans),
+            new CodingToolContribution($paths),
+            new AskUserToolContribution(),
+            new TellSubagentContribution(),
+            new StandardTellAgentContribution(),
+        ],
         driver: FakeAgentDriver::fromResponses('baseline answer'),
-        startupScans: $scans,
     );
     $host = StandaloneTellHost::cli(
         directory: $project,
         paths: $paths,
-        agentBuilder: new StandardTellAgentBuilder($factory),
-        workspaces: new WorkspaceRepository($scans),
+        agentBuilder: $factory,
+        workspaces: new FilesystemTellWorkspaceProvider(new WorkspaceRepository($scans)),
     );
     try {
-        $application = TellConsoleApplication::fromHost($host);
+        $application = new TellConsoleApplication(TellCommandDescriptors::merge(
+            ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
+        ));
         $application->setAutoExit(false);
         $output = new BufferedOutput;
         $status = $application->runArgv($arguments, $output);

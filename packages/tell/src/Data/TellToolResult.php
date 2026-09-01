@@ -11,8 +11,6 @@ final readonly class TellToolResult
     public function __construct(
         public string $tool,
         public bool $success,
-        public string $operation,
-        public string $invokedAs,
         public mixed $data,
         public ?array $error,
         public bool $truncated,
@@ -31,8 +29,6 @@ final readonly class TellToolResult
         return [
             'tool' => $this->tool,
             'success' => $this->success,
-            'operation' => $this->operation,
-            'invokedAs' => $this->invokedAs,
             'data' => $this->data,
             'error' => $this->error,
             'truncated' => $this->truncated,

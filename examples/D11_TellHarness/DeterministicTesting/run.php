@@ -23,14 +23,13 @@ require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Tell\Tell;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Testing\TellTestFactory;
 
 $project = TellHarnessExample::project();
 
 try {
-    $result = Tell::testing($project, 'deterministic answer')->run(
+    $result = TellTestFactory::responses('deterministic answer')->open($project)->run(
         TellRequest::prompt('This prompt never leaves the PHP process.'),
     );
 
@@ -49,12 +48,13 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points
 
-- `Tell::testing()` is the short path for one or more deterministic final
-  responses.
+- `TellTestFactory::responses()` scripts one or more deterministic final
+  responses through the same runtime.
 - `TellTestFactory::steps()` scripts tool, final, usage, and failure states.
 - No HTTP call or real provider credential is required. Test state stays under
   the supplied project at `.tell-testing`, so temporary-project cleanup owns

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use Cognesy\Tell\Workspace\Arena\Exception\RefConflict;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\ObjectHash;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Branch\BranchName;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
-use Cognesy\Tell\Workspace\Branch\Storage\BranchStore;
-use Cognesy\Tell\Workspace\WorkspaceException;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\RefConflict;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Branch\BranchName;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchConfigurationStore;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchSelectionStore;
+use Cognesy\Tell\Core\Workspace\Branch\Storage\BranchStore;
+use Cognesy\Tell\Core\Workspace\WorkspaceException;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
 
 $autoload = $argv[1] ?? throw new RuntimeException('Missing Composer autoloader path.');
 require $autoload;
@@ -22,7 +22,7 @@ if ($workspace === null) {
     exit(2);
 }
 $store = new FilesystemArena($workspace);
-$branches = new BranchStore($store, new BranchCurrentSelectionStore($workspace));
+$branches = new BranchStore($store, new FilesystemBranchSelectionStore($workspace));
 $mode = $argv[3] ?? '';
 $gate = $argv[5] ?? '';
 
@@ -89,7 +89,7 @@ if ($mode === 'branch-current') {
 
 if ($mode === 'config-set') {
     try {
-        (new BranchConfigStore($workspace))->set($argv[4] ?? 'main', 'model', 'worker-' . getmypid(), 0);
+        (new FilesystemBranchConfigurationStore($workspace))->set($argv[4] ?? 'main', 'model', 'worker-' . getmypid(), 0);
         echo "configured\n";
     } catch (WorkspaceException) {
         echo "conflict\n";

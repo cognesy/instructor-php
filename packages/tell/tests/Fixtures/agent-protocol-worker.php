@@ -10,10 +10,20 @@ require file_exists($monorepoAutoload) ? $monorepoAutoload : $packageAutoload;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Composition\Standalone\TellHost;
-use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Core\Paths\TellPaths;
+use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
+use Cognesy\Tell\Data\TellCommandDescriptors;
+use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Capability\Execution\System\SystemTellClock;
+use Cognesy\Tell\Capability\Model\Polyglot\PolyglotTellModelResolver;
+use Cognesy\Tell\Capability\Secrets\Standard\StandardTellSecretResolver;
+use Cognesy\Tell\Capability\Agent\ComposerDiscovery\ComposerTellAgentContribution;
+use Cognesy\Tell\Capability\Agent\Definitions\FilesystemTellAgentDefinitions;
+use Cognesy\Tell\Capability\Agent\Standard\StandardTellAgentContribution;
+use Cognesy\Tell\Capability\Agent\Subagent\TellSubagentContribution;
+use Cognesy\Tell\Capability\Tool\AskUser\AskUserToolContribution;
+use Cognesy\Tell\Capability\Tool\Coding\CodingToolContribution;
 
 $scenario = getenv('TELL_RPC_SCENARIO') ?: 'success';
 $project = getenv('TELL_RPC_PROJECT') ?: sys_get_temp_dir();
@@ -41,26 +51,37 @@ if ($scenario === 'cancelled') {
     $cancellation->cancel('cancellation-secret-canary');
 }
 
+$paths = new TellPaths(
+    packageAgents: $packageRoot . '/resources/agents',
+    home: $project . '/.tell-rpc-testing',
+);
 $factory = new TellAgentFactory(
-    paths: new TellPaths(
-        packageAgents: $packageRoot . '/resources/agents',
-        home: $project . '/.tell-rpc-testing',
-    ),
-    tracer: new \Cognesy\Tell\Observability\StandardTellExecutionTracer(new TellPaths(
-        packageAgents: $packageRoot . '/resources/agents',
-        home: $project . '/.tell-rpc-testing',
-    )),
+    paths: $paths,
+    tracer: new \Cognesy\Tell\Capability\Observation\FilesystemTrace\StandardTellExecutionTracer($paths),
+    clock: new SystemTellClock(),
+    modelResolver: new PolyglotTellModelResolver($paths, new StandardTellSecretResolver($paths, $project)),
+    definitionLoader: new FilesystemTellAgentDefinitions($paths),
+    contributions: [
+        new ComposerTellAgentContribution(
+            vendorDirectory: is_string($composerVendorDir) && $composerVendorDir !== '' ? $composerVendorDir : null,
+        ),
+        new CodingToolContribution($paths),
+        new AskUserToolContribution(),
+        new TellSubagentContribution(),
+        new StandardTellAgentContribution(),
+    ],
     driver: $driver,
-    composerVendorDir: is_string($composerVendorDir) && $composerVendorDir !== '' ? $composerVendorDir : null,
 );
 
-$host = TellHost::standard(
+$host = StandaloneTellHost::cliBuilder(
     directory: $project,
     paths: $factory->paths(),
-    agentBuilder: new \Cognesy\Tell\Runtime\StandardTellAgentBuilder($factory),
+    agentBuilder: $factory,
     cancellation: $cancellation,
 )->boot();
-$application = TellConsoleApplication::fromHost($host);
+$application = new TellConsoleApplication(TellCommandDescriptors::merge(
+    ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
+));
 $application->setAutoExit(false);
 try {
     $exitCode = $application->runArgv();

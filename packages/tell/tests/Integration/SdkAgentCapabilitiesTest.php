@@ -7,10 +7,9 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Data\TellAnswers;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellToolRequest;
-use Cognesy\Tell\Tell;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
 
@@ -20,7 +19,7 @@ it('discovers connection metadata and invokes one direct public SDK tool without
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     file_put_contents($project . '/evidence.txt', "direct evidence\n");
-    $tell = Tell::open($project, $factory);
+    $tell = tellTestOpen($project, $factory);
 
     $catalogue = $tell->catalogue()->connections();
     $models = $tell->catalogue()->models('openai');
@@ -45,7 +44,7 @@ it('applies direct-tool policy and public cancellation without starting inferenc
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
 
-    $result = Tell::open($project, $factory, $cancellation)->tools()->dispatch(
+    $result = tellTestOpen($project, $factory, $cancellation)->tools()->dispatch(
         TellToolRequest::invoke('read_file', ['path' => 'missing.txt']),
     );
 
@@ -67,10 +66,10 @@ it('accepts queued answers and exposes a delegated child through public workspac
     });
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $tell = Tell::open($project, $factory);
+    $tell = tellTestOpen($project, $factory);
     $tell->workspace()->initialize();
-    $answers = new TellAnswerQueue([
-        ['id' => 'deploy', 'value' => 'yes', 'source' => 'cli'],
+    $answers = new TellAnswers([
+        ['id' => 'deploy', 'value' => 'yes', 'source' => 'sdk'],
     ]);
 
     $result = $tell->run(
@@ -84,7 +83,7 @@ it('accepts queued answers and exposes a delegated child through public workspac
     ));
 
     expect($result->isCompleted())->toBeTrue()
-        ->and($answers->remaining())->toBe(0)
+        ->and($result->warnings())->toBe([])
         ->and($children)->toHaveCount(1)
         ->and($children[0]->head)->not->toBeNull()
         ->and($children[0]->created['source'])->toBe('agent');

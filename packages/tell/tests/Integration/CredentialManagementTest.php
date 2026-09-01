@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Command\AuthCommand;
-use Cognesy\Tell\Command\DescribeCommand;
-use Cognesy\Tell\Console\TellConsoleApplication;
-use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Adapter\Console\Command\AuthCommand;
+use Cognesy\Tell\Adapter\Console\Command\DescribeCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+use Cognesy\Tell\Capability\Secrets\Standard\TellCredentialStore;
 use HelgeSverre\Toon\Toon;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('registers auth on the real Tell application surface', function (): void {
-    $application = new TellConsoleApplication(tellTestFactory());
+    $application = tellTestApplication(tellTestFactory());
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -33,7 +33,10 @@ it('registers auth on the real Tell application surface', function (): void {
 it('stores private credentials from stdin without rendering their values', function (): void {
     $factory = tellTestFactory(credentials: []);
     $secret = 'sk-test-$dollar-and-"quote"';
-    $tester = new CommandTester(new AuthCommand($factory->paths(), static fn (): string => $secret . "\n"));
+    $tester = new CommandTester(new AuthCommand(
+        new TellCredentialStore($factory->paths()),
+        static fn (): string => $secret . "\n",
+    ));
 
     $status = $tester->execute([
         'action' => 'set',
@@ -80,7 +83,7 @@ it('reports safe credential provenance in deterministic precedence order', funct
     putenv($variable . '=process-value');
 
     try {
-        $tester = new CommandTester(new AuthCommand($factory->paths()));
+        $tester = new CommandTester(new AuthCommand(new TellCredentialStore($factory->paths())));
         $tester->execute([
             'action' => 'status',
             'provider' => 'layered-test',
@@ -127,10 +130,10 @@ it('reports safe credential provenance in deterministic precedence order', funct
 
 it('requires explicit stdin and removes only Tell-owned credentials', function (): void {
     $factory = tellTestFactory(credentials: ['OPENAI_API_KEY' => 'stored']);
-    $invalid = new CommandTester(new AuthCommand($factory->paths()));
+    $invalid = new CommandTester(new AuthCommand(new TellCredentialStore($factory->paths())));
     $invalidStatus = $invalid->execute(['action' => 'set', 'provider' => 'openai']);
 
-    $remove = new CommandTester(new AuthCommand($factory->paths()));
+    $remove = new CommandTester(new AuthCommand(new TellCredentialStore($factory->paths())));
     $firstStatus = $remove->execute(['action' => 'remove', 'provider' => 'openai']);
     $first = Toon::decode($remove->getDisplay());
     $secondStatus = $remove->execute(['action' => 'remove', 'provider' => 'openai']);
@@ -163,11 +166,11 @@ apiKey: "${CUSTOM_API_KEY}"
 model: project-model
 YAML);
 
-    $config = $factory->definition(new TellOptions(
+    $config = $factory->definition((new TellOptions(
         prompt: 'test',
         connection: 'custom',
         directory: $workspace,
-    ))->llmConfig;
+    ))->request())->llmConfig;
 
     expect($config?->apiUrl)->toBe('https://project.example/v1')
         ->and($config?->model)->toBe('project-model')
@@ -189,11 +192,11 @@ apiKey: "${MISSING_TEST_API_KEY}"
 model: missing-model
 YAML);
 
-        expect(fn () => $factory->assertReady(new TellOptions(
+        expect(fn () => $factory->assertReady((new TellOptions(
             prompt: 'test',
             connection: 'missing-test',
             directory: $workspace,
-        )))->toThrow(RuntimeException::class, 'Missing credential MISSING_TEST_API_KEY');
+        ))->request()))->toThrow(RuntimeException::class, 'Missing credential MISSING_TEST_API_KEY');
     } finally {
         match ($original) {
             false => putenv($variable),

@@ -7,7 +7,7 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -26,7 +26,7 @@ function tellTraceTester(ScenarioStep ...$steps): CommandTester {
 
 it('traces steps and tool calls on stderr while stdout keeps the requested format', function (): void {
     $tester = tellTraceTester(
-        ScenarioStep::toolCall('read', ['path' => 'notes.txt']),
+        ScenarioStep::toolCall('read_file', ['path' => 'notes.txt']),
         ScenarioStep::final('done reading'),
     );
     $project = tellTraceProject();
@@ -52,7 +52,7 @@ it('traces steps and tool calls on stderr while stdout keeps the requested forma
 it('shows the argument that matters for each tool rather than its raw JSON', function (): void {
     $tester = tellTraceTester(
         ScenarioStep::toolCall('shell', ['command' => 'echo traced', 'description' => 'prove it runs']),
-        ScenarioStep::toolCall('write', ['path' => 'out.txt', 'content' => "alpha\nbeta\n"]),
+        ScenarioStep::toolCall('write_file', ['path' => 'out.txt', 'content' => "alpha\nbeta\n"]),
         ScenarioStep::final('done'),
     );
 
@@ -72,7 +72,7 @@ it('shows the argument that matters for each tool rather than its raw JSON', fun
 
 it('reports a failed tool call with the reason the tool gave', function (): void {
     $tester = tellTraceTester(
-        ScenarioStep::toolCall('read', ['path' => 'missing.txt']),
+        ScenarioStep::toolCall('read_file', ['path' => 'missing.txt']),
         ScenarioStep::final('could not read'),
     );
 
@@ -92,7 +92,7 @@ it('reports a failed tool call with the reason the tool gave', function (): void
 
 it('stays silent unless a trace was asked for', function (): void {
     $tester = tellTraceTester(
-        ScenarioStep::toolCall('read', ['path' => 'notes.txt']),
+        ScenarioStep::toolCall('read_file', ['path' => 'notes.txt']),
         ScenarioStep::final('done reading'),
     );
     $project = tellTraceProject();
@@ -110,7 +110,7 @@ it('stays silent unless a trace was asked for', function (): void {
 it('previews a long body, states what it elided, and stops abridging at -vvv', function (): void {
     $lines = implode("\n", array_map(static fn (int $i): string => "line {$i}", range(1, 30)));
     $preview = tellTraceTester(
-        ScenarioStep::toolCall('read', ['path' => 'long.txt']),
+        ScenarioStep::toolCall('read_file', ['path' => 'long.txt']),
         ScenarioStep::final('read it'),
     );
     $project = tellTraceProject();
@@ -124,7 +124,7 @@ it('previews a long body, states what it elided, and stops abridging at -vvv', f
         ->and($preview->getErrorOutput())->toMatch('/⋯ \d+ more lines/');
 
     $full = tellTraceTester(
-        ScenarioStep::toolCall('read', ['path' => 'long.txt']),
+        ScenarioStep::toolCall('read_file', ['path' => 'long.txt']),
         ScenarioStep::final('read it'),
     );
     expect($full->execute(

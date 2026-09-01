@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Workspace\Arena\Exception\ArenaException;
-use Cognesy\Tell\Workspace\Arena\Exception\ArenaIntegrityException;
-use Cognesy\Tell\Workspace\Arena\Exception\ArenaLockException;
-use Cognesy\Tell\Workspace\Arena\Exception\RefConflict;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
-use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
-use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
-use Cognesy\Tell\Workspace\Arena\Record\Role;
-use Cognesy\Tell\Workspace\Arena\Record\TextPart;
-use Cognesy\Tell\Workspace\WorkspaceRepository;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\ArenaException;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\ArenaIntegrityException;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\ArenaLockException;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\RefConflict;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
+use Cognesy\Tell\Core\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Core\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Core\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceRepository;
 
 beforeEach(function (): void {
     global $tellTemporaryRoots;

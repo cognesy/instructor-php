@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Tester\CommandTester;
 

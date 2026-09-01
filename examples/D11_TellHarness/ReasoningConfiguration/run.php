@@ -24,13 +24,13 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
-use Cognesy\Tell\Tell;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Testing\TellTestFactory;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = Tell::testing($project, 'reasoned answer');
+    $tell = TellTestFactory::responses('reasoned answer')->open($project);
     $tell->workspace()->initialize();
     $configuration = $tell->workspace()->configuration();
 

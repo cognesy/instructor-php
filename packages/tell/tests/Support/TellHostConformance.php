@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Tests\Support;
 
 use Closure;
-use Cognesy\Tell\Composition\Standalone\TellHost;
-use Cognesy\Tell\Composition\Standalone\TellHostDisposedException;
 use Cognesy\Tell\Data\TellRequest;
 use RuntimeException;
 
 /** Shared behavioral contract for Tell composition hosts. */
 final readonly class TellHostConformance
 {
-    /** @param Closure(string): TellHost $boot */
+    /** @param Closure(string): TellHostConformanceHarness $boot */
     public function __construct(private Closure $boot) {}
 
     public function verify(string $directory): void {
@@ -42,10 +40,8 @@ final readonly class TellHostConformance
             }
 
             $first->dispose();
-            try {
-                $first->runner();
+            if (!$first->rejectsAccessAfterDisposal()) {
                 throw new RuntimeException('A disposed host remained accessible.');
-            } catch (TellHostDisposedException) {
             }
 
             $afterDisposal = $second->runner()->run($secondRequest);

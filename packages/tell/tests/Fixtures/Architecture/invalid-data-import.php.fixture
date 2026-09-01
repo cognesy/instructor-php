@@ -1,0 +1,10 @@
+<?php
+
+namespace Cognesy\Tell\Data;
+
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+
+final readonly class InvalidDataImport
+{
+    public function __construct(public TellOptions $options) {}
+}

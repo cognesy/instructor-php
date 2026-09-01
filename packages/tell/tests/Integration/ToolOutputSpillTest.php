@@ -14,12 +14,12 @@ use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Tell\Configuration\TellExecutionPolicy;
-use Cognesy\Tell\Configuration\TellPaths;
-use Cognesy\Tell\Runtime\CanReadTellClock;
-use Cognesy\Tell\Runtime\TellExecutionBudgetHook;
-use Cognesy\Tell\Runtime\TellSpillToolOutputHook;
-use Cognesy\Tell\Runtime\ToolOutputSpill;
+use Cognesy\Tell\Data\TellExecutionPolicy;
+use Cognesy\Tell\Core\Paths\TellPaths;
+use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
+use Cognesy\Tell\Core\Agent\TellExecutionBudgetHook;
+use Cognesy\Tell\Core\Agent\TellSpillToolOutputHook;
+use Cognesy\Tell\Core\Agent\ToolOutputSpill;
 use Cognesy\Utils\Result\Result;
 
 /** A project directory, and separately the blob store that serves it. */
@@ -129,8 +129,6 @@ it('replaces the payload of a structured envelope without discarding the envelop
     $project = tellSpillProject('spill-envelope');
     $envelope = [
         'success' => true,
-        'operation' => 'bash',
-        'invoked_as' => 'shell',
         'data' => ['text' => tellSpillText(300)],
         'error' => null,
         'truncated' => false,
@@ -140,7 +138,6 @@ it('replaces the payload of a structured envelope without discarding the envelop
 
     expect($replaced)->toBeArray()
         ->and($replaced['success'])->toBeTrue()
-        ->and($replaced['operation'])->toBe('bash')
         ->and($replaced['error'])->toBeNull()
         ->and($replaced['truncated'])->toBeTrue()
         ->and($replaced['data']['text'])->toStartWith('[tool output: 300 lines, ');
@@ -271,7 +268,7 @@ it('hands the model a path its own read tool can open', function (): void {
             ->withTimeout(30)
             ->withReadablePaths($project, tellSpillStore($project))
             ->inheritEnvironment(),
-        'read',
+        'read_file',
     )(path: $blob, offset: 20, limit: 5);
 
     expect($read)->toContain('line 21 ')

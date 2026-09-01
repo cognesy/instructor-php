@@ -25,13 +25,13 @@ from which it is run. It needs a normal Tell connection and credential.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $result = Tell::open($project)->run(
+    $result = StandaloneTellHost::open($project)->run(
         TellRequest::prompt('In one sentence, explain why stateless jobs are useful.'),
     );
 
@@ -52,11 +52,12 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points
 
-- `Tell::open()` binds a reusable harness to a working directory.
+- `StandaloneTellHost::open()` binds a reusable harness to a working directory.
 - `TellRequest::prompt()` is immutable; add model, connection, tools, or a
   step budget only when the caller needs them.
 - A `TellResult` exposes final text, execution status, usage, warnings, and

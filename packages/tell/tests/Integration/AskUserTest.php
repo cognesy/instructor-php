@@ -6,20 +6,20 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Capability\AskUser\AskUserTool;
-use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
-use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Capability\Tool\AskUser\AskUserTool;
+use Cognesy\Tell\Capability\Tool\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Data\TellAnswers;
 use Cognesy\Tell\Data\TellRequest;
-use Cognesy\Tell\Tell;
-use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('consumes ordered and exact-id answers once without ever prompting', function (): void {
     tellTestFactory(); // Register the standard isolated cleanup root for this focused tool test.
-    $queue = new TellAnswerQueue([
+    $queue = new TellAnswerQueue(new TellAnswers([
         ['id' => null, 'value' => 'first', 'source' => 'cli'],
         ['id' => 'deploy', 'value' => 'yes', 'source' => 'file'],
-    ]);
+    ]));
     $tool = new AskUserTool($queue);
 
     expect($tool->use(question: 'First?')->unwrap())->toMatchArray(['success' => true, 'answer' => 'first', 'source' => 'cli'])
@@ -74,22 +74,22 @@ it('loads bounded structured answers and reports extras without revealing their 
 });
 
 it('returns typed unavailable and invalid-choice outcomes immediately', function (): void {
-    $unavailable = new AskUserTool(new TellAnswerQueue());
-    $invalid = new AskUserTool(new TellAnswerQueue([
+    $unavailable = new AskUserTool(new TellAnswerQueue(new TellAnswers()));
+    $invalid = new AskUserTool(new TellAnswerQueue(new TellAnswers([
         ['id' => null, 'value' => 'maybe', 'source' => 'stdin'],
-    ]));
+    ])));
 
     expect($unavailable->use(question: 'Nothing?')->unwrap()['error']['code'])->toBe('answer_unavailable')
         ->and($invalid->use(question: 'Choose?', choices: ['yes', 'no'])->unwrap()['error']['code'])->toBe('invalid_choice');
 });
 
 it('rejects duplicate, oversized, and conflicting supplied-answer inputs before execution', function (): void {
-    $duplicate = static fn (): TellAnswerQueue => new TellAnswerQueue([
+    $duplicate = static fn (): TellAnswers => new TellAnswers([
         ['id' => 'same', 'value' => 'one', 'source' => 'cli'],
         ['id' => 'same', 'value' => 'two', 'source' => 'cli'],
     ]);
-    $oversized = static fn (): TellAnswerQueue => new TellAnswerQueue([
-        ['id' => null, 'value' => str_repeat('x', TellAnswerQueue::MAX_ANSWER_BYTES + 1), 'source' => 'cli'],
+    $oversized = static fn (): TellAnswers => new TellAnswers([
+        ['id' => null, 'value' => str_repeat('x', TellAnswers::MAX_ANSWER_BYTES + 1), 'source' => 'cli'],
     ]);
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('must not execute')));
     $directory = tellLastTemporaryRoot();
@@ -117,12 +117,12 @@ it('persists a durable semantic answer but never publishes a transient one', fun
     $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
-    $tell = Tell::open($project, $factory);
+    $tell = tellTestOpen($project, $factory);
 
     $durable = $tell->run(
         TellRequest::prompt('Continue deliberately')
             ->durable()
-            ->withAnswers(new TellAnswerQueue([
+            ->withAnswers(new TellAnswers([
                 ['id' => 'target', 'value' => $canary, 'source' => 'cli'],
             ])),
     );
@@ -136,10 +136,10 @@ it('persists a durable semantic answer but never publishes a transient one', fun
     $transientProject = tellLastTemporaryRoot() . '/transient-project';
     mkdir($transientProject, 0755, true);
     $transientWorkspace = tellTestWorkspaces()->initialize($transientProject)->workspace;
-    $transient = Tell::open($transientProject, $transientFactory)->run(
+    $transient = tellTestOpen($transientProject, $transientFactory)->run(
         TellRequest::prompt('Inspect without publishing')
             ->transient()
-            ->withAnswers(new TellAnswerQueue([
+            ->withAnswers(new TellAnswers([
                 ['id' => null, 'value' => $canary, 'source' => 'cli'],
             ])),
     );

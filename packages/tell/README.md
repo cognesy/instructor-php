@@ -1,8 +1,5 @@
 # Instructor Tell
 
-The supported SDK, CLI, persistence, event, trace, and exit contracts are
-tracked in [COMPATIBILITY.md](COMPATIBILITY.md).
-
 Cold-start and discovery-scan budgets are tracked in
 [STARTUP_BASELINE.md](STARTUP_BASELINE.md).
 
@@ -12,15 +9,18 @@ The static host primitive and rejected Context/Layer adapter are documented in
 Application replacement seams and their dependency rules are documented in
 [CONTRACTS.md](CONTRACTS.md).
 
+The completed P2 acceptance audit and package-boundary decision are recorded in
+[P2_ACCEPTANCE.md](P2_ACCEPTANCE.md).
+
 The minimal factory-backed composition boundary is documented in
 [HOST.md](HOST.md).
 
-Tell core is framework-neutral. Its default headless and CLI profiles use one
-small static composition root under `Composition\Standalone`; runtime services
-receive focused contracts, never a container or provider registry. The CLI adds
-Symfony Console only at its adapter edge. Native Symfony and Laravel integration
-packages are intentionally deferred until a concrete host application needs
-them.
+Tell core is framework-neutral. Its default headless and CLI profiles select
+providers under `Composition\Standalone\Profile`; reusable graph and lifecycle
+mechanics live under `Composition\Standalone\Host`. Runtime services receive
+focused contracts, never a container or provider registry. The CLI adds Symfony
+Console only at its adapter edge. Native Symfony and Laravel integration packages
+are intentionally deferred until a concrete host application needs them.
 
 `tell` is a small, non-interactive reference frontend for `cognesy/agents`.
 It loads an agent template, builds the runtime through public APIs, and follows
@@ -67,10 +67,10 @@ worker, HTTP stream, or UI needs completed tool/inference checkpoints without
 parsing terminal output.
 
 ```php
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 use Cognesy\Tell\Data\TellRequest;
 
-$tell = Tell::open(__DIR__);
+$tell = StandaloneTellHost::open(__DIR__);
 
 $result = $tell->run(
     TellRequest::prompt('Summarize the release risks')
@@ -115,10 +115,12 @@ the event arrives as its own class rather than an untyped object.
 ### Deterministic SDK tests
 
 Applications can test Tell orchestration without HTTP calls or real provider
-credentials. The convenience API scripts final responses:
+credentials. The testing factory scripts final responses:
 
 ```php
-$result = Tell::testing($temporaryProject, 'scripted answer')->run(
+use Cognesy\Tell\Testing\TellTestFactory;
+
+$result = TellTestFactory::responses('scripted answer')->open($temporaryProject)->run(
     TellRequest::prompt('Exercise the integration.'),
 );
 ```
@@ -133,16 +135,17 @@ and own its cleanup.
 ## Host-scoped shell jobs
 
 Applications that need a background command can opt into a separate shell-job
-host. It is not booted by `Tell::open()`, the CLI, or the one-run protocol.
+host. It is not booted by `StandaloneTellHost::open()`, the CLI, or the one-run
+protocol.
 Denial is the default, so the embedding boundary must explicitly supply an
 approval policy:
 
 ```php
 use Cognesy\Tell\Data\TellShellJobRequest;
-use Cognesy\Tell\Shell\TellShellJobApprovals;
-use Cognesy\Tell\Shell\TellShellJobHost;
+use Cognesy\Tell\Capability\ShellJob\Process\TellShellJobApprovals;
+use Cognesy\Tell\Composition\Standalone\Profile\ShellJob\StandardTellShellJobProfile;
 
-$host = TellShellJobHost::shellJobs(
+$host = StandardTellShellJobProfile::builder(
     project: __DIR__,
     approval: TellShellJobApprovals::allowAll(),
 )->boot();
@@ -225,13 +228,10 @@ Each frame is capped at 1 MiB; terminal answers are UTF-8 safely capped at
 provider payloads, exception messages, credentials, and absolute workspace
 paths are not serialized. Bounded human diagnostics are written to stderr.
 
-Compatibility is schema-versioned, not inferred from the Tell package version.
-Within `v1`, existing fields and meanings remain stable and new optional fields
-may be added. Controllers must ignore unknown response fields but should reject
-an unknown `schema`. Any breaking request or frame change requires a new schema
-identifier and parallel support during a documented migration window. This is
-a one-run protocol—not a resident daemon, bidirectional JSON-RPC session, or
-pause/resume API. Cancellation uses the process signal/cooperative hook.
+The `v1` identifier names the current wire schema. Unknown schemas are rejected;
+Tell does not negotiate or serve parallel protocol versions. This is a one-run
+protocol—not a resident daemon, bidirectional JSON-RPC session, or pause/resume
+API. Cancellation uses the process signal/cooperative hook.
 
 ## Non-interactive questions
 
@@ -255,14 +255,14 @@ Answers are redacted from normalized events and default traces. A completed
 durable turn keeps the semantic tool result in its canonical history; a
 transient turn does not publish it.
 
-PHP callers provide the same bounded queue explicitly:
+PHP callers provide the same bounded immutable value explicitly:
 
 ```php
-use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Data\TellAnswers;
 
 $request = TellRequest::prompt('Run the release check')
-    ->withAnswers(new TellAnswerQueue([
-        ['id' => 'target', 'value' => 'production', 'source' => 'cli'],
+    ->withAnswers(new TellAnswers([
+        ['id' => 'target', 'value' => 'production', 'source' => 'sdk'],
     ]));
 ```
 
@@ -400,8 +400,7 @@ sources without resolving or displaying an API key.
 
 The default Tell agent exposes one bounded implementation for each canonical
 coding operation: `read_file`, `write_file`, `apply_patch`, and `shell`.
-Existing `read`, `write`, `edit`, and `bash` names remain compatibility aliases
-over those same operations and policy. `apply_patch` validates all hunks before
+There are no alternate tool names. `apply_patch` validates all hunks before
 writing, confines paths to the project, and never falls back to an arbitrary
 shell command.
 
@@ -454,8 +453,8 @@ tell --max-retries 2 --timeout-ms 60000 --max-output-chars 100000 \
 one non-success terminal event, and does not publish a durable branch head for
 the interrupted turn. This requires PHP's `pcntl` signal support; verbose CLI
 output reports when it is unavailable. SDK callers can instead provide their
-own public Agents cancellation source to `Tell::open()` for deterministic
-programmatic cancellation.
+own public Agents cancellation source and pass it to
+`StandaloneTellHost::open()` for deterministic programmatic cancellation.
 
 The same limits are available through `TellRequest` (`maxRetries()`,
 `timeoutMs()`, `maxOutputChars()`, `maxToolOutputChars()`, `maxToolCalls()`,

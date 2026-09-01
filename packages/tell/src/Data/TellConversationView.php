@@ -17,5 +17,9 @@ final readonly class TellConversationView
         public ?string $root,
         public array $turns = [],
         public array $messages = [],
+        public int $totalCount = 0,
+        public bool $truncated = false,
+        public int $toolCallCount = 0,
+        public int $toolResultCount = 0,
     ) {}
 }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Command\ToolCommand;
-use Cognesy\Tell\Console\TellOptions;
-use Cognesy\Tell\Runtime\TellRuntime;
-use Cognesy\Tell\Runtime\TellSignalCancellationSource;
+use Cognesy\Tell\Adapter\Console\Command\ToolCommand;
+use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+use Cognesy\Tell\Data\TellToolRequest;
+use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Tool\TellToolDispatcher;
+use Cognesy\Tell\Capability\Tool\Standard\TellToolDispatcher;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('invokes the resolved canonical tool directly without inference or workspace publication', function (): void {
@@ -147,21 +147,16 @@ it('reports bounded timeouts and pre-cancelled direct work without inference', f
     $agents = tellTestAgents($factory);
     $cancelled = (new TellToolDispatcher(
         $agents,
-        new TellRuntime(
-            agents: $agents,
-            workspaces: tellTestWorkspaces(),
-            paths: $factory->paths(),
-            tracer: new \Cognesy\Tell\Observability\StandardTellExecutionTracer($factory->paths()),
-        ),
+        tellTestRuntime($factory),
         $cancellation,
-    ))->dispatch(
-        new TellOptions(prompt: 'direct', directory: $directory),
+    ))->dispatch(TellToolRequest::fromRequest(
+        (new TellOptions(prompt: 'direct', directory: $directory))->request(),
         'shell',
         ['command' => 'printf never'],
-    );
+    ));
 
     expect($timeout)->toBe(1)
         ->and($timeoutPayload['error']['code'])->toBe('timeout')
-        ->and($cancelled['error']['code'])->toBe('cancelled')
+        ->and($cancelled->error['code'])->toBe('cancelled')
         ->and($recorder->requests)->toBe([]);
 });
