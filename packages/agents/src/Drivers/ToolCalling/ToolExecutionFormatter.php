@@ -4,11 +4,11 @@ namespace Cognesy\Agents\Drivers\ToolCalling;
 
 use Cognesy\Agents\Collections\ToolExecutions;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Data\ToolExecution;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolResult;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Failure;
@@ -18,33 +18,15 @@ use Stringable;
 
 class ToolExecutionFormatter
 {
-    public function makeExecutionMessages(ToolExecutions $toolExecutions): Messages {
+    public function makeResultMessages(ToolExecutions $toolExecutions): Messages {
         $messages = Messages::empty();
         foreach ($toolExecutions->all() as $toolExecution) {
-            $messages = $messages->appendMessages($this->toolExecutionMessages($toolExecution));
+            $messages = $messages->appendMessage(
+                $this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result())
+                    ->withMetadata('tool_execution_id', $toolExecution->id()->toString()),
+            );
         }
         return $messages;
-    }
-
-    protected function toolExecutionMessages(ToolExecution $toolExecution): Messages {
-        $messages = Messages::empty();
-        $messages = $messages->appendMessage(
-            $this->toolInvocationMessage($toolExecution->toolCall())
-                ->withMetadata('tool_execution_id', $toolExecution->id()->toString()),
-        );
-        $messages = $messages->appendMessage(
-            $this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result())
-                ->withMetadata('tool_execution_id', $toolExecution->id()->toString()),
-        );
-        return $messages;
-    }
-
-    protected function toolInvocationMessage(ToolCall $toolCall): Message {
-        return new Message(
-            role: 'assistant',
-            content: '',
-            toolCalls: new ToolCalls($toolCall),
-        );
     }
 
     protected function toolExecutionResultMessage(ToolCall $toolCall, Result $result): Message {
@@ -58,12 +40,11 @@ class ToolExecutionFormatter
         $content = $this->formatResultContent($result->unwrap());
         return new Message(
             role: 'tool',
-            content: $content,
-            toolResult: new ToolResult(
+            parts: new ContentParts(ContentPart::toolResult(new ToolResult(
                 content: $content,
                 callId: $toolCall->id(),
                 toolName: $toolCall->name(),
-            ),
+            ))),
         );
     }
 
@@ -85,13 +66,12 @@ class ToolExecutionFormatter
         $content = 'Error in tool call: ' . $result->errorMessage();
         return new Message(
             role: 'tool',
-            content: $content,
-            toolResult: new ToolResult(
+            parts: new ContentParts(ContentPart::toolResult(new ToolResult(
                 content: $content,
                 callId: $toolCall->id(),
                 toolName: $toolCall->name(),
                 isError: true,
-            ),
+            ))),
         );
     }
 }

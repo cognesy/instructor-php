@@ -28,7 +28,7 @@ it('should properly convert Image to Messages with prompt', function () {
     $firstMessage = $messagesArray[0] ?? null;
     expect($firstMessage)->not->toBeNull();
     expect($firstMessage)->toHaveKey('role');
-    expect($firstMessage)->toHaveKey('content');
+    expect($firstMessage)->toHaveKey('parts');
     expect($firstMessage['role'])->toBe('user');
 });
 
@@ -86,13 +86,13 @@ it('should create valid Messages object from Image', function () {
     // Verify the structure matches what OpenAI expects
     $firstMessage = $messagesArray[0];
     expect($firstMessage)->toHaveKey('role');
-    expect($firstMessage)->toHaveKey('content');
-    
+    expect($firstMessage)->toHaveKey('parts');
+
     // Content should be an array of parts
-    expect($firstMessage['content'])->toBeArray();
-    
+    expect($firstMessage['parts'])->toBeArray();
+
     // Should have at least one content part
-    expect($firstMessage['content'])->not->toBeEmpty();
+    expect($firstMessage['parts'])->not->toBeEmpty();
 });
 
 it('should properly pass messages to StructuredOutput', function () {

@@ -163,7 +163,7 @@ it('still dispatches when the dispatcher cannot report its listeners', function 
     iterator_to_array($reader->eventsFrom($generator()));
 });
 
-it('stops reading stream when parser signals termination', function () {
+it('stops emitting after termination and drains the source stream', function () {
     $this->mockEventDispatcher->shouldReceive('dispatch')->times(3)->with(Mock::type(StreamEventReceived::class));
     $this->mockEventDispatcher->shouldReceive('dispatch')->twice()->with(Mock::type(StreamEventParsed::class));
 
@@ -175,14 +175,16 @@ it('stops reading stream when parser signals termination', function () {
     };
     $reader = new EventStreamReader(parser: $parser, events: $this->mockEventDispatcher);
 
-    $generator = function () {
+    $source = (object) ['drained' => false];
+    $generator = function () use ($source) {
         yield 'data: {"part":1}' . "\n";
         yield "\n";
         yield 'data: {"part":2}' . "\n";
         yield "\n";
         yield 'data: [DONE]' . "\n";
         yield "\n";
-        yield 'data: {"part":3}' . "\n"; // must not be parsed/yielded
+        $source->drained = true;
+        yield 'data: {"part":3}' . "\n"; // must be drained but not parsed/yielded
         yield "\n";
     };
 
@@ -191,5 +193,5 @@ it('stops reading stream when parser signals termination', function () {
     expect($result)->toEqual([
         '{"part":1}',
         '{"part":2}',
-    ]);
+    ])->and($source->drained)->toBeTrue();
 });

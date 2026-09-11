@@ -10,7 +10,6 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredPromptPlan;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Extras\Example\Example;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Arrays;
 use Cognesy\Xprompt\Prompt;
@@ -193,23 +192,15 @@ final class StructuredPromptPlanBuilder
         StructuredOutputExecution $execution,
         StructuredOutputAttempt $attempt,
     ): Messages {
-        $messages = Messages::empty();
-        $response = $attempt->inferenceResponse();
-
-        if ($response !== null && $response->content() !== '') {
-            $messages = $messages->appendMessage(Message::asAssistant($response->content()));
-        }
-
         $retryPromptClass = $execution->config()->retryPromptClass();
         $retryFeedback = $this->renderPromptClass($retryPromptClass, [
             'errors' => Arrays::flattenToString($attempt->errors(), '; '),
         ]);
 
-        if ($retryFeedback !== '') {
-            $messages = $messages->appendMessage(Message::asUser(trim($retryFeedback)));
-        }
-
-        return $messages;
+        return (new StructuredPromptRetryProjector())->project(
+            response: $attempt->inferenceResponse()?->message(),
+            feedback: trim($retryFeedback),
+        );
     }
 
     private function encodeJson(array $jsonSchema): string

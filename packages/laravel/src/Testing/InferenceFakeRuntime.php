@@ -57,8 +57,4 @@ final class InferenceFakeDriver implements \Cognesy\Polyglot\Inference\Contracts
         return [];
     }
 
-    public function capabilities(?string $model = null): \Cognesy\Polyglot\Inference\Data\DriverCapabilities
-    {
-        return new \Cognesy\Polyglot\Inference\Data\DriverCapabilities();
-    }
 }

@@ -333,11 +333,11 @@ Polyglot takes care of translation of familiar OpenAI chat completion API conven
 ```php
 use Cognesy\Polyglot\Inference\Inference;
 
-$answer = Inference::using('openai') // specify LLM connection preset (defined in config)
+$message = Inference::using('openai') // specify LLM connection preset (defined in config)
     ->with(messages: 'What is capital of Germany')
     ->get();
 
-echo $answer;
+echo $message->content()->toString();
 ```
 
 ### Example (using streaming API)
@@ -353,7 +353,7 @@ $stream = Inference::using('anthropic') // specify LLM connection preset (define
     ->deltas();
 
 foreach ($stream as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 

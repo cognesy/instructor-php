@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "snapshot": {
+    "url": "https://models.dev/api.json"
+  },
+  "offerings": [
+    {
+      "driver": "a21",
+      "model": "jamba-mini",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "anthropic",
+      "model": "claude-haiku-4-5",
+      "upstream": {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "azure",
+      "model": "gpt-4o-mini",
+      "upstream": {
+        "provider": "azure",
+        "model": "gpt-4o-mini"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "bedrock-openai",
+      "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "cerebras",
+      "model": "llama3.1-8b",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "cohere",
+      "model": "command-r-plus-08-2024",
+      "upstream": {
+        "provider": "cohere",
+        "model": "command-r-plus-08-2024"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "cohere",
+      "model": "command-r7b-12-2024",
+      "upstream": {
+        "provider": "cohere",
+        "model": "command-r7b-12-2024"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "fireworks",
+      "model": "accounts/fireworks/models/deepseek-v3p1",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "gemini",
+      "model": "gemini-2.5-flash-lite",
+      "upstream": {
+        "provider": "google",
+        "model": "gemini-2.5-flash-lite"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call",
+        "capabilities.reasoning": "reasoning_options"
+      }
+    },
+    {
+      "driver": "gemini-oai",
+      "model": "gemini-2.5-flash-lite",
+      "upstream": {
+        "provider": "google",
+        "model": "gemini-2.5-flash-lite"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "glm",
+      "model": "glm-4.5",
+      "upstream": {
+        "provider": "zhipuai",
+        "model": "glm-4.5"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "groq",
+      "model": "openai/gpt-oss-20b",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "huggingface",
+      "model": "openai/gpt-oss-120b:fireworks-ai",
+      "upstream": {
+        "provider": "huggingface",
+        "model": "openai/gpt-oss-120b"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "inception",
+      "model": "mercury",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "meta",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "minimaxi",
+      "model": "MiniMax-Text-01",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "mistral",
+      "model": "mistral-small-latest",
+      "upstream": {
+        "provider": "mistral",
+        "model": "mistral-small-latest"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "moonshot",
+      "model": "kimi-latest",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "ollama",
+      "model": "gpt-oss:20b",
+      "upstream": {
+        "provider": "ollama-cloud",
+        "model": "gpt-oss:20b"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "openai",
+      "model": "gpt-4o-mini",
+      "upstream": {
+        "provider": "openai",
+        "model": "gpt-4o-mini"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "openai",
+      "model": "gpt-5.4-mini",
+      "upstream": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "openai-responses",
+      "model": "gpt-5.4-mini",
+      "upstream": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "openrouter",
+      "model": "google/gemini-2.0-flash-001",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "perplexity",
+      "model": "sonar",
+      "upstream": {
+        "provider": "perplexity",
+        "model": "sonar"
+      },
+      "imports": {
+        "limits.contextWindow": "limit.context",
+        "limits.maxOutput": "limit.output",
+        "modalities.inputText": "modalities.input:text",
+        "modalities.inputImage": "modalities.input:image",
+        "modalities.inputAudio": "modalities.input:audio",
+        "modalities.inputFile": "modalities.input:file,pdf",
+        "modalities.outputText": "modalities.output:text",
+        "capabilities.tools": "tool_call"
+      }
+    },
+    {
+      "driver": "sambanova",
+      "model": "Meta-Llama-3.1-8B-Instruct",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "together",
+      "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+      "upstream": null,
+      "imports": {}
+    },
+    {
+      "driver": "xai",
+      "model": "grok-3",
+      "upstream": null,
+      "imports": {}
+    }
+  ]
+}

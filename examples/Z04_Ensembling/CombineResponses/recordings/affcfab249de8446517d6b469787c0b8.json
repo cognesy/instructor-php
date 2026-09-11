@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Candidate 2: The three-digit number 'ab5' is divisible by 3. How many different three-digit numbers can 'ab5' represent?\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"chain_of_thought\":{\"type\":\"string\"},\"answer\":{\"type\":\"string\"}},\"required\":[\"chain_of_thought\",\"answer\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:53:04 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1703"
+            ],
+            "cf-ray": [
+                "a394c0ca8b02ee48-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1457"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999904"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_58d5f2bb45a0464e84161931ee997d85"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpQ68VIQ9PEfXPGZjf4BmqjvvER2\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109582,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_OSEQyjohVIP7A55Yjr88vU3l\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"chain_of_thought\\\":\\\"We need answer a simple divisibility-by-3 counting problem. For ab5 to be divisible by 3, the sum a+b+5 must be divisible by 3, so a+b \u2261 1 mod 3. Count digit pairs (a,b) where a is 1-9 and b is 0-9 satisfying that congruence. Digits are distributed mod 3: among 1-9, counts are 3 each for residues 0,1,2; among 0-9, counts are 4 for residue 0 (0,3,6,9) and 3 each for residues 1 and 2. Pairs with sum \u22611 are (0,1), (1,0), (2,2) counts: 3*3 + 3*4 + 3*3 = 36. Alternatively total 9*10=90, about one-third are divisible by 3, giving 30? But because restriction on a excludes 0, the correct count is 36 via residue counts.\\\",\\\"answer\\\":\\\"36\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 213,\n    \"completion_tokens\": 244,\n    \"total_tokens\": 457,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

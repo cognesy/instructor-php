@@ -61,7 +61,7 @@ it('uses custom request materializer when provided on runtime', function () {
             return new PendingInference(
                 execution: InferenceExecution::fromRequest($request),
                 driver: new FakeInferenceDriver([
-                    new InferenceResponse(content: '{"name":"Materialized"}'),
+                    new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Materialized"}')),
                 ]),
                 eventDispatcher: new EventDispatcher(),
             );

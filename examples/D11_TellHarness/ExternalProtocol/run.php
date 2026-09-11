@@ -26,7 +26,7 @@ $controller = __DIR__.'/controller.sh';
 $command = [
     'bash',
     $controller,
-    'Inspect this project and report one actionable risk.',
+    'Reply exactly: protocol ready',
 ];
 $process = proc_open(
     $command,
@@ -39,8 +39,17 @@ if (! is_resource($process)) {
 }
 
 fclose($pipes[0]);
+$nextSequence = 1;
+$terminal = null;
 while (($line = fgets($pipes[1])) !== false) {
     $frame = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
+    assert($frame['schema'] === 'tell.agent.frame.v1');
+    assert($frame['sequence'] === $nextSequence);
+    $nextSequence++;
+    if (in_array($frame['type'], ['result', 'error', 'cancelled'], true)) {
+        assert($terminal === null, 'Expected exactly one terminal protocol frame');
+        $terminal = $frame;
+    }
     echo $frame['sequence'].' '.$frame['type']."\n";
 }
 $errors = stream_get_contents($pipes[2]);
@@ -52,8 +61,14 @@ if ($errors !== '') {
     fwrite(STDERR, $errors);
 }
 if ($exit !== 0) {
-    throw new RuntimeException("Tell agent protocol exited with {$exit}.");
+    $details = json_encode($terminal['error'] ?? [], JSON_UNESCAPED_SLASHES);
+    throw new RuntimeException("Tell agent protocol exited with {$exit}: {$details}");
 }
+
+assert($terminal !== null, 'Expected a terminal protocol frame');
+assert($terminal['type'] === 'result', 'Expected a successful result frame');
+assert($terminal['result']['outcome'] === 'completed');
+assert(str_contains(strtolower($terminal['result']['answer']), 'protocol ready'));
 ?>
 ```
 

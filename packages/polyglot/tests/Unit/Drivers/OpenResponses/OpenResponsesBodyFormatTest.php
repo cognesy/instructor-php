@@ -2,6 +2,9 @@
 
 namespace Cognesy\Polyglot\Tests\Unit\Drivers\OpenResponses;
 
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\ToolResult;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
@@ -307,26 +310,20 @@ class OpenResponsesBodyFormatTest extends TestCase
             'messages' => [
                 [
                     'role' => 'assistant',
-                    'content' => '',
-                    '_metadata' => [
-                        'tool_calls' => [
-                            [
-                                'id' => 'call_cached',
-                                'function' => [
-                                    'name' => 'get_weather',
-                                    'arguments' => '{"city":"Paris"}',
-                                ],
-                            ],
-                        ],
+                    'parts' => [
+                        ContentPart::toolCall(
+                            new ToolCall('get_weather', ['city' => 'Paris'], 'call_cached'),
+                        )->toArray(),
                     ],
                 ],
                 [
                     'role' => 'tool',
-                    'content' => '{"temperature":72}',
-                    'tool_result' => [
-                        'content' => '{"temperature":72}',
-                        'call_id' => 'call_cached',
-                        'tool_name' => 'get_weather',
+                    'parts' => [
+                        ContentPart::toolResult(ToolResult::success(
+                            '{"temperature":72}',
+                            'call_cached',
+                            'get_weather',
+                        ))->toArray(),
                     ],
                 ],
             ],

@@ -120,14 +120,14 @@ You can register your own driver for providers not bundled with Polyglot by crea
 <?php
 
 use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 
 // Start from the bundled registry and add your driver (by class name or factory callable)
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('custom-provider', CustomEmbeddingsDriver::class);
 
 // Or register with a factory callable
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('custom-provider', function ($config, $httpClient, $events) {
         return new CustomEmbeddingsDriver($config, $httpClient, $events);
     });

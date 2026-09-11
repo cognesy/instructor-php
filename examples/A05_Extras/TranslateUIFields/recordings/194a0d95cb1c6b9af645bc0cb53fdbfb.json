@@ -1,0 +1,87 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Task\\n\\nTranslate the headline and text fields to German. Keep HTML tags unchanged. Keep the url field unchanged.\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"TextElementModel\\\",\\n    \\\"properties\\\": {\\n        \\\"headline\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"text\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"url\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"https:\\\/\\\/translation.com\\\/\\\"\\n        }\\n    },\\n    \\\"x-php-class\\\": \\\"TextElementModel\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"{\\\"headline\\\":\\\"This is my headline\\\",\\\"text\\\":\\\"<p>This is some WYSIWYG HTML content.<\\\\\\\/p>\\\",\\\"url\\\":\\\"https:\\\\\\\/\\\\\\\/translation.com\\\\\\\/\\\"}\"}],\"temperature\":0,\"max_completion_tokens\":1024,\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:54:54 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a394c37b082cf057-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1055"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999804"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_0fa22b78e3334108b2ea8927f47765f9"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpRtGq2bskqvjwF2CmJDN1cG94Pc\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109693,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\n    \\\"headline\\\": \\\"Das ist meine \u00dcberschrift\\\",\\n    \\\"text\\\": \\\"<p>Dies ist ein WYSIWYG-HTML-Inhalt.<\\\\\\\\\/p>\\\",\\n    \\\"url\\\": \\\"https:\/\/translation.com\/\\\"\\n}\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 191,\n    \"completion_tokens\": 45,\n    \"total_tokens\": 236,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_bb687c7345\"\n}\n"
+    }
+}

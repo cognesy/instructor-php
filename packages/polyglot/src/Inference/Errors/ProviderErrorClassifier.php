@@ -41,6 +41,10 @@ final class ProviderErrorClassifier
             default => self::sanitizedHttpExceptionMessage($error),
         };
 
+        if ($status === null && $error->isRetriable()) {
+            return new ProviderTransientException($message, null, $payload);
+        }
+
         return self::classify(
             status: $status,
             type: $type,

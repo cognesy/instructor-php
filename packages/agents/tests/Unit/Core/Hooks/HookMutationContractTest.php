@@ -28,7 +28,7 @@ function hookContractContexts(): array {
     $call = ToolCall::fromArray(['id' => 'call-1', 'name' => 'demo', 'arguments' => '{}']);
     $execution = ToolExecution::blocked($call, 'fixture');
     $request = new InferenceRequest(messages: Messages::fromString('request'));
-    $response = new InferenceResponse(content: 'response');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('response'));
 
     return [
         HookContext::beforeExecution($state),

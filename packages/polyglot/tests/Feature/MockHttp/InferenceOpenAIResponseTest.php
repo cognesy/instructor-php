@@ -31,7 +31,7 @@ it('returns content for OpenAI chat completions (non-streaming)', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
-    expect($content)->toBe('Hi there!');
+    expect($content->content()->toString())->toBe('Hi there!');
 });
 
 it('supports runtime-style create with explicit request', function () {
@@ -60,7 +60,7 @@ it('supports runtime-style create with explicit request', function () {
         ))
         ->get();
 
-    expect($content)->toBe('Hi from request!');
+    expect($content->content()->toString())->toBe('Hi from request!');
 });
 
 it('supports facade runtime extraction and runtime static factories', function () {
@@ -94,7 +94,7 @@ it('supports facade runtime extraction and runtime static factories', function (
         ->create($request)
         ->get();
 
-    expect($fromFacadeRuntime)->toBe('Hi from runtime!');
+    expect($fromFacadeRuntime->content()->toString())->toBe('Hi from runtime!');
 
     $mock->on()
         ->post('https://api.openai.com/v1/chat/completions')
@@ -116,5 +116,5 @@ it('supports facade runtime extraction and runtime static factories', function (
         httpClient: $http,
     )->create($request)->get();
 
-    expect($fromStaticRuntime)->toBe('Hi from static runtime!');
+    expect($fromStaticRuntime->content()->toString())->toBe('Hi from static runtime!');
 });

@@ -16,28 +16,23 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:40:04 GMT"
+                "Fri, 11 Sep 2026 07:36:09 GMT"
             ],
             "content-type": [
                 "application\/json"
             ],
             "content-length": [
-                "746"
+                "743"
             ],
             "strict-transport-security": [
                 "max-age=31536000"
             ],
-            "set-cookie": [
-                "__cf_bm=3r5cG977WEDy_IRSNuppXEE9.Aiv8lzNCR3dyGUNgwY-1783341603.4474654-1.0.1.1-i9P4dv1Wq2VJ9wZVo8JiUs1RN033PkCROlatVrdshqg4LUgsC4bPcDg60sUqELtHJ9xXbpm7WYF4BQkzgG5.NVAyE_BsC_pM6beeXgKGxPV8D7Wz0zlGKA3XaQAWUM6M; HttpOnly; Secure; Path=\/; Domain=x.ai; Expires=Mon, 06 Jul 2026 13:10:04 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "x-ratelimit-limit-tokens": [
                 "10000000"
             ],
             "x-ratelimit-remaining-tokens": [
                 "10000000"
-            ],
-            "x-zero-data-retention": [
-                "false"
             ],
             "x-ratelimit-limit-requests": [
                 "1800"
@@ -49,19 +44,25 @@
                 "DYNAMIC"
             ],
             "x-request-id": [
-                "d2360366-d13a-97fa-8d42-95a01ed27995"
+                "cf2f206d-d458-934b-b9b7-af5e3f34452a"
+            ],
+            "x-zero-data-retention": [
+                "false"
+            ],
+            "x-data-retention": [
+                "general"
             ],
             "x-metrics-ttft-ms": [
-                "196.7"
+                "365.1"
             ],
             "x-metrics-mean-itl-ms": [
-                "6.9"
+                "6.7"
             ],
             "x-metrics-e2e-ms": [
-                "1147.1"
+                "1445.1"
             ],
             "traceparent": [
-                "00-082186b6f92a37ce85fe6d5f2e6a662b-212a7ea1000048eb-01"
+                "00-93eeae80a0bc060cbd99984db25a881e-6869413a000190e1-01"
             ],
             "vary": [
                 "origin, access-control-request-method, access-control-request-headers"
@@ -76,9 +77,9 @@
                 "cloudflare"
             ],
             "cf-ray": [
-                "a16eacfd886d0d20-WAW"
+                "a394ffe91c673558-WAW"
             ]
         },
-        "body": "{\"id\":\"d2360366-d13a-97fa-8d42-95a01ed27995\",\"object\":\"chat.completion\",\"created\":1783341603,\"model\":\"grok-4.3\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"**Paris** is the capital of France.\",\"reasoning_content\":\"The question is: \\\"What is the capital of France\\\"\\n\",\"refusal\":null},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":136,\"completion_tokens\":9,\"total_tokens\":259,\"prompt_tokens_details\":{\"text_tokens\":136,\"audio_tokens\":0,\"image_tokens\":0,\"cached_tokens\":128},\"completion_tokens_details\":{\"reasoning_tokens\":114,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0},\"num_sources_used\":0,\"cost_in_usd_ticks\":3431000},\"system_fingerprint\":\"fp_eb3c003fc66c14ed\",\"service_tier\":\"default\"}"
+        "body": "{\"id\":\"cf2f206d-d458-934b-b9b7-af5e3f34452a\",\"object\":\"chat.completion\",\"created\":1789112168,\"model\":\"grok-4.3\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"The capital of France is Paris.\",\"reasoning_content\":\"The question is: \\\"What is the capital of France?\\\"\\n\",\"refusal\":null},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":198,\"completion_tokens\":7,\"total_tokens\":332,\"prompt_tokens_details\":{\"text_tokens\":198,\"audio_tokens\":0,\"image_tokens\":0,\"cached_tokens\":128},\"completion_tokens_details\":{\"reasoning_tokens\":127,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0},\"num_sources_used\":0,\"cost_in_usd_ticks\":4481000},\"system_fingerprint\":\"fp_eb3c003fc66c14ed\",\"service_tier\":\"default\"}"
     }
 }

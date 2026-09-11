@@ -2,7 +2,5 @@ driver: groq
 apiUrl: 'https://api.groq.com/openai/v1'
 apiKey: '${GROQ_API_KEY}'
 endpoint: /chat/completions
-model: meta-llama/llama-4-scout-17b-16e-instruct
+model: openai/gpt-oss-20b
 maxTokens: 1024
-contextLength: 128000
-maxOutputLength: 2048

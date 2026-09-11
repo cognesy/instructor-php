@@ -34,10 +34,6 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseGuards;
-use Cognesy\Agents\Capability\Core\UseTools;
-use Cognesy\Agents\Capability\File\ListDirTool;
-use Cognesy\Agents\Capability\File\SearchFilesTool;
-use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\SelfCritique\UseSelfCritique;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
@@ -54,28 +50,29 @@ $logger = new AgentEventConsoleObserver(
     showToolArgs: true,
 );
 
-// Configure working directory
-$workDir = dirname(__DIR__, 3);
-
 // Build agent with self-critique capability
 $agent = AgentBuilder::base()
-    ->withCapability(new UseFileTools($workDir))
-    ->withCapability(new UseTools(
-        ListDirTool::inDirectory($workDir),
-        SearchFilesTool::inDirectory($workDir),
-    ))
     ->withCapability(new UseSelfCritique(
         structuredOutput: StructuredOutputRuntime::fromProvider(
             provider: LLMProvider::using('openai'),
         ),
         maxIterations: 2,  // Allow up to 2 critique iterations
     ))
-    ->withCapability(new UseGuards(maxSteps: 12, maxTokens: 12288, maxExecutionTime: 90))
+    ->withCapability(new UseGuards(maxSteps: 6, maxTokens: 8192, maxExecutionTime: 60))
     ->build()
     ->wiretap($logger->wiretap());
 
 // Ask a question where the agent might give a superficial answer
-$question = "What testing framework does this project use? Be specific. Provide fragments of files as evidence.";
+$question = <<<'QUESTION'
+    Identify the testing framework and cite the shortest evidence fragments.
+
+    composer.json:
+    "test": "@php ./vendor/bin/pest --compact"
+    "pestphp/pest": "^4.2"
+
+    phpunit.xml:
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd"
+    QUESTION;
 
 $state = AgentState::empty()->withMessages(
     Messages::fromString($question)

@@ -1,19 +1,24 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Messages\ToolCallId;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunks;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 
 it('preserves tool call id through delta construction', function () {
     $toolId = ToolCallId::fromString('call_123');
 
     $partial = new PartialInferenceDelta(
-        toolId: $toolId,
-        toolName: 'search',
-        toolArgs: '{"q":"test"}',
+        messageChunks: AssistantMessageChunks::empty()->withToolCallDelta(
+            'provider:tool:0',
+            $toolId,
+            'search',
+            '{"q":"test"}',
+        ),
     );
+    $toolChunk = $partial->messageChunks->all()[0];
 
-    expect($partial->toolId)->toBeInstanceOf(ToolCallId::class)
-        ->and((string) ($partial->toolId ?? ''))->toBe('call_123')
-        ->and($partial->toolName)->toBe('search')
-        ->and($partial->toolArgs)->toBe('{"q":"test"}');
+    expect($toolChunk->toolCallId)->toBeInstanceOf(ToolCallId::class)
+        ->and((string) ($toolChunk->toolCallId ?? ''))->toBe('call_123')
+        ->and($toolChunk->toolCallName)->toBe('search')
+        ->and($toolChunk->toolCallArguments)->toBe('{"q":"test"}');
 });

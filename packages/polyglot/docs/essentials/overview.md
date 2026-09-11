@@ -24,7 +24,7 @@ $answer = Inference::using('openai')
 The `using()` static method resolves a named preset from your configuration, while
 `withMessages()` accepts a `Messages` object. Use `Messages::fromString()` to wrap a plain text
 prompt, or `Messages::fromArray()` to convert an array of role/content pairs.
-The `get()` method executes the request and returns the response content as a string.
+The `get()` method executes the request and returns the complete assistant `Message`.
 
 
 ## Creating an Inference Instance
@@ -79,8 +79,8 @@ Once you have configured a request, choose how to execute it:
 
 | Method | Returns | Use case |
 |--------|---------|----------|
-| `get()` | `string` | Quick text extraction |
-| `response()` | `InferenceResponse` | Full response with metadata, usage stats, and tool calls |
+| `get()` | `Message` | Complete assistant turn |
+| `response()` | `InferenceResponse` | Assistant `Message` with usage, finish reason, and provider data |
 | `asJson()` | `string` | Extract JSON from the response content |
 | `asJsonData()` | `array` | Decode JSON from the response into a PHP array |
 | `asToolCallJson()` | `string` | Extract tool call arguments as a JSON string |
@@ -159,12 +159,12 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 
-Each `PartialInferenceDelta` exposes the `contentDelta` string for the incremental
-text fragment. The stream also provides functional-style helpers -- `map()`, `filter()`,
+Each `PartialInferenceDelta` exposes ordered `messageChunks`; `textDelta()` projects
+the incremental text fragments. The stream also provides functional-style helpers -- `map()`, `filter()`,
 and `reduce()` -- for processing deltas inline.
 
 You can also register a callback to handle each delta as it arrives:
@@ -178,7 +178,7 @@ $stream = Inference::using('openai')
     ->withMessages(Messages::fromString('Tell me a story.'))
     ->stream();
 
-$stream->onDelta(fn($delta) => print($delta->contentDelta));
+$stream->onDelta(fn($delta) => print($delta->messageChunks->textDelta()));
 
 // Drain the stream to trigger callbacks
 $stream->all();
@@ -202,14 +202,15 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is quantum computing?'))
     ->response();
 
-$text = $response->content();
+$message = $response->message();
+$text = $message->content()->toString();
 $usage = $response->usage();
 $finishReason = $response->finishReason();
 ```
 
-The response object provides access to content, reasoning content (for models that
-support chain-of-thought), tool calls, token usage statistics, and the raw HTTP
-response data.
+The response envelope carries the complete assistant message, token usage statistics,
+finish reason, and raw HTTP response data. Text, reasoning, and tool calls are derived
+from the message's ordered parts.
 
 
 ## Switching Between Providers
@@ -247,8 +248,6 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 16384
 ```
 
 Polyglot resolves presets from several locations, searched in order:

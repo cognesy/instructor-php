@@ -121,6 +121,7 @@ function tellAgentFactoryForPaths(
         tracer: new StandardTellExecutionTracer($paths),
         clock: new SystemTellClock(),
         modelResolver: $modelResolver ?? new PolyglotTellModelResolver($paths, new StandardTellSecretResolver($paths, $directory)),
+        providerCatalogue: new PolyglotTellProviderCatalogue($paths),
         definitionLoader: new FilesystemTellAgentDefinitions($paths, $startupScans),
         contributions: [
             new ComposerTellAgentContribution($startupScans, $composerVendorDir, $rootComposerPath),

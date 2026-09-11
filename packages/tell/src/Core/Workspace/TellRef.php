@@ -8,6 +8,7 @@ use Cognesy\Tell\Data\TellContext;
 use Cognesy\Tell\Data\TellConversationView;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
+use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
 use Cognesy\Tell\Core\Contract\Workspace\CanUseTellRef;
 use Cognesy\Tell\Core\Contract\Workspace\CanOpenTellWorkspace;
 use Cognesy\Tell\Core\Workspace\Arena\ObjectHash;
@@ -24,6 +25,7 @@ final readonly class TellRef implements CanUseTellRef
     public function __construct(
         private CanBuildTellAgent $agents,
         private CanOpenTellWorkspace $workspaces,
+        private CanCatalogueTellProviders $providers,
         private string $directory,
         string $hash,
     ) {
@@ -69,7 +71,7 @@ final readonly class TellRef implements CanUseTellRef
         $request = $request->directory === '' ? $request->withDirectory($this->directory) : $request;
         $definition = $this->agents->definition($request);
 
-        return new TellContext((new ContextInspector())->inspect(
+        return new TellContext((new ContextInspector($this->providers->catalog($this->directory)))->inspect(
             conversation: $this->inspection(),
             definition: $definition,
             connection: $request->connection,

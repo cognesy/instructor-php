@@ -523,13 +523,13 @@ Refactor wiring so Inference receives ready collaborators from layers.
 - Layers
 
 ```php
-use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
 $inferenceLayers = $eventsLayer
   ->merge($configLayer)
   ->merge($httpLayer) // provides HttpClientBuilder
   ->merge(Layer::providesFrom(HttpClient::class, fn(Context $c) => $c->get(\Cognesy\Http\Creation\HttpClientBuilder::class)->create()))
-  ->merge(Layer::providesFrom(CanProvideInferenceDrivers::class, fn(Context $c) => BundledInferenceDrivers::registry()))
+  ->merge(Layer::providesFrom(CanProvideInferenceDrivers::class, fn(Context $c) => InferenceDriverRegistry::default()))
   ->merge($llmProviderLayer);
 ```
 

@@ -30,7 +30,7 @@ final readonly class RecordingDriver implements CanAcceptMessageCompiler, CanUse
         return $state->withCurrentStep(new AgentStep(
             inputMessages: $messages,
             outputMessages: Messages::fromString($this->response, 'assistant'),
-            inferenceResponse: new InferenceResponse(content: $this->response),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->response)),
         ));
     }
 

@@ -8,7 +8,8 @@ Polyglot resolves two configuration types -- one for inference and one for embed
 
 ## LLMConfig
 
-`LLMConfig` holds all the settings needed to connect to an inference provider and select a model.
+`LLMConfig` holds connection, model selection, and request-default settings. Model facts live in
+`ModelCatalog`, not in connection configuration.
 
 **Namespace:** `Cognesy\Polyglot\Inference\Config\LLMConfig`
 
@@ -23,11 +24,8 @@ Polyglot resolves two configuration types -- one for inference and one for embed
 | `metadata` | `array` | `[]` | Provider-specific metadata (e.g. organization, project for OpenAI) |
 | `model` | `string` | `''` | Model identifier |
 | `maxTokens` | `int` | `1024` | Default max tokens for responses |
-| `contextLength` | `int` | `8000` | Model context window size |
-| `maxOutputLength` | `int` | `4096` | Maximum output length |
 | `driver` | `string` | `'openai-compatible'` | Driver name (e.g. `openai`, `anthropic`, `gemini`) |
 | `options` | `array` | `[]` | Additional provider-specific options |
-| `pricing` | `array` | `[]` | Token pricing per 1M tokens (input, output, etc.) |
 
 ### Creating a Config
 
@@ -77,38 +75,27 @@ $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
 ```
 
-### Pricing
+### Model catalog
 
-When pricing data is included in the config, it can be used with a cost calculator to compute costs externally. Pricing values are specified in USD per 1 million tokens:
+Look up limits, modalities, and capabilities by exact driver and wire model. An absent
+offering returns an explicit unknown profile:
 
 ```php
-use Cognesy\Polyglot\Inference\Data\InferencePricing;
-use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
-$config = LLMConfig::fromArray([
-    'driver' => 'openai',
-    'apiUrl' => 'https://api.openai.com/v1',
-    'apiKey' => getenv('OPENAI_API_KEY'),
-    'endpoint' => '/chat/completions',
-    'model' => 'gpt-4.1-nano',
-    'pricing' => [
-        'inputPerMToken' => 0.10,
-        'outputPerMToken' => 0.40,
-        'cacheReadPerMToken' => 0.0,
-        'cacheWritePerMToken' => 0.0,
-        'reasoningPerMToken' => 0.0,
-    ],
-]);
-
-// Cost is calculated externally using a calculator
-$pricing = InferencePricing::fromArray($config->pricing);
-$calculator = new FlatRateCostCalculator();
-$cost = $calculator->calculate($usage, $pricing);
+$profile = ModelCatalog::discover()->find('openai', 'gpt-5.6');
+$profile->limits->contextWindow;
+$profile->capabilities->jsonSchema;
 ```
+
+`discover()` overlays application `config/llm/models.json` on the bundled records through the
+same search paths used for presets. Use `overlay(ModelCatalog::fromFile($path))` for another
+explicit whole-record layer. Catalog construction is local and deterministic; it never performs
+network discovery.
 
 ### Type Coercion
 
-Both config classes automatically coerce numeric string values to integers for fields that expect `int` types. This is useful when loading values from YAML files or environment variables where values may arrive as strings. For `LLMConfig`, the coerced fields are `maxTokens`, `contextLength`, and `maxOutputLength`.
+Both config classes automatically coerce numeric string values to integers for fields that expect `int` types. This is useful when loading values from YAML files or environment variables where values may arrive as strings. For `LLMConfig`, the coerced field is `maxTokens`.
 
 
 ## EmbeddingsConfig

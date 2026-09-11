@@ -41,7 +41,7 @@ it('hasNextStep stops when criteria block first step', function () {
 
 it('finalStep respects StepsLimit(1)', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '', toolCalls: new ToolCalls(new ToolCall('_inc_lb', ['x' => 1]))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('_inc_lb', ['x' => 1])))),
     ]);
     $tools = new Tools(FunctionTool::fromCallable(_inc_lb(...)));
         
@@ -63,8 +63,8 @@ it('finalStep respects StepsLimit(1)', function () {
 
 it('accumulates usage across steps', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '', toolCalls: new ToolCalls(new ToolCall('_inc_lb', ['x' => 1])), usage: new InferenceUsage(2,3)),
-        new InferenceResponse(content: 'ok', usage: new InferenceUsage(4,5)),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('_inc_lb', ['x' => 1]))), usage: new InferenceUsage(2,3)),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), usage: new InferenceUsage(4,5)),
     ]);
 
     $tools = new Tools(FunctionTool::fromCallable(_inc_lb(...)));

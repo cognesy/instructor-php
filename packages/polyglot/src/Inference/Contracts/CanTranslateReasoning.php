@@ -10,7 +10,8 @@ use Cognesy\Polyglot\Inference\Reasoning\ReasoningTranslation;
 
 interface CanTranslateReasoning
 {
-    public function capabilities(string $model): ReasoningCapabilities;
-
-    public function translate(string $model, ReasoningSelection $selection): ReasoningTranslation;
+    public function translate(
+        ReasoningCapabilities $capabilities,
+        ReasoningSelection $selection,
+    ): ReasoningTranslation;
 }

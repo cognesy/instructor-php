@@ -11,6 +11,7 @@ use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Agents\Tool\ToolDescriptor;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
@@ -45,7 +46,7 @@ it('builds tool-calling inference requests entirely from typed objects', functio
             return new PendingInference(
                 execution: InferenceExecution::fromRequest($request),
                 driver: new \Cognesy\Agents\Tests\Support\FakeInferenceDriver([
-                    InferenceResponse::empty()->withContent('done'),
+                    InferenceResponse::empty()->withMessage(Message::asAssistant('done')),
                 ]),
                 eventDispatcher: new EventDispatcher(),
             );
@@ -117,7 +118,7 @@ it('stamps inference requests with execution and step telemetry correlation when
             return new PendingInference(
                 execution: InferenceExecution::fromRequest($request),
                 driver: new \Cognesy\Agents\Tests\Support\FakeInferenceDriver([
-                    InferenceResponse::empty()->withContent('done'),
+                    InferenceResponse::empty()->withMessage(Message::asAssistant('done')),
                 ]),
                 eventDispatcher: new EventDispatcher(),
             );

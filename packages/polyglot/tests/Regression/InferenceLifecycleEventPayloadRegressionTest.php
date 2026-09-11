@@ -35,11 +35,7 @@ it('emits minimal array payloads for successful lifecycle events', function () {
         )),
         driver: new FakeInferenceDriver(
             responses: [
-                new InferenceResponse(
-                    content: 'OK',
-                    finishReason: 'stop',
-                    usage: new InferenceUsage(inputTokens: 10, outputTokens: 3),
-                ),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 10, outputTokens: 3)),
             ],
         ),
         eventDispatcher: $events,
@@ -103,11 +99,7 @@ it('preserves execution telemetry parentage across started and completed events'
         execution: InferenceExecution::fromRequest($request),
         driver: new FakeInferenceDriver(
             responses: [
-                new InferenceResponse(
-                    content: 'OK',
-                    finishReason: 'stop',
-                    usage: new InferenceUsage(inputTokens: 10, outputTokens: 3),
-                ),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 10, outputTokens: 3)),
             ],
         ),
         eventDispatcher: $events,
@@ -144,11 +136,8 @@ it('emits minimal array payloads for failed lifecycle events', function () {
         )),
         driver: new FakeInferenceDriver(
             onStream: function (): iterable {
-                yield new PartialInferenceDelta(
-                    contentDelta: 'part',
-                    usage: new InferenceUsage(inputTokens: 4, outputTokens: 2),
-                    usageIsCumulative: true,
-                );
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'part'), usage: new InferenceUsage(inputTokens: 4, outputTokens: 2),
+                usageIsCumulative: true,);
                 throw new TimeoutException('stream lost');
             },
         ),

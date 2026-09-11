@@ -6,6 +6,14 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Core\Paths\TellPaths;
 
+it('resolves bundled agent definitions from the installed package layout', function (): void {
+    $paths = TellPaths::installed(['TELL_HOME' => '/runtime/tell']);
+    $packageRoot = dirname(__DIR__, 2);
+
+    expect($paths->packageAgents)->toBe($packageRoot . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'agents')
+        ->and($paths->packageAgents . DIRECTORY_SEPARATOR . 'default.md')->toBeFile();
+});
+
 it('uses USERPROFILE when HOME is unavailable', function (): void {
     $profile = 'tell-user-profile';
 
@@ -14,6 +22,7 @@ it('uses USERPROFILE when HOME is unavailable', function (): void {
         $tellHome = $profile . DIRECTORY_SEPARATOR . '.tell';
 
         expect($paths->home)->toBe($tellHome)
+            ->and($paths->credentials)->toBe($tellHome . DIRECTORY_SEPARATOR . '.env')
             ->and($paths->configFile)->toBe($tellHome . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'tell.json')
             ->and($paths->userAgents)->toBe($tellHome . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'agents')
             ->and($paths->sessions)->toBe($tellHome . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'sessions')

@@ -16,7 +16,7 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:40:44 GMT"
+                "Fri, 11 Sep 2026 06:52:58 GMT"
             ],
             "content-type": [
                 "application\/json"
@@ -25,7 +25,7 @@
                 "1464"
             ],
             "cf-ray": [
-                "a16eadf849016332-WAW"
+                "a394c0ae0942c00f-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "947"
+                "846"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -69,7 +69,7 @@
                 "4999"
             ],
             "x-ratelimit-remaining-tokens": [
-                "3999839"
+                "3999840"
             ],
             "x-ratelimit-reset-requests": [
                 "12ms"
@@ -78,15 +78,13 @@
                 "2ms"
             ],
             "x-request-id": [
-                "req_24a99a54e364451fb7e4bef649c8c983"
+                "req_33527537dc354358af01e325f7d14f8f"
             ],
-            "set-cookie": [
-                "__cf_bm=_l0pSH2BQ1eeZZ5QVvpfHHbSO_PTyNodqRCbIRnHOMw-1783341643.5647035-1.0.1.1-VR6ZV25R8et52a_Rq6DtGPRYN.fPhGm6EmAlKYPbHDNQWf1fjr62_y_jIsJ4mprwG1_qdGZQJ.J9t5lfXjAZWVIMD3V4qaX9Vmdj0COf3P9Nt7wnZjGcN2bX4yZWanc3; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:44 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-DycupUms7EA3Jbwvgal0PFtLTkUPk\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341643,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_tPTiukoOpQbtAbVxjrDYxzvK\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"structured_output\",\n              \"arguments\": \"{\\\"input\\\":\\\"Hey, I just got off the phone with a potential client. Here are the details:\\\\n\\\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\\\nThey're based in San Francisco, California, USA. You can reach him at\\\\njohn.smith@techcorp.io or call him at +1-555-0123.\\\\n\\\\nHe's interested in our enterprise plan and wants a demo next week.\\\",\\\"schema\\\":\\\"lead\\\",\\\"store_as\\\":\\\"current_lead\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 688,\n    \"completion_tokens\": 115,\n    \"total_tokens\": 803,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMpQ27jUavBenANV5JD6YaNL3ne01\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109578,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_VxtNo1pOMDATzkGvrtjb74cg\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"structured_output\",\n              \"arguments\": \"{\\\"input\\\":\\\"Hey, I just got off the phone with a potential client. Here are the details:\\\\n\\\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\\\nThey're based in San Francisco, California, USA. You can reach him at\\\\njohn.smith@techcorp.io or call him at +1-555-0123.\\\\n\\\\nHe's interested in our enterprise plan and wants a demo next week.\\\",\\\"schema\\\":\\\"lead\\\",\\\"store_as\\\":\\\"current_lead\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 688,\n    \"completion_tokens\": 115,\n    \"total_tokens\": 803,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

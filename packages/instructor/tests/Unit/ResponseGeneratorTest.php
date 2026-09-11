@@ -55,7 +55,7 @@ describe('ResponseGenerator', function () {
             extractor: new ResponseExtractor(events: $events),
         );
 
-        $resp = new InferenceResponse(content: '{"a":1}');
+        $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"a":1}'));
         $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
 
         expect($result->isSuccess())->toBeTrue();
@@ -76,7 +76,7 @@ describe('ResponseGenerator', function () {
             extractor: new ResponseExtractor(events: $events),
         );
 
-        $resp = new InferenceResponse(content: '');
+        $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''));
         $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
         expect($result->isFailure())->toBeTrue();
         expect($result->errorMessage())->toContain('Empty response content');
@@ -95,7 +95,7 @@ describe('ResponseGenerator', function () {
             extractor: new ResponseExtractor(events: $events),
         );
 
-        $resp = new InferenceResponse(content: '{}');
+        $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{}'));
         $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
 
         expect($result->isSuccess())->toBeTrue();
@@ -115,7 +115,7 @@ describe('ResponseGenerator', function () {
             extractor: new ResponseExtractor(events: $events),
         );
 
-        $resp = new InferenceResponse(content: '[]');
+        $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('[]'));
         $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
 
         expect($result->isSuccess())->toBeTrue();

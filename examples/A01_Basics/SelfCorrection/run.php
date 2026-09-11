@@ -42,11 +42,15 @@ $text = "you can reply to me via jason wp.pl -- Jason";
 print("INPUT:\n$text\n\n");
 
 print("RESULTS:\n");
+$validationFailureCount = 0;
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
     ->withMaxRetries(3)
     ->onEvent(HttpRequestSent::class, fn($event) => print("[ ] Requesting LLM response...\n"))
     ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".$event."\n"))
-    ->onEvent(ResponseValidationFailed::class, fn($event) => print("[!] Validation failed:\n    $event\n"))
+    ->onEvent(ResponseValidationFailed::class, function($event) use (&$validationFailureCount) {
+        $validationFailureCount++;
+        print("[!] Validation failed:\n    $event\n");
+    })
     ->onEvent(ResponseValidated::class, fn($event) => print("[ ] Validation succeeded.\n"));
 
 $user = (new StructuredOutput($runtime))
@@ -59,6 +63,8 @@ print("\nOUTPUT:\n");
 
 dump($user);
 
-assert($user->email === "jason@wp.pl");
+assert($validationFailureCount >= 1);
+assert($user->name === 'Jason');
+assert($user->email === 'jason@wp.pl');
 ?>
 ```

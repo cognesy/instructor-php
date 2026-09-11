@@ -1,0 +1,72 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "a0708731f2ad593c62c478a0c76a9d68a05d8727a5243ed40544280eb1eb7e0d",
+    "request": {
+        "method": "POST",
+        "url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 146,
+            "sha256": "b662d4a0f1aed714c1f90e5f0cb222040da7fddae9805340ac9ffa56bf727707"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "vary": [
+                "Origin,Access-Control-Request-Method,Access-Control-Request-Headers, Accept-Encoding"
+            ],
+            "x-request-id": [
+                "cdd430d3-327d-945a-bfe5-2713c0d22417"
+            ],
+            "x-dashscope-call-gateway": [
+                "true"
+            ],
+            "x-dashscope-finished": [
+                "true"
+            ],
+            "x-dashscope-timeout": [
+                "3600"
+            ],
+            "content-type": [
+                "application/json"
+            ],
+            "content-length": [
+                "380"
+            ],
+            "req-cost-time": [
+                "634"
+            ],
+            "req-arrive-time": [
+                "1789106828984"
+            ],
+            "resp-start-time": [
+                "1789106829618"
+            ],
+            "x-envoy-upstream-service-time": [
+                "633"
+            ],
+            "set-cookie": "[REDACTED]",
+            "date": [
+                "Fri, 11 Sep 2026 06:07:09 GMT"
+            ],
+            "server": [
+                "istio-envoy"
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 380,
+            "sha256": "d354d62d2a78662420021c0c949c01572efc66348b1a2ef497f46b66a6b7de62"
+        }
+    }
+}

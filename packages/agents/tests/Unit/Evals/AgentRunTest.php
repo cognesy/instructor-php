@@ -428,7 +428,7 @@ it('leaves llmProfile null when the driver never resolves an LLMConfig', functio
 });
 
 it('carries the resolved LLMConfig into llmProfile(), and preserves it across turns and a toArray()/fromArray() round trip', function (): void {
-    $config = new LLMConfig(model: 'gpt-5', maxTokens: 2048, contextLength: 128_000, maxOutputLength: 8192, driver: 'openai');
+    $config = new LLMConfig(model: 'gpt-5', maxTokens: 2048, driver: 'openai');
     $target = LocalAgentTarget::fromFactory(static fn () => AgentBuilder::base()
         ->withCapability(new UseDriver(new LlmAwareFakeDriver(FakeAgentDriver::fromResponses('first', 'second'), $config)))
         ->build());
@@ -444,8 +444,6 @@ it('carries the resolved LLMConfig into llmProfile(), and preserves it across tu
             'driver' => 'openai',
             'model' => 'gpt-5',
             'maxTokens' => 2048,
-            'contextLength' => 128_000,
-            'maxOutputLength' => 8192,
         ]);
 
     $roundTripped = AgentRun::fromArray($run->toArray());

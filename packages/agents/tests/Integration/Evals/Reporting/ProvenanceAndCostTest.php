@@ -105,8 +105,6 @@ it('reports target and judge provenance honestly: resolved LLM configs, structur
         'driver' => 'openai',
         'model' => 'gpt-5-target',
         'maxTokens' => 1024,
-        'contextLength' => 8000,
-        'maxOutputLength' => 4096,
     ])
         ->and($provenance['judge']['class'])->toBe(AgentLoopJudge::class)
         ->and($provenance['judge']['llm']['model'])->toBe('gpt-5-judge')

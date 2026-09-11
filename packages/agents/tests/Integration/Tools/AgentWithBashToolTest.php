@@ -62,13 +62,8 @@ describe('Agent with BashTool', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(
-                content: '',
-                toolCalls: new ToolCalls($toolCall),
-            ),
-            new InferenceResponse(
-                content: 'The command output was: Hello from bash',
-            ),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('The command output was: Hello from bash')),
         ]);
 
         $bashTool = new BashTool(baseDir: $this->tempDir);
@@ -94,13 +89,8 @@ describe('Agent with BashTool', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(
-                content: '',
-                toolCalls: new ToolCalls($toolCall),
-            ),
-            new InferenceResponse(
-                content: 'Current directory is shown.',
-            ),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Current directory is shown.')),
         ]);
 
         $bashTool = new BashTool(baseDir: $this->tempDir);
@@ -134,13 +124,8 @@ describe('Agent with BashTool', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(
-                content: '',
-                toolCalls: new ToolCalls($toolCall),
-            ),
-            new InferenceResponse(
-                content: 'Listed files.',
-            ),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Listed files.')),
         ]);
 
         $bashTool = new BashTool(baseDir: $this->tempDir);

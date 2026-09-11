@@ -40,7 +40,7 @@ $answer = Inference::using('qwen')
             'max_tokens' => 64,
         ],
     )
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is the capital of France?\n";
 echo "ASSISTANT: $answer\n";

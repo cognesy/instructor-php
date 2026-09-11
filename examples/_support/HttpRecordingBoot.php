@@ -16,7 +16,7 @@ use Cognesy\Http\Extras\Middleware\RecordReplay\RecordReplayMiddleware;
  * only applies on the implicit-build path; see HttpClientDefaults).
  *
  *   INSTRUCTOR_EXAMPLES_HTTP            = pass | record | replay   (default: pass)
- *   INSTRUCTOR_EXAMPLES_RECORDINGS_DIR = storage dir              (default: tmp/examples-recordings)
+ *   INSTRUCTOR_EXAMPLES_RECORDINGS_DIR = optional scratch root    (default: co-located recordings/)
  *
  * Default is `pass` → zero behavior change. `replay` is hermetic (no network) and
  * provisions dummy provider keys so a keyless CI lane works.

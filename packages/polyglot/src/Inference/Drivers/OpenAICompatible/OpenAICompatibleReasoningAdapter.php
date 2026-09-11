@@ -3,6 +3,10 @@
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAICompatible;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageAssembler;
+use Cognesy\Polyglot\Inference\Assembly\ThinkTagMessageNormalizer;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
@@ -20,22 +24,23 @@ class OpenAICompatibleReasoningAdapter extends OpenAIResponseAdapter
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $data = $this->decodeResponseData($response->body());
         $inferenceResponse = new InferenceResponse(
-            content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
-            reasoningContent: $this->makeReasoningContent($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $response,
+            message: AssistantMessageAssembler::fromParts($this->makeAssistantParts($data))->message(),
         );
 
-        return $inferenceResponse->withReasoningContentFallbackFromContent();
+        return $inferenceResponse->withMessage(
+            ThinkTagMessageNormalizer::normalize($inferenceResponse->message()),
+        );
     }
 
     #[\Override]
     protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
-            contentDelta: $this->makeContentDelta($data),
-            reasoningContentDelta: $this->makeReasoningContentDelta($data),
+            messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withReasoningDelta('openai:reasoning:0', $this->makeReasoningContentDelta($data))
+                ->withTextDelta('openai:text:0', $this->makeContentDelta($data)),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             // Inherits OpenAIResponseAdapter::hasUsageData() — these providers use
             // the OpenAI `usage` key. See the note there.
@@ -61,6 +66,17 @@ class OpenAICompatibleReasoningAdapter extends OpenAIResponseAdapter
         }
 
         return $this->extractReasoning($delta);
+    }
+
+    #[\Override]
+    protected function makeAssistantParts(array $data): ContentParts
+    {
+        $parts = ContentParts::empty();
+        $reasoning = $this->makeReasoningContent($data);
+        if ($reasoning !== '') {
+            $parts = $parts->add(ContentPart::reasoning($reasoning));
+        }
+        return $parts->append(parent::makeAssistantParts($data));
     }
 
     /**

@@ -51,7 +51,7 @@ $summary = Inference::using('openai')
         ['role' => 'user', 'content' => $report],
         ['role' => 'user', 'content' => 'Concise summary of project report in 2-3 sentences:'],
     ]))
-    ->get();
+    ->get()->content()->toString();
 
 dump($summary);
 

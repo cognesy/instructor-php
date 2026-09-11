@@ -266,15 +266,17 @@ AgentCtrl::codex()
     ->execute('Install dependencies and run the test suite.');
 ```
 
-### `fullAuto(bool $enabled = true): static`
+### `approveForMe(bool $enabled = true): static`
 
-Enable full-auto mode, which combines workspace-write sandbox access with automatic on-failure approval. This is enabled by default for headless execution:
+Route approval requests through automatic review with workspace-write sandbox access. This is enabled by default for headless execution:
 
 ```php
 AgentCtrl::codex()
-    ->fullAuto()
+    ->approveForMe()
     ->execute('Refactor the database layer.');
 ```
+
+This mode is mutually exclusive with `withSandbox()` and `dangerouslyBypass()`.
 
 ### `dangerouslyBypass(bool $enabled = true): static`
 
@@ -333,8 +335,7 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 
 $response = AgentCtrl::codex()
     ->withModel('o4-mini')
-    ->withSandbox(SandboxMode::WorkspaceWrite)
-    ->fullAuto()
+    ->approveForMe()
     ->withTimeout(300)
     ->inDirectory('/projects/my-app')
     ->withImages(['/tmp/design-spec.png'])

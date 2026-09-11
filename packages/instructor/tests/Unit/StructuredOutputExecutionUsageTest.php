@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Instructor\Data\StructuredOutputAttemptList;
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
@@ -55,7 +56,7 @@ it('counts usage from failed attempts recorded via withFailedAttempt', function 
         request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
     ))->withFailedAttempt(
         inferenceResponse: new PgInferenceResponse(
-            content: 'bad json',
+            message: Message::asAssistant('bad json'),
             finishReason: 'error',
             usage: new PgUsage(inputTokens: 4, outputTokens: 6),
         ),

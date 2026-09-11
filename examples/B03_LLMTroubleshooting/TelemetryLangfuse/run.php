@@ -89,12 +89,12 @@ $response = Inference::fromRuntime($runtime)
 $hub->flush();
 
 echo "Response:\n";
-echo $response->content() . "\n\n";
+echo $response->message()->content()->toString() . "\n\n";
 if ($response->usage() !== null) {
     echo "Tokens: {$response->usage()->inputTokens} in / {$response->usage()->outputTokens} out\n";
 }
 echo "Telemetry: flushed to Langfuse\n";
 
-assert($response->content() !== '');
+assert($response->message()->content()->toString() !== '');
 ?>
 ```

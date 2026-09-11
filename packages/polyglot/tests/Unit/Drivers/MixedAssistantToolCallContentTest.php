@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Tests\Unit\Drivers;
 
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
@@ -20,9 +21,9 @@ final class MixedAssistantToolCallContentTest extends TestCase
         return Messages::fromMessages([
             new Message(
                 role: 'assistant',
-                content: 'Let me check.',
-                toolCalls: new ToolCalls(
-                    new ToolCall('search', ['q' => 'hello'], 'call_1'),
+                parts: new ContentParts(
+                    ContentPart::text('Let me check.'),
+                    ContentPart::toolCall(new ToolCall('search', ['q' => 'hello'], 'call_1')),
                 ),
             ),
         ]);

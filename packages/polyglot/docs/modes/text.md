@@ -20,7 +20,8 @@ $text = Inference::using('openai')
     ->get();
 ```
 
-The `get()` method returns the raw string content from the model's response. There is no JSON parsing, no schema validation -- just the text the model produced.
+The `get()` method returns the assistant `Message`. Use
+`$message->content()->toString()` when only its text projection is needed.
 
 ## When to Use Text Mode
 
@@ -86,11 +87,12 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 
-Each delta contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
+Each delta contains ordered `messageChunks`; `textDelta()` projects the next text
+fragment. Streaming works with all providers that support it.
 
 ## Accessing the Full Response
 
@@ -106,7 +108,8 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is photosynthesis?'))
     ->response();
 
-$text = $response->content();
+$message = $response->message();
+$text = $message->content()->toString();
 $usage = $response->usage();
 $reason = $response->finishReason();
 ```

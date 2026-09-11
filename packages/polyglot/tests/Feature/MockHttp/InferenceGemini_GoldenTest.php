@@ -48,9 +48,9 @@ it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
     $final = $stream->final();
 
     expect($final)->not->toBeNull();
-    expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
-    expect($final->hasToolCalls())->toBeTrue();
-    $tool = $final->toolCalls()->first();
+    expect(str_starts_with($final->message()->content()->toString(), 'Hello'))->toBeTrue();
+    expect($final->message()->hasToolCalls())->toBeTrue();
+    $tool = $final->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });

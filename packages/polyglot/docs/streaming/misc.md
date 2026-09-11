@@ -20,7 +20,7 @@ $text = Inference::using('openai')
     ->withMessages(Messages::fromString('Write three short lines about queues.'))
     ->stream()
     ->reduce(
-        fn(string $carry, $delta) => $carry . $delta->contentDelta,
+        fn(string $carry, $delta) => $carry . $delta->messageChunks->textDelta(),
         '',
     );
 
@@ -44,7 +44,7 @@ $stream = Inference::using('openai')
     ->withMessages(Messages::fromString('List five fun facts about PHP.'))
     ->stream();
 
-foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
+foreach ($stream->map(fn($delta) => strtoupper($delta->messageChunks->textDelta())) as $chunk) {
     echo $chunk;
 }
 ```
@@ -65,8 +65,8 @@ $stream = Inference::using('openai')
     ->stream();
 
 // Only process deltas that contain digits
-foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
-    echo $delta->contentDelta;
+foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->messageChunks->textDelta())) as $delta) {
+    echo $delta->messageChunks->textDelta();
 }
 ```
 
@@ -120,7 +120,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 
 $usage = $stream->usage();

@@ -76,8 +76,8 @@ Available request methods:
 Shortcuts execute the request and return results directly:
 
 ```php
-// Get the text content
-$text = $inference->withMessages(Messages::fromString('Hello'))->get();
+// Get the assistant message
+$message = $inference->withMessages(Messages::fromString('Hello'))->get();
 
 // Get the full response object
 $response = $inference->withMessages(Messages::fromString('Hello'))->response();
@@ -104,30 +104,31 @@ For lower-level control, `create()` returns a `PendingInference` without trigger
 $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 
 // Then choose how to consume it
-$text = $pending->get();
+$message = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
 ```
 
 ### Working with Responses
 
-The `InferenceResponse` object provides access to all parts of the provider's response:
+The `InferenceResponse` envelope carries the assistant message and execution metadata:
 
 ```php
 $response = $inference->withMessages(Messages::fromString('Hello'))->response();
 
-$response->content();          // string -- the text content
-$response->reasoningContent(); // string -- reasoning/thinking content (if supported)
-$response->toolCalls();        // ToolCalls -- tool call collection
+$message = $response->message(); // Message -- the complete ordered assistant turn
+$message->parts();               // ContentParts -- text, reasoning, and tool blocks in order
+$message->content()->toString(); // string -- text projection
+$message->reasoningContent();    // string -- reasoning projection
+$message->toolCalls();            // ToolCalls -- tool-call projection
 $response->usage();            // InferenceUsage -- token counts
 $response->finishReason();     // InferenceFinishReason enum
 $response->responseData();     // HttpResponse -- raw provider response
 $response->isPartial();        // bool -- true for partial streaming responses
 
-// Convenience checks
-$response->hasContent();
-$response->hasReasoningContent();
-$response->hasToolCalls();
+// Message checks
+$message->isEmpty();
+$message->hasToolCalls();
 $response->hasFinishReason();
 
 // JSON extraction
@@ -144,10 +145,12 @@ $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 
 // Iterate over visible deltas
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;          // incremental text
-    echo $delta->reasoningContentDelta; // incremental reasoning (if any)
-    echo $delta->toolName;              // tool name (if starting a tool call)
-    echo $delta->toolArgs;              // tool arguments fragment
+    echo $delta->messageChunks->textDelta();      // incremental text projection
+    echo $delta->messageChunks->reasoningDelta(); // incremental reasoning projection
+
+    foreach ($delta->messageChunks as $chunk) {
+        // Inspect ordered block starts, deltas, and completed blocks.
+    }
 }
 
 // Get the final assembled response
@@ -155,13 +158,13 @@ $finalResponse = $stream->final();
 
 // Register a callback for each delta
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 });
 
 // Functional-style processing
-$texts = $stream->map(fn($d) => $d->contentDelta);
-$full = $stream->reduce(fn($carry, $d) => $carry . $d->contentDelta, '');
-$toolOnly = $stream->filter(fn($d) => $d->toolName !== '');
+$texts = $stream->map(fn($d) => $d->messageChunks->textDelta());
+$full = $stream->reduce(fn($carry, $d) => $carry . $d->messageChunks->textDelta(), '');
+$nonEmpty = $stream->filter(fn($d) => !$d->messageChunks->isEmpty());
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
@@ -259,9 +262,9 @@ $response->toValuesArray(); // array -- raw float arrays
 Custom inference drivers are registered through the `InferenceDriverRegistry` and passed to the runtime:
 
 ```php
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
-$registry = BundledInferenceDrivers::registry()
+$registry = InferenceDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
@@ -272,9 +275,9 @@ $inference = Inference::using('my-provider', drivers: $registry);
 Custom embeddings drivers are registered through the `EmbeddingsDriverRegistry` and passed to the runtime:
 
 ```php
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);

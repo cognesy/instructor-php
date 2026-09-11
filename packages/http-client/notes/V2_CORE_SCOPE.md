@@ -7,7 +7,7 @@ This file defines the intended minimal core for v2, based on current in-repo usa
 - `HttpClient` + `HttpClientRuntime` + `HttpClientBuilder`
 - `CanSendHttpRequests`
 - `CanHandleHttpRequest`
-- `HttpDriverRegistry` + `BundledHttpDrivers`
+- `HttpDriverRegistry` + `HttpDriverRegistry`
 - Core drivers: `curl`, `guzzle`, `symfony`
 - Streaming via `HttpResponse` and request `withStreaming(true)`
 - Mock/testing path (`MockHttpDriver`, mock response factory)

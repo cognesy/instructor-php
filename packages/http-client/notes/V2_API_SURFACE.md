@@ -7,7 +7,7 @@ This document tracks public surface pruning decisions for `packages/http-client`
 - `HttpClient` request flow: `default()`, `fromConfig()`, `send()`, `withMiddleware()`, `withoutMiddleware()`
 - `HttpClientRuntime`
 - `HttpClientBuilder` setup: `withConfig()`, `withDsn()`, `withDriver()`, `withDrivers()`, `withClientInstance()`, `withMock()`, `withMiddleware()`, `withEventBus()`, `create()`, `createRuntime()`
-- Driver registry: `CanProvideHttpDrivers`, `HttpDriverRegistry`, `BundledHttpDrivers`
+- Driver registry: `CanProvideHttpDrivers`, `HttpDriverRegistry`, `HttpDriverRegistry`
 - Core data objects: `HttpRequest`, `HttpResponse`
 - Core collections: `HttpRequestList`, `HttpResponseList`
 - Core middleware runtime: `MiddlewareStack`

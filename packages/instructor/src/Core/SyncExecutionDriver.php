@@ -7,6 +7,7 @@ use Cognesy\Instructor\Contracts\CanDriveExecution;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
+use Cognesy\Messages\Content;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
@@ -70,14 +71,17 @@ final class SyncExecutionDriver implements CanDriveExecution
     }
 
     private function normalizeContent(InferenceResponse $response, OutputMode $mode): InferenceResponse {
-        return $response->withContent(match ($mode) {
-            OutputMode::Text => $response->content(),
-            OutputMode::Tools => $response->toolCalls()->first()?->argsAsJson()
-                ?: $response->content()
+        $message = $response->message();
+        $content = match ($mode) {
+            OutputMode::Text => $message->content()->toString(),
+            OutputMode::Tools => $message->toolCalls()->first()?->argsAsJson()
+                ?: $message->content()->toString()
                     ?: '',
-            default => ($extracted = JsonExtractor::first($response->content())) !== null
+            default => ($extracted = JsonExtractor::first($message->content()->toString())) !== null
                 ? Json::encode($extracted)
-                : $response->content(),
-        });
+                : $message->content()->toString(),
+        };
+
+        return $response->withMessage($message->withContent(Content::text($content)));
     }
 }

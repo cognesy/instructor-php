@@ -31,7 +31,7 @@ it('materializes cached context and live task through an injected request materi
                 return new PendingInference(
                     execution: InferenceExecution::fromRequest($request),
                     driver: new \Cognesy\Instructor\Tests\Support\FakeInferenceDriver([
-                        new InferenceResponse(content: '{"name":"Switched"}'),
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Switched"}')),
                     ]),
                     eventDispatcher: new EventDispatcher(),
                 );

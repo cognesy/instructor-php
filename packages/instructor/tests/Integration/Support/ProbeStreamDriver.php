@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Tests\Integration\Support;
 
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -24,7 +23,7 @@ class ProbeStreamDriver implements CanProcessInferenceRequest
 
     public function makeResponseFor(InferenceRequest $request): InferenceResponse {
         $this->responseCalls++;
-        return $this->syncResponse ?? new InferenceResponse(content: '');
+        return $this->syncResponse ?? new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''));
     }
 
     public function makeStreamDeltasFor(InferenceRequest $request): iterable {
@@ -38,8 +37,4 @@ class ProbeStreamDriver implements CanProcessInferenceRequest
         }
     }
 
-    public function capabilities(?string $model = null): DriverCapabilities
-    {
-        return new DriverCapabilities();
-    }
 }

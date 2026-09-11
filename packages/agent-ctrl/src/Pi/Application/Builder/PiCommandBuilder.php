@@ -25,7 +25,7 @@ final class PiCommandBuilder
     {
         $this->validate($request);
 
-        $argv = $this->baseArgv(['pi']);
+        $argv = $this->baseArgv(['pi', '--print']);
 
         $argv = $this->appendMode($argv, $request->outputMode());
         $argv = $this->appendModel($argv, $request->model());
@@ -38,7 +38,7 @@ final class PiCommandBuilder
         $argv = $this->appendSkills($argv, $request->skills(), $request->noSkills());
         $argv = $this->appendApiKey($argv, $request->apiKey());
         $argv = $this->appendSessionFlags($argv, $request);
-        $argv = $this->appendVerbose($argv, $request->verbose());
+        $argv = $this->appendFlag($argv, '--verbose', $request->verbose());
 
         // @file arguments go before the prompt
         $argv = $this->appendFiles($argv, $request->files());
@@ -211,15 +211,6 @@ final class PiCommandBuilder
         }
 
         return $argv;
-    }
-
-    private function appendVerbose(Argv $argv, bool $verbose): Argv
-    {
-        if (!$verbose) {
-            return $argv;
-        }
-
-        return $argv->with('--verbose');
     }
 
     /**

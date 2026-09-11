@@ -13,13 +13,10 @@ final readonly class CredentialStorage
 {
     public function __construct(private TellPaths $paths) {}
 
-    public function ensureConfig(): string {
-        $this->ensurePrivateDirectories(
-            $this->paths->home,
-            $this->paths->configDirectory,
-        );
+    public function ensureHome(): string {
+        $this->ensurePrivateDirectories($this->paths->home);
 
-        return $this->paths->configDirectory;
+        return $this->paths->home;
     }
 
     private function ensurePrivateDirectories(string ...$directories): void {

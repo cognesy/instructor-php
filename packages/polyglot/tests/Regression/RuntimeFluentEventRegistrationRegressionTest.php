@@ -20,7 +20,9 @@ it('allows fluent event registration on inference runtime', function () {
     $tapped = 0;
 
     $runtime = (new InferenceRuntime(
-        driver: new FakeInferenceDriver(responses: [new InferenceResponse(content: 'hello')]),
+        driver: new FakeInferenceDriver(responses: [
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hello')),
+        ]),
         events: $events,
     ))
         ->onEvent(InferenceCompleted::class, static function () use (&$completed): void {

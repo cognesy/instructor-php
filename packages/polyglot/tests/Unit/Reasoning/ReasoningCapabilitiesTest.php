@@ -62,3 +62,33 @@ it('treats unknown capabilities as typed unsupported', function () {
     expect(ReasoningCapabilities::unknown()->supports(ReasoningSelection::enabled()))->toBeFalse()
         ->and(ReasoningCapabilities::unknown()->supports(ReasoningSelection::providerDefault()))->toBeTrue();
 });
+
+it('round-trips a complete catalog reasoning record', function () {
+    $record = [
+        'selections' => ['disabled', 'effort', 'budget', 'adaptive'],
+        'efforts' => [
+            ['requested' => 'low', 'provider' => 'low'],
+            [
+                'requested' => 'medium',
+                'provider' => 'medium',
+                'effective' => 'high',
+                'quality' => 'lossy',
+                'documented' => false,
+            ],
+        ],
+        'budget' => ['min' => 1024, 'max' => 8192],
+        'default' => 'adaptive',
+        'contentVisible' => true,
+        'tokensVisible' => true,
+    ];
+
+    expect(ReasoningCapabilities::fromArray($record)->toArray())->toBe($record)
+        ->and(ReasoningCapabilities::fromArray([])->toArray())->toBe([]);
+});
+
+it('rejects invalid catalog reasoning values', function () {
+    ReasoningCapabilities::fromArray([
+        'selections' => ['effort'],
+        'efforts' => [['requested' => 'medium', 'provider' => 'medium', 'quality' => 'guess']],
+    ]);
+})->throws(InvalidArgumentException::class, 'Invalid reasoning mapping quality');

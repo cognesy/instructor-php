@@ -52,15 +52,13 @@ class OpenResponsesMessageFormatTest extends TestCase
         $messages = [
             [
                 'role' => 'assistant',
-                'content' => '',
-                '_metadata' => [
-                    'tool_calls' => [
-                        [
+                'parts' => [
+                    [
+                        'type' => 'tool_call',
+                        'tool_call' => [
                             'id' => 'call_123',
-                            'function' => [
-                                'name' => 'get_weather',
-                                'arguments' => '{"location": "NYC"}',
-                            ],
+                            'name' => 'get_weather',
+                            'arguments' => '{"location": "NYC"}',
                         ],
                     ],
                 ],
@@ -73,7 +71,7 @@ class OpenResponsesMessageFormatTest extends TestCase
         $this->assertEquals('function_call', $result[0]['type']);
         $this->assertEquals('call_123', $result[0]['call_id']);
         $this->assertEquals('get_weather', $result[0]['name']);
-        $this->assertEquals('{"location":"NYC"}', $result[0]['arguments']);
+        $this->assertEquals('{"location": "NYC"}', $result[0]['arguments']);
     }
 
     public function test_converts_tool_call_with_content_to_multiple_items(): void
@@ -81,15 +79,14 @@ class OpenResponsesMessageFormatTest extends TestCase
         $messages = [
             [
                 'role' => 'assistant',
-                'content' => 'Let me check the weather.',
-                '_metadata' => [
-                    'tool_calls' => [
-                        [
+                'parts' => [
+                    ['type' => 'text', 'text' => 'Let me check the weather.'],
+                    [
+                        'type' => 'tool_call',
+                        'tool_call' => [
                             'id' => 'call_123',
-                            'function' => [
-                                'name' => 'get_weather',
-                                'arguments' => '{}',
-                            ],
+                            'name' => 'get_weather',
+                            'arguments' => '{}',
                         ],
                     ],
                 ],
@@ -111,11 +108,15 @@ class OpenResponsesMessageFormatTest extends TestCase
         $messages = [
             [
                 'role' => 'tool',
-                'content' => '{"temperature": 72}',
-                'tool_result' => [
-                    'content' => '{"temperature": 72}',
-                    'call_id' => 'call_123',
-                    'tool_name' => 'get_weather',
+                'parts' => [
+                    [
+                        'type' => 'tool_result',
+                        'tool_result' => [
+                            'content' => '{"temperature": 72}',
+                            'call_id' => 'call_123',
+                            'tool_name' => 'get_weather',
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -133,22 +134,21 @@ class OpenResponsesMessageFormatTest extends TestCase
         $messages = [
             [
                 'role' => 'assistant',
-                'content' => '',
-                '_metadata' => [
-                    'tool_calls' => [
-                        [
+                'parts' => [
+                    [
+                        'type' => 'tool_call',
+                        'tool_call' => [
                             'id' => 'call_1',
-                            'function' => [
-                                'name' => 'get_weather',
-                                'arguments' => '{"location": "NYC"}',
-                            ],
+                            'name' => 'get_weather',
+                            'arguments' => '{"location": "NYC"}',
                         ],
-                        [
+                    ],
+                    [
+                        'type' => 'tool_call',
+                        'tool_call' => [
                             'id' => 'call_2',
-                            'function' => [
-                                'name' => 'get_time',
-                                'arguments' => '{"timezone": "EST"}',
-                            ],
+                            'name' => 'get_time',
+                            'arguments' => '{"timezone": "EST"}',
                         ],
                     ],
                 ],
@@ -205,26 +205,28 @@ class OpenResponsesMessageFormatTest extends TestCase
             ['role' => 'user', 'content' => 'What is the weather in NYC?'],
             [
                 'role' => 'assistant',
-                'content' => '',
-                '_metadata' => [
-                    'tool_calls' => [
-                        [
+                'parts' => [
+                    [
+                        'type' => 'tool_call',
+                        'tool_call' => [
                             'id' => 'call_weather',
-                            'function' => [
-                                'name' => 'get_weather',
-                                'arguments' => '{"location": "NYC"}',
-                            ],
+                            'name' => 'get_weather',
+                            'arguments' => '{"location": "NYC"}',
                         ],
                     ],
                 ],
             ],
             [
                 'role' => 'tool',
-                'content' => '{"temperature": 72, "condition": "sunny"}',
-                'tool_result' => [
-                    'content' => '{"temperature": 72, "condition": "sunny"}',
-                    'call_id' => 'call_weather',
-                    'tool_name' => 'get_weather',
+                'parts' => [
+                    [
+                        'type' => 'tool_result',
+                        'tool_result' => [
+                            'content' => '{"temperature": 72, "condition": "sunny"}',
+                            'call_id' => 'call_weather',
+                            'tool_name' => 'get_weather',
+                        ],
+                    ],
                 ],
             ],
         ];

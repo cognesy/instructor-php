@@ -33,7 +33,7 @@ class SO_Constructor_User {
 
 it('deserializes via public properties', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"Alice","age":30}')
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Alice","age":30}'))
     ]);
 
     $user = (new StructuredOutput)
@@ -51,7 +51,7 @@ it('deserializes via public properties', function () {
 
 it('deserializes via setters', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"Bob","age":28}')
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Bob","age":28}'))
     ]);
 
     $user = (new StructuredOutput)
@@ -69,7 +69,7 @@ it('deserializes via setters', function () {
 
 it('deserializes via constructor args', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"Cara","age":33}')
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Cara","age":33}'))
     ]);
 
     $user = (new StructuredOutput)

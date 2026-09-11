@@ -23,7 +23,7 @@ enum SmokeStatus: string { case Active = 'active'; case Inactive = 'inactive'; }
 // 1) Sync: generate response PHP object using provided response class
 it('sync: deserializes object into provided class', function () {
     $json = '{"age":30,"name":"Alex"}';
-    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
+    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json)) ]);
 
     $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json)))
         ->withMessages('ignored')
@@ -38,9 +38,9 @@ it('sync: deserializes object into provided class', function () {
 // 2) Streaming: should receive a sequence of gradually completed PHP object
 it('stream: yields partial updates of object progressively', function () {
     $stream = [
-        new PartialInferenceDelta(contentDelta: '{"age":3'),
-        new PartialInferenceDelta(contentDelta: '0,"name":"A'),
-        new PartialInferenceDelta(contentDelta: 'lex"}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"age":3')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '0,"name":"A')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'lex"}')),
     ];
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
 
@@ -119,7 +119,7 @@ it('scalars: boolean, float and enum deserialize correctly', function () {
 // 4) Sequence::of(class) as response model - sync and stream
 it('sequence: sync deserializes list of items', function () {
     $json = '{"list":[{"title":"A"},{"title":"B"}]}';
-    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
+    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json)) ]);
 
     /** @var \Cognesy\Instructor\Extras\Sequence\Sequence $seq */
     $seq = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json)))
@@ -171,7 +171,7 @@ class RuntimeFactoryUser { public int $age; public string $name; }
 
 it('tools mode: sync uses tool call args as JSON', function () {
     $tool = new ToolCall('extract', ['age' => 25]);
-    $resp = new InferenceResponse(content: '', finishReason: 'stop', toolCalls: new ToolCalls($tool));
+    $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($tool)), finishReason: 'stop');
     $driver = new FakeInferenceDriver(responses: [ $resp ]);
 
     $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Tools)))
@@ -185,8 +185,9 @@ it('tools mode: sync uses tool call args as JSON', function () {
 
 it('tools mode: streaming assembles args from tool deltas', function () {
     $stream = [
-        new PartialInferenceDelta(toolName: 'extract', toolArgs: '{"age":'),
-        new PartialInferenceDelta(toolArgs: '42}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'extract', name: 'extract', arguments: '{"age":')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withToolCallDelta('test:tool:extract', arguments: '42}')),
     ];
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
 

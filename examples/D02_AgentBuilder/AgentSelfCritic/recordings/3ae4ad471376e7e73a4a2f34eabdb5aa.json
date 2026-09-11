@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Read composer.json and phpunit.xml directly. Identify the testing framework and quote the shortest fragments that prove it.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. By default, output is limited to 200 lines or 32 KiB, whichever comes first.\\nSet larger limit and max_bytes values when a larger window or the complete file is justified.\\nWhen more content exists, the result includes the exact offset or bash command needed to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 200; no fixed upper limit)\"},\"max_bytes\":{\"type\":\"integer\",\"description\":\"Maximum output bytes (default: 32768; increase explicitly for a larger or full-file read)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"Create a new file with the provided content. The parent directory must already exist.\\nRefuses to overwrite different content; retrying identical content succeeds as a no-op.\\n\\nExamples:\\n- path=\\\"config.json\\\", content='{\\\"debug\\\": true}'\\n- path=\\\"src\\\/NewClass.php\\\", content=\\\"<?php\\\\n\\\\nclass NewClass {}\\\\n\\\"\\n\\nUse the edit tool to change an existing file. The new file is streamed and committed atomically.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path of a new file; its parent directory must already exist\"},\"content\":{\"type\":\"string\",\"description\":\"The content to write to the file\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_file\",\"description\":\"Edit a file by replacing exact string matches. old_string must match exactly including whitespace.\\n\\nExamples:\\n- Fix typo: old_string=\\\"teh\\\", new_string=\\\"the\\\"\\n- Change function: old_string=\\\"function old()\\\", new_string=\\\"function new()\\\"\\n- Update config: old_string='\\\"debug\\\": false', new_string='\\\"debug\\\": true'\\n- Rename all: old_string=\\\"OldClass\\\", new_string=\\\"NewClass\\\", replace_all=true\\n\\nIMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.\\nThe file is processed as a bounded stream and replaced atomically only after match validation succeeds.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to edit\"},\"old_string\":{\"type\":\"string\",\"description\":\"Exact string to find (include whitespace). Must be unique unless using replace_all\"},\"new_string\":{\"type\":\"string\",\"description\":\"Replacement string. Can be empty to delete old_string\"},\"replace_all\":{\"type\":\"boolean\",\"description\":\"If true, replace all occurrences. If false (default), old_string must be unique.\"}},\"required\":[\"path\",\"old_string\",\"new_string\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:49:18 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1085"
+            ],
+            "cf-ray": [
+                "a394bb4aefae95a1-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "598"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999967"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_ea7a900c9d154077aedbbed7a225d7c9"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpMT92IeE6bs27a1k2LXZcpx0V3j\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109357,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_JiiRfjFRf1HlNXNu9PhBZPXJ\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"read_file\",\n              \"arguments\": \"{\\\"path\\\":\\\"composer.json\\\",\\\"offset\\\":0,\\\"limit\\\":200}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 716,\n    \"completion_tokens\": 26,\n    \"total_tokens\": 742,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

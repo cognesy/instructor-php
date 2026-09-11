@@ -91,12 +91,13 @@ it('persists and resumes native-agent sessions across boots with the file adapte
                 sessionId: $sessionId,
             ));
 
-            $messages = $session->state()->messages()->toArray();
+            $messages = $session->state()->messages();
+            $messageList = $messages->all();
 
             expect($session->version())->toBe(3)
                 ->and($messages)->toHaveCount(4)
-                ->and($messages[0]['content'] ?? null)->toBe('First prompt')
-                ->and($messages[2]['content'] ?? null)->toBe('Second prompt');
+                ->and($messageList[0]->content()->toString())->toBe('First prompt')
+                ->and($messageList[2]->content()->toString())->toBe('Second prompt');
         },
         instructorConfig: sessionTestConfig([
             'sessions' => [

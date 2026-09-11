@@ -70,17 +70,17 @@ final readonly class StructuredOutputResponse
 
     public function content(): string
     {
-        return $this->inferenceResponse->content();
+        return $this->inferenceResponse->message()->content()->toString();
     }
 
     public function reasoningContent(): string
     {
-        return $this->inferenceResponse->reasoningContent();
+        return $this->inferenceResponse->message()->reasoningContent();
     }
 
     public function toolCalls(): ToolCalls
     {
-        return $this->inferenceResponse->toolCalls();
+        return $this->inferenceResponse->message()->toolCalls();
     }
 
     public function toolArgsSnapshot(): string

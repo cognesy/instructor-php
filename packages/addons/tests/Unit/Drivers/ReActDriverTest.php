@@ -48,18 +48,18 @@ function makeReActDriverForDriverTest(FakeInferenceDriver $driver, bool $finalVi
 it('runs a ReAct call then final answer', function () {
     $driver = new FakeInferenceDriver([
         // step 1: call tool
-        new InferenceResponse(content: json_encode([
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'I will add numbers',
             'type' => 'call_tool',
             'tool' => '_react_add',
             'args' => ['a' => 2, 'b' => 3]
-        ])),
+        ]))),
         // step 2: final
-        new InferenceResponse(content: json_encode([
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'I have the result',
             'type' => 'final_answer',
             'answer' => '5'
-        ])),
+        ]))),
     ]);
 
     $react = makeReActDriverForDriverTest($driver);
@@ -82,17 +82,17 @@ it('runs a ReAct call then final answer', function () {
 
 it('surfaces tool arg validation errors as observation', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: json_encode([
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'I will add numbers',
             'type' => 'call_tool',
             'tool' => '_react_add',
             'args' => ['a' => 2] // missing b
-        ])),
-        new InferenceResponse(content: json_encode([
+        ]))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'I will stop now',
             'type' => 'final_answer',
             'answer' => 'error'
-        ])),
+        ]))),
     ]);
 
     $react = makeReActDriverForDriverTest($driver);
@@ -120,13 +120,13 @@ it('surfaces tool arg validation errors as observation', function () {
 
 it('can finalize via Inference when configured', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: json_encode([
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'I have the result already',
             'type' => 'final_answer',
             'answer' => 'stub'
-        ])),
+        ]))),
         // final via inference
-        new InferenceResponse(content: 'The final answer is 42'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('The final answer is 42')),
     ]);
 
     $react = makeReActDriverForDriverTest($driver, finalViaInference: true);

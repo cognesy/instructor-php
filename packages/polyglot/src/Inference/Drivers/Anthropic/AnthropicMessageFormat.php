@@ -8,9 +8,9 @@ use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
+use Cognesy\Polyglot\Inference\Data\ReplayEnvelope;
 use Cognesy\Polyglot\Inference\Drivers\MessageMapper;
 use Cognesy\Utils\Str;
 
@@ -35,11 +35,85 @@ class AnthropicMessageFormat implements CanMapMessages
 
     private function mapMessage(Message $message): array
     {
-        return match ($message->type()) {
-            MessageType::AssistantToolCalls => $this->toNativeToolCall($message),
-            MessageType::ToolResult => $this->toNativeToolResult($message),
+        return match (true) {
+            $message->isAssistant() => $this->toNativeAssistantMessage($message),
+            $message->type() === MessageType::ToolResult => $this->toNativeToolResult($message),
             default => $this->toNativeTextMessage($message),
         };
+    }
+
+    private function toNativeAssistantMessage(Message $message): array
+    {
+        $replay = ReplayEnvelope::fromMessage($message, AnthropicReplay::OWNER);
+        $content = [];
+        foreach ($message->parts() as $position => $part) {
+            $native = $this->assistantPartToNative($part, AnthropicReplay::metadata($replay, $position, $part));
+            if ($native !== null) {
+                $content[] = $native;
+            }
+        }
+        return [
+            'role' => 'assistant',
+            'content' => $content,
+        ];
+    }
+
+    /** @param null|array{kind:string,signature?:string,data?:string} $replay */
+    private function assistantPartToNative(ContentPart $part, ?array $replay): ?array
+    {
+        return match (true) {
+            $part->isTextPart() && trim($part->toString()) === '' => null,
+            $part->isTextPart() => $this->assistantTextPartToNative($part),
+            $part->isReasoningPart() => $this->reasoningPartToNative($part, $replay),
+            $part->isToolCallPart() => $this->toolCallPartToNative($part),
+            default => null,
+        };
+    }
+
+    private function assistantTextPartToNative(ContentPart $part): array
+    {
+        $native = [
+            'type' => 'text',
+            'text' => $part->toString(),
+        ];
+        if ($part->has('cache_control')) {
+            $native['cache_control'] = $part->get('cache_control');
+        }
+        return $native;
+    }
+
+    /** @param null|array{kind:string,signature?:string,data?:string} $replay */
+    private function reasoningPartToNative(ContentPart $part, ?array $replay): ?array
+    {
+        if (($replay['kind'] ?? '') === 'redacted_thinking' && isset($replay['data'])) {
+            return [
+                'type' => 'redacted_thinking',
+                'data' => $replay['data'],
+            ];
+        }
+        if (($replay['kind'] ?? '') !== 'thinking' || !isset($replay['signature'])) {
+            return null;
+        }
+        return [
+            'type' => 'thinking',
+            'thinking' => $part->reasoningText(),
+            'signature' => $replay['signature'],
+        ];
+    }
+
+    private function toolCallPartToNative(ContentPart $part): ?array
+    {
+        $toolCall = $part->toToolCall();
+        if ($toolCall === null) {
+            return null;
+        }
+        return array_filter([
+            'type' => 'tool_use',
+            'id' => $toolCall->idString(),
+            'name' => $toolCall->name(),
+            'input' => $toolCall->arguments(),
+            'cache_control' => $part->get('cache_control'),
+        ], static fn(mixed $value): bool => $value !== '' && $value !== null);
     }
 
     private function toNativeTextMessage(Message $message): array
@@ -63,9 +137,12 @@ class AnthropicMessageFormat implements CanMapMessages
 
         $transformed = [];
         foreach ($content->partsList()->all() as $contentPart) {
+            if ($contentPart->isTextPart() && trim($contentPart->toString()) === '') {
+                continue;
+            }
             $part = $this->contentPartToNative($contentPart);
             if ($contentPart->has('cache_control')) {
-                $part['cache_control'] = ['type' => 'ephemeral'];
+                $part['cache_control'] = $contentPart->get('cache_control');
             }
             $transformed[] = $part;
         }
@@ -111,35 +188,6 @@ class AnthropicMessageFormat implements CanMapMessages
         ];
     }
 
-    private function toNativeToolCall(Message $message): array
-    {
-        $content = [];
-        $textContent = $this->toNativeContent($message->content());
-        $content = match (true) {
-            $textContent === '' => $content,
-            is_string($textContent) => [[
-                'type' => 'text',
-                'text' => $textContent,
-            ]],
-            default => $textContent,
-        };
-
-        return [
-            'role' => 'assistant',
-            'content' => [
-                ...$content,
-                ...$message->toolCalls()->map(
-                    fn (ToolCall $tc) => array_filter([
-                        'type' => 'tool_use',
-                        'id' => $tc->idString(),
-                        'name' => $tc->name(),
-                        'input' => $tc->arguments(),
-                    ], static fn (mixed $value): bool => (bool) $value),
-                ),
-            ],
-        ];
-    }
-
     private function toNativeToolResult(Message $message): array
     {
         return [
@@ -147,7 +195,8 @@ class AnthropicMessageFormat implements CanMapMessages
             'content' => [array_filter([
                 'type' => 'tool_result',
                 'tool_use_id' => $message->toolResult()->callIdString(),
-                'content' => $message->content()->toString(),
+                'content' => $message->toolResult()->content(),
+                'cache_control' => $message->parts()->filter(static fn(ContentPart $part): bool => $part->isToolResultPart())->first()?->get('cache_control'),
             ], static fn (mixed $value): bool => (bool) $value)],
         ];
     }

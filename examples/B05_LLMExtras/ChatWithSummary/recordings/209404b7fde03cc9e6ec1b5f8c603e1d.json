@@ -16,16 +16,16 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:40:15 GMT"
+                "Fri, 11 Sep 2026 06:46:28 GMT"
             ],
             "content-type": [
                 "application\/json"
             ],
             "content-length": [
-                "1005"
+                "947"
             ],
             "cf-ray": [
-                "a16ead430b8cf8e7-WAW"
+                "a394b728a8590d20-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "929"
+                "501"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -78,15 +78,13 @@
                 "13ms"
             ],
             "x-request-id": [
-                "req_43d0b484a98c46e7b71907a654406c8b"
+                "req_fca90db98fac4da795c272bd50181727"
             ],
-            "set-cookie": [
-                "__cf_bm=xc6mgz4WyYfbtaV2KpIG5gS.7P5TWEhQlTktqo2FuUM-1783341614.5666924-1.0.1.1-VdRfN_U8jGbVoxnxlTpO2ReaKbCRzU_JmDqOo2UvXtE0RcSg514PGkwUt.PKkoJFnmQgr99NueDsXxnfli3R0zSItzuVrzIQ0u_faFVbPyZXUL7V1tkOyl3hkvk5UyMo; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:15 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-DycuMGkk4wJbxXLrbGompRmHW8eK0\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341614,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Use Challenger Sale: diagnose the customer\u2019s hidden cost of doing nothing, teach them a new way to solve it, and tailor the message to the buyer\u2019s specific business pain so you create urgency instead of just pitching features.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 756,\n    \"completion_tokens\": 47,\n    \"total_tokens\": 803,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMpJk0ZePs5q4NuIWsiPzQhmxohD4\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109188,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Use the Challenger Sale: teach buyers a new business insight, tailor it to their specific pain points, and take control of the next step instead of just \u201cfollowing up.\u201d\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 756,\n    \"completion_tokens\": 37,\n    \"total_tokens\": 793,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

@@ -34,10 +34,13 @@ Minimal example:
 
 ```php
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 $driver = new FakeInferenceDriver(
-    responses: [new InferenceResponse(content: '{"name":"Jason","age":28}')],
+    responses: [new InferenceResponse(
+        message: Message::asAssistant('{"name":"Jason","age":28}'),
+    )],
 );
 ```
 

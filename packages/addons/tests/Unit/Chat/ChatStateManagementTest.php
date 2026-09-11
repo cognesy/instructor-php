@@ -61,9 +61,9 @@ it('appends steps correctly and maintains step history', function () {
     expect($allSteps[1])->toBe($step2);
 
     // Verify message accumulation
-    $allMessages = $state2->messages()->toArray();
-    expect($allMessages[0]['content'])->toBe('Hello');
-    expect($allMessages[1]['content'])->toBe('Hi there!');
+    $allMessages = $state2->messages()->all();
+    expect($allMessages[0]->content()->toString())->toBe('Hello');
+    expect($allMessages[1]->content()->toString())->toBe('Hi there!');
 });
 
 it('maintains immutability when appending steps', function () {
@@ -121,14 +121,14 @@ it('correctly builds conversation messages from multiple steps', function () {
 
     expect($finalState->stepCount())->toBe(3);
 
-    $messages = $finalState->messages()->toArray();
+    $messages = $finalState->messages()->all();
     expect($messages)->toHaveCount(3);
-    expect($messages[0]['role'])->toBe('user');
-    expect($messages[0]['content'])->toBe('What is AI?');
-    expect($messages[1]['role'])->toBe('assistant');
-    expect($messages[1]['content'])->toBe('AI stands for Artificial Intelligence.');
-    expect($messages[2]['role'])->toBe('user');
-    expect($messages[2]['content'])->toBe('Can you explain more?');
+    expect($messages[0]->role()->value)->toBe('user');
+    expect($messages[0]->content()->toString())->toBe('What is AI?');
+    expect($messages[1]->role()->value)->toBe('assistant');
+    expect($messages[1]->content()->toString())->toBe('AI stands for Artificial Intelligence.');
+    expect($messages[2]->role()->value)->toBe('user');
+    expect($messages[2]->content()->toString())->toBe('Can you explain more?');
 });
 
 it('handles steps with multiple messages correctly', function () {
@@ -149,9 +149,9 @@ it('handles steps with multiple messages correctly', function () {
     expect($finalState->stepCount())->toBe(1);
     expect($finalState->messages()->count())->toBe(2);
 
-    $messages = $finalState->messages()->toArray();
-    expect($messages[0]['content'])->toBe('First response.');
-    expect($messages[1]['content'])->toBe('Second response.');
+    $messages = $finalState->messages()->all();
+    expect($messages[0]->content()->toString())->toBe('First response.');
+    expect($messages[1]->content()->toString())->toBe('Second response.');
 });
 
 it('preserves step metadata throughout state transitions', function () {

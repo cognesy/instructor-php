@@ -46,12 +46,12 @@ function makeReActDriverForEdgeCases(FakeInferenceDriver $driver): ReActDriver {
 
 it('sets react_last_decision_type for call_tool and final_answer', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: json_encode([
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'x', 'type' => 'call_tool', 'tool' => '_noop', 'args' => []
-        ])),
-        new InferenceResponse(content: json_encode([
+        ]))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'thought' => 'y', 'type' => 'final_answer', 'answer' => 'done'
-        ])),
+        ]))),
     ]);
 
     $react = makeReActDriverForEdgeCases($driver);
@@ -77,7 +77,7 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
 it('records extraction failures inside failure steps (deterministic)', function () {
     // malformed JSON to trigger failure inside StructuredOutput path
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{bad json'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{bad json')),
     ]);
 
     $react = makeReActDriverForEdgeCases($driver);

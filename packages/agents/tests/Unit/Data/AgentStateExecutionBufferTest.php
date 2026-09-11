@@ -20,7 +20,7 @@ describe('AgentState metadata-based trace filtering', function () {
         ]);
         $step = new AgentStep(
             outputMessages: Messages::fromString('trace', 'tool'),
-            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
         );
 
         $state = AgentState::empty()->withUserMessage('hello');
@@ -40,7 +40,7 @@ describe('AgentState metadata-based trace filtering', function () {
         ]);
         $traceStep = new AgentStep(
             outputMessages: Messages::fromString('trace', 'tool'),
-            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
         );
         $finalStep = new AgentStep(
             outputMessages: Messages::fromString('done', 'assistant'),

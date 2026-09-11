@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"List all files in the current directory, then tell me how many there are.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_KkJkPFSTuo8m1AxFsgRaMrZq\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"find . -maxdepth 1 -type f | sed 's|^.\\\\\\\/||' | sort\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_KkJkPFSTuo8m1AxFsgRaMrZq\",\"content\":\".actrc\\n.env\\n.env-dist\\n.gitattributes\\n.gitignore\\n.phpactor.json\\n.phpunit.result.cache\\n.semgrepignore\\nADDING-PACKAGE.md\\nAGENTS.md\\nCONTENTS.md\\nCONTRIBUTING.md\\nDoxyfile\\nLICENSE\\nPACKAGES.md\\nQUALITY.md\\nREADME.md\\ncomposer.json\\ncomposer.lock\\ncomposer.phar\\njustfile\\nmago.toml\\npackage-config-enhanced.example.json\\npackage-config.example.json\\npackages.json\\nphpbench.json\\nphpstan-baseline.neon\\nphpstan-unused.neon\\nphpstan.neon\\nphpstan.neon.dist\\nphpunit.xml\\npsalm.xml\\npyproject.toml\\npyrightconfig.json\\nuv.lock\\n\"},{\"role\":\"user\",\"content\":\"[System note] You are on step 2. Tokens used so far: 325. Be concise.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return bounded stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated file tools over cat, sed-based rewrites, and shell redirection.\\nIf output is truncated, narrow the command or redirect it to a file and inspect it with the dedicated read tool.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:47:20 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1562"
+            ],
+            "cf-ray": [
+                "a394b8687bb5b198-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1379"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999835"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_e488543cb4764914b5e1c54d40d627b3"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpKZa6j8wr4Hd2GFjyrvq25aNNcP\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109239,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Files in the current directory:\\n\\n1. `.actrc`\\n2. `.env`\\n3. `.env-dist`\\n4. `.gitattributes`\\n5. `.gitignore`\\n6. `.phpactor.json`\\n7. `.phpunit.result.cache`\\n8. `.semgrepignore`\\n9. `ADDING-PACKAGE.md`\\n10. `AGENTS.md`\\n11. `CONTENTS.md`\\n12. `CONTRIBUTING.md`\\n13. `Doxyfile`\\n14. `LICENSE`\\n15. `PACKAGES.md`\\n16. `QUALITY.md`\\n17. `README.md`\\n18. `composer.json`\\n19. `composer.lock`\\n20. `composer.phar`\\n21. `justfile`\\n22. `mago.toml`\\n23. `package-config-enhanced.example.json`\\n24. `package-config.example.json`\\n25. `packages.json`\\n26. `phpbench.json`\\n27. `phpstan-baseline.neon`\\n28. `phpstan-unused.neon`\\n29. `phpstan.neon`\\n30. `phpstan.neon.dist`\\n31. `phpunit.xml`\\n32. `psalm.xml`\\n33. `pyproject.toml`\\n34. `pyrightconfig.json`\\n35. `uv.lock`\\n\\nTotal: 35 files.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 481,\n    \"completion_tokens\": 266,\n    \"total_tokens\": 747,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

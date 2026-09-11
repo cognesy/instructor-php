@@ -102,7 +102,7 @@ final class MemoryDiagnostics
         $gcBefore = gc_status();
 
         $json = self::makeJson(self::PAYLOAD_SIZE);
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
+        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json))]);
 
         $so = (new StructuredOutput)
             ->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
@@ -175,7 +175,7 @@ final class MemoryDiagnostics
         $buffer = '';
         $request = new \Cognesy\Polyglot\Inference\Data\InferenceRequest();
         foreach ($driver->makeStreamDeltasFor($request) as $delta) {
-            $buffer .= $delta->contentDelta;
+            $buffer .= $delta->messageChunks->textDelta();
         }
         $after = memory_get_usage(false);
         gc_enable();
@@ -293,9 +293,7 @@ final class MemoryDiagnostics
         $partialCount = 0;
         $bodyGrowth = [];
         foreach ($responseData->stream() as $chunk) {
-            $partial = new PartialInferenceDelta(
-                contentDelta: $chunk,
-            );
+            $partial = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk), );
 
             // Track body accumulation via httpResponse directly
             if ($partialCount % 100 === 0) {
@@ -443,7 +441,7 @@ final class MemoryDiagnostics
         gc_collect_cycles();
         memory_reset_peak_usage();
         $json = self::makeJson(self::PAYLOAD_SIZE);
-        $syncDriver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
+        $syncDriver = new FakeInferenceDriver(responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json))]);
 
         $soSync = (new StructuredOutput)
             ->withRuntime(makeStructuredRuntime(driver: $syncDriver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
@@ -555,11 +553,11 @@ final class MemoryDiagnostics
         }
 
         $chunks = [];
-        $chunks[] = new PartialInferenceDelta(contentDelta: $open);
+        $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $open));
         foreach ($items as $piece) {
-            $chunks[] = new PartialInferenceDelta(contentDelta: $piece);
+            $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $piece));
         }
-        $chunks[] = new PartialInferenceDelta(contentDelta: $close, finishReason: 'stop');
+        $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $close), finishReason: 'stop');
 
         return $chunks;
     }

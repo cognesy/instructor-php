@@ -19,6 +19,5 @@ it('returns content for Anthropic messages (non-streaming)', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
-    expect($content)->toBe('Hi there!');
+    expect($content->content()->toString())->toBe('Hi there!');
 });
-

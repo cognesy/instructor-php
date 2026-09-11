@@ -33,10 +33,7 @@ it('streams large single object (~10K tokens) with bounded memory', function () 
         onStream: function () use ($chunks): iterable {
             $last = count($chunks) - 1;
             foreach ($chunks as $i => $chunk) {
-                yield new PartialInferenceDelta(
-                    contentDelta: $chunk,
-                    finishReason: $i === $last ? 'stop' : '',
-                );
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk), finishReason: $i === $last ? 'stop' : '',);
             }
         },
     );
@@ -98,17 +95,15 @@ it('streams 1000-item sequence with bounded memory', function () {
     $driver = new FakeInferenceDriver(
         onStream: function () use ($itemCount): iterable {
             // Opening
-            yield new PartialInferenceDelta(contentDelta: '{"list":[');
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":['));
 
             for ($i = 1; $i <= $itemCount; $i++) {
                 $comma = $i > 1 ? ',' : '';
-                yield new PartialInferenceDelta(
-                    contentDelta: sprintf('%s{"id":%d,"name":"item-%d"}', $comma, $i, $i),
-                );
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", sprintf('%s{"id":%d,"name":"item-%d"}', $comma, $i, $i)), );
             }
 
             // Closing
-            yield new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop');
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ']}'), finishReason: 'stop');
         },
     );
 
@@ -167,14 +162,12 @@ it('sequence memory grows linearly with item count', function () {
     foreach ([50, 250] as $count) {
         $driver = new FakeInferenceDriver(
             onStream: function () use ($count): iterable {
-                yield new PartialInferenceDelta(contentDelta: '{"list":[');
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":['));
                 for ($i = 1; $i <= $count; $i++) {
                     $comma = $i > 1 ? ',' : '';
-                    yield new PartialInferenceDelta(
-                        contentDelta: sprintf('%s{"id":%d,"name":"item-%d"}', $comma, $i, $i),
-                    );
+                    yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", sprintf('%s{"id":%d,"name":"item-%d"}', $comma, $i, $i)), );
                 }
-                yield new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop');
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ']}'), finishReason: 'stop');
             },
         );
 

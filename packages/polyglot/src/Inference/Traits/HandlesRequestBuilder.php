@@ -118,9 +118,10 @@ trait HandlesRequestBuilder
         ?ToolDefinitions $tools = null,
         ?ToolChoice $toolChoice = null,
         ?ResponseFormat $responseFormat = null,
+        ?string $ttl = null,
     ): static {
         $copy = $this->cloneWithRequestBuilder();
-        $copy->requestBuilder->withCachedContext($messages, $tools, $toolChoice, $responseFormat);
+        $copy->requestBuilder->withCachedContext($messages, $tools, $toolChoice, $responseFormat, $ttl);
 
         return $copy;
     }

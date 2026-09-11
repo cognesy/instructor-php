@@ -13,9 +13,9 @@ class StreamUserStructA { public int $age; public string $name; }
 
 it('dispatches per-chunk updates immediately when streaming', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann"', usage: new InferenceUsage(outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: ',"age":', usage: new InferenceUsage(outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: '30}', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"'), usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":'), usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '30}'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
     ];
 
     $driver = new FakeInferenceDriver(

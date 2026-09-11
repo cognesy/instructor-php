@@ -11,6 +11,8 @@ use Cognesy\Instructor\Events\Streaming\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Instructor\Streaming\Pipeline\DispatchStreamingEvents;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunk;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunks;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Stream\Transformation;
 use Cognesy\Stream\TransformationStream;
@@ -67,7 +69,9 @@ it('dispatches tool lifecycle events for streamed tool calls', function () {
         stateSnapshot(
             toolId: 'tool-1',
             toolName: 'extract_data',
-            prior: [new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: '{"name":"Ann"')],
+            prior: [new PartialInferenceDelta(messageChunks: new AssistantMessageChunks(
+                AssistantMessageChunk::toolCallDelta('test:tool:0', 'tool-1', 'extract_data', '{"name":"Ann"'),
+            ))],
             toolArgs: ',"age":30}',
         ),
     ];

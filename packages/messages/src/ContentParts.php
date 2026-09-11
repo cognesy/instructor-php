@@ -73,6 +73,10 @@ final readonly class ContentParts implements Countable, IteratorAggregate
         return new self(...$parts);
     }
 
+    public function append(self $parts): self {
+        return new self(...[...$this->parts, ...$parts->all()]);
+    }
+
     public function replaceLast(ContentPart $part): self {
         if ($this->parts === []) {
             return new self($part);

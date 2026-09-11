@@ -8,5 +8,3 @@ metadata:
   guardrailVersion: '${AWS_BEDROCK_GUARDRAIL_VERSION}'
 model: 'anthropic.claude-3-5-sonnet-20241022-v2:0'
 maxTokens: 1024
-contextLength: 200000
-maxOutputLength: 8192

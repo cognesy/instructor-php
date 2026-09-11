@@ -82,7 +82,7 @@ Anthropic's `claude` CLI. A strong default choice for general coding workflows, 
 
 ### OpenAI Codex
 
-OpenAI's `codex` CLI. Best suited when you want Codex-specific sandbox controls (read-only, workspace-write, or full-access modes), full-auto or dangerous-bypass approval settings, image input support, and Codex thread-based session management. Returns token usage data when available.
+OpenAI's `codex` CLI. Best suited when you want Codex-specific sandbox controls (read-only, workspace-write, or full-access modes), automatic approval or dangerous-bypass settings, image input support, and Codex thread-based session management. Returns token usage data when available.
 
 ### OpenCode
 

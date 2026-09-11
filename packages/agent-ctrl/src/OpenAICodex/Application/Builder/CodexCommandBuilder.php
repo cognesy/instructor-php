@@ -43,9 +43,9 @@ final class CodexCommandBuilder
         $argv = $this->appendOutputSchema($argv, $request->outputSchemaFile());
         $argv = $this->appendOutputLastMessage($argv, $request->outputLastMessageFile());
         $argv = $this->appendProfile($argv, $request->profile());
-        $argv = $this->appendFullAuto($argv, $request->fullAuto());
-        $argv = $this->appendDangerouslyBypass($argv, $request->dangerouslyBypass());
-        $argv = $this->appendSkipGitRepoCheck($argv, $request->skipGitRepoCheck());
+        $argv = $this->appendFlag($argv, '--approve-for-me', $request->approveForMe());
+        $argv = $this->appendFlag($argv, '--dangerously-bypass-approvals-and-sandbox', $request->dangerouslyBypass());
+        $argv = $this->appendFlag($argv, '--skip-git-repo-check', $request->skipGitRepoCheck());
         $argv = $this->appendConfigOverrides($argv, $request->configOverrides());
 
         return new CommandSpec($argv, null);
@@ -192,33 +192,6 @@ final class CodexCommandBuilder
             ->with($profile);
     }
 
-    private function appendFullAuto(Argv $argv, bool $fullAuto): Argv
-    {
-        if (!$fullAuto) {
-            return $argv;
-        }
-
-        return $argv->with('--full-auto');
-    }
-
-    private function appendDangerouslyBypass(Argv $argv, bool $bypass): Argv
-    {
-        if (!$bypass) {
-            return $argv;
-        }
-
-        return $argv->with('--dangerously-bypass-approvals-and-sandbox');
-    }
-
-    private function appendSkipGitRepoCheck(Argv $argv, bool $skip): Argv
-    {
-        if (!$skip) {
-            return $argv;
-        }
-
-        return $argv->with('--skip-git-repo-check');
-    }
-
     /**
      * @param array<string, string>|null $overrides
      */
@@ -256,8 +229,14 @@ final class CodexCommandBuilder
             throw new \InvalidArgumentException('Cannot set both resumeLast and resumeSessionId');
         }
 
-        if ($request->fullAuto() && $request->dangerouslyBypass()) {
-            throw new \InvalidArgumentException('fullAuto and dangerouslyBypass are mutually exclusive');
+        $hasConflictingModes = match (true) {
+            $request->sandboxMode() !== null && $request->approveForMe() => true,
+            $request->sandboxMode() !== null && $request->dangerouslyBypass() => true,
+            $request->approveForMe() && $request->dangerouslyBypass() => true,
+            default => false,
+        };
+        if ($hasConflictingModes) {
+            throw new \InvalidArgumentException('sandboxMode, approveForMe, and dangerouslyBypass are mutually exclusive');
         }
     }
 }

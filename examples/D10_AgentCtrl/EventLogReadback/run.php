@@ -3,6 +3,7 @@ title: 'Read AgentCtrl EventLog JSONL'
 docname: 'agent_ctrl_eventlog_readback'
 id: 'c3e7'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'eventlog'
   - 'jsonl'

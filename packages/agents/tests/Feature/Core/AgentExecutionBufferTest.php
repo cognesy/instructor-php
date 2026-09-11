@@ -27,8 +27,8 @@ describe('Agent metadata-based trace isolation', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'All done.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('All done.')),
         ]);
 
         $tool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
@@ -73,8 +73,8 @@ describe('Agent metadata-based trace isolation', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'Done.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Done.')),
         ]);
 
         $tool = FakeTool::returning('lookup', 'Search tool', 'sunny and warm');
@@ -90,7 +90,7 @@ describe('Agent metadata-based trace isolation', function () {
         $state = AgentState::empty()->withMessages(Messages::fromString('What is the weather?'));
         $states = iterator_to_array($agent->iterate($state));
 
-        // After tool step: messages should contain an assistant+tool pair with metadata
+        // After tool step: history preserves the provider assistant message followed by the tool result.
         $allMessages = $states[0]->store()->toMessages();
         $traceMessages = $allMessages->filter(fn(Message $m) => $m->metadata()->get('is_trace') === true);
         $all = $traceMessages->all();
@@ -98,19 +98,18 @@ describe('Agent metadata-based trace isolation', function () {
         // Exactly 2 trace messages per tool call: invocation + result
         expect($all)->toHaveCount(2);
 
-        // First: assistant message carrying the tool_calls metadata (LLM invocation record)
+        // First: exact provider assistant message, without executor-owned metadata.
         $invocation = $all[0];
         expect($invocation->isAssistant())->toBeTrue()
             ->and($invocation->hasToolCalls())->toBeTrue()
             ->and($invocation->toolCalls()->first()->idString())->toBe('call_abc')
             ->and($invocation->toolCalls()->first()->name())->toBe('lookup');
-        // Has tool_execution_id from formatter
-        expect($invocation->metadata()->get('tool_execution_id'))->not->toBeNull();
+        expect($invocation->metadata()->get('tool_execution_id'))->toBeNull();
 
         // Second: tool message with tool_result linking back to the invocation
         $result = $all[1];
         expect($result->isTool())->toBeTrue()
-            ->and($result->toString())->toBe('sunny and warm')
+            ->and($result->toolResult()->content())->toBe('sunny and warm')
             ->and($result->toolResult()->callIdString())->toBe('call_abc')
             ->and($result->toolResult()->toolName())->toBe('lookup')
             ->and($result->metadata()->get('tool_execution_id'))->not->toBeNull();
@@ -129,9 +128,9 @@ describe('Agent metadata-based trace isolation', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($call1)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($call2)),
-            new InferenceResponse(content: 'Final answer.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($call1))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($call2))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Final answer.')),
         ]);
 
         $tool = FakeTool::returning('search', 'Search tool', 'result');
@@ -183,8 +182,8 @@ describe('Agent metadata-based trace isolation', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'Done.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Done.')),
         ]);
 
         $tool = FakeTool::returning('test_tool', 'Test', 'ok');

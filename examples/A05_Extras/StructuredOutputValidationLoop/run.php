@@ -89,7 +89,7 @@ final class ArticleRecordingDriver implements CanProcessInferenceRequest
     {
         $this->responses = array_map(
             static fn(array $response): InferenceResponse => new InferenceResponse(
-                content: json_encode($response, JSON_THROW_ON_ERROR),
+                message: \Cognesy\Messages\Message::asAssistant(json_encode($response, JSON_THROW_ON_ERROR)),
                 finishReason: 'stop',
             ),
             $responses,
@@ -101,7 +101,7 @@ final class ArticleRecordingDriver implements CanProcessInferenceRequest
         $this->requests[] = $request->messages()->toArray();
 
         if ($this->responses === []) {
-            return new InferenceResponse(content: '{}', finishReason: 'stop');
+            return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{}'), finishReason: 'stop');
         }
 
         return array_shift($this->responses);
@@ -180,7 +180,12 @@ function runDeterministicValidationLoop(): array
 /** @return array{events: list<object>, incident: ArticleValidatedIncident, model: string}|null */
 function runLiveOpenAiValidationLoop(): ?array
 {
-    if (getenv('OPENAI_API_KEY') === false || getenv('INSTRUCTOR_EXAMPLES_SKIP_LIVE') === '1') {
+    $httpMode = getenv('INSTRUCTOR_EXAMPLES_HTTP');
+    $hasRecordedTransport = in_array($httpMode, ['record', 'replay'], true);
+    if (
+        getenv('INSTRUCTOR_EXAMPLES_SKIP_LIVE') === '1'
+        || (!$hasRecordedTransport && getenv('OPENAI_API_KEY') === false)
+    ) {
         return null;
     }
 

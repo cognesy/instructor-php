@@ -3,6 +3,7 @@ title: 'Agent Control Events & Monitoring'
 docname: 'agent_ctrl_events'
 id: '4074'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'events'
   - 'monitoring'
@@ -42,14 +43,21 @@ $logger = new AgentCtrlConsoleLogger(
 );
 
 $agent = AgentCtrl::make(AgentType::OpenCode)
+    ->withModel('opencode/ling-3.0-flash-fin-free')
+    ->withTimeout(60)
     ->wiretap($logger->wiretap());
 
+$observedTools = [];
+$completed = null;
+
 // 2. Targeted listeners: subscribe to specific event types
-$agent->onEvent(AgentToolUsed::class, function (AgentToolUsed $event) {
+$agent->onEvent(AgentToolUsed::class, function (AgentToolUsed $event) use (&$observedTools) {
+    $observedTools[] = $event->tool;
     echo "\n  >>> Tool used: {$event->tool}\n\n";
 });
 
-$agent->onEvent(AgentExecutionCompleted::class, function (AgentExecutionCompleted $event) {
+$agent->onEvent(AgentExecutionCompleted::class, function (AgentExecutionCompleted $event) use (&$completed) {
+    $completed = $event;
     echo "\n=== Execution Complete ===\n";
     echo "  Tools: {$event->toolCallCount}\n";
     if ($event->cost !== null) {
@@ -68,6 +76,11 @@ $response = $agent->executeStreaming('List files in current directory and explai
 echo "\n=== Result ===\n";
 if ($response->isSuccess()) {
     echo "Answer: " . $response->text() . "\n";
+    assert($response->text() !== '');
+    assert(str_contains(strtolower($response->text()), 'composer.json'));
+    assert($observedTools !== [], 'Expected the directory inspection to emit a tool-use event');
+    assert($completed instanceof AgentExecutionCompleted, 'Expected an execution-completed event');
+    assert($completed->cost !== null, 'Expected the completion event to carry reported cost');
 } else {
     echo "Error: Command failed with exit code {$response->exitCode}\n";
     exit(1);

@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"<user query>\\nThe three-digit number 'ab5' is divisible by 3. How many different three-digit numbers can 'ab5' represent?\\n<\\\/user query>\\n\\nResponse 0: We need answer a simple divisibility-by-3 counting question. For a three-digit number ab5 to be divisible by 3, the sum of digits a+b+5 must be divisible by 3. The digits a and b range from 0 to 9, with a from 1 to 9 because it is a three-digit number. We count pairs (a,b) such that a+b \\u2261 1 mod 3 because 5 \\u2261 2 mod 3 and need total \\u22610, so a+b \\u22611. Among digits 0-9, residues mod 3 are evenly distributed: 0 has 4 digits {0,3,6,9}, 1 has 3 digits {1,4,7}, 2 has 3 digits {2,5,8}. For a, since 1-9 excludes 0, residue counts are: 0 has 3 digits {3,6,9}, 1 has 3 digits {1,4,7}, 2 has 3 digits {2,5,8}. Need pairs with sum \\u22611: (0,1), (1,0), (2,2) mod 3. Count = 3*3 + 3*3 + 3*3 = 27.. 27\\nResponse 1: We need answer a simple divisibility-by-3 counting question. For a number ab5 to be divisible by 3, the sum a+b+5 must be divisible by 3. Let s=a+b. Since 5 \\u2261 2 mod 3, we need s \\u2261 1 mod 3. Count digit pairs (a,b) with a from 1 to 9 and b from 0 to 9. Among 10 possible values of a, residues mod 3 are distributed as 1: 3 numbers (1,4,7), 2: 3 numbers (2,5,8), 0: 3 numbers (3,6,9), and 0 has only 3 not 4 because a cannot be 0. For b, residues mod 3 are distributed as 0: 4 numbers (0,3,6,9), 1: 3 numbers (1,4,7), 2: 3 numbers (2,5,8). Need a+b \\u2261 1 mod 3, so count pairs by residue: a0 with b1 gives 3*3=9; a1 with b0 gives 3*4=12; a2 with b2 gives 3*3=9. Total 30.. 30\\nResponse 2: We need answer a simple divisibility-by-3 counting problem. For ab5 to be divisible by 3, the sum a+b+5 must be divisible by 3, so a+b \\u2261 1 mod 3. Count digit pairs (a,b) where a is 1-9 and b is 0-9 satisfying that congruence. Digits are distributed mod 3: among 1-9, counts are 3 each for residues 0,1,2; among 0-9, counts are 4 for residue 0 (0,3,6,9) and 3 each for residues 1 and 2. Pairs with sum \\u22611 are (0,1), (1,0), (2,2) counts: 3*3 + 3*4 + 3*3 = 36. Alternatively total 9*10=90, about one-third are divisible by 3, giving 30? But because restriction on a excludes 0, the correct count is 36 via residue counts.. 36\\n\\nEvaluate these responses. Select the most consistent response based on majority consensus.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"most_consistent_response_id\":{\"type\":\"integer\"}},\"required\":[\"most_consistent_response_id\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:53:04 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1072"
+            ],
+            "cf-ray": [
+                "a394c0d509a5eed5-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "420"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999368"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "9ms"
+            ],
+            "x-request-id": [
+                "req_57a4c3223e1941d7a4970b5668db290a"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpQ8R0UpU168ZWCmji11Y9dxlGP1\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109584,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_3GIcjtHpnCwx9CFht0oAw1MH\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"most_consistent_response_id\\\":1}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1012,\n    \"completion_tokens\": 22,\n    \"total_tokens\": 1034,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

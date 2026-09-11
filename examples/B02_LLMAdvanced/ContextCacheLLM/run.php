@@ -15,8 +15,11 @@ able to take advantage of lower latency and costs.
 
 > **Note 1:** Instructor supports context caching for Anthropic API and OpenAI API.
 
-> **Note 2:** Context caching is automatic for all OpenAI API calls. Read more
-> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
+> **Note 2:** Anthropic automatic caching is opt-in through the top-level
+> `cache_control` option; `withCachedContext()` instead sets explicit breakpoints.
+> See the [Anthropic API documentation](https://platform.claude.com/docs/en/build-with-claude/prompt-caching).
+> Claude Haiku 4.5 requires a 4,096-token prefix; Sonnet 4.5/4.6 require 1,024 tokens
+> (verified September 6, 2026). Shorter prefixes silently bypass caching.
 
 ## Example
 
@@ -33,7 +36,6 @@ require 'examples/boot.php';
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Utils\Str;
 
 $data = file_get_contents(__DIR__.'/../../../README.md');
 
@@ -58,13 +60,13 @@ echo "----------------------------------------\n";
 echo "\n# Summary for CTO of lead gen vendor\n";
 echo "  ({$response->usage()->cacheWriteTokens} tokens written to cache, {$response->usage()->cacheReadTokens} tokens read from cache)\n\n";
 echo "----------------------------------------\n";
-echo $response->content()."\n";
+echo $response->message()->content()->toString()."\n";
 
-assert(! empty($response->content()));
-assert(Str::contains($response->content(), 'lead', false));
-if ($response->usage()->cacheWriteTokens === 0) {
-    echo "Note: cacheWriteTokens is 0. Prompt caching depends on provider/model token thresholds.\n";
-}
+assert(! empty($response->message()->content()->toString()));
+assert(
+    $response->usage()->cacheWriteTokens + $response->usage()->cacheReadTokens > 0,
+    'Expected Anthropic to write or reuse the cached README prefix',
+);
 
 $response2 = $inference
     ->with(
@@ -77,12 +79,9 @@ echo "----------------------------------------\n";
 echo "\n# Summary for CIO of insurance company\n";
 echo "  ({$response2->usage()->cacheWriteTokens} tokens written to cache, {$response2->usage()->cacheReadTokens} tokens read from cache)\n\n";
 echo "----------------------------------------\n";
-echo $response2->content()."\n";
+echo $response2->message()->content()->toString()."\n";
 
-assert(! empty($response2->content()));
-assert(Str::contains($response2->content(), 'insurance', false));
-if ($response2->usage()->cacheReadTokens === 0) {
-    echo "Note: cacheReadTokens is 0. Prompt caching depends on provider/model token thresholds.\n";
-}
+assert(! empty($response2->message()->content()->toString()));
+assert($response2->usage()->cacheReadTokens > 0, 'Expected the second request to reuse the cached prefix');
 ?>
 ```

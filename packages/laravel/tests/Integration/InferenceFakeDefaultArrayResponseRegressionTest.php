@@ -10,8 +10,8 @@ it('normalizes array default response to JSON string', function () {
 
     $response = $fake->withMessages(Messages::fromString('anything'))->get();
 
-    expect($response)->toBe('{"answer":42,"ok":true}')
-        ->and(json_decode($response, true))->toBe([
+    expect($response->content()->toString())->toBe('{"answer":42,"ok":true}')
+        ->and(json_decode($response->content()->toString(), true))->toBe([
             'answer' => 42,
             'ok' => true,
         ]);

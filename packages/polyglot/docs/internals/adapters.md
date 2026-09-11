@@ -39,7 +39,7 @@ The response adapter converts raw HTTP responses back into Polyglot data objects
 ## How They Compose
 
 For most providers the wiring is not code at all -- it is a row in the bundled registry. An
-`InferenceDriverSpec` names the pieces, and `SpecifiedInferenceDriver` is the single class
+`InferenceDriverSpec` names the pieces, and `BaseInferenceRequestDriver` is the single class
 behind every provider declared this way:
 
 ```php
@@ -48,7 +48,6 @@ $table = [
     'groq' => new InferenceDriverSpec(
         bodyFormat: GroqBodyFormat::class,
         usageFormat: GroqUsageFormat::class,
-        capabilities: new DriverCapabilities(responseFormatWithTools: false),
     ),
 ];
 ```
@@ -57,7 +56,7 @@ Anything left out defaults to the OpenAI implementation, so a provider that diff
 body format is one line. The spec assembles them in the fixed nesting order every driver used:
 
 ```php
-$driver = new SpecifiedInferenceDriver(
+$driver = new BaseInferenceRequestDriver(
     config: $config,
     httpClient: $httpClient,
     events: $events,
@@ -66,14 +65,13 @@ $driver = new SpecifiedInferenceDriver(
         new OpenAIBodyFormat($config, new OpenAIMessageFormat()),
     ),
     responseTranslator: new OpenAIResponseAdapter(new OpenAIUsageFormat()),
-    capabilities: null,
 );
 ```
 
 Providers that assemble their own URL or headers still use bespoke request adapters, but they
 are selected by the `requestAdapter` field in their `InferenceDriverSpec`; they do not need a
 provider driver class. The adapter owns that provider-specific behavior while
-`SpecifiedInferenceDriver` supplies the shared execution lifecycle.
+`BaseInferenceRequestDriver` supplies the shared execution lifecycle.
 
 The `BaseInferenceRequestDriver` handles the shared execution logic -- sending HTTP requests, reading responses, and parsing event streams. The adapters only need to handle format translation.
 
@@ -196,7 +194,7 @@ Usage arrives on only a handful of events per stream -- roughly one chunk in 943
 
 ```php
 $delta = new PartialInferenceDelta(
-    contentDelta: $content,
+    messageChunks: AssistantMessageChunks::empty()->withTextDelta(0, $content),
     usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
 );
 ```

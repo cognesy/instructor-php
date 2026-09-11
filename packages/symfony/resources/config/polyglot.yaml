@@ -5,12 +5,16 @@ services:
   Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig:
     factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider', 'embeddings']
 
+  Cognesy\Polyglot\Inference\Models\ModelCatalog:
+    factory: ['Cognesy\Polyglot\Inference\Models\ModelCatalog', 'discover']
+
   Cognesy\Polyglot\Inference\InferenceRuntime:
     factory: ['Cognesy\Polyglot\Inference\InferenceRuntime', 'fromConfig']
     arguments:
       $config: '@Cognesy\Polyglot\Inference\Config\LLMConfig'
       $events: '@Cognesy\Events\Contracts\CanHandleEvents'
       $httpClient: '@Cognesy\Http\Contracts\CanSendHttpRequests'
+      $models: '@Cognesy\Polyglot\Inference\Models\ModelCatalog'
 
   Cognesy\Polyglot\Inference\Contracts\CanCreateInference:
     alias: Cognesy\Polyglot\Inference\InferenceRuntime

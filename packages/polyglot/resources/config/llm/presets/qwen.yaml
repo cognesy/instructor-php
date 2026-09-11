@@ -4,5 +4,3 @@ apiKey: '${QWEN_API_KEY}'
 endpoint: /chat/completions
 model: qwen3.8-max
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 131072

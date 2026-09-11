@@ -14,7 +14,7 @@ use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 it('llm participant prepares messages with role mapping', function () {
     // Create fake driver to avoid live API calls
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: 'mocked response'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('mocked response')),
     ]);
     $inference = Inference::fromRuntime(
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
@@ -35,21 +35,21 @@ it('llm participant prepares messages with role mapping', function () {
     // Test the participant's prepareMessages method (protected, so we test via act)
     $step = $participant->act($state);
     $inputMessages = $step->inputMessages();
-    $arr = $inputMessages->toArray();
+    $arr = $inputMessages->all();
 
     // Should have system prompt prepended
-    expect($arr[0]['role'])->toBe('system');
-    expect($arr[0]['content'])->toBe('You are assistant A');
+    expect($arr[0]->role()->value)->toBe('system');
+    expect($arr[0]->content()->toString())->toBe('You are assistant A');
 
     // User message should remain user
-    expect($arr[1]['role'])->toBe('user');
-    expect($arr[1]['content'])->toBe('Hello');
+    expect($arr[1]->role()->value)->toBe('user');
+    expect($arr[1]->content()->toString())->toBe('Hello');
     
     // Own message should be assistant
-    expect($arr[2]['role'])->toBe('assistant');
-    expect($arr[2]['content'])->toBe('Hi from A');
+    expect($arr[2]->role()->value)->toBe('assistant');
+    expect($arr[2]->content()->toString())->toBe('Hi from A');
     
     // Other assistant's message should become user
-    expect($arr[3]['role'])->toBe('user');
-    expect($arr[3]['content'])->toBe('Hi from B');
+    expect($arr[3]->role()->value)->toBe('user');
+    expect($arr[3]->content()->toString())->toBe('Hi from B');
 });

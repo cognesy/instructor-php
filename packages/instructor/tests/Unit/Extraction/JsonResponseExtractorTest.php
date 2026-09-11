@@ -20,7 +20,7 @@ use Cognesy\Instructor\Enums\OutputMode;
  */
 
 it('extracts array from valid JSON content', function () {
-    $response = new InferenceResponse(content: '{"name":"John","age":30}');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"John","age":30}'));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
@@ -29,7 +29,7 @@ it('extracts array from valid JSON content', function () {
 });
 
 it('extracts array from JSON Schema mode', function () {
-    $response = new InferenceResponse(content: '{"name":"Jane","age":25}');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Jane","age":25}'));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::JsonSchema));
@@ -41,7 +41,7 @@ it('extracts from tool calls in Tools mode', function () {
     $toolCalls = new ToolCalls(
         new ToolCall(name: 'User', arguments: ['name' => 'John', 'age' => 30])
     );
-    $response = new InferenceResponse(content: '', toolCalls: $toolCalls);
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls($toolCalls));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Tools));
@@ -50,7 +50,7 @@ it('extracts from tool calls in Tools mode', function () {
 });
 
 it('falls back to content in Tools mode when tool calls are missing', function () {
-    $response = new InferenceResponse(content: '{"name":"John","age":30}');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"John","age":30}'));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Tools));
@@ -69,7 +69,7 @@ Here is the extracted data:
 This represents the user.
 MD;
 
-    $response = new InferenceResponse(content: $content);
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
@@ -79,7 +79,7 @@ MD;
 
 it('handles JSON wrapped in text (bracket matching)', function () {
     $content = 'The user data is {"name":"John","age":30} as extracted.';
-    $response = new InferenceResponse(content: $content);
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
@@ -89,7 +89,7 @@ it('handles JSON wrapped in text (bracket matching)', function () {
 
 it('handles nested objects', function () {
     $json = '{"user":{"name":"John","address":{"city":"NYC","zip":"10001"}},"active":true}';
-    $response = new InferenceResponse(content: $json);
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
@@ -108,7 +108,7 @@ it('handles nested objects', function () {
 
 it('handles arrays in JSON', function () {
     $json = '{"users":[{"name":"John"},{"name":"Jane"}],"count":2}';
-    $response = new InferenceResponse(content: $json);
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
@@ -123,7 +123,7 @@ it('handles arrays in JSON', function () {
 });
 
 it('returns failure for invalid JSON', function () {
-    $response = new InferenceResponse(content: 'this is not json at all');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('this is not json at all'));
     $extractor = new ResponseExtractor();
 
     $input = ExtractionInput::fromResponse($response, OutputMode::Json);
@@ -131,7 +131,7 @@ it('returns failure for invalid JSON', function () {
 });
 
 it('returns failure for empty content', function () {
-    $response = new InferenceResponse(content: '');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''));
     $extractor = new ResponseExtractor();
 
     $input = ExtractionInput::fromResponse($response, OutputMode::Json);
@@ -140,7 +140,7 @@ it('returns failure for empty content', function () {
 
 it('handles malformed JSON with trailing comma (resilient parsing)', function () {
     // Note: This tests the existing resilient parser behavior
-    $response = new InferenceResponse(content: '{"name":"John","age":30,}');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"John","age":30,}'));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
@@ -150,9 +150,9 @@ it('handles malformed JSON with trailing comma (resilient parsing)', function ()
 });
 
 it('handles MdJson mode (markdown with JSON)', function () {
-    $response = new InferenceResponse(content: '```json
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('```json
 {"name":"John"}
-```');
+```'));
     $extractor = new ResponseExtractor();
 
     $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::MdJson));

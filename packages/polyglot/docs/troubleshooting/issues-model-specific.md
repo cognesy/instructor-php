@@ -33,7 +33,10 @@ Models are periodically deprecated or renamed by providers. If a model that prev
 
 ## Context Length Limits
 
-Each model has a maximum context length (measured in tokens). If your input exceeds this limit, the provider returns an error. The `contextLength` field in the preset defines this limit for reference, but the actual enforcement happens at the provider.
+Each model has a maximum context length (measured in tokens). If your input exceeds this limit,
+the provider returns an error. Polyglot records this as
+`ModelCatalog::find($driver, $model)->limits->contextWindow`; the provider remains the final
+enforcement authority. An unknown offering has a `null` limit rather than an inferred value.
 
 Common context windows:
 
@@ -112,7 +115,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 

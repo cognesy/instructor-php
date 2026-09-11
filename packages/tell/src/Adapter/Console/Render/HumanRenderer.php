@@ -49,6 +49,9 @@ final readonly class HumanRenderer implements OutputRenderer
                 OutputInterface::OUTPUT_RAW | $verbosity,
             );
         }
+        foreach (AgentResult::errors($state) as $error) {
+            $this->stderr->writeln('[tell] execution failed: ' . $error, $verbosity);
+        }
         if ($state->stopSignal() !== null) {
             $this->stderr->writeln('[tell] execution stopped: ' . $state->stopSignal()->toString(), $verbosity);
         }

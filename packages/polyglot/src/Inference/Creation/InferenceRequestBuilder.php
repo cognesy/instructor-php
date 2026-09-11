@@ -206,12 +206,14 @@ class InferenceRequestBuilder
         ?ToolDefinitions $tools = null,
         ?ToolChoice $toolChoice = null,
         ?ResponseFormat $responseFormat = null,
+        ?string $ttl = null,
     ): self {
         $this->cachedContext = new CachedInferenceContext(
             $messages ?? Messages::empty(),
             $tools ?? ToolDefinitions::empty(),
             $toolChoice ?? ToolChoice::empty(),
             $responseFormat ?? ResponseFormat::empty(),
+            ttl: $ttl,
         );
 
         return $this;

@@ -23,7 +23,7 @@ final class MemoCountDto
 function memoMissesForOneStructuredRequest(EventDispatcher $events): int
 {
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"name":"Ava"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ava"}'))]),
         events: $events,
         outputMode: OutputMode::Json,
     );

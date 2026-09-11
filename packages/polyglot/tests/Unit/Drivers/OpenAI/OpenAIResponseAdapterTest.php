@@ -15,7 +15,7 @@ it('parses OpenAI response into normalized InferenceResponse', function () {
     ]);
 
     $res = $adapter->fromResponse($response);
-    expect($res->content())->toBe('Hello!');
+    expect($res->message()->content()->toString())->toBe('Hello!');
     expect($res->usage()->input())->toBe(3);
     expect($res->usage()->output())->toBe(2);
 });
@@ -41,9 +41,9 @@ it('does not map tool call arguments into content', function () {
     ]);
 
     $res = $adapter->fromResponse($response);
-    expect($res->content())->toBe('');
-    expect($res->hasToolCalls())->toBeTrue();
-    $tool = $res->toolCalls()->first();
+    expect($res->message()->content()->toString())->toBe('');
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    $tool = $res->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
@@ -66,8 +66,9 @@ it('does not map tool call deltas into contentDelta', function () {
 
     $delta = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
     expect($delta)->not->toBeNull();
-    expect($delta->contentDelta)->toBe('');
-    expect($delta->toolArgs)->toContain('Hello');
+    $toolChunk = $delta->messageChunks->all()[0];
+    expect($delta->messageChunks->textDelta())->toBe('');
+    expect($toolChunk->toolCallArguments)->toContain('Hello');
 });
 
 it('maps reasoning tokens from completion_tokens_details', function () {

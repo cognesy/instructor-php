@@ -169,18 +169,18 @@ Equivalent forms:
 ```bash
 # via the hub binary directly (flags; no `--` needed)
 php bin/instructor-hub run  getters_and_setters --replay
-php bin/instructor-hub all  --replay --recordings-dir=examples-recordings
+php bin/instructor-hub all  --replay
 
 # via composer — REQUIRES `--` or composer swallows the flag and runs live
 composer hub -- run getters_and_setters --replay
 
 # via env vars — works with any invocation, including a raw example file
-INSTRUCTOR_EXAMPLES_HTTP=replay INSTRUCTOR_EXAMPLES_RECORDINGS_DIR=examples-recordings \
-  php examples/A01_Basics/BasicGetSet/run.php
+INSTRUCTOR_EXAMPLES_HTTP=replay php examples/A01_Basics/BasicGetSet/run.php
 ```
 
 Env vars: `INSTRUCTOR_EXAMPLES_HTTP=pass|record|replay`,
-`INSTRUCTOR_EXAMPLES_RECORDINGS_DIR=<dir>` (default `./tmp/examples-recordings`).
+`INSTRUCTOR_EXAMPLES_RECORDINGS_DIR=<dir>` (optional scratch root). When the
+directory is omitted, recordings live beside each example under `recordings/`.
 
 ### How it works
 
@@ -222,8 +222,9 @@ git-LFS). A keyless CI job can run `just examples-replay-all` as a deterministic
 examples gate. Design notes and rollout runbook:
 `research/robust-and-practical-record-replay.md`.
 
-> Status (2026-07): mechanism complete and verified; the recording corpus is not yet
-> populated — the first record pass (live, key-gated) is a maintainer step.
+> Status (2026-09): mechanism complete and verified; the committed corpus is partial.
+> Replay reports a missing recording when an example still needs a live, key-gated
+> record pass.
 
 ## Static Analysis And QA
 

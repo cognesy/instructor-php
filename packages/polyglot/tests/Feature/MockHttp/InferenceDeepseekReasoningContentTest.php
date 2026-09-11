@@ -27,8 +27,8 @@ it('captures reasoning content from DeepSeek V4 responses', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->response();
 
-    expect($response->content())->toBe('Paris');
-    expect($response->reasoningContent())->toBe('France capital lookup reasoning.');
+    expect($response->message()->content()->toString())->toBe('Paris');
+    expect($response->message()->reasoningContent())->toBe('France capital lookup reasoning.');
 });
 
 it('extracts DeepSeek V4 reasoning content from think tags when the field is missing', function () {
@@ -53,6 +53,6 @@ it('extracts DeepSeek V4 reasoning content from think tags when the field is mis
         ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->response();
 
-    expect($response->content())->toBe('Paris');
-    expect($response->reasoningContent())->toBe('Reasoning steps.');
+    expect($response->message()->content()->toString())->toBe('Paris');
+    expect($response->message()->reasoningContent())->toBe('Reasoning steps.');
 });

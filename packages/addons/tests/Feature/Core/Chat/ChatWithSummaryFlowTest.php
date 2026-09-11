@@ -39,16 +39,16 @@ it('builds up a conversation with multiple turns', function () {
         $state = $chat->nextStep($state);
     }
 
-    $messages = $state->messages()->toArray();
+    $messages = $state->messages()->all();
 
     // Expect alternating user / assistant messages
     expect(count($messages))->toBe(6);
     for ($i = 0; $i < 3; $i++) {
         $userMsg = $messages[$i*2];
         $assistantMsg = $messages[$i*2+1];
-        expect($userMsg['role'])->toBe('user');
-        expect($userMsg['content'])->toBe($userPrompts[$i]);
-        expect($assistantMsg['role'])->toBe('user'); // ScriptedParticipant always returns 'user' role
-        expect($assistantMsg['content'])->toBe($assistantResponses[$i]);
+        expect($userMsg->role()->value)->toBe('user');
+        expect($userMsg->content()->toString())->toBe($userPrompts[$i]);
+        expect($assistantMsg->role()->value)->toBe('user'); // ScriptedParticipant always returns 'user' role
+        expect($assistantMsg->content()->toString())->toBe($assistantResponses[$i]);
     }
 });

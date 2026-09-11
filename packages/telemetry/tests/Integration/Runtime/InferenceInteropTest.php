@@ -47,7 +47,7 @@ it('exports inference runtime telemetry to logfire and can query it back', funct
         probe: static fn(): ?string => $client->latestTimestampForService($serviceName),
     );
 
-    expect($response->content())->not->toBeEmpty()
+    expect($response->message()->content()->toString())->not->toBeEmpty()
         ->and($timestamp)->not->toBeNull();
 })->group('integration', 'interop', 'runtime', 'logfire');
 
@@ -80,7 +80,7 @@ it('exports streaming inference telemetry to logfire and can query it back', fun
 
     $content = '';
     foreach ($stream->deltas() as $delta) {
-        $content .= $delta->contentDelta;
+        $content .= $delta->messageChunks->textDelta();
     }
     $hub->flush();
 
@@ -124,7 +124,7 @@ it('exports inference runtime telemetry to langfuse and can query it back', func
         timeoutSeconds: 60,
     );
 
-    expect($response->content())->not->toBeEmpty()
+    expect($response->message()->content()->toString())->not->toBeEmpty()
         ->and($trace)->not->toBeNull();
 })->group('integration', 'interop', 'runtime', 'langfuse');
 
@@ -157,7 +157,7 @@ it('exports streaming inference telemetry to langfuse and can query it back', fu
 
     $content = '';
     foreach ($stream->deltas() as $delta) {
-        $content .= $delta->contentDelta;
+        $content .= $delta->messageChunks->textDelta();
     }
     $hub->flush();
 

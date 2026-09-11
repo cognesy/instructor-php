@@ -50,9 +50,18 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
     #[\Override]
     protected function supportsToolSelection(InferenceRequest $request): bool
     {
-        // DeepSeek V4 Flash, Pro, and Flash Vision all support tool calls and
-        // explicit tool choice, including when thinking mode is enabled.
-        return true;
+        return !$request->toolChoice()->isSpecific()
+            || $this->isThinkingExplicitlyDisabled($request);
+    }
+
+    private function isThinkingExplicitlyDisabled(InferenceRequest $request): bool
+    {
+        $options = array_merge($this->config->options, $request->options());
+        $thinking = $options['thinking'] ?? null;
+
+        // DeepSeek V4 enables thinking by default, while its live Chat API
+        // currently rejects a forced function choice in that mode.
+        return is_array($thinking) && ($thinking['type'] ?? null) === 'disabled';
     }
 
     #[\Override]

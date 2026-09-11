@@ -194,7 +194,7 @@ final class ReActDriver implements CanUseTools
         if ($this->finalViaInference) {
             $pending = $this->finalizeAnswerViaInference($messages);
             $inferenceResponse = $pending->response();
-            $finalText = $inferenceResponse->content();
+            $finalText = $inferenceResponse->message()->content()->toString();
             $usage = $inferenceResponse->usage();
         }
         return new ToolUseStep(

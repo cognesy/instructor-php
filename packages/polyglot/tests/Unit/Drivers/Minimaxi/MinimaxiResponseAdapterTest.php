@@ -17,7 +17,7 @@ it('parses MiniMaxi response with choices into normalized InferenceResponse', fu
 
     $result = $adapter->fromResponse($response);
 
-    expect($result->content())->toBe('Paris');
+    expect($result->message()->content()->toString())->toBe('Paris');
     expect($result->usage()->input())->toBe(3);
     expect($result->usage()->output())->toBe(2);
 });

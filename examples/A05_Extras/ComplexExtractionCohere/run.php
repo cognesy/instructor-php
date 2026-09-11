@@ -111,10 +111,10 @@ $stream = $structuredOutput
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        model: 'command-r-plus-08-2024',
-        examples: [['input' => 'Acme Insurance project to implement SalesTech CRM solution is currently in RED status due to delayed delivery of document production system, led by 3rd party vendor - Alfatech. Customer (Acme) is discussing the resolution with the vendor. Production deployment plan has been finalized on Aug 15th and awaiting customer approval.', 'output' => [["type" => "object", "title" => "sequenceOfProjectEvent", "description" => "A sequence of ProjectEvent", "properties" => ["list" => [["title" => "Absorbing delay by deploying extra resources", "description" => "System integrator (SysCorp) are working to absorb some of the delay by deploying extra resources to speed up development when the doc production is done.", "type" => "action", "status" => "open", "stakeholders" => [["name" => "SysCorp", "role" => "system integrator", "details" => "System integrator",],], "date" => "2021-09-01",], ["title" => "Finalization of production deployment plan", "description" => "Production deployment plan has been finalized on Aug 15th and awaiting customer approval.", "type" => "progress", "status" => "open", "stakeholders" => [["name" => "Acme", "role" => "customer", "details" => "Customer",],], "date" => "2021-08-15",],],]]]]],
+        model: 'command-r7b-12-2024',
         options: [
-            'max_tokens' => 2048,
+            'max_tokens' => 1024,
+            'temperature' => 0,
             'stream' => true,
         ])
     ->stream();
@@ -126,7 +126,21 @@ foreach ($stream->sequence() as $item) {
 $events = $stream->finalValue();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
-assert(count($events) > 0, 'Expected events to be extracted');
+$hasProjectRisk = false;
+$hasResolvedProxy = false;
+foreach ($events as $event) {
+    $text = strtolower($event->title . ' ' . $event->description);
+    $hasProjectRisk = $hasProjectRisk
+        || ($event->type === ProjectEventType::Risk && str_contains($text, 'red'));
+    $hasResolvedProxy = $hasResolvedProxy
+        || ($event->status === ProjectEventStatus::Closed
+            && $event->date === '2021-08-30'
+            && str_contains($text, 'integration proxy'));
+}
+
+assert(count($events) >= 3, 'Expected the report to yield multiple material project events');
+assert($hasProjectRisk, 'Expected the RED project status to be extracted as a risk');
+assert($hasResolvedProxy, 'Expected the resolved Integration Proxy issue with its date');
 
 function displayEvent(ProjectEvent $event) : void {
     echo "Event: {$event->title}\n";

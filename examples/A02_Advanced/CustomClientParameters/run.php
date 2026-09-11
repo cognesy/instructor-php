@@ -23,7 +23,11 @@ require 'examples/boot.php';
 use Cognesy\Config\Env;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -49,8 +53,20 @@ $httpConfig = new HttpClientConfig(
 
 $yourClientInstance = SymfonyHttpClient::create(['http_version' => '2.0']);
 
+$clientProbe = new class implements HttpMiddleware {
+    public int $requests = 0;
+
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
+    {
+        $this->requests++;
+
+        return $next->handle($request);
+    }
+};
+
 $customClient = (new HttpClientBuilder)
     ->withEventBus($events)
+    ->withMiddleware($clientProbe)
     ->withDriver(new SymfonyDriver(
         config: $httpConfig,
         clientInstance: $yourClientInstance,
@@ -63,7 +79,8 @@ $customClient = (new HttpClientBuilder)
 $llmConfig = new LLMConfig(
     apiUrl  : 'https://api.deepseek.com',
     apiKey  : (string) Env::get('DEEPSEEK_API_KEY', ''),
-    endpoint: '/chat/completions', model: 'deepseek-v4-flash', maxTokens: 128, driver: 'openai-compatible',
+    endpoint: '/chat/completions', model: 'deepseek-v4-flash', maxTokens: 512, driver: 'deepseek',
+    options : ['temperature' => 0],
 );
 
 // Get Instructor with the default client component overridden with your own
@@ -85,7 +102,8 @@ $user = $structuredOutput
 
 dump($user);
 
-assert(isset($user->name));
-assert(isset($user->age));
+assert($user->name === 'Jason');
+assert($user->age === 25);
+assert($clientProbe->requests > 0, 'Expected the injected custom HTTP client to handle the request');
 ?>
 ```

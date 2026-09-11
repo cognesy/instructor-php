@@ -4,5 +4,3 @@ apiKey: '${A21_API_KEY}'
 endpoint: /chat/completions
 model: jamba-mini
 maxTokens: 1024
-contextLength: 256000
-maxOutputLength: 4096

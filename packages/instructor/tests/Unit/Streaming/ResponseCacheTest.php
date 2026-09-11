@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 function cacheResponse(): StructuredOutputResponse {
     return StructuredOutputResponse::partial(
         value: (object) ['x' => 1],
-        inferenceResponse: new InferenceResponse(content: ''),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')),
     );
 }
 

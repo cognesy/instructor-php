@@ -14,7 +14,6 @@ use Cognesy\Instructor\Events\Streaming\StreamedToolCallUpdated;
 use Cognesy\Instructor\Events\Streaming\SequenceUpdated;
 use Cognesy\Instructor\Streaming\EmissionSnapshot;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Stream\Contracts\Reducer;
@@ -31,7 +30,7 @@ use Cognesy\Stream\Contracts\Reducer;
 final class DispatchStreamingEventsReducer implements Reducer
 {
     private string $activeToolKey;
-    private ToolCalls $lastToolCalls;
+    private ?ToolCall $activeToolCall;
     private ?InferenceResponse $lastInferenceResponse;
     private int $previousSequenceLength;
     private ?Sequenceable $currentSequence;
@@ -49,7 +48,7 @@ final class DispatchStreamingEventsReducer implements Reducer
         private readonly string $expectedToolName = '',
     ) {
         $this->activeToolKey = '';
-        $this->lastToolCalls = ToolCalls::empty();
+        $this->activeToolCall = null;
         $this->lastInferenceResponse = null;
         $this->previousSequenceLength = 0;
         $this->currentSequence = null;
@@ -58,7 +57,7 @@ final class DispatchStreamingEventsReducer implements Reducer
     #[\Override]
     public function init(): mixed {
         $this->activeToolKey = '';
-        $this->lastToolCalls = ToolCalls::empty();
+        $this->activeToolCall = null;
         $this->lastInferenceResponse = null;
         $this->previousSequenceLength = 0;
         $this->currentSequence = null;
@@ -98,7 +97,7 @@ final class DispatchStreamingEventsReducer implements Reducer
     public function complete(mixed $accumulator): mixed {
         // Finalize tool calls
         if ($this->emitToolEvents && $this->expectedToolName !== '' && $this->hasActiveTool()) {
-            $this->emitToolCompletedForActive($this->lastToolCalls);
+            $this->emitToolCompletedForActive();
         }
 
         // Finalize sequence
@@ -152,131 +151,56 @@ final class DispatchStreamingEventsReducer implements Reducer
         StructuredOutputStreamState $state,
         EmissionSnapshot $snapshot,
     ): void {
-        $toolCalls = $state->toolCalls();
         $signaledKey = $snapshot->toolKey;
-        if ($signaledKey !== '') {
-            $this->transitionToolStart($signaledKey, $toolCalls);
+        $toolCall = $state->currentToolCall();
+        if ($signaledKey !== '' && $toolCall !== null) {
+            $this->transitionToolStart($signaledKey, $toolCall);
         }
 
-        if ($snapshot->toolArgsSnapshot !== '') {
-            $this->transitionToolUpdate($toolCalls);
+        if ($snapshot->toolArgsSnapshot !== '' && $toolCall !== null) {
+            $this->transitionToolUpdate($toolCall);
         }
-
-        $this->lastToolCalls = $toolCalls;
     }
 
-    private function transitionToolStart(string $toolKey, ToolCalls $toolCalls): void {
+    private function transitionToolStart(string $toolKey, ToolCall $toolCall): void {
         if ($this->isActiveToolKey($toolKey)) {
+            $this->activeToolCall = $toolCall;
             return;
         }
 
         if ($this->hasActiveTool()) {
-            $this->emitToolCompletedForActive($toolCalls);
+            $this->emitToolCompletedForActive();
         }
 
-        $this->activateToolKey($toolKey);
-        $this->emitToolStarted($toolKey, $toolCalls);
+        $this->activateTool($toolKey, $toolCall);
+        $this->emitToolStarted($toolCall);
     }
 
-    private function transitionToolUpdate(ToolCalls $toolCalls): void {
-        $activeToolKey = $this->activeToolKey;
-        if ($activeToolKey === '') {
-            $activeToolKey = $this->fallbackToolKey($toolCalls);
-            if ($activeToolKey === '') {
-                return;
-            }
-            $this->activateToolKey($activeToolKey);
-        }
-
-        $call = $this->findCallByKey($toolCalls, $activeToolKey);
-        if ($call === null) {
-            return;
-        }
-
-        $this->events->dispatch(new StreamedToolCallUpdated([
-            'toolCall' => $call->toArray(),
-        ]));
-    }
-
-    private function emitToolStarted(string $toolKey, ToolCalls $toolCalls): void {
-        $call = $this->findCallByKey($toolCalls, $toolKey);
-        if ($call === null) {
-            return;
-        }
-
-        $this->events->dispatch(new StreamedToolCallStarted([
-            'toolCall' => $call->toArray(),
-        ]));
-    }
-
-    private function emitToolCompletedForActive(ToolCalls $toolCalls): void {
+    private function transitionToolUpdate(ToolCall $toolCall): void {
         if (!$this->hasActiveTool()) {
             return;
         }
 
-        $activeToolKey = $this->activeToolKey;
-        $call = $this->findCallByKey($toolCalls, $activeToolKey)
-            ?? $this->findCallByKey($this->lastToolCalls, $activeToolKey);
-        if ($call === null) {
+        $this->activeToolCall = $toolCall;
+        $this->events->dispatch(new StreamedToolCallUpdated([
+            'toolCall' => $toolCall->toArray(),
+        ]));
+    }
+
+    private function emitToolStarted(ToolCall $toolCall): void {
+        $this->events->dispatch(new StreamedToolCallStarted([
+            'toolCall' => $toolCall->toArray(),
+        ]));
+    }
+
+    private function emitToolCompletedForActive(): void {
+        if (!$this->hasActiveTool() || $this->activeToolCall === null) {
             return;
         }
 
         $this->events->dispatch(new StreamedToolCallCompleted([
-            'toolCall' => $call->toArray(),
+            'toolCall' => $this->activeToolCall->toArray(),
         ]));
-    }
-
-    private function fallbackToolKey(ToolCalls $toolCalls): string {
-        if ($this->expectedToolName !== '') {
-            $byName = $this->findLatestCallByName($toolCalls, $this->expectedToolName);
-            if ($byName !== null) {
-                return $this->toolKeyFromCall($byName);
-            }
-        }
-
-        $latest = $toolCalls->last();
-        return match (true) {
-            $latest !== null => $this->toolKeyFromCall($latest),
-            default => '',
-        };
-    }
-
-    private function findCallByKey(ToolCalls $toolCalls, string $toolKey): ?ToolCall {
-        if (str_starts_with($toolKey, 'id:')) {
-            $id = substr($toolKey, 3);
-            foreach ($toolCalls->all() as $call) {
-                if ((string) ($call->id() ?? '') === $id) {
-                    return $call;
-                }
-            }
-            return null;
-        }
-
-        if (str_starts_with($toolKey, 'name:')) {
-            $name = substr($toolKey, 5);
-            return $this->findLatestCallByName($toolCalls, $name);
-        }
-
-        return null;
-    }
-
-    private function findLatestCallByName(ToolCalls $toolCalls, string $name): ?ToolCall {
-        $matched = null;
-        foreach ($toolCalls->all() as $call) {
-            if ($call->name() === $name) {
-                $matched = $call;
-            }
-        }
-        return $matched;
-    }
-
-    private function toolKeyFromCall(ToolCall $call): string {
-        $id = (string) ($call->id() ?? '');
-        if ($id !== '') {
-            return 'id:' . $id;
-        }
-
-        return 'name:' . $call->name();
     }
 
     private function hasActiveTool(): bool {
@@ -287,12 +211,13 @@ final class DispatchStreamingEventsReducer implements Reducer
         return $this->activeToolKey === $toolKey && $this->activeToolKey !== '';
     }
 
-    private function activateToolKey(string $toolKey): void {
+    private function activateTool(string $toolKey, ToolCall $toolCall): void {
         if ($toolKey === '') {
             return;
         }
 
         $this->activeToolKey = $toolKey;
+        $this->activeToolCall = $toolCall;
     }
 
     private function handleSequenceEventsForSnapshot(EmissionSnapshot $snapshot): void {

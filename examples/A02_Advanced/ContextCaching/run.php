@@ -17,8 +17,11 @@ latency and costs.
 > This example uses Anthropic because it demonstrates explicit cache control.
 > See the OpenAI context caching examples for OpenAI's automatic prompt caching.
 
-> **Note 2:** Context caching is automatic for all OpenAI API calls. Read more
-> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
+> **Note 2:** Anthropic automatic caching is opt-in through the top-level
+> `cache_control` option; `withCachedContext()` instead sets explicit breakpoints.
+> See the [Anthropic API documentation](https://platform.claude.com/docs/en/build-with-claude/prompt-caching).
+> Claude Haiku 4.5 requires a 4,096-token prefix; Sonnet 4.5/4.6 require 1,024 tokens
+> (verified September 6, 2026). Shorter prefixes silently bypass caching.
 
 
 ## Example

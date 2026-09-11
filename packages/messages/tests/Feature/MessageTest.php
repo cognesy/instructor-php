@@ -1,10 +1,12 @@
 <?php
 
 use Cognesy\Messages\Content;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Messages\Message;
-use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\ToolResult;
 use Cognesy\Messages\Tests\Fixtures\FixtureImage;
 use Cognesy\Messages\Tests\Fixtures\StubMessageProvider;
@@ -164,21 +166,19 @@ test('classifies message type from semantic state', function () {
     $text = Message::asAssistant('Hello');
     $toolCall = new Message(
         role: 'assistant',
-        content: '',
-        toolCalls: ToolCalls::fromArray([[
-            'id' => 'call_1',
-            'name' => 'search',
-            'arguments' => ['q' => 'hello'],
-        ]]),
+        parts: new ContentParts(ContentPart::toolCall(new ToolCall(
+            name: 'search',
+            arguments: ['q' => 'hello'],
+            id: 'call_1',
+        ))),
     );
     $toolResult = new Message(
         role: 'tool',
-        content: 'Done',
-        toolResult: new ToolResult(
+        parts: new ContentParts(ContentPart::toolResult(new ToolResult(
             content: 'Done',
             callId: 'call_1',
             toolName: 'search',
-        ),
+        ))),
     );
 
     expect($text->type())->toBe(MessageType::Text)
@@ -286,10 +286,10 @@ test('converts message to array', function () {
     expect($array['id'])->toBeString();
     expect($array['createdAt'])->toBeString();
 
-    // Check content fields
+    // Check canonical message fields
     expect($array['role'])->toBe('system');
     expect($array['name'])->toBe('System');
-    expect($array['content'])->toBe('System instruction');
+    expect($array['parts'])->toBe([['type' => 'text', 'text' => 'System instruction']]);
     expect($array['_metadata'])->toBe(['source' => 'test']);
 });
 
@@ -299,13 +299,13 @@ test('converts simple message to string', function () {
     expect($message->toString())->toBe('Simple text content');
 });
 
-test('toArray preserves empty string content key', function () {
+test('toArray preserves an empty parts collection', function () {
     $message = new Message(role: 'user', content: '');
 
     $array = $message->toArray();
 
-    expect($array)->toHaveKey('content')
-        ->and($array['content'])->toBe('');
+    expect($array)->toHaveKey('parts')
+        ->and($array['parts'])->toBe([['type' => 'text']]);
 });
 
 //test('throws exception when converting non-text composite message to string', function () {

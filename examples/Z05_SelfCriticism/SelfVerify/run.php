@@ -32,16 +32,17 @@ class SelfVerifyPipeline {
     public int $n = 3; // number of candidates
     public int $k = 5; // verification count
 
-    public function queryCandidate(string $query) : Candidate {
+    public function queryCandidate(string $query, int $sample = 0) : Candidate {
         return StructuredOutput::using('openai')->with(
             model: 'gpt-4o-mini',
             responseModel: Candidate::class,
-            messages: [ ['role' => 'user', 'content' => "Think step by step: {$query}"] ],
+            messages: [ ['role' => 'user', 'content' => "Candidate {$sample}. Think step by step: {$query}"] ],
         )->get();
     }
 
-    public function rewrite(string $query, Candidate $candidate) : Rewritten {
+    public function rewrite(string $query, Candidate $candidate, int $sample = 0) : Rewritten {
         $msg = <<<MSG
+            Candidate {$sample}.
             Please change the questions and answers into complete declarative sentences
             {$query}
             The answer is {$candidate->month}.
@@ -52,24 +53,24 @@ class SelfVerifyPipeline {
         )->get();
     }
 
-    public function verify(string $question) : Verification {
+    public function verify(string $question, string $trial = '0') : Verification {
         return StructuredOutput::using('openai')->with(
             model: 'gpt-4o-mini', responseModel: Verification::class,
-            messages: [ ['role' => 'user', 'content' => $question] ],
+            messages: [ ['role' => 'user', 'content' => "Verification {$trial}: {$question}"] ],
         )->get();
     }
 
     public function run(string $query) : void {
         $candidates = [];
-        for ($i = 0; $i < $this->n; $i++) { $candidates[] = $this->queryCandidate($query); }
+        for ($i = 0; $i < $this->n; $i++) { $candidates[] = $this->queryCandidate($query, $i); }
 
-        foreach ($candidates as $candidate) {
-            $rewritten = $this->rewrite($query, $candidate);
+        foreach ($candidates as $i => $candidate) {
+            $rewritten = $this->rewrite($query, $candidate, $i);
             $question = $rewritten->declarative . ' Is this correct? Answer True or False.';
 
             $score = 0;
             for ($j = 0; $j < $this->k; $j++) {
-                $v = $this->verify($question);
+                $v = $this->verify($question, "{$i}-{$j}");
                 if ($v->correct) { $score++; }
             }
             echo "Candidate: {$candidate->month}, Verification Score: {$score}\n";
@@ -81,16 +82,16 @@ $query = 'What month is it now if it has been 3 weeks, 10 days, and 2 hours sinc
 $pipeline = new SelfVerifyPipeline;
 
 // Test individual components
-$candidate = $pipeline->queryCandidate($query);
+$candidate = $pipeline->queryCandidate($query, -1);
 assert($candidate instanceof Candidate);
 assert(!empty($candidate->reasoning_steps));
 assert(!empty($candidate->month));
 
-$rewritten = $pipeline->rewrite($query, $candidate);
+$rewritten = $pipeline->rewrite($query, $candidate, -1);
 assert($rewritten instanceof Rewritten);
 assert(!empty($rewritten->declarative));
 
-$verification = $pipeline->verify($rewritten->declarative . ' Is this correct?');
+$verification = $pipeline->verify($rewritten->declarative . ' Is this correct?', 'probe');
 assert($verification instanceof Verification);
 
 // Run full pipeline
@@ -102,4 +103,3 @@ $pipeline->run($query);
 
 1. Large Language Models are Better Reasoners with Self-Verification (https://arxiv.org/abs/2212.09561)
 2. The Prompt Report: A Systematic Survey of Prompting Techniques (https://arxiv.org/abs/2406.06608)
-

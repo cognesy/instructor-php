@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.deepseek.com\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"deepseek-v4-flash\",\"max_tokens\":64,\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}]}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application\/json"
+            ],
+            "date": [
+                "Fri, 11 Sep 2026 06:46:04 GMT"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "elb"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-credentials": [
+                "true"
+            ],
+            "x-ds-trace-id": [
+                "8a2f3a6c7505a51e73257b018bf974b8"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 3356301f07067a98e2508f662ccd34d0.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P6"
+            ],
+            "x-amz-cf-id": [
+                "QbBbY3GH2y45992FBhkJOMyyfQz7gMEiX87L6kMyuVQGttptu8xXxg=="
+            ]
+        },
+        "body": "{\"id\":\"5fe5896c-4c4c-43a3-930d-6cea9a57e631\",\"object\":\"chat.completion\",\"created\":1789109164,\"model\":\"deepseek-flash\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"The capital of France is **Paris**.\",\"reasoning_content\":\"We need answer simple. Need not overthink. Capital of France is Paris. Must answer.\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":36,\"completion_tokens\":28,\"total_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":0},\"completion_tokens_details\":{\"reasoning_tokens\":19},\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":36},\"system_fingerprint\":\"aeb56401ca74e127821c4f9126dcb669\"}"
+    }
+}

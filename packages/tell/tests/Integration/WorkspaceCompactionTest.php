@@ -107,10 +107,7 @@ it('compacts a canonical history into a provenance-linked summary and keeps its 
     $continue = new CommandTester(tellTestCommand($freshFactory));
     expect($continue->execute(['prompt' => 'continue', '--dir' => $project]))->toBe(0);
 
-    $request = array_map(
-        static fn (array $message): array => ['role' => $message['role'], 'content' => $message['content']],
-        $recorder->requests[0],
-    );
+    $request = $recorder->textProjection(0);
     expect($request)
         ->toContain(['role' => 'user', 'content' => 'initial constraints'])
         ->toContain(['role' => 'assistant', 'content' => 'Carry forward the release decision and finish the migration.'])
@@ -178,7 +175,7 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
                     new Content(ContentPart::imageUrl('https://example.test/summary.png')),
                     'assistant',
                 )),
-                inferenceResponse: new InferenceResponse(content: 'image'),
+                inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('image')),
             ));
         }
     }, 'did not complete'],
@@ -187,7 +184,7 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: Messages::fromString("\xB1", 'assistant'),
-                inferenceResponse: new InferenceResponse(content: "\xB1"),
+                inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant("\xB1")),
             ));
         }
     }, 'could not canonically record'],
@@ -199,10 +196,7 @@ it('does not persist focus hints or provider wire data in a compacted canonical 
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: Messages::fromString('Semantic summary only.', 'assistant'),
-                inferenceResponse: new InferenceResponse(
-                    content: 'Semantic summary only.',
-                    responseData: HttpResponse::sync(200, ['authorization' => 'Bearer wire-secret'], 'wire-payload'),
-                ),
+                inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Semantic summary only.'), responseData: HttpResponse::sync(200, ['authorization' => 'Bearer wire-secret'], 'wire-payload')),
             ));
         }
     };

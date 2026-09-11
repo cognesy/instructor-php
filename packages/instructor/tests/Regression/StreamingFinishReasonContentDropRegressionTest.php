@@ -27,10 +27,7 @@ it('streams partials correctly when the final delta also carries finishReason=st
         onStream: function () use ($chunks): iterable {
             $last = count($chunks) - 1;
             foreach ($chunks as $i => $chunk) {
-                yield new PartialInferenceDelta(
-                    contentDelta: $chunk,
-                    finishReason: $i === $last ? 'stop' : '',
-                );
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk), finishReason: $i === $last ? 'stop' : '',);
             }
         },
     );
@@ -68,10 +65,7 @@ it('finalizes large multi-chunk responses when finishReason arrives on the last 
         onStream: function () use ($chunks): iterable {
             $last = count($chunks) - 1;
             foreach ($chunks as $i => $chunk) {
-                yield new PartialInferenceDelta(
-                    contentDelta: $chunk,
-                    finishReason: $i === $last ? 'stop' : '',
-                );
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk), finishReason: $i === $last ? 'stop' : '',);
             }
         },
     );

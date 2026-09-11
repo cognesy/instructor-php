@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Review these three capability files and provide a summary:\\n1. packages\\\/agents\\\/src\\\/Capability\\\/Core\\\/UseTools.php\\n2. packages\\\/agents\\\/src\\\/Capability\\\/File\\\/UseFileTools.php\\n3. packages\\\/agents\\\/src\\\/Capability\\\/SelfCritique\\\/UseSelfCritique.php\\n\\nFor each file, spawn a reviewer subagent. Then summarize the findings.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_4v3WGSYvZtkUhuEFzpBp4nhZ\",\"type\":\"function\",\"function\":{\"name\":\"spawn_subagent\",\"arguments\":\"{\\\"subagent\\\":\\\"reviewer\\\",\\\"prompt\\\":\\\"Review the capability file packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/Core\\\\\\\/UseTools.php. Summarize its purpose, structure, notable implementation details, and any issues or risks you notice. Focus on correctness, maintainability, and clarity.\\\",\\\"context\\\":\\\"fresh\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_4v3WGSYvZtkUhuEFzpBp4nhZ\",\"content\":\"### Purpose\\n`UseTools` is an agent capability object that enables a set of tools on an agent. It implements `CanProvideAgentCapability`, so it likely plugs into a broader agent-building system where capabilities configure agents in a composable way.\\n\\n### Structure\\n- **Namespace:** `Cognesy\\\\Agents\\\\Capability\\\\Core`\\n- **Class:** `final readonly UseTools`\\n- **Constructor:** accepts a variadic list of `ToolInterface` instances and stores them.\\n- **Static capability name:** returns `'use_tools'`.\\n- **configure() method:** merges the provided tools into the agent\\u2019s existing tool collection and returns the configured agent.\\n\\n### Notable implementation details\\n- Uses **variadic constructor arguments** for convenience:\\n  ```php\\n  public function __construct(ToolInterface ...$tools)\\n  ```\\n- Declares the `$tools` property as `\\\/** @var list<ToolInterface> *\\\/`, which is good for static analysis and communicates intended shape.\\n- `configure()` does not replace existing tools; it **merges** them with the agent\\u2019s current tool set:\\n  ```php\\n  $agent->tools()->merge(new Tools(...$this->tools))\\n  ```\\n- Uses `#[Override]`, which improves correctness\\\/readability by signaling the methods are implementing interface contract members.\\n\\n### Issues \\\/ risks\\n1. **Potential duplicate tool accumulation**\\n   - `merge()` may allow duplicates if the same tool is added multiple times or if the agent already has matching tools.\\n   - If `Tools::merge()` does not deduplicate, repeated application of this capability could produce redundant entries or ambiguous tool resolution.\\n\\n2. **No validation of tool compatibility**\\n   - The class assumes every passed `ToolInterface` is valid for the agent\\\/environment.\\n   - If some tools require preconditions or are incompatible, failures may happen later during execution instead of at configuration time.\\n\\n3. **Readonly + array mutability nuance**\\n   - The class is `readonly`, but the stored array contents are still not deeply immutable. If `ToolInterface` implementations are mutable, the capability can still observe side effects outside its control.\\n   - This is usually acceptable, but worth noting in terms of predictability.\\n\\n4. **Clear intent, but limited documentation**\\n   - The class is small and readable, but there\\u2019s no docblock or explanation of whether it appends vs replaces existing tools.\\n   - Since this behavior matters to users of the capability API, a short doc comment could improve clarity.\\n\\n5. **Depends on `Tools` API semantics**\\n   - Correctness here hinges on how `Tools::merge()` and `agent->withTools()` behave.\\n   - If `withTools()` replaces instead of appending, or if `merge()` mutates unexpectedly, the behavior may differ from the apparent intent.\\n\\n### Maintainability \\\/ clarity notes\\n- The implementation is concise and easy to follow.\\n- Naming is good: `UseTools` and `use_tools` align well with the behavior.\\n- The class would benefit from a brief comment describing that it *adds* tools to an agent rather than overriding them, since that\\u2019s the key semantic choice here.\\n\\n### Overall\\nThis is a straightforward capability adapter with clean structure and low complexity. The main things to watch are tool deduplication, semantics of merging vs replacing, and whether any validation should happen earlier to prevent runtime surprises.\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. By default, output is limited to 200 lines or 32 KiB, whichever comes first.\\nSet larger limit and max_bytes values when a larger window or the complete file is justified.\\nWhen more content exists, the result includes the exact offset or bash command needed to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 200; no fixed upper limit)\"},\"max_bytes\":{\"type\":\"integer\",\"description\":\"Maximum output bytes (default: 32768; increase explicitly for a larger or full-file read)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"Create a new file with the provided content. The parent directory must already exist.\\nRefuses to overwrite different content; retrying identical content succeeds as a no-op.\\n\\nExamples:\\n- path=\\\"config.json\\\", content='{\\\"debug\\\": true}'\\n- path=\\\"src\\\/NewClass.php\\\", content=\\\"<?php\\\\n\\\\nclass NewClass {}\\\\n\\\"\\n\\nUse the edit tool to change an existing file. The new file is streamed and committed atomically.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path of a new file; its parent directory must already exist\"},\"content\":{\"type\":\"string\",\"description\":\"The content to write to the file\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_file\",\"description\":\"Edit a file by replacing exact string matches. old_string must match exactly including whitespace.\\n\\nExamples:\\n- Fix typo: old_string=\\\"teh\\\", new_string=\\\"the\\\"\\n- Change function: old_string=\\\"function old()\\\", new_string=\\\"function new()\\\"\\n- Update config: old_string='\\\"debug\\\": false', new_string='\\\"debug\\\": true'\\n- Rename all: old_string=\\\"OldClass\\\", new_string=\\\"NewClass\\\", replace_all=true\\n\\nIMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.\\nThe file is processed as a bounded stream and replaced atomically only after match validation succeeds.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to edit\"},\"old_string\":{\"type\":\"string\",\"description\":\"Exact string to find (include whitespace). Must be unique unless using replace_all\"},\"new_string\":{\"type\":\"string\",\"description\":\"Replacement string. Can be empty to delete old_string\"},\"replace_all\":{\"type\":\"boolean\",\"description\":\"If true, replace all occurrences. If false (default), old_string must be unique.\"}},\"required\":[\"path\",\"old_string\",\"new_string\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"spawn_subagent\",\"description\":\"Spawn a specialized subagent for a focused task. Returns only the final response.\\n\\nEach subagent has specific expertise, tools, and capabilities optimized for its domain.\\nChoose the most appropriate subagent based on the task requirements.\\n\\nAvailable subagents:\\n- reviewer: Reviews code files and identifies issues (tools: read_file)\\n- documenter: Generates documentation for code (tools: read_file)\",\"parameters\":{\"type\":\"object\",\"properties\":{\"subagent\":{\"type\":\"string\",\"description\":\"Which subagent to spawn\",\"enum\":[\"reviewer\",\"documenter\"]},\"prompt\":{\"type\":\"string\",\"description\":\"The task or question for the subagent\"},\"context\":{\"type\":\"string\",\"description\":\"fork reuses the captured parent context; fresh starts empty\",\"enum\":[\"fork\",\"fresh\"]}},\"required\":[\"subagent\",\"prompt\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:48:15 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1336"
+            ],
+            "cf-ray": [
+                "a394b9c1cde7bf8f-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "534"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999092"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "13ms"
+            ],
+            "x-request-id": [
+                "req_39105e2854e8464ab1fefb74734b54cf"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpLSgc3VkB0RSGRSjQMfNJQUZwbr\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109294,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_UkDowPlA3KHqswmHpEBV2Orx\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"spawn_subagent\",\n              \"arguments\": \"{\\\"subagent\\\":\\\"reviewer\\\",\\\"prompt\\\":\\\"Review the capability file packages\/agents\/src\/Capability\/File\/UseFileTools.php. Summarize its purpose, structure, notable implementation details, and any issues or risks you notice. Focus on correctness, maintainability, and clarity.\\\",\\\"context\\\":\\\"fresh\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1674,\n    \"completion_tokens\": 73,\n    \"total_tokens\": 1747,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

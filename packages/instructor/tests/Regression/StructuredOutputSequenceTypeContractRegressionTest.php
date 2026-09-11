@@ -11,7 +11,7 @@ it('throws explicit sequence contract error for non-sequenceable streamed values
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"age":30}'), finishReason: 'stop'),
         ]],
     );
 

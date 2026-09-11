@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You review code files and identify issues. Read the file and provide a concise assessment focusing on code quality, potential bugs, and improvements.\"},{\"role\":\"user\",\"content\":\"Review the capability file packages\\\/agents\\\/src\\\/Capability\\\/File\\\/UseFileTools.php. Summarize its purpose, structure, notable implementation details, and any issues or risks you notice. Focus on correctness, maintainability, and clarity.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_1o0nk1Q1QLvqYNw2mD0QqLqE\",\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"arguments\":\"{\\\"path\\\":\\\"packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/File\\\\\\\/UseFileTools.php\\\",\\\"offset\\\":0,\\\"limit\\\":250,\\\"max_bytes\\\":40000}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1o0nk1Q1QLvqYNw2mD0QqLqE\",\"content\":\"     1\\t<?php declare(strict_types=1);\\n     2\\t\\n     3\\tnamespace Cognesy\\\\Agents\\\\Capability\\\\File;\\n     4\\t\\n     5\\tuse Cognesy\\\\Agents\\\\Builder\\\\Contracts\\\\CanConfigureAgent;\\n     6\\tuse Cognesy\\\\Agents\\\\Builder\\\\Contracts\\\\CanProvideAgentCapability;\\n     7\\tuse Cognesy\\\\Agents\\\\Collections\\\\Tools;\\n     8\\tuse Override;\\n     9\\t\\n    10\\tfinal class UseFileTools implements CanProvideAgentCapability\\n    11\\t{\\n    12\\t    public function __construct(\\n    13\\t        private string $baseDir,\\n    14\\t    ) {}\\n    15\\t\\n    16\\t    #[Override]\\n    17\\t    public static function capabilityName(): string {\\n    18\\t        return 'use_file_tools';\\n    19\\t    }\\n    20\\t\\n    21\\t    #[Override]\\n    22\\t    public function configure(CanConfigureAgent $agent): CanConfigureAgent {\\n    23\\t        $baseDir = $this->baseDir;\\n    24\\t\\n    25\\t        $fileTools = new Tools(\\n    26\\t            ReadFileTool::inDirectory($baseDir),\\n    27\\t            WriteFileTool::inDirectory($baseDir),\\n    28\\t            EditFileTool::inDirectory($baseDir),\\n    29\\t        );\\n    30\\t\\n    31\\t        return $agent->withTools($agent->tools()->merge($fileTools));\\n    32\\t    }\\n    33\\t}\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. By default, output is limited to 200 lines or 32 KiB, whichever comes first.\\nSet larger limit and max_bytes values when a larger window or the complete file is justified.\\nWhen more content exists, the result includes the exact offset or bash command needed to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 200; no fixed upper limit)\"},\"max_bytes\":{\"type\":\"integer\",\"description\":\"Maximum output bytes (default: 32768; increase explicitly for a larger or full-file read)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:48:19 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "3529"
+            ],
+            "cf-ray": [
+                "a394b9ceba405d5a-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "3057"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999617"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_28d0b4eef32642bc8e987f13ac3479ce"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpLUxOGgtZQ6gJqfWZc4Zkm1NQhc\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109296,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"### Purpose\\n`UseFileTools` is a small agent capability that registers file-related tools for an agent, scoped to a configured base directory. It appears to bundle:\\n\\n- `ReadFileTool`\\n- `WriteFileTool`\\n- `EditFileTool`\\n\\nand then merges them into the agent\u2019s existing tool set.\\n\\n### Structure\\n- `final class UseFileTools implements CanProvideAgentCapability`\\n- Constructor accepts a single dependency:\\n  - `private string $baseDir`\\n- Implements two methods required by the capability contract:\\n  - `capabilityName(): string` returns the capability identifier `'use_file_tools'`\\n  - `configure(CanConfigureAgent $agent): CanConfigureAgent` creates the file tools and attaches them to the agent\\n\\n### Notable implementation details\\n- Uses `#[Override]` on both interface methods, which is good for intent and refactor safety.\\n- Tool instances are created via `::inDirectory($baseDir)`, implying directory scoping is enforced by the tool implementations.\\n- Existing tools are preserved by merging:\\n  - `$agent->tools()->merge($fileTools)`\\n- The class is `final`, which is reasonable for a simple capability wrapper.\\n\\n### Issues \/ risks\\n1. **No validation of `$baseDir`**\\n   - The constructor accepts any string, but there\u2019s no check that it exists, is readable\/writable, or is a safe absolute\/relative path.\\n   - If the underlying tools don\u2019t strongly validate paths, this could lead to runtime errors or security issues.\\n\\n2. **Potential path traversal \/ sandboxing risk**\\n   - The capability implies file access is restricted to a base directory, but this file itself doesn\u2019t enforce that.\\n   - Security depends entirely on `ReadFileTool`, `WriteFileTool`, and `EditFileTool` correctly constraining file operations.\\n\\n3. **Repeated local variable is unnecessary**\\n   - `$baseDir = $this->baseDir;` is redundant and slightly reduces clarity.\\n   - Could use `$this->baseDir` directly.\\n\\n4. **No explicit error handling**\\n   - If tool construction or `merge()` can fail, there\u2019s no handling or context for debugging.\\n\\n5. **Maintainability: capability is very thin**\\n   - This class is straightforward, which is good, but the lack of explanatory comments or docblock may make its security assumptions less obvious.\\n   - Since file capabilities are sensitive, documenting expected guarantees of `inDirectory()` would help.\\n\\n### Overall assessment\\nThis file is concise and easy to understand: it simply packages file tools into an agent capability. The main concern is not the structure itself but the safety assumptions around directory restriction and path handling, which are not visible here. If the underlying tools enforce strict sandboxing, this class is fine; otherwise, it could become a security risk.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 786,\n    \"completion_tokens\": 574,\n    \"total_tokens\": 1360,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

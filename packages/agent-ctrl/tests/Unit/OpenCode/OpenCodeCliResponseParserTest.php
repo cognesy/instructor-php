@@ -55,6 +55,24 @@ it('throws on malformed jsonl line', function () {
         ->toThrow(JsonParsingException::class);
 });
 
+it('preserves a reported zero cost', function () {
+    $stdout = '{"type":"step_finish","timestamp":1,"sessionID":"sess_free","part":{"messageID":"msg_free","id":"part_free","reason":"stop","snapshot":"snap","cost":0,"tokens":{"input":10,"output":2}}}';
+    $result = new ExecResult($stdout, '', 0, 0.1);
+
+    $response = (new ResponseParser())->parse($result, OutputFormat::Json);
+
+    expect($response->cost())->toBe(0.0);
+});
+
+it('keeps cost unknown when OpenCode does not report it', function () {
+    $stdout = '{"type":"step_finish","timestamp":1,"sessionID":"sess_unknown","part":{"messageID":"msg_unknown","id":"part_unknown","reason":"stop","snapshot":"snap","tokens":{"input":10,"output":2}}}';
+    $result = new ExecResult($stdout, '', 0, 0.1);
+
+    $response = (new ResponseParser())->parse($result, OutputFormat::Json);
+
+    expect($response->cost())->toBeNull();
+});
+
 it('throws on invalid json output', function () {
     $result = new ExecResult('not-json', '', 1, 0.1);
 

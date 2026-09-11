@@ -7,5 +7,3 @@ metadata:
   project: ""
 model: gpt-5.4-mini
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 16384

@@ -81,11 +81,11 @@ final class MemoryProfileBench
         }
 
         $chunks = [];
-        $chunks[] = new PartialInferenceDelta(contentDelta: $open);
+        $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $open));
         foreach ($items as $piece) {
-            $chunks[] = new PartialInferenceDelta(contentDelta: $piece);
+            $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $piece));
         }
-        $chunks[] = new PartialInferenceDelta(contentDelta: $close, finishReason: 'stop');
+        $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $close), finishReason: 'stop');
 
         return $chunks;
     }
@@ -132,7 +132,7 @@ final class MemoryProfileBench
      */
     public function benchSync1KB(): void
     {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(1024))]);
+        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->makeJson(1024)))]);
         $this->runSyncBench($driver, 1024);
     }
 
@@ -158,7 +158,7 @@ final class MemoryProfileBench
      */
     public function benchSync10KB(): void
     {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(10240))]);
+        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->makeJson(10240)))]);
         $this->runSyncBench($driver, 10240);
     }
 
@@ -184,7 +184,7 @@ final class MemoryProfileBench
      */
     public function benchSync100KB(): void
     {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(102400))]);
+        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->makeJson(102400)))]);
         $this->runSyncBench($driver, 102400);
     }
 

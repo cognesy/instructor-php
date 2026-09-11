@@ -10,8 +10,8 @@ use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 it('invokes delta callback and exposes last visible delta', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hel'),
-            new PartialInferenceDelta(contentDelta: 'lo', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hel')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'lo'), finishReason: 'stop'),
         ]],
     );
 
@@ -25,7 +25,7 @@ it('invokes delta callback and exposes last visible delta', function () {
     $seen = [];
 
     foreach ($stream->onDelta(function (PartialInferenceDelta $delta) use (&$seen): void {
-        $seen[] = $delta->contentDelta;
+        $seen[] = $delta->messageChunks->textDelta();
     })->deltas() as $delta) {
         expect($delta)->toBeInstanceOf(PartialInferenceDelta::class);
     }

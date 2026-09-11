@@ -4,6 +4,8 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunk;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunks;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 
@@ -15,7 +17,7 @@ class PendingContractUser
 
 it('is lazy until accessed and coordinates raw and structured reads through one execution', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"Ava","age":34}'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ava","age":34}')),
     ]);
 
     $pending = (new StructuredOutput)
@@ -45,8 +47,15 @@ it('reuses the finalized stream when inferenceResponse() is read after streaming
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Lia"', usage: new \Cognesy\Polyglot\Inference\Data\InferenceUsage(outputTokens: 1)),
-            new PartialInferenceDelta(contentDelta: ',"age":29}', finishReason: 'stop', usage: new \Cognesy\Polyglot\Inference\Data\InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(
+                usage: new \Cognesy\Polyglot\Inference\Data\InferenceUsage(outputTokens: 1),
+                messageChunks: new AssistantMessageChunks(AssistantMessageChunk::textDelta(0, '{"name":"Lia"')),
+            ),
+            new PartialInferenceDelta(
+                finishReason: 'stop',
+                usage: new \Cognesy\Polyglot\Inference\Data\InferenceUsage(outputTokens: 1),
+                messageChunks: new AssistantMessageChunks(AssistantMessageChunk::textDelta(0, ',"age":29}')),
+            ),
         ]],
     );
 
@@ -63,5 +72,5 @@ it('reuses the finalized stream when inferenceResponse() is read after streaming
     $raw = $pending->inferenceResponse();
 
     expect($driver->streamCalls)->toBe(1);
-    expect($raw->content())->toBe($finalFromStream->content());
+    expect($raw->message()->content()->toString())->toBe($finalFromStream->content());
 });

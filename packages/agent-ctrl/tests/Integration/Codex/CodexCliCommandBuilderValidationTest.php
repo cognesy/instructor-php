@@ -2,6 +2,7 @@
 
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 
 it('rejects unsupported characters in codex model', function () {
     $request = new CodexRequest(
@@ -37,6 +38,29 @@ it('accepts safe codex model and session id values', function () {
         ->and($argv)->toContain('gpt-5-codex')
         ->and($argv)->toContain('resume')
         ->and($argv)->toContain('session_abc-123:foo/bar');
+});
+
+it('uses the current codex automatic approval flag', function () {
+    $request = new CodexRequest(
+        prompt: 'run checks',
+        approveForMe: true,
+    );
+
+    $argv = (new CodexCommandBuilder())->buildExec($request)->argv()->toArray();
+
+    expect($argv)->toContain('--approve-for-me')
+        ->and($argv)->not->toContain('--full-auto');
+});
+
+it('rejects conflicting codex execution modes', function () {
+    $request = new CodexRequest(
+        prompt: 'run checks',
+        sandboxMode: SandboxMode::ReadOnly,
+        approveForMe: true,
+    );
+
+    expect(fn() => (new CodexCommandBuilder())->buildExec($request))
+        ->toThrow(InvalidArgumentException::class, 'sandboxMode, approveForMe, and dangerouslyBypass are mutually exclusive');
 });
 
 it('rejects missing codex image files', function () {

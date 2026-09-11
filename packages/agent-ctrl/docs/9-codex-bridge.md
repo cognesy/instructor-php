@@ -90,23 +90,23 @@ $response = AgentCtrl::codex()
 
 Codex supports two approval configuration methods that control how the agent handles permission requests.
 
-### Full Auto Mode
+### Automatic Approval
 
-`fullAuto()` enables automatic approval with workspace-write sandbox access. This is the default configuration (`true`), making it suitable for headless execution:
+`approveForMe()` routes approval requests through automatic review with workspace-write sandbox access. This is the default configuration (`true`), making it suitable for headless execution:
 
 ```php
 $response = AgentCtrl::codex()
-    ->fullAuto()
+    ->approveForMe()
     ->execute('Implement the feature described in SPEC.md.');
 ```
 
-When full-auto is enabled, the agent automatically approves tool executions that would normally require user confirmation, and on-failure actions are also auto-approved.
+Explicit sandbox selection, automatic approval, and dangerous bypass are mutually exclusive modes. Calling one of their builder methods selects it and clears the other modes.
 
 Disable it when you want more conservative behavior:
 
 ```php
 $response = AgentCtrl::codex()
-    ->fullAuto(false)
+    ->approveForMe(false)
     ->execute('Analyze the codebase structure.');
 ```
 
@@ -280,8 +280,7 @@ $logger = new AgentCtrlConsoleLogger(
 
 $response = AgentCtrl::codex()
     ->withModel('o4-mini')
-    ->withSandbox(SandboxMode::WorkspaceWrite)
-    ->fullAuto()
+    ->approveForMe()
     ->withTimeout(300)
     ->inDirectory('/projects/my-app')
     ->withAdditionalDirs(['/shared/test-fixtures'])

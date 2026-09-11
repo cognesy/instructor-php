@@ -4,5 +4,3 @@ apiKey: '${OLLAMA_API_KEY}'
 endpoint: /chat/completions
 model: 'gpt-oss:20b'
 maxTokens: 1024
-contextLength: 128000
-maxOutputLength: 8192

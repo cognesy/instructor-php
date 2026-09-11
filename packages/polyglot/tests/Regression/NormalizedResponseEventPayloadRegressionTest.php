@@ -85,7 +85,7 @@ it('emits minimal array payload for streamed inference response events', functio
         execution: InferenceExecution::fromRequest($request),
         driver: new \Cognesy\Polyglot\Tests\Support\FakeInferenceDriver(
             streamBatches: [[
-                new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
             ]],
         ),
         eventDispatcher: $events,
@@ -158,12 +158,7 @@ it('emits minimal array payload for sync inference response events', function ()
         new class implements CanTranslateInferenceResponse {
             public function fromResponse(HttpResponse $response): ?InferenceResponse
             {
-                return new InferenceResponse(
-                    content: 'OK',
-                    finishReason: 'stop',
-                    usage: new InferenceUsage(outputTokens: 2),
-                    responseData: $response,
-                );
+                return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2), responseData: $response);
             }
 
             public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable
@@ -270,7 +265,7 @@ function captureResponseCreatedFromStream(): object
         execution: InferenceExecution::fromRequest($request),
         driver: new \Cognesy\Polyglot\Tests\Support\FakeInferenceDriver(
             streamBatches: [[
-                new PartialInferenceDelta(contentDelta: 'OK', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2)),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'OK'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2)),
             ]],
         ),
         eventDispatcher: $events,
@@ -318,12 +313,7 @@ function captureResponseCreatedFromSyncDriver(): object
         new class implements CanTranslateInferenceResponse {
             public function fromResponse(HttpResponse $response): ?InferenceResponse
             {
-                return new InferenceResponse(
-                    content: 'OK',
-                    finishReason: 'stop',
-                    usage: new InferenceUsage(outputTokens: 2),
-                    responseData: $response,
-                );
+                return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2), responseData: $response);
             }
 
             public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable

@@ -16,16 +16,16 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:40:18 GMT"
+                "Fri, 11 Sep 2026 06:46:30 GMT"
             ],
             "content-type": [
                 "application\/json"
             ],
             "content-length": [
-                "2376"
+                "2578"
             ],
             "cf-ray": [
-                "a16ead4a5fb4c01c-WAW"
+                "a394b72d1950eecf-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "2461"
+                "2154"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -78,15 +78,13 @@
                 "13ms"
             ],
             "x-request-id": [
-                "req_648ea591acf54c7aabd4cc049911c21b"
+                "req_f8d1f931d0ea47888a33ce96f1dd93c9"
             ],
-            "set-cookie": [
-                "__cf_bm=TGWb4QDMYmGX9aMW2s6FfZHo30vw1cd5FXpU2ejQkQ8-1783341615.7351103-1.0.1.1-CNAXHSxscdoeIQHYcZiRG_OwOL6Oobz8VsAG1o7NqO4mpZN5SsUUYL84Ri3UmoaA6CFY7STU1lcOMstr_G0AAPCkMru24F.MgzEwyXgkUDz5wT9K9cieQsY38773yxH8; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:18 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-DycuNpKQfYwpVFuw7cp8l9NNs7BgR\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341615,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Here\u2019s a concise summary of the provided content for future reference:\\n\\n**Instructor for PHP** is a framework-agnostic PHP library that simplifies integrating LLMs into PHP apps by extracting **structured, validated data** from model outputs.\\n\\n### Core points\\n- Converts LLM responses into **type-safe PHP classes**.\\n- Supports **text, chat messages, and images** as inputs.\\n- Lets developers define output structures **statically** (classes) or **dynamically** (JSON Schema \/ structures).\\n- Includes **validation and automatic retries** with feedback to improve failed outputs.\\n- Provides a **unified API** for multiple LLM providers, making it easy to switch between them.\\n- Works with any PHP framework, including **Laravel** and **Symfony**.\\n- Offers **observability**, **streaming**, **embeddings**, and **context caching**.\\n\\n### Supported providers\\n- OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama, and others.\\n\\n### Typical workflow\\n1. Install via Composer.\\n2. Define a PHP data model.\\n3. Call Instructor to run inference and return structured results.\\n\\n### Example\\nThe example shows using `StructuredOutput` with an `LLMConfig` set to OpenAI to extract a `City` object from the prompt \u201cWhat is the capital of France?\u201d, producing structured data like Paris.\\n\\n### Use cases\\n- E-commerce\\n- Healthcare\\n- Education\\n- Financial services\\n- Real estate\\n- Recruitment \/ HR\\n\\n### Overall\\nInstructor for PHP is positioned as a lightweight, developer-friendly tool for automating structured data extraction and LLM workflow integration in PHP applications.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 732,\n    \"completion_tokens\": 341,\n    \"total_tokens\": 1073,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMpJk71TT6wrr4qCUHkokJc59kZ8s\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109188,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Here\u2019s a concise summary of the provided message for future reference:\\n\\n**Instructor for PHP** is a framework-agnostic PHP library for integrating LLMs into PHP applications, focused on extracting **structured, validated data** from model outputs. It provides a unified API across multiple LLM providers (e.g., OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama), supports text\/chat\/image inputs, and allows defining response models either statically with PHP classes or dynamically via JSON Schema\/structures.\\n\\n### Main capabilities\\n- Converts LLM output into **type-safe PHP objects**\\n- Validates outputs and can **retry with feedback** for correction\\n- Supports **streaming** for partial real-time responses\\n- Offers **embeddings** and **context caching**\\n- Includes **observability\/event hooks** for logging, monitoring, and debugging\\n- Works with any PHP framework, including Laravel and Symfony\\n\\n### Developer experience\\n- Simple API and minimal footprint\\n- Customizable prompts, validation, and deserialization\\n- Uses Symfony validation for data integrity\\n\\n### Typical use cases\\n- E-commerce, healthcare, education, finance, real estate, HR\/recruitment\\n- Examples include document processing, review analysis, support automation, and data extraction\\n\\n### Getting started\\n- Install via Composer: `composer require cognesy\/instructor-php`\\n- Define a PHP data model\\n- Run inference to extract structured data from an LLM response\\n\\n### Example concept\\nA `City` class can be used as a response model so a prompt like \u201cWhat is the capital of France?\u201d returns structured data such as Paris\u2019s name, country, and population.\\n\\nIf you want, I can also turn this into a **one-paragraph summary**, a **bullet list of key facts**, or a **technical reference note**.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 732,\n    \"completion_tokens\": 376,\n    \"total_tokens\": 1108,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

@@ -150,13 +150,11 @@ A score is only meaningful next to another score, and once the judge is itself a
     "target": {
       "driver": "openai",
       "model": "gpt-5-target",
-      "maxTokens": 1024,
-      "contextLength": 8000,
-      "maxOutputLength": 4096
+      "maxTokens": 1024
     },
     "judge": {
       "class": "Cognesy\\Agents\\Evals\\AgentLoopJudge",
-      "llm": { "driver": "openai", "model": "gpt-5-judge", "maxTokens": 1024, "contextLength": 8000, "maxOutputLength": 4096 },
+      "llm": { "driver": "openai", "model": "gpt-5-judge", "maxTokens": 1024 },
       "temperature": null,
       "guardsWarningObserved": true
     },

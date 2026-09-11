@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageAssembler;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -32,11 +33,10 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         }
 
         return new InferenceResponse(
-            content: $this->makeContent($data),
             finishReason: $data['finish_reason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $response,
+            message: AssistantMessageAssembler::fromParts($this->makeAssistantParts($data))->message(),
         );
     }
 
@@ -47,7 +47,8 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
     #[\Override]
     protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
-            contentDelta: $this->makeContentDelta($data),
+            messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withTextDelta('openai:text:0', $this->makeContentDelta($data)),
             finishReason: $data['delta']['finish_reason'] ?? '',
             usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             responseData: $responseData,

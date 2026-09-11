@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"List companies meeting criteria:\\n - insurtech\\n - located in US, Canada or Europe\\n - mentioned on ProductHunt\\n\\n\"},{\"role\":\"user\",\"content\":\"Use following styles for descriptions:\\n - brief\\n - journalistic\\n\\n\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"description\":\"A collection of Company\",\"properties\":{\"list\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"country\":{\"type\":\"string\"},\"industry\":{\"type\":\"string\"},\"websiteUrl\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}},\"required\":[\"name\",\"country\",\"industry\",\"websiteUrl\",\"description\"],\"additionalProperties\":false}}},\"required\":[\"list\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:46:52 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2021"
+            ],
+            "cf-ray": [
+                "a394b7b9dcef88e8-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1278"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999889"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_b5a9266014d8410dacbb57b49d758c52"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpK7jaCDSB3Ys7mk1iBoWJlD3qum\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109211,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_Gmxtu8Y4wV9QxGeg19eEIDEr\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"list\\\":[{\\\"name\\\":\\\"Lemonade\\\",\\\"country\\\":\\\"United States\\\",\\\"industry\\\":\\\"Insurtech\\\",\\\"websiteUrl\\\":\\\"https:\/\/www.lemonade.com\\\",\\\"description\\\":\\\"US insurtech company offering digital renters, homeowners, pet, and life insurance through an app-based platform.\\\"},{\\\"name\\\":\\\"Cuvva\\\",\\\"country\\\":\\\"United Kingdom\\\",\\\"industry\\\":\\\"Insurtech\\\",\\\"websiteUrl\\\":\\\"https:\/\/cuvva.com\\\",\\\"description\\\":\\\"UK insurtech startup focused on short-term and flexible car insurance via a mobile app.\\\"},{\\\"name\\\":\\\"Getsafe\\\",\\\"country\\\":\\\"Germany\\\",\\\"industry\\\":\\\"Insurtech\\\",\\\"websiteUrl\\\":\\\"https:\/\/www.getsafe.com\\\",\\\"description\\\":\\\"European insurtech company providing digital insurance products for renters, liability, contents, and more.\\\"},{\\\"name\\\":\\\"Sure\\\",\\\"country\\\":\\\"United States\\\",\\\"industry\\\":\\\"Insurtech\\\",\\\"websiteUrl\\\":\\\"https:\/\/www.sureapp.com\\\",\\\"description\\\":\\\"US insurtech platform that powers embedded insurance experiences for carriers, brands, and distributors.\\\"}]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 246,\n    \"completion_tokens\": 213,\n    \"total_tokens\": 459,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

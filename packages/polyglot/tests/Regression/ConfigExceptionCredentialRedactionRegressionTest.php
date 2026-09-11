@@ -55,16 +55,16 @@ it('does not leak the apiKey when LLMConfig hydration fails', function () {
 
     expect(fn() => LLMConfig::fromArray([
         'apiKey' => $secret,
-        'unknownField' => 'boom',
+        'apiUrl' => [],
     ]))->toThrow(InvalidArgumentException::class);
 
     try {
-        LLMConfig::fromArray(['apiKey' => $secret, 'unknownField' => 'boom']);
+        LLMConfig::fromArray(['apiKey' => $secret, 'apiUrl' => []]);
     } catch (InvalidArgumentException $e) {
         expect($e->getMessage())->not->toContain($secret)
             // safe, actionable diagnostics remain: field names and received types
-            ->and($e->getMessage())->toContain('unknownField')
-            ->and($e->getMessage())->toContain('string')
+            ->and($e->getMessage())->toContain('apiUrl')
+            ->and($e->getMessage())->toContain('array')
             ->and($e->getMessage())->toContain('LLMConfig');
     }
 });
@@ -75,7 +75,7 @@ it('does not leak nested option credentials when LLMConfig hydration fails', fun
     try {
         LLMConfig::fromArray([
             'options' => ['access_token' => $nestedSecret],
-            'unknownField' => 'boom',
+            'apiUrl' => [],
         ]);
         throw new RuntimeException('expected hydration to fail');
     } catch (InvalidArgumentException $e) {
@@ -105,14 +105,14 @@ it('redacts LLM credentials from wrapper and previous exception traces', functio
     $secret = 'sk-llm-trace-should-not-appear-1234567890';
     $result = capturedConfigException(fn() => LLMConfig::fromArray([
         'apiKey' => $secret,
-        'unknownField' => 'boom',
+        'apiUrl' => [],
     ]));
 
     expect($result['exception'])->toBeInstanceOf(InvalidArgumentException::class)
         ->and($result['exception']->getPrevious())->not->toBeNull()
         ->and($result['snapshot'])->not->toContain($secret)
-        ->and($result['exception']->getMessage())->toContain('unknownField')
-        ->and($result['exception']->getMessage())->toContain('string');
+        ->and($result['exception']->getMessage())->toContain('apiUrl')
+        ->and($result['exception']->getMessage())->toContain('array');
 });
 
 it('redacts embeddings credentials from wrapper and previous exception traces', function () {
@@ -144,16 +144,16 @@ it('redacts credentials from LLM nested options and override traces', function (
         ->and($result['snapshot'])->not->toContain('base-key');
 });
 
-it('redacts credentials from LLM and embeddings DSN traces', function (string $configClass, string $secret) {
+it('redacts credentials from LLM and embeddings DSN traces', function (string $configClass, string $secret, string $invalid) {
     $result = capturedConfigException(fn() => $configClass::fromDsn(
-        "apiKey={$secret},unknownField=boom",
+        "apiKey={$secret},{$invalid}",
     ));
 
     expect($result['exception'])->toBeInstanceOf(InvalidArgumentException::class)
         ->and($result['snapshot'])->not->toContain($secret);
 })->with([
-    'LLM config' => [LLMConfig::class, 'llm-dsn-secret-123'],
-    'embeddings config' => [EmbeddingsConfig::class, 'embed-dsn-secret-456'],
+    'LLM config' => [LLMConfig::class, 'llm-dsn-secret-123', 'maxTokens=invalid'],
+    'embeddings config' => [EmbeddingsConfig::class, 'embed-dsn-secret-456', 'dimensions=invalid'],
 ]);
 
 it('redacts a direct embeddings constructor apiKey when another argument is invalid', function () {

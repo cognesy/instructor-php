@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.deepseek.com\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"deepseek-v4-flash\",\"max_tokens\":1024,\"messages\":[{\"role\":\"system\",\"content\":\"## Examples\\n\\nEXAMPLE INPUT:\\n    Ive got email Frank - their developer, who's 30. His Twitter handle is @frankch. Btw, he plays on drums!\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"age\\\":30,\\\"name\\\":\\\"Frank\\\",\\\"username\\\":\\\"@frankch\\\",\\\"role\\\":\\\"developer\\\",\\\"hobbies\\\":[\\\"playing drums\\\"]}\\n    ```\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `User`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"User\\\",\\n    \\\"properties\\\": {\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\"\\n        },\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"username\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"role\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"enum\\\": [\\n                \\\"guest\\\",\\n                \\\"user\\\",\\n                \\\"admin\\\"\\n            ],\\n            \\\"x-php-class\\\": \\\"UserType\\\"\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            }\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"age\\\",\\n        \\\"name\\\",\\n        \\\"username\\\",\\n        \\\"role\\\",\\n        \\\"hobbies\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"User\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.\"}],\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application\/json"
+            ],
+            "date": [
+                "Fri, 11 Sep 2026 06:46:04 GMT"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "elb"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-credentials": [
+                "true"
+            ],
+            "x-ds-trace-id": [
+                "aca55c6a429fb1dd16f8a9f7179582ab"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 2a4099b0784a12eb0254e476e2a84a2e.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P6"
+            ],
+            "x-amz-cf-id": [
+                "-ChRpO65LDdUcRTI7bqOh3ghHzBFm7cL9mwx4sxEgTuIkOCGNRtG8A=="
+            ]
+        },
+        "body": "{\"id\":\"e0a68416-ec19-4b3f-8edc-68a830f8adb6\",\"object\":\"chat.completion\",\"created\":1789109164,\"model\":\"deepseek-flash\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"age\\\":25,\\\"name\\\":\\\"Jason\\\",\\\"username\\\":\\\"@jxnlco\\\",\\\"role\\\":\\\"admin\\\",\\\"hobbies\\\":[\\\"playing football\\\",\\\"reading books\\\"]}\",\"reasoning_content\":\"We need answer strict JSON object following schema. Need extract: age 25, name Jason, username @jxnlco, role admin, hobbies [\\\"playing football\\\",\\\"reading books\\\"]. Ensure JSON only. Role enum admin okay. Username maybe @jxnlco. Name Jason. AdditionalProperties false. Use exact. Need no markdown? User says respond strict JSON object. Final should be JSON.\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":379,\"completion_tokens\":115,\"total_tokens\":494,\"prompt_tokens_details\":{\"cached_tokens\":128},\"completion_tokens_details\":{\"reasoning_tokens\":82},\"prompt_cache_hit_tokens\":128,\"prompt_cache_miss_tokens\":251},\"system_fingerprint\":\"aeb56401ca74e127821c4f9126dcb669\"}"
+    }
+}

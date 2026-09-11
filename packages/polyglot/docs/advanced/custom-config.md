@@ -30,8 +30,6 @@ metadata:
   project: ''
 model: gpt-4.1-nano
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 16384
 ```
 
 Environment variable references like `${OPENAI_API_KEY}` are resolved automatically at load
@@ -60,10 +58,7 @@ Each LLM configuration includes these parameters:
 | `metadata` | `array` | Provider-specific settings (organization, API version, etc.) |
 | `model` | `string` | Default model name |
 | `maxTokens` | `int` | Default maximum tokens for responses |
-| `contextLength` | `int` | Maximum context window supported by the model |
-| `maxOutputLength` | `int` | Maximum output length supported by the model |
 | `options` | `array` | Default request options passed to every call |
-| `pricing` | `array` | Optional token pricing information for cost tracking |
 
 Embeddings configurations use a similar structure with `dimensions` and `maxInputs` instead of
 the token-related fields.
@@ -87,8 +82,6 @@ $config = new LLMConfig(
     endpoint: '/chat/completions',
     model: 'gpt-4.1-nano',
     maxTokens: 2048,
-    contextLength: 1000000,
-    maxOutputLength: 16384,
 );
 
 $text = Inference::fromConfig($config)
@@ -337,8 +330,6 @@ apiKey: '${MY_PROXY_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 2048
-contextLength: 128000
-maxOutputLength: 16384
 ```
 
 Then reference it by name:

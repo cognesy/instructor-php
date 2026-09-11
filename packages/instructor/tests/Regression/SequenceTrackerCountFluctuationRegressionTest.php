@@ -19,11 +19,11 @@ it('does not re-emit items when sequence count fluctuates due to partial JSON re
     // Chunk 3: second item reappears, third starts
     // This triggers the SequenceTracker regression where emittedCount could go backwards.
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Jason","age":25}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Ja'),
-        new PartialInferenceDelta(contentDelta: 'ne","age":18}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"John","age":30}'),
-        new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Jason","age":25}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Ja')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'ne","age":18}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"John","age":30}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ']}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);

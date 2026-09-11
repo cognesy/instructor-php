@@ -43,8 +43,8 @@ final class ModelsCommand extends Command implements CanDescribeOperationalPlane
             $rows = $this->providers->models($project, is_string($selector) ? $selector : null);
             $fields = FieldSelection::from(
                 (string) $input->getOption('fields'),
-                ['connection', 'provider', 'defaultModel', 'availableModels'],
-                ['connection', 'provider', 'source', 'defaultModel', 'availableModels', 'contextCapacity', 'maxOutputTokens', 'capabilities', 'unknown', 'provenance'],
+                ['provider', 'model', 'status', 'contextCapacity'],
+                ['provider', 'model', 'status', 'connections', 'defaultFor', 'contextCapacity', 'maxOutputTokens', 'modalities', 'capabilities', 'catalogSource', 'catalogVersion', 'provenance'],
             );
             (new StructuredOutput($output))->write(['count' => count($rows), 'models' => $fields->project($rows)], json: (bool) $input->getOption('json'));
 
@@ -61,11 +61,11 @@ final class ModelsCommand extends Command implements CanDescribeOperationalPlane
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'models',
-            responsibility: 'Inspect models declared by resolved Polyglot connection presets.',
-            ownedState: 'No Tell state; model declarations remain in Polyglot preset files.',
+            responsibility: 'Inspect exact model offerings from the resolved Polyglot catalog.',
+            ownedState: 'No Tell state; model facts remain in Polyglot catalog files.',
             input: 'Optional provider or connection selector, project directory, and field selection.',
-            output: 'Sorted preset-declared model rows with capability provenance and explicit unknowns.',
-            authority: 'Read-only local preset inspection; never resolves credentials or opens a network connection.',
+            output: 'Sorted exact offering rows with limits, capabilities, and provenance.',
+            authority: 'Read-only local catalog inspection; never resolves credentials or opens a network connection.',
             degradedBehavior: 'Rejects unknown selectors without falling back to another provider.',
         );
     }

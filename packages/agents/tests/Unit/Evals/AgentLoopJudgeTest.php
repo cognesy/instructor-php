@@ -383,7 +383,7 @@ it('reports llmProfile() as null before judge() has ever been called, and after 
 });
 
 it('reports llmProfile() from the resolved LLMConfig after judge(), and threads it onto the judge\'s own AgentRun', function (): void {
-    $config = new LLMConfig(model: 'gpt-5-judge', maxTokens: 4096, contextLength: 200_000, maxOutputLength: 8192, driver: 'openai');
+    $config = new LLMConfig(model: 'gpt-5-judge', maxTokens: 4096, driver: 'openai');
     $inner = FakeAgentDriver::fromSteps(ScenarioStep::toolCall('submit_judgment', ['score' => 0.5, 'reason' => 'ok']));
     $driver = new LlmAwareFakeDriver($inner, $config);
     $judge = AgentLoopJudge::fromBuilder(fn () => judgeBuilder($driver, defaultGuards()));

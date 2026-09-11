@@ -23,15 +23,19 @@ final readonly class AgentStep
     private Messages $inputMessages;
     private InferenceResponse $inferenceResponse;
     private ToolExecutions $toolExecutions;
+    private ToolCalls $requestedToolCalls;
     private ErrorList $errors;
     private Messages $outputMessages;
+    private Messages $historyMessages;
 
     public function __construct(
         ?Messages $inputMessages = null,
         ?Messages $outputMessages = null,
         ?InferenceResponse $inferenceResponse = null,
         ?ToolExecutions $toolExecutions = null,
+        ?ToolCalls $requestedToolCalls = null,
         ?ErrorList $errors = null,
+        ?Messages $historyMessages = null,
         ?AgentStepId $id = null,
     ) {
         $this->id = $id ?? AgentStepId::generate();
@@ -39,6 +43,8 @@ final readonly class AgentStep
         $this->outputMessages = $outputMessages ?? Messages::empty();
         $this->toolExecutions = $toolExecutions ?? new ToolExecutions();
         $this->inferenceResponse = $inferenceResponse ?? new InferenceResponse();
+        $this->requestedToolCalls = $requestedToolCalls ?? $this->inferenceResponse->message()->toolCalls();
+        $this->historyMessages = $historyMessages ?? $this->outputMessages;
 
         $providedErrors = $errors ?? ErrorList::empty();
         $toolErrors = $this->toolExecutions->errors();
@@ -67,7 +73,9 @@ final readonly class AgentStep
             outputMessages: $this->outputMessages,
             inferenceResponse: $this->inferenceResponse,
             toolExecutions: $this->toolExecutions,
+            requestedToolCalls: $this->requestedToolCalls,
             errors: $newErrors,
+            historyMessages: $this->historyMessages,
             id: $this->id,
         );
     }
@@ -106,6 +114,10 @@ final readonly class AgentStep
         return $this->outputMessages;
     }
 
+    public function historyMessages(): Messages {
+        return $this->historyMessages;
+    }
+
     // INFERENCE RESPONSE //////////////////////////////////////////
 
     public function inferenceResponse(): InferenceResponse {
@@ -126,7 +138,7 @@ final readonly class AgentStep
      * Tool calls requested by the model in this step.
      */
     public function requestedToolCalls(): ToolCalls {
-        return $this->inferenceResponse->toolCalls();
+        return $this->requestedToolCalls;
     }
 
     /**
@@ -164,6 +176,8 @@ final readonly class AgentStep
             'id' => $this->id->value,
             'inputMessages' => $this->inputMessages->toArray(),
             'outputMessages' => $this->outputMessages->toArray(),
+            'historyMessages' => $this->historyMessages->toArray(),
+            'requestedToolCalls' => $this->requestedToolCalls->toArray(),
             'toolExecutions' => $this->toolExecutions->toArray(),
             'errors' => array_map(
                 static fn (Throwable $error): array => [
@@ -185,7 +199,13 @@ final readonly class AgentStep
             outputMessages: isset($data['outputMessages'])
                 ? Messages::fromArray($data['outputMessages'])
                 : Messages::empty(),
+            historyMessages: isset($data['historyMessages'])
+                ? Messages::fromArray($data['historyMessages'])
+                : null,
             inferenceResponse: $inferenceResponse,
+            requestedToolCalls: isset($data['requestedToolCalls'])
+                ? ToolCalls::fromArray($data['requestedToolCalls'])
+                : null,
             toolExecutions: isset($data['toolExecutions'])
                 ? ToolExecutions::fromArray($data['toolExecutions'])
                 : null,
@@ -224,14 +244,6 @@ final readonly class AgentStep
         $response = isset($data['inferenceResponse'])
             ? InferenceResponse::fromArray($data['inferenceResponse'])
             : new InferenceResponse();
-
-        if (isset($data['toolCalls']) && $response->toolCalls()->hasNone()) {
-            $response = $response->with(toolCalls: ToolCalls::fromArray($data['toolCalls']));
-        }
-
-        if (isset($data['usage']) && $response->usage()->total() === 0) {
-            $response = $response->with(usage: InferenceUsage::fromArray($data['usage']));
-        }
 
         return $response;
     }

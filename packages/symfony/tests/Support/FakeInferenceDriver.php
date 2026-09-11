@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Symfony\Tests\Support;
 
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -17,7 +16,7 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
 
     public function makeResponseFor(InferenceRequest $request): InferenceResponse
     {
-        return array_shift($this->responses) ?? new InferenceResponse(content: '');
+        return array_shift($this->responses) ?? new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''));
     }
 
     /** @return iterable<PartialInferenceDelta> */
@@ -26,8 +25,4 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
         yield from [];
     }
 
-    public function capabilities(?string $model = null): DriverCapabilities
-    {
-        return new DriverCapabilities();
-    }
 }

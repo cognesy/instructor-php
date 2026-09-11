@@ -10,7 +10,7 @@ one -- the library exposes clean extension points for both inference and embeddi
 
 ## Custom Inference Drivers
 
-Inference drivers implement the `CanProcessInferenceRequest` interface, which defines three
+Inference drivers implement the `CanProcessInferenceRequest` interface, which defines two
 methods:
 
 ```php
@@ -21,7 +21,6 @@ interface CanProcessInferenceRequest
     /** @return iterable<PartialInferenceDelta> */
     public function makeStreamDeltasFor(InferenceRequest $request): iterable;
 
-    public function capabilities(?string $model = null): DriverCapabilities;
 }
 ```
 
@@ -29,7 +28,6 @@ interface CanProcessInferenceRequest
 |---|---|
 | `makeResponseFor()` | Send a synchronous request and return the complete response |
 | `makeStreamDeltasFor()` | Send a streaming request and yield partial deltas |
-| `capabilities()` | Report driver capabilities (tool calls, JSON mode, vision, etc.) |
 
 ### Registering a Driver Class
 
@@ -41,11 +39,11 @@ standard constructor signature `($config, $httpClient, $events)`:
 
 use App\Polyglot\AcmeInferenceDriver;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withDriver('acme', AcmeInferenceDriver::class);
 
 $config = new LLMConfig(
@@ -70,14 +68,12 @@ OpenAI implementation:
 ```php
 <?php
 
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\Drivers\InferenceDriverSpec;
 
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withDriver('acme', new InferenceDriverSpec(
         bodyFormat: AcmeBodyFormat::class,
-        capabilities: new DriverCapabilities(responseFormatWithTools: false),
     ));
 ```
 
@@ -86,16 +82,16 @@ The spec's other fields -- `requestAdapter`, `responseAdapter`, `usageFormat`, `
 whose wire protocol or endpoint differs name those provider-specific collaborators in the row;
 they do not need a provider driver class.
 
-To change *behaviour* rather than composition, subclass `SpecifiedInferenceDriver` and name it
+To change *behaviour* rather than composition, subclass `BaseInferenceRequestDriver` and name it
 in the spec. The spec still assembles the five collaborators for it:
 
 ```php
 <?php
 
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
-use Cognesy\Polyglot\Inference\Drivers\SpecifiedInferenceDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 
-final class LoggingDriver extends SpecifiedInferenceDriver
+final class LoggingDriver extends BaseInferenceRequestDriver
 {
     #[\Override]
     public function makeResponseFor($request): \Cognesy\Polyglot\Inference\Data\InferenceResponse {
@@ -104,7 +100,7 @@ final class LoggingDriver extends SpecifiedInferenceDriver
     }
 }
 
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withDriver('custom', new InferenceDriverSpec(
         bodyFormat: OpenAIBodyFormat::class,
         driverClass: LoggingDriver::class,
@@ -121,9 +117,9 @@ choosing between implementations, wiring a decorator:
 ```php
 <?php
 
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withDriver('custom', fn($config, $httpClient, $events) => new AcmeDriver($config, $httpClient, $events))
     ->withDriver('custom-by-name', AcmeDriver::class);
 ```
@@ -200,7 +196,7 @@ final class AcmeRequestAdapter extends BaseHttpRequestAdapter
 All bundled providers follow this modular adapter pattern and are declared as an
 `InferenceDriverSpec`. OpenAI-compatible providers use the default adapters where possible;
 native protocols and providers with custom URLs or headers select bespoke request or response
-adapters in their spec row. See `BundledInferenceDrivers::registry()` for the complete table.
+adapters in their spec row. See `InferenceDriverRegistry::default()` for the complete table.
 
 
 ## Custom Embeddings Drivers
@@ -232,7 +228,7 @@ the same deployment that upgrades Polyglot:
 Move the HTTP response decoding and response-adapter call into `handle()`. Drivers extending
 `BaseEmbedDriver` inherit the v2.7 implementation unless they override `handle()` themselves.
 
-Register a custom embeddings driver using the `BundledEmbeddingsDrivers` registry, the same
+Register a custom embeddings driver using the `EmbeddingsDriverRegistry` registry, the same
 pattern used for inference drivers:
 
 ```php
@@ -240,11 +236,11 @@ pattern used for inference drivers:
 
 use App\Polyglot\AcmeEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
-$drivers = BundledEmbeddingsDrivers::registry()
+$drivers = EmbeddingsDriverRegistry::default()
     ->withDriver('acme', AcmeEmbeddingsDriver::class);
 
 $config = new EmbeddingsConfig(
@@ -268,9 +264,9 @@ Like inference drivers, you can also pass a callable factory instead of a class 
 <?php
 
 use App\Polyglot\AcmeEmbeddingsDriver;
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 
-$drivers = BundledEmbeddingsDrivers::registry()
+$drivers = EmbeddingsDriverRegistry::default()
     ->withDriver('acme', function ($config, $httpClient, $events) {
         return new AcmeEmbeddingsDriver($config, $httpClient, $events);
     });
@@ -288,14 +284,14 @@ remove a bundled driver or replace it entirely:
 ```php
 <?php
 
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
 // Remove a driver
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withoutDriver('ollama');
 
 // Replace a driver
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withDriver('openai', MyCustomOpenAIDriver::class);
 ```
 
@@ -336,7 +332,7 @@ For reference, Polyglot bundles the following inference drivers:
 | `openai-compatible` | spec: `OpenAICompatibleBodyFormat` |
 | `together` | spec: `OpenAICompatibleBodyFormat` |
 
-The full list is defined in `BundledInferenceDrivers::registry()`.
+The full list is defined in `InferenceDriverRegistry::default()`.
 
 Bundled embeddings drivers include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`,
 and `ollama`.

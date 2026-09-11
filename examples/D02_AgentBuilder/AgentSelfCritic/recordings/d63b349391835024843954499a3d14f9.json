@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"You are a critical evaluator checking for factual errors and evidence contradictions.\\n\\n## Original Task\\nIdentify the testing framework and cite the shortest evidence fragments.\\n\\ncomposer.json:\\n\\\"test\\\": \\\"@php .\\\/vendor\\\/bin\\\/pest --compact\\\"\\n\\\"pestphp\\\/pest\\\": \\\"^4.2\\\"\\n\\nphpunit.xml:\\nxsi:noNamespaceSchemaLocation=\\\"https:\\\/\\\/schema.phpunit.de\\\/10.3\\\/phpunit.xsd\\\"\\n\\n## Evidence Gathered (Tool Calls and Results)\\n(No tool calls made)\\n\\n## Proposed Response\\nTesting framework: **Pest**\\n\\nShortest evidence fragments:\\n- `.\\\/vendor\\\/bin\\\/pest`\\n- `\\\"pestphp\\\/pest\\\": \\\"^4.2\\\"`\\n\\n`phpunit.xml` also indicates PHPUnit configuration (`phpunit.xsd`), but the direct test runner and dependency show the project uses **Pest**.\\n\\n\\n## Evaluation Criteria\\n\\nCompare the proposed response against the evidence gathered above.\\n\\n**Check for:**\\n1. **Contradictions**: Does the response claim something that contradicts the evidence?\\n2. **Unsupported claims**: Does the response make claims without supporting evidence?\\n3. **Missed evidence**: Did the response overlook important data in the tool results?\\n4. **Incomplete investigation**: Are there obvious next steps that would strengthen the answer?\\n\\n## Evaluation Rules\\n\\nAPPROVE if:\\n- The response directly answers the original task\\n- Claims are supported by the gathered evidence\\n- No contradictions between response and evidence\\n\\nREJECT if:\\n- Response contradicts evidence shown above\\n- Response makes unsupported claims\\n- Critical evidence was overlooked\\n- An obvious investigation step was skipped\\n\\n## Output Format\\n\\nWhen rejecting, be specific:\\n- In weaknesses: State what the response claims vs what the evidence shows\\n- In suggestions: Name specific tool calls or files to check\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"approved\":{\"type\":\"boolean\",\"description\":\"True if response answers the task with supporting evidence. False if response contradicts evidence or makes unsupported claims.\"},\"summary\":{\"type\":\"string\",\"description\":\"One sentence explaining the decision.\"},\"strengths\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]},\"weaknesses\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]},\"suggestions\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]}},\"required\":[\"approved\",\"summary\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:49:49 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2063"
+            ],
+            "cf-ray": [
+                "a394bc09fa18c0bb-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1121"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999512"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "7ms"
+            ],
+            "x-request-id": [
+                "req_724b584665864394bafe7e5787fd3c28"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpMyXNtMzBjpNBMpMGAPOLG0l2yP\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109388,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_gXipqWUZni4PbjPFc7edTYIm\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"approved\\\":true,\\\"summary\\\":\\\"The response correctly identifies Pest as the testing framework using the direct runner and dependency evidence, and its mention of phpunit.xml is a reasonable note rather than a contradiction.\\\",\\\"strengths\\\":[\\\"`.\/vendor\/bin\/pest` directly indicates Pest is used as the test runner.\\\",\\\"`\\\\\\\"pestphp\/pest\\\\\\\": \\\\\\\"^4.2\\\\\\\"` directly supports Pest as a dependency.\\\",\\\"The answer is concise and addresses the original task.\\\"],\\\"weaknesses\\\":[\\\"`phpunit.xml` evidence is noted, but the response does not explain that this is only a PHPUnit configuration file and does not override the Pest runner evidence.\\\",\\\"The response does not cite the exact fragment from `composer.json` showing the test script: `@php .\/vendor\/bin\/pest --compact`.\\\"],\\\"suggestions\\\":[\\\"Check `composer.json` for the exact test script fragment `@php .\/vendor\/bin\/pest --compact` to strengthen the citation.\\\",\\\"If needed, mention `phpunit.xml` only as configuration evidence, not as the primary framework indicator.\\\"]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 633,\n    \"completion_tokens\": 226,\n    \"total_tokens\": 859,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

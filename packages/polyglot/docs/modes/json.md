@@ -103,7 +103,7 @@ $json = Inference::using('openai')
 
 Most major providers support native JSON object mode, including OpenAI, Groq, Fireworks, and others. Some providers (such as Anthropic) do not support `responseFormat` natively -- for those, consider using tool calls to extract structured data, or use the Instructor layer above Polyglot for prompt-based fallback strategies.
 
-You can query a driver's capabilities programmatically through `DriverCapabilities::supportsResponseFormatJsonObject()`.
+Query the exact offering through `ModelCatalog::find($driver, $model)->capabilities->jsonObject`.
 
 ## When to Use JSON Object Mode
 

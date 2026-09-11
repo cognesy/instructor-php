@@ -11,9 +11,9 @@ class StreamUserStruct { public int $age; public string $name; }
 
 it('assembles streamed content into final typed value and accumulates usage', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann"', usage: new InferenceUsage(outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: ',"age":', usage: new InferenceUsage(outputTokens: 2)),
-        new PartialInferenceDelta(contentDelta: '30}', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 3)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"'), usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":'), usage: new InferenceUsage(outputTokens: 2)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '30}'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 3)),
     ];
 
     $driver = new FakeInferenceDriver(
@@ -40,9 +40,9 @@ it('assembles streamed content into final typed value and accumulates usage', fu
 
 it('accumulates usage correctly via stream->usage() after iterating responses', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"name":"Bob"', usage: new InferenceUsage(inputTokens: 50, outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: ',"age":', usage: new InferenceUsage(inputTokens: 50, outputTokens: 2)),
-        new PartialInferenceDelta(contentDelta: '25}', finishReason: 'stop', usage: new InferenceUsage(inputTokens: 50, outputTokens: 3)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Bob"'), usage: new InferenceUsage(inputTokens: 50, outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":'), usage: new InferenceUsage(inputTokens: 50, outputTokens: 2)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '25}'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 50, outputTokens: 3)),
     ];
 
     $driver = new FakeInferenceDriver(

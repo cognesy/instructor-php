@@ -48,7 +48,7 @@ Inspect credential provenance or explicitly manage Tell's private credential fil
 Secret values are accepted only through standard input and are never rendered.
 
 Resolution order:
-  process environment > workspace .env > Tell credential store
+  process environment > nearest workspace .tell/.env > user ~/.tell/.env
 
 Examples:
   tell auth status
@@ -60,7 +60,7 @@ HELP)
             ->addArgument('provider', InputArgument::OPTIONAL, 'Provider or connection name')
             ->addOption('stdin', null, InputOption::VALUE_NONE, 'Read the credential value from standard input')
             ->addOption('variable', null, InputOption::VALUE_REQUIRED, 'Override the provider credential variable', '')
-            ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory used for .env resolution', '')
+            ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Directory used to discover an ancestor workspace .tell/.env', '')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit JSON');
     }
 
@@ -90,7 +90,7 @@ HELP)
             plane: OperationalPlane::Management,
             command: 'auth',
             responsibility: 'Inspect credential provenance and explicitly manage Tell-owned credential persistence.',
-            ownedState: 'Only ~/.tell/config/credentials.env; ambient environment and workspace .env remain externally owned.',
+            ownedState: 'Only ~/.tell/.env; process environment and workspace .tell/.env remain externally owned.',
             input: 'Provider identity plus an explicit status, stdin set, or remove operation.',
             output: 'Configured state and source provenance without secret values.',
             authority: 'Read credential availability and mutate only the named Tell-owned credential.',

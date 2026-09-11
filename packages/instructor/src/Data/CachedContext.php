@@ -23,7 +23,11 @@ final readonly class CachedContext
         string $system = '',
         string $prompt = '',
         array $examples = [],
+        private ?string $ttl = null,
     ) {
+        if ($ttl !== null && !in_array($ttl, ['5m', '1h'], true)) {
+            throw new \InvalidArgumentException('Cache TTL must be 5m or 1h.');
+        }
         $this->messages = $messages ?? Messages::empty();
         $this->system = $system;
         $this->prompt = $prompt;
@@ -31,6 +35,10 @@ final readonly class CachedContext
     }
 
     // ACCESSORS ///////////////////////////////////////////////////////////////////////
+
+    public function ttl(): ?string {
+        return $this->ttl;
+    }
 
     public function messages() : Messages {
         return $this->messages;
@@ -59,6 +67,7 @@ final readonly class CachedContext
 
     public function toArray() : array {
         return [
+            ...array_filter(['ttl' => $this->ttl], static fn(mixed $value): bool => $value !== null),
             'messages' => $this->messages->toArray(),
             'system' => $this->system,
             'prompt' => $this->prompt,
@@ -83,6 +92,7 @@ final readonly class CachedContext
             system: $data['system'] ?? '',
             prompt: $data['prompt'] ?? '',
             examples: $examples,
+            ttl: $data['ttl'] ?? null,
         );
     }
 

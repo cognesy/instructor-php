@@ -261,7 +261,7 @@ it('uses a contract directly without booting a host or shell framework', functio
                 home: '/tell',
                 configDirectory: '/tell/config',
                 configFile: '/tell/config/tell.json',
-                credentials: '/tell/config/credentials.env',
+                credentials: '/tell/.env',
                 connections: '/tell/config/connections',
                 packageAgents: '/package/agents',
                 userAgents: '/tell/config/agents',
@@ -279,7 +279,7 @@ it('uses a contract directly without booting a host or shell framework', functio
 
     expect($paths->project)->toBe('/project')
         ->and($paths->projectAgents)->toBe('/project/.claude/agents')
-        ->and($paths->toArray())->toHaveKey('credentials', '/tell/config/credentials.env')
+        ->and($paths->toArray())->toHaveKey('credentials', '/tell/.env')
         ->and($resolver)->not->toBeInstanceOf(CanContributeTellCommands::class)
         ->and(new TellCommandDescriptors())->toHaveCount(0);
 });

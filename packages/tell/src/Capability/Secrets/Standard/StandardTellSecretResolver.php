@@ -21,7 +21,7 @@ final readonly class StandardTellSecretResolver implements CanResolveTellSecrets
         $this->resolver = new SecretResolver(
             new EnvironmentSecretSource(),
             DotenvFileSecretSource::optional(
-                rtrim($directory, '/\\') . DIRECTORY_SEPARATOR . '.env',
+                self::workspaceEnvironment($paths, $directory),
                 'workspace-env',
             ),
             (new TellCredentialStore($paths))->source(),
@@ -31,5 +31,27 @@ final readonly class StandardTellSecretResolver implements CanResolveTellSecrets
     #[\Override]
     public function resolve(string $name): ?ResolvedSecret {
         return $this->resolver->resolve($name);
+    }
+
+    private static function workspaceEnvironment(TellPaths $paths, string $directory): string {
+        $resolved = realpath($directory);
+        $current = is_string($resolved) ? $resolved : rtrim($directory, '/\\');
+        $fallback = $current . DIRECTORY_SEPARATOR . '.tell' . DIRECTORY_SEPARATOR . '.env';
+        $userEnvironment = realpath($paths->credentials);
+
+        while (true) {
+            $candidate = $current . DIRECTORY_SEPARATOR . '.tell' . DIRECTORY_SEPARATOR . '.env';
+            $resolvedCandidate = realpath($candidate);
+            $isUserEnvironment = $candidate === $paths->credentials
+                || ($resolvedCandidate !== false && $resolvedCandidate === $userEnvironment);
+            if (!$isUserEnvironment && is_file($candidate)) {
+                return $candidate;
+            }
+            $parent = dirname($current);
+            if ($parent === $current) {
+                return $fallback;
+            }
+            $current = $parent;
+        }
     }
 }

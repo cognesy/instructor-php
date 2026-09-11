@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.\"},{\"role\":\"user\",\"content\":\"Here\\u2019s a concise summary of the provided message for future reference:\\n\\n**Instructor for PHP** is a framework-agnostic PHP library for integrating LLMs into PHP applications, focused on extracting **structured, validated data** from model outputs. It provides a unified API across multiple LLM providers (e.g., OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama), supports text\\\/chat\\\/image inputs, and allows defining response models either statically with PHP classes or dynamically via JSON Schema\\\/structures.\\n\\n### Main capabilities\\n- Converts LLM output into **type-safe PHP objects**\\n- Validates outputs and can **retry with feedback** for correction\\n- Supports **streaming** for partial real-time responses\\n- Offers **embeddings** and **context caching**\\n- Includes **observability\\\/event hooks** for logging, monitoring, and debugging\\n- Works with any PHP framework, including Laravel and Symfony\\n\\n### Developer experience\\n- Simple API and minimal footprint\\n- Customizable prompts, validation, and deserialization\\n- Uses Symfony validation for data integrity\\n\\n### Typical use cases\\n- E-commerce, healthcare, education, finance, real estate, HR\\\/recruitment\\n- Examples include document processing, review analysis, support automation, and data extraction\\n\\n### Getting started\\n- Install via Composer: `composer require cognesy\\\/instructor-php`\\n- Define a PHP data model\\n- Run inference to extract structured data from an LLM response\\n\\n### Example concept\\nA `City` class can be used as a response model so a prompt like \\u201cWhat is the capital of France?\\u201d returns structured data such as Paris\\u2019s name, country, and population.\\n\\nIf you want, I can also turn this into a **one-paragraph summary**, a **bullet list of key facts**, or a **technical reference note**.\"},{\"role\":\"user\",\"content\":\"Help me get better sales results.\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Use the Challenger Sale: teach buyers a new business insight, tailor it to their specific pain points, and take control of the next step instead of just \\u201cfollowing up.\\u201d\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"What should I do next?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Pick one target account, identify the biggest money-losing problem they likely have, and draft a 3-point insight + next-meeting ask.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"Give me one more actionable tip.\",\"name\":\"student\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:46:32 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "909"
+            ],
+            "cf-ray": [
+                "a394b740ee5a540c-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "513"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999417"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "8ms"
+            ],
+            "x-request-id": [
+                "req_c43959d2f7ec4f498550cb03f629b1dc"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpJoqgKytkdmCxBWkIiZmLbk3z4F\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109192,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Send a short note that challenges a common assumption in their process and offers a better way, then ask for 15 minutes to discuss it.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 525,\n    \"completion_tokens\": 31,\n    \"total_tokens\": 556,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

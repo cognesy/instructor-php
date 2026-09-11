@@ -48,8 +48,8 @@ it('emits live partials and one final response from the streaming driver', funct
                     $fakeDriver = new FakeInferenceDriver(
                         responses: [],
                         streamBatches: [[
-                            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
-                            new PartialInferenceDelta(contentDelta: ',"age":30}'),
+                            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
+                            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}')),
                             new PartialInferenceDelta(finishReason: 'stop'),
                         ]],
                     );

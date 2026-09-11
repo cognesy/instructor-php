@@ -123,7 +123,7 @@ it('builds no lifecycle payloads when the dispatcher reports no listeners', func
     $events = new SilentCheckingDispatcher();
 
     // The probe request throws if either payload builder is entered.
-    gateProbeDriver($events, new InferenceResponse(content: 'ok', finishReason: 'stop'))
+    gateProbeDriver($events, new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop'))
         ->makeResponseFor(gateProbeRequest());
 
     expect($events->dispatched)->toBeEmpty();
@@ -133,10 +133,10 @@ it('still emits every event to a dispatcher that cannot report its listeners', f
     $events = new OpaquePsrDispatcher();
 
     // Plain InferenceRequest/InferenceResponse -- the payload builders MUST run here.
-    $response = gateProbeDriver($events, new InferenceResponse(content: 'ok', finishReason: 'stop'))
+    $response = gateProbeDriver($events, new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop'))
         ->makeResponseFor(new InferenceRequest(messages: Messages::fromString('hello')));
 
-    expect($response->content())->toBe('ok');
+    expect($response->message()->content()->toString())->toBe('ok');
 
     $classes = array_map(fn(object $e) => $e::class, $events->dispatched);
     expect($classes)->toContain(InferenceRequested::class)
@@ -149,7 +149,7 @@ it('still emits every event when listeners are actually registered', function ()
     $events->addListener(InferenceRequested::class, function () use (&$seen): void { $seen[] = 'requested'; });
     $events->addListener(InferenceResponseCreated::class, function () use (&$seen): void { $seen[] = 'created'; });
 
-    gateProbeDriver($events, new InferenceResponse(content: 'ok', finishReason: 'stop'))
+    gateProbeDriver($events, new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop'))
         ->makeResponseFor(new InferenceRequest(messages: Messages::fromString('hello')));
 
     expect($seen)->toBe(['requested', 'created']);

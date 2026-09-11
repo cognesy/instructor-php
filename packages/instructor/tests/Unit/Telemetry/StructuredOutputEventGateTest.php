@@ -89,7 +89,7 @@ final class GateProbeDto
 
 function runSoLifecycleRequest(CanHandleEvents $events): void {
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"count":7}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"count":7}'))]),
         events: $events,
         outputMode: OutputMode::Json,
     );
@@ -205,7 +205,7 @@ it('observes listeners registered on the runtime after it was constructed', func
     // silently drop this event for every caller who uses the API as documented.
     $events = new Cognesy\Events\Dispatchers\EventDispatcher();
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"count":7}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"count":7}'))]),
         events: $events,
         outputMode: OutputMode::Json,
     );

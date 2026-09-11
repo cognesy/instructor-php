@@ -16,7 +16,7 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:39:26 GMT"
+                "Fri, 11 Sep 2026 07:35:23 GMT"
             ],
             "content-type": [
                 "application\/json"
@@ -25,7 +25,7 @@
                 "1174"
             ],
             "cf-ray": [
-                "a16eac1059e6b607-WAW"
+                "a394fecd4e15265d-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "710"
+                "437"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -78,15 +78,13 @@
                 "1ms"
             ],
             "x-request-id": [
-                "req_d56ea22dc8a94481b8ae94725cba8120"
+                "req_c1997d7343064c32ae134f87ffa42baa"
             ],
-            "set-cookie": [
-                "__cf_bm=ULfepF0tdLUJbdqrwYjbxV2GbZa8RVTtX9g0e.CInxQ-1783341565.4956365-1.0.1.1-Vx2lVv2j4zp8ku4jsX.0f3SyjC5sD3zsn9Uql_VFe0EArMOCRlhNyPyD44M0T8iHXHJXbbCoTt.2weEM3w2PmT53EHncFfnpoDT392EdVeLTJhtSApvyewuSA1fOwXEJ; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:26 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-DyctZJ5LnMXsMFPYSFl1DhIA0kkPd\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341565,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_1EiWlQc3Q63xa6SHfeHd5Ixc\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"name\\\":\\\"Jason\\\",\\\"details\\\":[\\\"age=25\\\",\\\"occupation=developer\\\",\\\"phone_number=+1 123 34 45\\\",\\\"social_security_number=123-45-6789\\\"]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 245,\n    \"completion_tokens\": 52,\n    \"total_tokens\": 297,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMq54h2EolbGItSnREHhhGsZBlZpW\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789112122,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_X0NVgihZ7CLXIStdsr2mosvK\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"name\\\":\\\"Jason\\\",\\\"details\\\":[\\\"age=25\\\",\\\"occupation=developer\\\",\\\"phone_number=+1 123 34 45\\\",\\\"social_security_number=123-45-6789\\\"]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 245,\n    \"completion_tokens\": 52,\n    \"total_tokens\": 297,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

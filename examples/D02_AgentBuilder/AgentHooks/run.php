@@ -100,7 +100,7 @@ $agent = AgentBuilder::base()
 
 // Test with safe commands
 $state = AgentState::empty()->withUserMessage(
-    'List the files in the current directory and show the date'
+    "Use bash to run exactly: printf 'hook-safe\\n'. Return stdout verbatim."
 );
 
 echo "=== Test 1: Safe Commands ===\n\n";

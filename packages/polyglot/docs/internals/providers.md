@@ -112,7 +112,7 @@ $provider = EmbeddingsProvider::fromArray([...])
 
 ### Inference Driver Registry
 
-The `InferenceDriverRegistry` manages the mapping between driver names and their factory callables. Polyglot ships with a default set of bundled drivers via `BundledInferenceDrivers::registry()`.
+The `InferenceDriverRegistry` manages the mapping between driver names and their factory callables. Polyglot ships with a default set of bundled drivers via `InferenceDriverRegistry::default()`.
 
 A registry entry is one of two things, and the difference is worth understanding before you
 write your own:
@@ -120,7 +120,7 @@ write your own:
 - **A spec.** Every bundled provider is an `InferenceDriverSpec` — a row naming its body,
   request, response, usage and message collaborators. OpenAI-compatible providers use the
   defaults; native protocols and providers with custom URLs or headers select bespoke adapters
-  in the same row. `SpecifiedInferenceDriver` is the single class behind all of them.
+  in the same row. `BaseInferenceRequestDriver` is the single class behind all of them.
 - **A custom driver class.** Custom registrations may still use a class-string when they need
   behavior that is not composition. Bundled providers do not need a driver shell for that
   purpose because their request adapters own provider-specific URL and header behavior.
@@ -166,9 +166,8 @@ You can extend the registry with custom drivers:
 
 ```php
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 
-$registry = BundledInferenceDrivers::registry()
+$registry = InferenceDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $runtime = InferenceRuntime::fromConfig($config, drivers: $registry);
@@ -190,14 +189,14 @@ $registry = $registry->withoutDriver('openai-compatible');
 
 ### Embeddings Driver Registry
 
-The `EmbeddingsDriverRegistry` follows the same immutable instance-based pattern as `InferenceDriverRegistry`. Bundled embeddings drivers are provided via `BundledEmbeddingsDrivers::registry()` and include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`, and `ollama`.
+The `EmbeddingsDriverRegistry` follows the same immutable instance-based pattern as `InferenceDriverRegistry`. Bundled embeddings drivers are provided via `EmbeddingsDriverRegistry::default()` and include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`, and `ollama`.
 
 Custom embeddings drivers can be registered through the registry:
 
 ```php
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('my-provider', MyEmbeddingsDriver::class);
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);

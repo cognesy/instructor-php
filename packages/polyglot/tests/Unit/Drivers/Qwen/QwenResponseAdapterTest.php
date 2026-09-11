@@ -19,8 +19,8 @@ it('Qwen: reads reasoning_content from non-stream response', function () {
     $res = $adapter->fromResponse($response);
 
     expect($res)->not->toBeNull();
-    expect($res?->content())->toBe('Paris');
-    expect($res?->reasoningContent())->toBe('Thinking path.');
+    expect($res?->message()->content()->toString())->toBe('Paris');
+    expect($res?->message()->reasoningContent())->toBe('Thinking path.');
 });
 
 it('Qwen: falls back to <think> tags when reasoning field is missing', function () {
@@ -37,8 +37,8 @@ it('Qwen: falls back to <think> tags when reasoning field is missing', function 
     $res = $adapter->fromResponse($response);
 
     expect($res)->not->toBeNull();
-    expect($res?->content())->toBe('Final answer');
-    expect($res?->reasoningContent())->toBe('Reasoning block');
+    expect($res?->message()->content()->toString())->toBe('Final answer');
+    expect($res?->message()->reasoningContent())->toBe('Reasoning block');
 });
 
 it('Qwen: keeps tool id stable across streamed tool deltas by index', function () {
@@ -75,12 +75,14 @@ it('Qwen: keeps tool id stable across streamed tool deltas by index', function (
     ]);
 
     $deltas = iterator_to_array($adapter->fromStreamDeltas([$firstEvent, $secondEvent]));
+    $firstToolChunk = $deltas[0]->messageChunks->all()[1];
+    $secondToolChunk = $deltas[1]->messageChunks->all()[0];
 
     expect($deltas)->toHaveCount(2);
-    expect($deltas[0]->toolId)->toBe('call_1');
-    expect($deltas[0]->toolName)->toBe('search');
-    expect($deltas[0]->toolArgs)->toContain('{"q":"Pa');
-    expect($deltas[0]->reasoningContentDelta)->toBe('step-1');
-    expect($deltas[1]->toolId)->toBe('call_1');
-    expect($deltas[1]->toolArgs)->toContain('ris"}');
+    expect($firstToolChunk->toolCallId)->toBe('call_1');
+    expect($firstToolChunk->toolCallName)->toBe('search');
+    expect($firstToolChunk->toolCallArguments)->toContain('{"q":"Pa');
+    expect($deltas[0]->messageChunks->reasoningDelta())->toBe('step-1');
+    expect($secondToolChunk->toolCallId)->toBe('call_1');
+    expect($secondToolChunk->toolCallArguments)->toContain('ris"}');
 });

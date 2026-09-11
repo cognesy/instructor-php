@@ -13,6 +13,7 @@ it('Section::toArray is pure and does not render templates', function () {
     );
 
     $arr = $section->toArray();
-    expect($arr[0]['content'])->toBe('Hi {{ name }}');
+    expect($arr[0]['parts'])->toBe([
+        ['type' => 'text', 'text' => 'Hi {{ name }}'],
+    ]);
 });
-

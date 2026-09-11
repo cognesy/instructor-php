@@ -3,14 +3,14 @@
 namespace Cognesy\Http;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Logging\EventLog;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanProvideHttpDrivers;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Creation\BundledHttpDrivers;
+use Cognesy\Http\Creation\HttpDriverRegistry;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\MiddlewareStack;
+use Cognesy\Logging\EventLog;
 
 final class HttpClientRuntime
 {
@@ -51,21 +51,18 @@ final class HttpClientRuntime
         );
     }
 
-    public function client(): HttpClient
-    {
+    public function client(): HttpClient {
         return new HttpClient($this);
     }
 
-    public function send(HttpRequest $request): PendingHttpResponse
-    {
+    public function send(HttpRequest $request): PendingHttpResponse {
         return new PendingHttpResponse(
             request: $request,
             driver: $this->handler,
         );
     }
 
-    public function withMiddlewareStack(MiddlewareStack $middlewareStack): self
-    {
+    public function withMiddlewareStack(MiddlewareStack $middlewareStack): self {
         return new self(
             driver: $this->driver,
             middlewareStack: $middlewareStack,
@@ -74,38 +71,31 @@ final class HttpClientRuntime
         );
     }
 
-    public function withMiddleware(HttpMiddleware $middleware, ?string $name = null): self
-    {
+    public function withMiddleware(HttpMiddleware $middleware, ?string $name = null): self {
         return $this->withMiddlewareStack($this->middlewareStack->append($middleware, $name));
     }
 
-    public function withoutMiddleware(string $name): self
-    {
+    public function withoutMiddleware(string $name): self {
         return $this->withMiddlewareStack($this->middlewareStack->remove($name));
     }
 
-    public function driver(): CanHandleHttpRequest
-    {
+    public function driver(): CanHandleHttpRequest {
         return $this->driver;
     }
 
-    public function middlewareStack(): MiddlewareStack
-    {
+    public function middlewareStack(): MiddlewareStack {
         return $this->middlewareStack;
     }
 
-    public function events(): CanHandleEvents
-    {
+    public function events(): CanHandleEvents {
         return $this->events;
     }
 
-    public function config(): HttpClientConfig
-    {
+    public function config(): HttpClientConfig {
         return $this->config;
     }
 
-    private static function resolveDrivers(?CanProvideHttpDrivers $drivers): CanProvideHttpDrivers
-    {
-        return $drivers ?? BundledHttpDrivers::registry();
+    private static function resolveDrivers(?CanProvideHttpDrivers $drivers): CanProvideHttpDrivers {
+        return $drivers ?? HttpDriverRegistry::default();
     }
 }

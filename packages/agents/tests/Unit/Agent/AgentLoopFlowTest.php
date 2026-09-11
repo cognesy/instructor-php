@@ -237,6 +237,35 @@ describe('AgentLoop flow', function () {
         expect($listener->stepCompletedCount)->toBe(1);
     });
 
+    it('records a failed step when the driver throws before producing one', function () {
+        $tools = new Tools();
+        $listener = new CountingEventListener();
+        $events = makeTestEvents($listener);
+        $interceptor = new PassThroughInterceptor();
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state): AgentState
+            {
+                throw new RuntimeException('first inference failed');
+            }
+        };
+
+        $loop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
+            driver: $driver,
+            events: $events,
+            interceptor: $interceptor,
+        );
+
+        $finalState = $loop->execute(AgentState::empty());
+
+        expect($finalState->status())->toBe(ExecutionStatus::Failed);
+        expect($finalState->stepCount())->toBe(1);
+        expect($finalState->errors()->toMessagesString())->toContain('first inference failed');
+        expect($listener->stepCompletedCount)->toBe(1);
+    });
+
     it('emits tool-block and failure events when tool execution is blocked', function () {
         $tools = new Tools();
         $listener = new CountingEventListener();

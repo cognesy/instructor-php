@@ -13,18 +13,9 @@ interface CanTranslateInferenceResponse
     /**
      * Translates raw SSE event bodies into a stream of partial deltas.
      *
-     * Tool-call correlation: implementations SHOULD give every delta that carries tool
-     * data a non-empty $toolId that is stable for the lifetime of that tool call within
-     * the stream, synthesising one from the provider's wire index when the wire supplies
-     * none. All bundled adapters do this via ToolCallIdByStreamIndex.
-     *
-     * Implementations that cannot are still supported: InferenceStreamState falls back to
-     * correlating by tool name and then by the tool currently in flight. That fallback is
-     * necessarily weaker -- it cannot distinguish two interleaved calls to the same tool --
-     * so supplying an id is preferred wherever the provider makes one derivable.
-     *
-     * A delta carrying a non-empty $toolId is treated as tool data even if name and args
-     * are both empty, so do not mint ids for non-tool events.
+     * Each delta carries ordered assistant-message chunks. Providers must use a stable
+     * chunk index for every block across the lifetime of the stream; tool-call ids are
+     * provider data and are not used as a substitute for block identity.
      *
      * @return iterable<PartialInferenceDelta>
      */

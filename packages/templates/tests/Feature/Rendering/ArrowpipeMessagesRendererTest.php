@@ -12,7 +12,7 @@ it('renders variables in message text parts using arrowpipe', function () {
     $renderer = new ArrowpipeMessagesRenderer();
     $rendered = $renderer->renderMessages($messages, ['name' => 'Alice', 'id' => 42]);
 
-    $arr = $rendered->toArray();
-    expect($arr[0]['content'])->toBe('Hello Alice');
-    expect($arr[1]['content'])->toBe('Your id is 42');
+    $messageList = $rendered->all();
+    expect($messageList[0]->content()->toString())->toBe('Hello Alice');
+    expect($messageList[1]->content()->toString())->toBe('Your id is 42');
 });

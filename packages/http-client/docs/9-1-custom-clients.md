@@ -106,10 +106,10 @@ To make your driver available by name (e.g., `'acme'`), register it with the dri
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Creation\BundledHttpDrivers;
+use Cognesy\Http\Creation\HttpDriverRegistry;
 use Cognesy\Events\Contracts\CanHandleEvents;
 
-$drivers = BundledHttpDrivers::registry()->withDriver(
+$drivers = HttpDriverRegistry::default()->withDriver(
     'acme',
     static fn(HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance): CanHandleHttpRequest
         => new AcmeHttpDriver($config, $events, $clientInstance),

@@ -31,10 +31,15 @@ if (!function_exists('stateSnapshot')) {
 
         if ($toolId !== '' || $toolName !== '' || $toolArgs !== '' || $finishReason !== '') {
             $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
-                toolId: $toolId,
-                toolName: $toolName,
-                toolArgs: $toolArgs,
                 finishReason: $finishReason,
+                messageChunks: new \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks(
+                    \Cognesy\Polyglot\Inference\Data\AssistantMessageChunk::toolCallDelta(
+                        index: 'test:tool:0',
+                        id: $toolId,
+                        name: $toolName,
+                        arguments: $toolArgs,
+                    ),
+                ),
             ));
         }
 

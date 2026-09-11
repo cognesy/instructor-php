@@ -17,7 +17,7 @@ it('accepts constructor named args for structured output request fields', functi
         outputFormat: OutputFormat::array(),
     );
 
-    expect($request->messages()->toArray()[0]['content'])->toBe('Extract data');
+    expect($request->messages()->first()?->content()->toString())->toBe('Extract data');
     expect($request->id())->toBeInstanceOf(StructuredOutputRequestId::class);
     expect($request->requestedSchema())->toBe(['type' => 'object']);
     expect($request->system())->toBe('You are strict.');

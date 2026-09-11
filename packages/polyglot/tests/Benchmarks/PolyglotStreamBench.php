@@ -38,9 +38,9 @@ final class PolyglotStreamBench
         return new FakeInferenceDriver(
             onStream: function () use ($chunkCount, $payload): iterable {
                 for ($i = 0; $i < $chunkCount - 1; $i++) {
-                    yield new PartialInferenceDelta(contentDelta: $payload);
+                    yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $payload));
                 }
-                yield new PartialInferenceDelta(contentDelta: $payload, finishReason: 'stop');
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $payload), finishReason: 'stop');
             },
         );
     }

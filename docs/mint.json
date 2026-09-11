@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.10.0",
                 "release-notes/v2.9.5",
                 "release-notes/v2.9.4",
                 "release-notes/v2.9.3",
@@ -294,6 +295,7 @@
                         "packages/polyglot/internals/overview",
                         "packages/polyglot/internals/lifecycle",
                         "packages/polyglot/internals/configuration",
+                        "packages/polyglot/internals/model-catalog",
                         "packages/polyglot/internals/providers",
                         "packages/polyglot/internals/adapters",
                         "packages/polyglot/internals/http-client",
@@ -598,6 +600,7 @@
                 "cookbook/examples/B02_LLMAdvanced/embed_utils",
                 "cookbook/examples/B02_LLMAdvanced/embeddings",
                 "cookbook/examples/B02_LLMAdvanced/http_client",
+                "cookbook/examples/B02_LLMAdvanced/openai_compatible_reasoning_content",
                 "cookbook/examples/B02_LLMAdvanced/parallel_calls",
                 "cookbook/examples/B02_LLMAdvanced/reasoning_content"
             ]
@@ -654,6 +657,7 @@
                 "cookbook/examples/B05_LLMExtras/cost_calculation_inference",
                 "cookbook/examples/B05_LLMExtras/image_data",
                 "cookbook/examples/B05_LLMExtras/metrics_streaming",
+                "cookbook/examples/B05_LLMExtras/model_catalog",
                 "cookbook/examples/B05_LLMExtras/streaming_inference_openai_responses",
                 "cookbook/examples/B05_LLMExtras/prompt_templates",
                 "cookbook/examples/B05_LLMExtras/summary_with_llm",

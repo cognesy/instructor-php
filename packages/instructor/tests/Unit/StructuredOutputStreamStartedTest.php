@@ -38,7 +38,7 @@ class SingleUpdateEmitter implements CanDriveExecution
 it('dispatches StructuredOutputStarted once across multiple stream reads', function () {
     $dispatcher = new TestEventDispatcher();
 
-    $response = new InferenceResponse(content: 'ok');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'));
     $request = new StructuredOutputRequest(messages: Messages::fromString('dummy'), requestedSchema: []);
 
     $execution = (new StructuredOutputExecution(request: $request))
@@ -69,7 +69,7 @@ it('dispatches StructuredOutputStarted once across multiple stream reads', funct
 it('does not emit additional start events when reading the raw iterator', function () {
     $dispatcher = new TestEventDispatcher();
 
-    $response = new InferenceResponse(content: 'ok');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'));
     $request = new StructuredOutputRequest(messages: Messages::fromString('dummy'), requestedSchema: []);
 
     $execution = (new StructuredOutputExecution(request: $request))

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Tests\Unit\Drivers\Anthropic;
 
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicMessageFormat;
 use PHPUnit\Framework\TestCase;
 
@@ -24,11 +25,10 @@ class AnthropicMessageFormatTest extends TestCase
     {
         $message = new Message(
             role: 'assistant',
-            content: '',
-            toolCalls: new ToolCalls(
-                new ToolCall('get_weather', ['location' => 'NYC'], 'call_1'),
-                new ToolCall('get_time', ['timezone' => 'EST'], 'call_2'),
-                new ToolCall('get_news', ['topic' => 'tech'], 'call_3'),
+            parts: new ContentParts(
+                ContentPart::toolCall(new ToolCall('get_weather', ['location' => 'NYC'], 'call_1')),
+                ContentPart::toolCall(new ToolCall('get_time', ['timezone' => 'EST'], 'call_2')),
+                ContentPart::toolCall(new ToolCall('get_news', ['topic' => 'tech'], 'call_3')),
             ),
         );
 
@@ -59,9 +59,8 @@ class AnthropicMessageFormatTest extends TestCase
     {
         $message = new Message(
             role: 'assistant',
-            content: '',
-            toolCalls: new ToolCalls(
-                new ToolCall('get_weather', ['location' => 'NYC'], 'call_1'),
+            parts: new ContentParts(
+                ContentPart::toolCall(new ToolCall('get_weather', ['location' => 'NYC'], 'call_1')),
             ),
         );
 

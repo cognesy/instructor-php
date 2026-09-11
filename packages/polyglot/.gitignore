@@ -46,3 +46,4 @@ Thumbs.db
 *.tmp
 /temp
 /tmp
+/resources/catalog/staging/

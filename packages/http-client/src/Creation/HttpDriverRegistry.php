@@ -6,18 +6,31 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanProvideHttpDrivers;
+use Cognesy\Http\Drivers\Curl\CurlDriver;
+use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
+use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use InvalidArgumentException;
+use Override;
 
 final class HttpDriverRegistry implements CanProvideHttpDrivers
 {
+    private static ?self $default = null;
+
     /** @param array<string, callable(HttpClientConfig,CanHandleEvents,?object):CanHandleHttpRequest> $drivers */
     private function __construct(
         private array $drivers = [],
     ) {}
 
-    public static function make(): self
-    {
+    public static function make(): self {
         return new self();
+    }
+
+    public static function default(): self {
+        return self::$default ??= self::fromArray([
+            'curl' => CurlDriver::class,
+            'guzzle' => GuzzleDriver::class,
+            'symfony' => SymfonyDriver::class,
+        ]);
     }
 
     /**
@@ -28,8 +41,7 @@ final class HttpDriverRegistry implements CanProvideHttpDrivers
      *
      * @param array<string, string|callable(HttpClientConfig,CanHandleEvents,?object):CanHandleHttpRequest> $drivers
      */
-    public static function fromArray(array $drivers): self
-    {
+    public static function fromArray(array $drivers): self {
         $factories = [];
         foreach ($drivers as $name => $driver) {
             $factories[$name] = self::toDriverFactory($driver);
@@ -41,34 +53,30 @@ final class HttpDriverRegistry implements CanProvideHttpDrivers
     /**
      * @param string|callable(HttpClientConfig,CanHandleEvents,?object):CanHandleHttpRequest $driver
      */
-    public function withDriver(string $name, string|callable $driver): self
-    {
+    public function withDriver(string $name, string|callable $driver): self {
         $copy = clone $this;
         $copy->drivers[$name] = self::toDriverFactory($driver);
         return $copy;
     }
 
-    public function withoutDriver(string $name): self
-    {
+    public function withoutDriver(string $name): self {
         $copy = clone $this;
         unset($copy->drivers[$name]);
         return $copy;
     }
 
-    #[\Override]
-    public function has(string $name): bool
-    {
+    #[Override]
+    public function has(string $name): bool {
         return isset($this->drivers[$name]);
     }
 
     /** @return array<string> */
-    #[\Override]
-    public function driverNames(): array
-    {
+    #[Override]
+    public function driverNames(): array {
         return array_keys($this->drivers);
     }
 
-    #[\Override]
+    #[Override]
     public function makeDriver(
         string $name,
         HttpClientConfig $config,
@@ -88,8 +96,7 @@ final class HttpDriverRegistry implements CanProvideHttpDrivers
      * @param string|callable(HttpClientConfig,CanHandleEvents,?object):CanHandleHttpRequest $driver
      * @return callable(HttpClientConfig,CanHandleEvents,?object):CanHandleHttpRequest
      */
-    private static function toDriverFactory(string|callable $driver): callable
-    {
+    private static function toDriverFactory(string|callable $driver): callable {
         return match (true) {
             is_callable($driver) => static function (HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance) use ($driver): CanHandleHttpRequest {
                 $instance = $driver($config, $events, $clientInstance);

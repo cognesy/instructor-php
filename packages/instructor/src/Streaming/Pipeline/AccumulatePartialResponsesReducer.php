@@ -10,6 +10,7 @@ use Cognesy\Instructor\Enums\ResponseFailureStage;
 use Cognesy\Instructor\Events\Streaming\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunkType;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Utils\Json\IncrementalJsonParser;
@@ -216,57 +217,52 @@ final class AccumulatePartialResponsesReducer implements Reducer
 
     private function accumulateDelta(PartialInferenceDelta $delta): StructuredOutputStreamState
     {
-        $previousToolKey = $this->state->toolKey();
         $this->state->applyDelta($delta);
-        $this->appendDeltaToParser($delta, $previousToolKey);
+        $this->appendDeltaToParser($delta);
 
         if ($delta->value !== null) {
             $this->state->setValue($delta->value);
             return $this->state;
         }
 
-        if ($delta->contentDelta !== '' || $delta->toolArgs !== '') {
+        if (!$delta->messageChunks->isEmpty()) {
             $this->state->clearValue();
         }
 
         return $this->state;
     }
 
-    private function appendDeltaToParser(PartialInferenceDelta $delta, string $previousToolKey): void
+    private function appendDeltaToParser(PartialInferenceDelta $delta): void
     {
         match ($this->mode) {
-            OutputMode::Tools => $this->appendToolArgsDelta($delta, $previousToolKey),
+            OutputMode::Tools => $this->appendToolArgsDelta($delta),
             default => $this->appendContentDelta($delta),
         };
     }
 
     private function appendContentDelta(PartialInferenceDelta $delta): void
     {
-        if ($delta->contentDelta === '') {
+        $text = $delta->messageChunks->textDelta();
+        if ($text === '') {
             return;
         }
 
-        $this->jsonParser->append($delta->contentDelta);
+        $this->jsonParser->append($text);
     }
 
-    private function appendToolArgsDelta(PartialInferenceDelta $delta, string $previousToolKey): void
+    private function appendToolArgsDelta(PartialInferenceDelta $delta): void
     {
-        $currentToolKey = $this->state->toolKey();
-
-        if ($currentToolKey !== '' && $currentToolKey !== $previousToolKey) {
-            $this->jsonParser->reset();
-            $this->activeToolKey = $currentToolKey;
+        foreach ($delta->messageChunks as $chunk) {
+            if ($chunk->type !== AssistantMessageChunkType::ToolCallDelta) {
+                continue;
+            }
+            if ($this->activeToolKey !== $chunk->index) {
+                $this->jsonParser->reset();
+                $this->activeToolKey = $chunk->index;
+            }
+            if ($chunk->toolCallArguments !== '') {
+                $this->jsonParser->append($chunk->toolCallArguments);
+            }
         }
-
-        if ($delta->toolArgs === '') {
-            return;
-        }
-
-        if ($currentToolKey !== '' && $this->activeToolKey !== $currentToolKey) {
-            $this->jsonParser->reset();
-            $this->activeToolKey = $currentToolKey;
-        }
-
-        $this->jsonParser->append($delta->toolArgs);
     }
 }

@@ -9,12 +9,12 @@
         "fromConfig": "static fromConfig(Cognesy\\Polyglot\\Inference\\Config\\LLMConfig $config, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=): Cognesy\\Polyglot\\Inference\\Inference",
         "fromProvider": "static fromProvider(Cognesy\\Polyglot\\Inference\\LLMProvider $provider, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=): Cognesy\\Polyglot\\Inference\\Inference",
         "fromRuntime": "static fromRuntime(Cognesy\\Polyglot\\Inference\\Contracts\\CanCreateInference $runtime): Cognesy\\Polyglot\\Inference\\Inference",
-        "get": "get(): string",
+        "get": "get(): Cognesy\\Messages\\Message",
         "response": "response(): Cognesy\\Polyglot\\Inference\\Data\\InferenceResponse",
         "stream": "stream(): Cognesy\\Polyglot\\Inference\\Streaming\\InferenceStream",
         "using": "static using(string $preset, ?string $basePath=, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=): Cognesy\\Polyglot\\Inference\\Inference",
         "with": "with(?Cognesy\\Messages\\Messages $messages=, ?string $model=, ?Cognesy\\Polyglot\\Inference\\Data\\ToolDefinitions $tools=, ?Cognesy\\Polyglot\\Inference\\Data\\ToolChoice $toolChoice=, ?Cognesy\\Polyglot\\Inference\\Data\\ResponseFormat $responseFormat=, ?array $options=): static",
-        "withCachedContext": "withCachedContext(?Cognesy\\Messages\\Messages $messages=, ?Cognesy\\Polyglot\\Inference\\Data\\ToolDefinitions $tools=, ?Cognesy\\Polyglot\\Inference\\Data\\ToolChoice $toolChoice=, ?Cognesy\\Polyglot\\Inference\\Data\\ResponseFormat $responseFormat=): static",
+        "withCachedContext": "withCachedContext(?Cognesy\\Messages\\Messages $messages=, ?Cognesy\\Polyglot\\Inference\\Data\\ToolDefinitions $tools=, ?Cognesy\\Polyglot\\Inference\\Data\\ToolChoice $toolChoice=, ?Cognesy\\Polyglot\\Inference\\Data\\ResponseFormat $responseFormat=, ?string $ttl=): static",
         "withMaxTokens": "withMaxTokens(int $maxTokens): static",
         "withMessages": "withMessages(Cognesy\\Messages\\Messages $messages): static",
         "withModel": "withModel(string $model): static",
@@ -30,10 +30,10 @@
         "withTools": "withTools(Cognesy\\Polyglot\\Inference\\Data\\ToolDefinitions $tools): static"
     },
     "Cognesy\\Polyglot\\Inference\\InferenceRuntime": {
-        "__construct": "__construct(Cognesy\\Polyglot\\Inference\\Contracts\\CanProcessInferenceRequest $driver, Cognesy\\Events\\Contracts\\CanHandleEvents $events): mixed",
+        "__construct": "__construct(Cognesy\\Polyglot\\Inference\\Contracts\\CanProcessInferenceRequest $driver, Cognesy\\Events\\Contracts\\CanHandleEvents $events, ?Cognesy\\Polyglot\\Inference\\Models\\ModelCatalog $models=, string $driverName=, string $defaultModel=): mixed",
         "create": "create(Cognesy\\Polyglot\\Inference\\Data\\InferenceRequest $request): Cognesy\\Polyglot\\Inference\\PendingInference",
-        "fromConfig": "static fromConfig(Cognesy\\Polyglot\\Inference\\Config\\LLMConfig $config, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Http\\Contracts\\CanManageStreamCache $streamCacheManager=, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=): Cognesy\\Polyglot\\Inference\\InferenceRuntime",
-        "fromProvider": "static fromProvider(Cognesy\\Polyglot\\Inference\\LLMProvider $provider, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Http\\Contracts\\CanManageStreamCache $streamCacheManager=, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=): Cognesy\\Polyglot\\Inference\\InferenceRuntime",
+        "fromConfig": "static fromConfig(Cognesy\\Polyglot\\Inference\\Config\\LLMConfig $config, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Http\\Contracts\\CanManageStreamCache $streamCacheManager=, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=, ?Cognesy\\Polyglot\\Inference\\Models\\ModelCatalog $models=): Cognesy\\Polyglot\\Inference\\InferenceRuntime",
+        "fromProvider": "static fromProvider(Cognesy\\Polyglot\\Inference\\LLMProvider $provider, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Http\\Contracts\\CanManageStreamCache $streamCacheManager=, ?Cognesy\\Polyglot\\Inference\\Contracts\\CanProvideInferenceDrivers $drivers=, ?Cognesy\\Polyglot\\Inference\\Models\\ModelCatalog $models=): Cognesy\\Polyglot\\Inference\\InferenceRuntime",
         "onEvent": "onEvent(string $class, callable $listener, int $priority=): Cognesy\\Polyglot\\Inference\\InferenceRuntime",
         "wiretap": "wiretap(callable $listener): Cognesy\\Polyglot\\Inference\\InferenceRuntime"
     },
@@ -44,7 +44,7 @@
         "asToolCallJson": "asToolCallJson(): string",
         "asToolCallJsonData": "asToolCallJsonData(): array",
         "executionId": "executionId(): string",
-        "get": "get(): string",
+        "get": "get(): Cognesy\\Messages\\Message",
         "isStreamed": "isStreamed(): bool",
         "response": "response(): Cognesy\\Polyglot\\Inference\\Data\\InferenceResponse",
         "stream": "stream(): Cognesy\\Polyglot\\Inference\\Streaming\\InferenceStream"

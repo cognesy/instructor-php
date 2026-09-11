@@ -38,8 +38,8 @@ Compile the selected canonical conversation into the same AgentState history a
 Tell turn uses before appending its next prompt. This is read-only: it does not
 build an agent loop, execute tools, or write any state.
 
-Token counts are local BPE estimates. Model-specific capacity remains unknown;
-Tell separately reports any finite contextLength configured for this invocation.
+Token counts are local BPE estimates. Model capacity and remaining capacity come
+from the exact resolved Polyglot catalog offering when those facts are declared.
 
 Examples:
   tell context
@@ -99,7 +99,7 @@ HELP)
             responsibility: 'Compile and inspect the selected canonical pre-prompt AgentState without execution.',
             ownedState: 'Read-only projection of verified arena lineage plus selected invocation configuration.',
             input: 'Optional workspace/session selector and agent, connection, model, or DSN selection.',
-            output: 'Deterministic counts, explicit token estimate provenance, configured limits, and compaction provenance.',
+            output: 'Deterministic counts, token estimate provenance, exact model capacity, and compaction provenance.',
             authority: 'Read canonical state and configuration only; no inference, loop construction, tool execution, or persistence writes.',
             degradedBehavior: 'Reports missing workspaces, invalid selectors, configuration errors, and corrupt lineage without a partial context.',
         );

@@ -3,6 +3,7 @@ title: 'Google Gemini (OpenAI-compatible)'
 docname: 'llm_google_gemini_oai'
 id: '821d'
 tags:
+  - 'no-replay'
   - 'flaky'
   - 'llm-api-support'
   - 'gemini'
@@ -42,7 +43,7 @@ $answer = Inference::fromRuntime(InferenceRuntime::fromConfig(
         messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]
     )
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

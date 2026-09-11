@@ -17,7 +17,9 @@ final readonly class PolyglotAgentJudge implements CanJudgeAgentEval
     public static function fromInference(Inference $inference): self {
         return new self(static fn (string $prompt): string => $inference
             ->with(messages: Messages::fromString($prompt))
-            ->get());
+            ->get()
+            ->content()
+            ->toString());
     }
 
     /** @param Closure(string): string $invoke */

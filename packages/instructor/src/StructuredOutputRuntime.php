@@ -21,6 +21,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
 final class StructuredOutputRuntime implements CanCreateStructuredOutput
 {
@@ -40,6 +41,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
+        ?ModelCatalog $models = null,
     ): StructuredOutputRuntime {
         $events = self::resolveEvents($events);
         return new self(
@@ -47,6 +49,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
                 config: $config,
                 events: $events,
                 httpClient: $httpClient,
+                models: $models,
             ),
             events: $events,
             config: self::resolveStructuredConfig($structuredConfig),
@@ -58,12 +61,14 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
         ?LLMConfig $llmConfig = null,
+        ?ModelCatalog $models = null,
     ): StructuredOutputRuntime {
         return self::fromConfig(
             config: $llmConfig ?? LLMProvider::new()->resolveConfig(),
             events: $events,
             httpClient: $httpClient,
             structuredConfig: self::resolveStructuredConfig($structuredConfig),
+            models: $models,
         );
     }
 
@@ -72,6 +77,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
+        ?ModelCatalog $models = null,
     ): StructuredOutputRuntime {
         $events = self::resolveEvents($events);
         return new self(
@@ -79,6 +85,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
                 provider: $provider,
                 events: $events,
                 httpClient: $httpClient,
+                models: $models,
             ),
             events: $events,
             config: self::resolveStructuredConfig($structuredConfig),

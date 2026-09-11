@@ -3,6 +3,7 @@
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicUsageFormat;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 it('Anthropic: parses content, reasoning, and tool calls deterministically', function () {
     $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
@@ -18,10 +19,10 @@ it('Anthropic: parses content, reasoning, and tool calls deterministically', fun
     ];
 
     $res = $adapter->fromResponse(MockHttpResponseFactory::json($data));
-    expect($res->content())->toBe('Hello');
-    expect(trim($res->reasoningContent()))->toBe('Reasoning...');
-    expect($res->hasToolCalls())->toBeTrue();
-    $tool = $res->toolCalls()->first();
+    expect($res->message()->content()->toString())->toBe('Hello');
+    expect(trim($res->message()->reasoningContent()))->toBe('Reasoning...');
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    $tool = $res->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
@@ -38,27 +39,41 @@ it('Anthropic: keeps content empty for tool-only responses', function () {
     ];
 
     $res = $adapter->fromResponse(MockHttpResponseFactory::json($data));
-    expect($res->content())->toBe('');
-    expect($res->hasToolCalls())->toBeTrue();
+    expect($res->message()->content()->toString())->toBe('');
+    expect($res->message()->hasToolCalls())->toBeTrue();
 });
 
 it('Anthropic: parses streaming text and tool args deltas', function () {
     $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
 
-    $eventText = json_encode(['delta' => ['text' => 'Hel']]);
+    $eventText = json_encode([
+        'type' => 'content_block_delta',
+        'index' => 0,
+        'delta' => ['type' => 'text_delta', 'text' => 'Hel'],
+    ]);
     $delta1 = iterator_to_array($adapter->fromStreamDeltas([$eventText]))[0] ?? null;
     expect($delta1)->not->toBeNull();
-    expect($delta1->contentDelta)->toBe('Hel');
+    expect($delta1->messageChunks->textDelta())->toBe('Hel');
 
-    $eventTool = json_encode([
-        'content_block' => ['id' => 'c1', 'name' => 'search'],
-        'delta' => ['partial_json' => json_encode(['q' => 'Hello'])],
-    ]);
-    $delta2 = iterator_to_array($adapter->fromStreamDeltas([$eventTool]))[0] ?? null;
-    expect($delta2)->not->toBeNull();
-    expect($delta2->contentDelta)->toBe('');
-    expect($delta2->toolName)->toBe('search');
-    expect($delta2->toolArgs)->toContain('Hello');
+    $toolEvents = [
+        json_encode([
+            'type' => 'content_block_start',
+            'index' => 1,
+            'content_block' => ['type' => 'tool_use', 'id' => 'c1', 'name' => 'search', 'input' => []],
+        ]),
+        json_encode([
+            'type' => 'content_block_delta',
+            'index' => 1,
+            'delta' => ['type' => 'input_json_delta', 'partial_json' => json_encode(['q' => 'Hello'])],
+        ]),
+    ];
+    $state = new InferenceStreamState();
+    foreach ($adapter->fromStreamDeltas($toolEvents) as $delta) {
+        $state->applyDelta($delta);
+    }
+    $tool = $state->finalResponse()->message()->toolCalls()->first();
+    expect($tool->name())->toBe('search');
+    expect($tool->rawArguments())->toContain('Hello');
 });
 
 it('Anthropic: sets usageIsCumulative=true for streaming responses with usage data', function () {
@@ -66,13 +81,15 @@ it('Anthropic: sets usageIsCumulative=true for streaming responses with usage da
 
     // Test streaming response with usage data
     $eventWithUsage = json_encode([
-        'delta' => ['text' => 'Hello'],
+        'type' => 'content_block_delta',
+        'index' => 0,
+        'delta' => ['type' => 'text_delta', 'text' => 'Hello'],
         'usage' => ['input_tokens' => 100, 'output_tokens' => 2]
     ]);
 
     $delta = iterator_to_array($adapter->fromStreamDeltas([$eventWithUsage]))[0] ?? null;
     expect($delta)->not->toBeNull();
-    expect($delta->contentDelta)->toBe('Hello');
+    expect($delta->messageChunks->textDelta())->toBe('Hello');
 
     // CRITICAL: Verify that usageIsCumulative is set to true
     // This prevents exponential token growth during accumulation
@@ -112,12 +129,14 @@ it('Anthropic: propagates tool id by content block index for delta events', func
     ];
 
     $deltas = array_values(iterator_to_array($adapter->fromStreamDeltas($events)));
+    $secondToolArgs = $deltas[2]->messageChunks->all()[0];
+    $firstToolArgs = $deltas[3]->messageChunks->all()[0];
 
     expect($deltas)->toHaveCount(4);
-    expect($deltas[2]->toolId)->toBe('tool_2');
-    expect($deltas[2]->toolName)->toBe('');
-    expect($deltas[2]->toolArgs)->toContain('Ber');
-    expect($deltas[3]->toolId)->toBe('tool_1');
-    expect($deltas[3]->toolName)->toBe('');
-    expect($deltas[3]->toolArgs)->toContain('Par');
+    expect($secondToolArgs->toolCallId)->toBe('tool_2');
+    expect($secondToolArgs->toolCallName)->toBe('');
+    expect($secondToolArgs->toolCallArguments)->toContain('Ber');
+    expect($firstToolArgs->toolCallId)->toBe('tool_1');
+    expect($firstToolArgs->toolCallName)->toBe('');
+    expect($firstToolArgs->toolCallArguments)->toContain('Par');
 });

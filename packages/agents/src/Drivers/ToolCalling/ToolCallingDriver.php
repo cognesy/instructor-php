@@ -25,9 +25,7 @@ use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
@@ -43,7 +41,6 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
-use Cognesy\Utils\Json\JsonExtractor;
 use DateTimeImmutable;
 use Override;
 
@@ -174,9 +171,9 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         $inference = $this->performInference($state, $this->tools, $messages);
         $state = $inference->state();
         $response = $inference->response();
-        $toolCalls = $response->toolCalls();
+        $toolCalls = $response->message()->toolCalls();
         $executions = $this->executor->executeTools($toolCalls, $state);
-        $messages = $this->formatter->makeExecutionMessages($executions);
+        $messages = $this->formatter->makeResultMessages($executions);
         $step = $this->buildStepFromResponse(
             response: $response,
             executions: $executions,
@@ -289,7 +286,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         Messages $followUps,
         Messages $context,
     ): AgentStep {
-        $outputMessages = $this->appendResponseContent($followUps, $response);
+        $outputMessages = $followUps->prependMessages($response->message());
 
         return new AgentStep(
             inputMessages: $context,
@@ -297,39 +294,6 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
             inferenceResponse: $response,
             toolExecutions: $executions,
         );
-    }
-
-    private function appendResponseContent(Messages $messages, InferenceResponse $response): Messages {
-        $content = $response->content();
-        if ($content === '') {
-            return $messages;
-        }
-        if ($this->isToolArgsLeak($content, $response->toolCalls())) {
-            return $messages;
-        }
-
-        return $messages->appendMessage(Message::asAssistant($content));
-    }
-
-    private function isToolArgsLeak(string $content, ToolCalls $toolCalls): bool {
-        if ($toolCalls->hasNone()) {
-            return false;
-        }
-        $contentArgs = $this->parseContentArgs($content);
-        if ($contentArgs === null) {
-            return false;
-        }
-        foreach ($toolCalls->each() as $toolCall) {
-            if ($toolCall->args() == $contentArgs) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function parseContentArgs(string $content): ?array {
-        return JsonExtractor::first($content);
     }
 
     private function ensureStateLLMConfig(AgentState $state): AgentState {

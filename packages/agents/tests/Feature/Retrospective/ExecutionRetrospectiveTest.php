@@ -31,11 +31,11 @@ function toolCallResponse(string $name, array $args): InferenceResponse {
         'name' => $name,
         'arguments' => json_encode($args),
     ]);
-    return new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall));
+    return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall)));
 }
 
 function finalResponse(string $content): InferenceResponse {
-    return new InferenceResponse(content: $content);
+    return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content));
 }
 
 function makeRetrospectiveLoop(

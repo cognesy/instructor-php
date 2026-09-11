@@ -44,18 +44,8 @@ it('creates participant with correct name and system prompt', function () {
 
 it('executes tool calls and returns chat step with tool results', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: '',
-            toolCalls: new ToolCalls(new ToolCall('test_add', ['a' => 5, 'b' => 3])),
-            usage: new InferenceUsage(10, 20),
-            finishReason: 'tool_calls'
-        ),
-        new InferenceResponse(
-            content: 'The result is 8.',
-            toolCalls: new ToolCalls(),
-            usage: new InferenceUsage(5, 15),
-            finishReason: 'stop'
-        )
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('test_add', ['a' => 5, 'b' => 3]))), usage: new InferenceUsage(10, 20), finishReason: 'tool_calls'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('The result is 8.')->withToolCalls(new ToolCalls()), usage: new InferenceUsage(5, 15), finishReason: 'stop')
     ]);
 
     $tools = new Tools(FunctionTool::fromCallable(test_add(...)));
@@ -92,21 +82,11 @@ it('executes tool calls and returns chat step with tool results', function () {
 
 it('handles multiple tool calls in sequence', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: '',
-            toolCalls: new ToolCalls(
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(
                 new ToolCall('test_add', ['a' => 5, 'b' => 3]),
                 new ToolCall('test_multiply', ['a' => 2, 'b' => 4])
-            ),
-            usage: new InferenceUsage(15, 25),
-            finishReason: 'tool_calls'
-        ),
-        new InferenceResponse(
-            content: 'First result is 8, second result is 8.',
-            toolCalls: new ToolCalls(),
-            usage: new InferenceUsage(10, 20),
-            finishReason: 'stop'
-        )
+            )), usage: new InferenceUsage(15, 25), finishReason: 'tool_calls'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('First result is 8, second result is 8.')->withToolCalls(new ToolCalls()), usage: new InferenceUsage(10, 20), finishReason: 'stop')
     ]);
 
     $tools = new Tools(
@@ -143,12 +123,7 @@ it('handles multiple tool calls in sequence', function () {
 
 it('prepends system prompt when provided', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: 'Hello! I am a helpful math assistant.',
-            finishReason: 'stop',
-            toolCalls: new ToolCalls(),
-            usage: new InferenceUsage(5, 10),
-        )
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Hello! I am a helpful math assistant.')->withToolCalls(new ToolCalls()), finishReason: 'stop', usage: new InferenceUsage(5, 10))
     ]);
 
     $toolUse = ToolUseFactory::default(
@@ -180,12 +155,7 @@ it('prepends system prompt when provided', function () {
 
 it('works without system prompt', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: 'Hello!',
-            toolCalls: new ToolCalls(),
-            usage: new InferenceUsage(3, 7),
-            finishReason: 'stop'
-        )
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Hello!')->withToolCalls(new ToolCalls()), usage: new InferenceUsage(3, 7), finishReason: 'stop')
     ]);
 
     $toolUse = ToolUseFactory::default(
@@ -227,12 +197,7 @@ it('dispatches tool use events', function () {
     });
 
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: 'Result is ready.',
-            toolCalls: new ToolCalls(),
-            usage: new InferenceUsage(8, 12),
-            finishReason: 'stop'
-        )
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Result is ready.')->withToolCalls(new ToolCalls()), usage: new InferenceUsage(8, 12), finishReason: 'stop')
     ]);
 
     $toolUse = ToolUseFactory::default(

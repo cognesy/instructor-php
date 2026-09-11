@@ -30,12 +30,12 @@ final readonly class TellConversations implements CanAccessTellConversations
 
     #[\Override]
     public function main(string $directory): TellConversation {
-        return new TellConversation($this->runner, $this->agents, $this->tracer, $this->workspaces, $directory);
+        return new TellConversation($this->runner, $this->agents, $this->tracer, $this->workspaces, $this->providers, $directory);
     }
 
     #[\Override]
     public function conversation(string $directory, string $name): TellConversation {
-        return new TellConversation($this->runner, $this->agents, $this->tracer, $this->workspaces, $directory, $name);
+        return new TellConversation($this->runner, $this->agents, $this->tracer, $this->workspaces, $this->providers, $directory, $name);
     }
 
     #[\Override]
@@ -46,6 +46,7 @@ final readonly class TellConversations implements CanAccessTellConversations
             $this->agents,
             $this->tracer,
             $this->workspaces,
+            $this->providers,
             $directory,
             $current->name,
             invocationLocal: false,
@@ -59,12 +60,12 @@ final readonly class TellConversations implements CanAccessTellConversations
 
     #[\Override]
     public function branch(string $directory, string $name): TellBranch {
-        return new TellBranch($this->agents, $this->tracer, $this->workspaces, $directory, $name);
+        return new TellBranch($this->agents, $this->tracer, $this->workspaces, $this->providers, $directory, $name);
     }
 
     #[\Override]
     public function ref(string $directory, string $hash): TellRef {
-        return new TellRef($this->agents, $this->workspaces, $directory, $hash);
+        return new TellRef($this->agents, $this->workspaces, $this->providers, $directory, $hash);
     }
 
     #[\Override]

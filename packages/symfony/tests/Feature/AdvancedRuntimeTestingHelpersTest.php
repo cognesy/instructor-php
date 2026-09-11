@@ -27,10 +27,11 @@ it('provides native-agent override helpers for scripted execution in tests', fun
                 prompt: 'Use the helper',
             ));
 
-            $messages = $session->state()->messages()->toArray();
+            $messages = $session->state()->messages();
+            $messageList = $messages->all();
 
             expect($messages)->toHaveCount(2)
-                ->and($messages[1]['content'] ?? null)->toBe('helper-response')
+                ->and($messageList[1]->content()->toString())->toBe('helper-response')
                 ->and($loopFactory->recorded())->toHaveCount(1);
         },
         instructorConfig: advancedRuntimeTestConfig(),

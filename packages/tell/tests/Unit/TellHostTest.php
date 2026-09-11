@@ -41,7 +41,7 @@ final class HostFixturePaths implements CanDisposeTellModule, CanResolveTellPath
             home: '/tell',
             configDirectory: '/tell/config',
             configFile: '/tell/config/tell.json',
-            credentials: '/tell/config/credentials.env',
+            credentials: '/tell/.env',
             connections: '/tell/config/connections',
             packageAgents: '/package/agents',
             userAgents: '/tell/config/agents',

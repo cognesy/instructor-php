@@ -78,11 +78,11 @@ Each invocation of `useTools()` follows this sequence:
 
 3. **Send to the LLM.** The request is dispatched through the `InferenceRuntime`, which handles provider-specific API formatting, retries, and streaming.
 
-4. **Parse tool calls.** The `InferenceResponse` is inspected for `toolCalls`. If present, they are forwarded to the `ToolExecutor`.
+4. **Read tool calls.** The exact assistant `Message` carried by the `InferenceResponse` is inspected for ordered tool-call parts. If present, they are forwarded to the `ToolExecutor`.
 
 5. **Execute tools.** The `ToolExecutor` runs each tool call and returns `ToolExecutions`.
 
-6. **Format results.** The `ToolExecutionFormatter` converts each `ToolExecution` into a pair of messages: an assistant message with `tool_calls` metadata, and a `tool` role message with the execution result (or error).
+6. **Format results.** The exact assistant response message is retained once. The `ToolExecutionFormatter` converts each `ToolExecution` into a `tool` role result message (or error); it does not reconstruct the invocation turn.
 
 7. **Build the step.** An `AgentStep` is created with the input messages, output messages, inference response, and tool executions, then attached to the state via `withCurrentStep()`.
 

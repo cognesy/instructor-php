@@ -19,12 +19,25 @@ apiUrl: https://example.invalid/v1
 apiKey: ${CATALOGUE_SECRET_CANARY}
 endpoint: /chat/completions
 model: qwen3.8-max
-contextLength: 123456
-maxOutputLength: 789
 YAML);
+    file_put_contents($project . '/config/llm/models.json', json_encode([
+        'version' => 'project-test',
+        'models' => [[
+            'driver' => 'qwen',
+            'model' => 'qwen3.8-max',
+            'status' => 'supported',
+            'limits' => ['contextWindow' => 123456, 'maxOutput' => 789],
+            'capabilities' => [
+                'streaming' => 'supported',
+                'tools' => 'supported',
+                'jsonSchema' => 'supported',
+            ],
+            'source' => 'project-test',
+        ]],
+    ], JSON_THROW_ON_ERROR));
 
     $tester = new CommandTester(new ProvidersCommand(tellTestProviderCatalogue($factory)));
-    expect($tester->execute(['--dir' => $project, '--fields' => 'connection,provider,source,defaultModel,contextCapacity,capabilities,unknown', '--json' => true]))->toBe(Command::SUCCESS);
+    expect($tester->execute(['--dir' => $project, '--fields' => 'connection,provider,source,defaultModel,contextCapacity,capabilities,catalogSource,catalogVersion', '--json' => true]))->toBe(Command::SUCCESS);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $qwen = array_values(array_filter($payload['providers'], static fn (array $row): bool => $row['connection'] === 'qwen'))[0];
 
@@ -34,7 +47,8 @@ YAML);
         ->and($qwen['contextCapacity'])->toBe(123456)
         ->and($qwen['capabilities']['tools'])->toBeTrue()
         ->and($qwen['capabilities']['jsonSchema'])->toBeTrue()
-        ->and($qwen['unknown']['thinking'])->toBe('not declared by Polyglot driver metadata')
+        ->and($qwen['catalogSource'])->toBe('project-test')
+        ->and($qwen['catalogVersion'])->toBe('project-test')
         ->and($tester->getDisplay())->not->toContain('CATALOGUE_SECRET_CANARY')
         ->and($tester->getDisplay())->not->toContain('example.invalid');
 });
@@ -45,11 +59,13 @@ it('filters models by provider or connection and rejects an unknown selector', f
     mkdir($project, 0700, true);
     $tester = new CommandTester(new ModelsCommand(tellTestProviderCatalogue($factory)));
 
-    expect($tester->execute(['provider-or-connection' => 'deepseek', '--dir' => $project, '--fields' => 'connection,provider,defaultModel,availableModels,capabilities', '--json' => true]))->toBe(Command::SUCCESS);
+    expect($tester->execute(['provider-or-connection' => 'deepseek', '--dir' => $project, '--fields' => 'provider,model,defaultFor,capabilities', '--json' => true]))->toBe(Command::SUCCESS);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
-    $deepseek = array_values(array_filter($payload['models'], static fn (array $row): bool => $row['connection'] === 'deepseek'))[0];
-    expect($payload['models'])->toHaveCount(2)
-        ->and($deepseek['defaultModel'])->toBe('deepseek-v4-flash')
+    $deepseek = array_values(array_filter($payload['models'], static fn (array $row): bool => $row['model'] === 'deepseek-v4-flash'))[0];
+    expect($payload['models'])->not->toBeEmpty()
+        ->and(array_unique(array_column($payload['models'], 'provider')))->toBe(['deepseek'])
+        ->and($deepseek['provider'])->toBe('deepseek')
+        ->and($deepseek['defaultFor'])->toContain('deepseek')
         ->and($deepseek['capabilities']['jsonSchema'])->toBeFalse();
 
     expect($tester->execute(['provider-or-connection' => 'does-not-exist', '--dir' => $project, '--json' => true]))->toBe(Command::INVALID)

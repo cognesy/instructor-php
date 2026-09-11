@@ -69,10 +69,7 @@ final readonly class ScenarioStep
             default => ErrorList::empty(),
         };
 
-        $response = new InferenceResponse(
-            toolCalls: $this->toolCalls ?? ToolCalls::empty(),
-            usage: $this->usage,
-        );
+        $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls($this->toolCalls ?? ToolCalls::empty()), usage: $this->usage);
 
         return new AgentStep(
             inputMessages: $inputMessages ?? $state->store()->toMessages(),

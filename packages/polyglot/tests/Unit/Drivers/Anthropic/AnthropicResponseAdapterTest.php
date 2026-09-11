@@ -13,7 +13,7 @@ it('parses Anthropic response into normalized InferenceResponse', function () {
     ]);
 
     $res = $adapter->fromResponse($response);
-    expect($res->content())->toBe('Hi!');
+    expect($res->message()->content()->toString())->toBe('Hi!');
     expect($res->usage()->input())->toBe(5);
     expect($res->usage()->output())->toBe(2);
 });

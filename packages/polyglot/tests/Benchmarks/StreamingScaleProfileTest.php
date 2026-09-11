@@ -89,9 +89,9 @@ function runInferenceStreamProfile(
 /** @return iterable<PartialInferenceDelta> */
 function contentDeltaFactory(int $chunkCount, string $payload): iterable {
     for ($i = 0; $i < $chunkCount - 1; $i++) {
-        yield new PartialInferenceDelta(contentDelta: $payload);
+        yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $payload));
     }
-    yield new PartialInferenceDelta(contentDelta: $payload, finishReason: 'stop');
+    yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $payload), finishReason: 'stop');
 }
 
 /**
@@ -109,15 +109,19 @@ function toolCallDeltaFactory(int $chunkCount, string $payload): iterable {
         if ($i % 32 === 0) {
             $callIndex++;
             yield new PartialInferenceDelta(
-                toolId: 'call_' . $callIndex,
-                toolName: 'do_something',
-                toolArgs: '{"a":',
+                messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                    ->withToolCallDelta('benchmark:tool:' . $callIndex, 'call_' . $callIndex, 'do_something', '{"a":'),
             );
             continue;
         }
-        yield new PartialInferenceDelta(toolArgs: $argFragment);
+        yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withToolCallDelta('benchmark:tool:' . $callIndex, arguments: $argFragment));
     }
-    yield new PartialInferenceDelta(toolArgs: '}', finishReason: 'tool_calls');
+    yield new PartialInferenceDelta(
+        messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withToolCallDelta('benchmark:tool:' . $callIndex, arguments: '}'),
+        finishReason: 'tool_calls',
+    );
 }
 
 it('profiles inference streaming at 1K, 2K, 5K, 10K chunks', function () {

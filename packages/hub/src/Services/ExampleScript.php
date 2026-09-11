@@ -29,7 +29,7 @@ final class ExampleScript
             return new self($runPath);
         }
 
-        if (preg_match('/^```php[^\r\n]*\R(.*?)^```[ \t]*$/ms', $content, $matches) !== 1) {
+        if (preg_match('/^```php[^\r\n]*\R(.*?)^```[ \t]*\r?$/ms', $content, $matches) !== 1) {
             throw new \RuntimeException("Markdown example has no executable PHP fence: {$runPath}");
         }
 

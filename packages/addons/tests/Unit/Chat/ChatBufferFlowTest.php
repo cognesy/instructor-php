@@ -42,7 +42,7 @@ it('compiles messages in summary-buffer-messages order with system prompt first'
         $captured = $event->data['messages'] ?? null;
     });
 
-    $driver = new FakeInferenceDriver([new InferenceResponse(content: 'ok')]);
+    $driver = new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'))]);
     $inference = Inference::fromRuntime(
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
             LLMProvider::new()->withDriver($driver),

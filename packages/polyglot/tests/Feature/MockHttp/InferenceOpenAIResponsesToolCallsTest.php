@@ -32,8 +32,8 @@ it('handles function_call items in OpenAI Responses API', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Weather please'))
         ->response();
 
-    expect($response->hasToolCalls())->toBeTrue();
-    $tool = $response->toolCalls()->first();
+    expect($response->message()->hasToolCalls())->toBeTrue();
+    $tool = $response->message()->toolCalls()->first();
     expect($tool)->not->toBeNull();
     expect($tool->name())->toBe('get_weather');
     expect($tool->value('city'))->toBe('Paris');
@@ -73,8 +73,8 @@ it('handles multiple function_call items', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Weather and time please'))
         ->response();
 
-    expect($response->hasToolCalls())->toBeTrue();
-    $tools = $response->toolCalls()->all();
+    expect($response->message()->hasToolCalls())->toBeTrue();
+    $tools = $response->message()->toolCalls()->all();
     expect(count($tools))->toBe(2);
     expect($tools[0]->name())->toBe('get_weather');
     expect($tools[1]->name())->toBe('get_time');
@@ -110,7 +110,7 @@ it('handles mixed message and function_call items', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('What is the weather in London?'))
         ->response();
 
-    expect($response->content())->toBe('Let me check the weather.');
-    expect($response->hasToolCalls())->toBeTrue();
-    expect($response->toolCalls()->first()->name())->toBe('get_weather');
+    expect($response->message()->content()->toString())->toBe('Let me check the weather.');
+    expect($response->message()->hasToolCalls())->toBeTrue();
+    expect($response->message()->toolCalls()->first()->name())->toBe('get_weather');
 });

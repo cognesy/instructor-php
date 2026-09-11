@@ -20,6 +20,14 @@ trait BuildsCliArgv
         };
     }
 
+    private function appendFlag(Argv $argv, string $flag, bool $enabled): Argv
+    {
+        return match ($enabled) {
+            true => $argv->with($flag),
+            false => $argv,
+        };
+    }
+
     /**
      * @return list<string>|null
      */

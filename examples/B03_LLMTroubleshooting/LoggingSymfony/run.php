@@ -67,7 +67,7 @@ echo "🚀 Starting simple Inference to demonstrate logging...\n";
 $response = $inference
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->withMaxTokens(50)
-    ->get();
+    ->get()->content()->toString();
 
 echo "\n✅ Inference completed!\n";
 

@@ -23,8 +23,8 @@ conversation head.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Capability\Tool\AskUser\TellAnswerQueue;
 use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Data\TellAnswers;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellToolRequest;
 
@@ -46,7 +46,7 @@ try {
     // Construct a non-interactive run only when an enabled agent may ask for
     // a decision. Answers are consumed once and are redacted from event output.
     $request = TellRequest::prompt('Continue only after confirming release intent.')
-        ->withAnswers(new TellAnswerQueue([
+        ->withAnswers(new TellAnswers([
             ['id' => 'release', 'value' => 'approve', 'source' => 'cli'],
         ]));
 
@@ -65,6 +65,6 @@ try {
   or make network calls. `models('connection-or-provider')` narrows it.
 - `tools()->dispatch()` performs exactly one enabled tool call. Its result
   explicitly reports `direct`, `inference: false`, and `durable: false`.
-- For a non-interactive agent run, supply `TellAnswerQueue` up front. Durable
+- For a non-interactive agent run, supply `TellAnswers` up front. Durable
   delegation is opt-in through an enabled agent's `spawn_subagent` tool and
   gives each child an inspectable Tell-owned `agent-*` branch.

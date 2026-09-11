@@ -31,8 +31,8 @@ it('runs multi-participant chat with proper turn-taking and conversation history
             \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
                 LLMProvider::new()->withDriver(
                     new FakeInferenceDriver([
-                        new InferenceResponse(content: 'I am Dr. Chen, AI researcher. - Dr. Chen'),
-                        new InferenceResponse(content: 'My expertise is machine learning safety. - Dr. Chen'),
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('I am Dr. Chen, AI researcher. - Dr. Chen')),
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('My expertise is machine learning safety. - Dr. Chen')),
                     ])
                 )
             ),
@@ -46,8 +46,8 @@ it('runs multi-participant chat with proper turn-taking and conversation history
             \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
                 LLMProvider::new()->withDriver(
                     new FakeInferenceDriver([
-                        new InferenceResponse(content: 'I am Marcus, Senior AI Engineer. - Marcus'),
-                        new InferenceResponse(content: 'I focus on production AI systems. - Marcus'),
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('I am Marcus, Senior AI Engineer. - Marcus')),
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('I focus on production AI systems. - Marcus')),
                     ])
                 )
             ),
@@ -147,8 +147,8 @@ it('stops conversation when ResponseContentCheck detects empty response', functi
             \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
                 LLMProvider::new()->withDriver(
                     new FakeInferenceDriver([
-                        new InferenceResponse(content: 'Hi there!'),
-                        new InferenceResponse(content: ''), // Empty response should stop
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Hi there!')),
+                        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')), // Empty response should stop
                     ])
                 )
             ),

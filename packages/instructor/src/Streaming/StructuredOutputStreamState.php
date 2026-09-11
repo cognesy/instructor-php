@@ -4,6 +4,8 @@ namespace Cognesy\Instructor\Streaming;
 
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
+use Cognesy\Polyglot\Inference\Assembly\ThinkTagMessageNormalizer;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
@@ -28,6 +30,10 @@ final class StructuredOutputStreamState
     private bool $hasPrebuiltValue = false;
     private ?ToolCalls $memoizedToolCalls = null;
     private ?EmissionSnapshot $memoizedSnapshot = null;
+    private ?InferenceResponse $memoizedPartialInferenceResponse = null;
+    private ?InferenceResponse $memoizedFinalInferenceResponse = null;
+    private ?StructuredOutputResponse $memoizedPartialResponse = null;
+    private ?StructuredOutputResponse $memoizedFinalResponse = null;
 
     public function __construct()
     {
@@ -47,6 +53,10 @@ final class StructuredOutputStreamState
         $this->hasPrebuiltValue = false;
         $this->memoizedToolCalls = null;
         $this->memoizedSnapshot = null;
+        $this->memoizedPartialInferenceResponse = null;
+        $this->memoizedFinalInferenceResponse = null;
+        $this->memoizedPartialResponse = null;
+        $this->memoizedFinalResponse = null;
     }
 
     public function applyDelta(PartialInferenceDelta $delta): void
@@ -54,28 +64,37 @@ final class StructuredOutputStreamState
         $this->invalidateDerivedState();
         $this->inner->applyDelta($delta);
 
-        if ($delta->contentDelta !== '' || $delta->toolArgs !== '') {
+        if (!$delta->messageChunks->isEmpty()) {
             $this->snapshotRevision += 1;
         }
     }
 
     public function setValue(mixed $value): void
     {
-        $this->memoizedSnapshot = null;
+        if ($this->hasPrebuiltValue && self::sameValue($this->value, $value)) {
+            return;
+        }
+        $this->invalidateDerivedState();
         $this->value = $value;
         $this->hasPrebuiltValue = true;
     }
 
     public function setPreview(mixed $value): void
     {
-        $this->memoizedSnapshot = null;
+        if (!$this->hasPrebuiltValue && self::sameValue($this->value, $value)) {
+            return;
+        }
+        $this->invalidateDerivedState();
         $this->value = $value;
         $this->hasPrebuiltValue = false;
     }
 
     public function clearValue(): void
     {
-        $this->memoizedSnapshot = null;
+        if ($this->value === null && !$this->hasPrebuiltValue) {
+            return;
+        }
+        $this->invalidateDerivedState();
         $this->value = null;
         $this->hasPrebuiltValue = false;
     }
@@ -138,6 +157,11 @@ final class StructuredOutputStreamState
         return $this->memoizedToolCalls ??= $this->inner->toolCalls();
     }
 
+    public function currentToolCall(): ?ToolCall
+    {
+        return $this->inner->currentToolCall();
+    }
+
     public function snapshot(): EmissionSnapshot
     {
         if ($this->memoizedSnapshot instanceof EmissionSnapshot) {
@@ -155,19 +179,16 @@ final class StructuredOutputStreamState
 
     public function partialInferenceResponse(): InferenceResponse
     {
-        return (new InferenceResponse(
-            content: $this->content(),
-            finishReason: $this->finishReason(),
-            toolCalls: $this->toolCalls(),
-            reasoningContent: $this->reasoningContent(),
-            usage: $this->usage(),
-            isPartial: true,
-        ))->withReasoningContentFallbackFromContent();
+        if ($this->memoizedPartialInferenceResponse instanceof InferenceResponse) {
+            return $this->memoizedPartialInferenceResponse;
+        }
+        $response = $this->inner->partialResponse();
+        return $this->memoizedPartialInferenceResponse = self::normalize($response);
     }
 
     public function partialResponse(): StructuredOutputResponse
     {
-        return StructuredOutputResponse::partial(
+        return $this->memoizedPartialResponse ??= StructuredOutputResponse::partial(
             value: $this->value,
             inferenceResponse: $this->partialInferenceResponse(),
             toolArgsSnapshot: $this->toolArgsSnapshot(),
@@ -176,19 +197,16 @@ final class StructuredOutputStreamState
 
     public function finalInferenceResponse(): InferenceResponse
     {
-        return (new InferenceResponse(
-            content: $this->content(),
-            finishReason: $this->finishReason(),
-            toolCalls: $this->toolCalls(),
-            reasoningContent: $this->reasoningContent(),
-            usage: $this->usage(),
-            isPartial: false,
-        ))->withReasoningContentFallbackFromContent();
+        if ($this->memoizedFinalInferenceResponse instanceof InferenceResponse) {
+            return $this->memoizedFinalInferenceResponse;
+        }
+        $response = $this->inner->finalResponse();
+        return $this->memoizedFinalInferenceResponse = self::normalize($response);
     }
 
     public function finalResponse(): StructuredOutputResponse
     {
-        return StructuredOutputResponse::final(
+        return $this->memoizedFinalResponse ??= StructuredOutputResponse::final(
             value: $this->value,
             inferenceResponse: $this->finalInferenceResponse(),
             toolArgsSnapshot: $this->toolArgsSnapshot(),
@@ -199,5 +217,26 @@ final class StructuredOutputStreamState
     {
         $this->memoizedToolCalls = null;
         $this->memoizedSnapshot = null;
+        $this->memoizedPartialInferenceResponse = null;
+        $this->memoizedFinalInferenceResponse = null;
+        $this->memoizedPartialResponse = null;
+        $this->memoizedFinalResponse = null;
+    }
+
+    private static function normalize(InferenceResponse $response): InferenceResponse
+    {
+        $message = ThinkTagMessageNormalizer::normalize($response->message());
+        return match ($message === $response->message()) {
+            true => $response,
+            false => $response->withMessage($message),
+        };
+    }
+
+    private static function sameValue(mixed $current, mixed $next): bool
+    {
+        return match (true) {
+            is_object($current) || is_object($next) => $current === $next,
+            default => $current === $next,
+        };
     }
 }

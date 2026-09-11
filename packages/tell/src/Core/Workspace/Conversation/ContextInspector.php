@@ -7,7 +7,7 @@ namespace Cognesy\Tell\Core\Workspace\Conversation;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 use Cognesy\Tell\Core\Workspace\Arena\History;
 use Cognesy\Tell\Core\Workspace\Arena\HistoryTurn;
 use Cognesy\Tell\Core\Workspace\WorkspaceException;
@@ -27,7 +27,10 @@ final readonly class ContextInspector
     private const float WARNING_RATIO = 0.80;
     private const float CRITICAL_RATIO = 0.95;
 
-    public function __construct(private Gpt3TokenizerDriver $tokenizer = new Gpt3TokenizerDriver()) {}
+    public function __construct(
+        private ModelCatalog $models,
+        private Gpt3TokenizerDriver $tokenizer = new Gpt3TokenizerDriver(),
+    ) {}
 
     /** @return array<string, mixed> */
     public function inspect(
@@ -45,7 +48,10 @@ final readonly class ContextInspector
         $content = $this->content($systemPrompt, $compiledMessages);
         $tokenEstimate = $this->tokenizer->tokenCount($content);
         $config = $state->llmConfig();
-        $configuredLimit = $this->configuredLimit($config);
+        $modelCapacity = $this->models
+            ->find($config->driver, $config->model)
+            ->limits
+            ->contextWindow;
         $compactedFrom = $this->compactedFrom($history);
 
         return [
@@ -77,18 +83,13 @@ final readonly class ContextInspector
                     'status' => 'estimated',
                     'estimator' => $this->estimator(),
                 ],
-                'modelCapacity' => [
-                    'value' => null,
-                    'status' => 'unknown',
-                    'reason' => 'Tell has no model-specific capacity catalogue.',
-                ],
-                'configuredLimit' => $this->configuredLimitRow($configuredLimit),
-                'remainingConfiguredLimit' => $this->remainingLimitRow($configuredLimit, $tokenEstimate),
+                'modelCapacity' => $this->modelCapacityRow($modelCapacity),
+                'remainingModelCapacity' => $this->remainingCapacityRow($modelCapacity, $tokenEstimate),
             ],
-            'warningThresholds' => $this->warningThresholds($configuredLimit),
+            'warningThresholds' => $this->warningThresholds($modelCapacity),
             'help' => [
                 'Context tokens are a local estimate over the same canonical AgentState history used before the next prompt is appended.',
-                'Model capacity is intentionally unknown unless Tell gains verified model-specific metadata.',
+                'Model capacity comes from the exact resolved Polyglot catalog offering when declared.',
             ],
         ];
     }
@@ -129,42 +130,34 @@ final readonly class ContextInspector
         return implode("\n", $compiled);
     }
 
-    private function configuredLimit(?LLMConfig $config): ?int {
-        return match (true) {
-            $config === null,
-            $config->contextLength < 1 => null,
-            default => $config->contextLength,
-        };
-    }
-
     /** @return array{value: ?int, status: 'exact'|'unknown', source: string} */
-    private function configuredLimitRow(?int $limit): array {
-        return match ($limit) {
+    private function modelCapacityRow(?int $capacity): array {
+        return match ($capacity) {
             null => [
                 'value' => null,
                 'status' => 'unknown',
-                'source' => 'No positive contextLength is configured.',
+                'source' => 'No context capacity is declared for the exact model offering.',
             ],
             default => [
-                'value' => $limit,
+                'value' => $capacity,
                 'status' => 'exact',
-                'source' => 'Selected LLM configuration contextLength.',
+                'source' => 'Resolved Polyglot model catalog offering.',
             ],
         };
     }
 
     /** @return array{value: ?int, status: 'estimated'|'unknown', source: string} */
-    private function remainingLimitRow(?int $limit, int $estimate): array {
+    private function remainingCapacityRow(?int $limit, int $estimate): array {
         return match ($limit) {
             null => [
                 'value' => null,
                 'status' => 'unknown',
-                'source' => 'A configured context limit is unavailable.',
+                'source' => 'Model context capacity is unavailable.',
             ],
             default => [
                 'value' => max(0, $limit - $estimate),
                 'status' => 'estimated',
-                'source' => 'Configured limit minus estimated context tokens.',
+                'source' => 'Model context capacity minus estimated context tokens.',
             ],
         };
     }

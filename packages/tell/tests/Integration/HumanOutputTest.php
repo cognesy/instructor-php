@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Tell\Adapter\Console\Command\ConfigCommand;
 use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
@@ -84,6 +86,27 @@ it('does not let console markup in an answer reach the formatter', function (): 
 
     expect($tester->getDisplay(true))->toContain('Use <error> and <T> as generic parameters.');
 });
+
+it('renders first-inference failures in human and text output', function (string $output): void {
+    $tester = new CommandTester(tellTestCommand(tellTestFactory(
+        static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
+            new class implements CanUseTools {
+                public function useTools(AgentState $state): AgentState {
+                    throw new RuntimeException('Provider credits are exhausted.');
+                }
+            },
+        ),
+    )));
+
+    $status = $tester->execute([
+        'prompt' => 'explain',
+        '--dir' => tellHumanProject(),
+        '--output' => $output,
+    ], ['capture_stderr_separately' => true]);
+
+    expect($status)->toBe(1)
+        ->and($tester->getErrorOutput())->toContain('[tell] execution failed: Provider credits are exhausted.');
+})->with(['human', 'text']);
 
 it('accepts human alongside the other output modes and rejects unknown ones', function (): void {
     tellTestFactory();

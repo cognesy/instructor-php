@@ -79,7 +79,7 @@ $answer = Inference::fromRuntime($runtime)
         options: ['max_tokens' => 64]
     )
     ->withStreaming()
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

@@ -7,6 +7,7 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Models\ModelProfile;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use DateTimeImmutable;
@@ -47,6 +48,8 @@ class InferenceRequest
 
     protected ?ReasoningSelection $reasoning;
 
+    protected ?ModelProfile $modelProfile;
+
     public function __construct(
         ?Messages $messages = null,
         ?string $model = null,
@@ -59,6 +62,7 @@ class InferenceRequest
         ?InferenceRetryPolicy $retryPolicy = null,
         ?OperationCorrelation $telemetryCorrelation = null,
         ?ReasoningSelection $reasoning = null,
+        ?ModelProfile $modelProfile = null,
         //
         ?InferenceRequestId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -76,6 +80,7 @@ class InferenceRequest
         $this->retryPolicy = $retryPolicy;
         $this->telemetryCorrelation = $telemetryCorrelation;
         $this->reasoning = $reasoning;
+        $this->modelProfile = $modelProfile;
 
         $this->tools = $tools ?? ToolDefinitions::empty();
         $this->toolChoice = $toolChoice ?? ToolChoice::empty();
@@ -99,6 +104,11 @@ class InferenceRequest
     public function model(): string
     {
         return $this->model;
+    }
+
+    public function modelProfile(): ?ModelProfile
+    {
+        return $this->modelProfile;
     }
 
     /**
@@ -272,6 +282,7 @@ class InferenceRequest
         ?InferenceRetryPolicy $retryPolicy = null,
         ?OperationCorrelation $telemetryCorrelation = null,
         ?ReasoningSelection $reasoning = null,
+        ?ModelProfile $modelProfile = null,
     ): self {
         return new self(
             messages: $messages ?? $this->messages,
@@ -285,6 +296,7 @@ class InferenceRequest
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
             telemetryCorrelation: $telemetryCorrelation ?? $this->telemetryCorrelation,
             reasoning: $reasoning ?? $this->reasoning,
+            modelProfile: $modelProfile ?? $this->modelProfile,
             id: $this->id,
             createdAt: $this->createdAt,
             // Carried over, not recomputed: with() runs per attempt via
@@ -303,6 +315,11 @@ class InferenceRequest
     public function withModel(string $model): self
     {
         return $this->with(model: $model);
+    }
+
+    public function withModelProfile(ModelProfile $modelProfile): self
+    {
+        return $this->with(modelProfile: $modelProfile);
     }
 
     public function withStreaming(bool $streaming): self
@@ -388,6 +405,7 @@ class InferenceRequest
             retryPolicy: $this->retryPolicy,
             telemetryCorrelation: $this->telemetryCorrelation,
             reasoning: $this->reasoning,
+            modelProfile: $this->modelProfile,
             id: $this->id,
             createdAt: $this->createdAt,
         );

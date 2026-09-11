@@ -3,7 +3,6 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
@@ -44,7 +43,7 @@ it('does not leak custom drivers between registry instances', function () {
 });
 
 it('includes bundled drivers in the default bundled registry', function () {
-    $registry = BundledInferenceDrivers::registry();
+    $registry = InferenceDriverRegistry::default();
 
     expect($registry->has('openai'))->toBeTrue()
         ->and($registry->has('anthropic'))->toBeTrue()

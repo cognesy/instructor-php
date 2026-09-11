@@ -6,7 +6,7 @@ use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 /**
@@ -48,8 +48,8 @@ function driverGoldenResponsePayloads(): array {
     return [
         // Every discriminating key at once.
         //
-        //   reasoning_content  -- only OpenAICompatibleReasoningAdapter lifts it out of the
-        //                         message (Deepseek, Glm, Qwen).
+        //   reasoning_content  -- OpenAICompatibleReasoningAdapter lifts it out of the message
+        //                         for Deepseek, Glm, Qwen and the shared compatible routes.
         //   x_groq.usage       -- only GroqUsageFormat prefers it, and it is set to values
         //                         that DISAGREE with `usage` so preferring it is observable.
         //   *_tokens_details   -- only OpenAIUsageFormat reads cached/reasoning token details,
@@ -105,7 +105,7 @@ function driverGoldenResponseCapture(string $providerName, array $payload): arra
         body: (string) json_encode($payload),
     ));
 
-    $driver = BundledInferenceDrivers::registry()->makeDriver(
+    $driver = InferenceDriverRegistry::default()->makeDriver(
         $providerName,
         driverGoldenResponseConfig($providerName),
         (new HttpClientBuilder())->withDriver($mock)->create(),
@@ -131,8 +131,8 @@ function driverGoldenResponseCapture(string $providerName, array $payload): arra
 
     return [
         'threw' => null,
-        'content' => $response->content(),
-        'reasoningContent' => $response->reasoningContent(),
+        'content' => $response->message()->content()->toString(),
+        'reasoningContent' => $response->message()->reasoningContent(),
         'finishReason' => $response->finishReason()->value,
         // id() returns a ToolCallId value object, which JSON-encodes as {"value": ...} and
         // comes back from the fixture as an array -- so the identity comparison would fail
@@ -143,7 +143,7 @@ function driverGoldenResponseCapture(string $providerName, array $payload): arra
                 'name' => $call->name(),
                 'args' => $call->args(),
             ],
-            $response->toolCalls()->all(),
+            $response->message()->toolCalls()->all(),
         ),
         'usage' => [
             'input' => $usage->inputTokens,
@@ -157,7 +157,7 @@ function driverGoldenResponseCapture(string $providerName, array $payload): arra
 
 function driverGoldenResponseSnapshot(): array {
     $out = [];
-    foreach (BundledInferenceDrivers::registry()->driverNames() as $name) {
+    foreach (InferenceDriverRegistry::default()->driverNames() as $name) {
         $row = [];
         foreach (driverGoldenResponsePayloads() as $variant => $payload) {
             $row[$variant] = driverGoldenResponseCapture($name, $payload);
@@ -222,4 +222,15 @@ it('keeps the response-side wiring of the four providers that do not use the Ope
     expect($snapshot['minimaxi']['provider_error']['threw'])
         ->toContain('MiniMaxi API error 1004: invalid api key');
     expect($snapshot['openai']['provider_error']['threw'])->toBeNull();
+})->group('driver-golden');
+
+it('extracts reasoning content through every shared OpenAI-compatible route', function () {
+    $snapshot = driverGoldenResponseSnapshot();
+
+    foreach (['ollama', 'openai-compatible', 'together'] as $provider) {
+        expect($snapshot[$provider]['discriminating']['reasoningContent'])
+            ->toBe('Recalled the capital of France.');
+    }
+
+    expect($snapshot['openai']['discriminating']['reasoningContent'])->toBe('');
 })->group('driver-golden');

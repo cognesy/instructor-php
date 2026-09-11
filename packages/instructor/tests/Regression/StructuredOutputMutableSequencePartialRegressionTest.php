@@ -13,9 +13,9 @@ if (!class_exists('MutableSequencePartialPerson')) {
 
 it('exposes the first completed sequence item before later chunks arrive', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Ann","age":30}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Bob"'),
-        new PartialInferenceDelta(contentDelta: ',"age":40}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Ann","age":30}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Bob"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":40}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);
@@ -42,9 +42,9 @@ it('exposes the first completed sequence item before later chunks arrive', funct
 
 it('yields distinct individual items from sequence stream', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Ann","age":30}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Bob"'),
-        new PartialInferenceDelta(contentDelta: ',"age":40}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Ann","age":30}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Bob"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":40}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);

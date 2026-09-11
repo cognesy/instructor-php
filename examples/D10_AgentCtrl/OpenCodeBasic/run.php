@@ -3,6 +3,7 @@ title: 'OpenCode CLI - Basic'
 docname: 'opencode_basic'
 id: 'd828'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'opencode'
   - 'cli-agent'
@@ -37,6 +38,8 @@ $logger = new AgentCtrlConsoleLogger(
 echo "=== Agent Execution Log ===\n\n";
 
 $response = AgentCtrl::openCode()
+    ->withModel('opencode/ling-3.0-flash-fin-free')
+    ->withTimeout(60)
     ->wiretap($logger->wiretap())
     ->execute('What is the capital of France? Answer briefly.');
 
@@ -50,9 +53,14 @@ if ($response->isSuccess()) {
     if ($response->usage()) {
         echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
     }
-    if ($response->cost()) {
+    if ($response->cost() !== null) {
         echo "Cost: $" . number_format($response->cost(), 4) . "\n";
     }
+
+    assert(str_contains(strtolower($response->text()), 'paris'));
+    assert($response->sessionId() !== null);
+    assert($response->usage() !== null);
+    assert($response->cost() !== null);
 } else {
     echo "Error: Command failed with exit code {$response->exitCode}\n";
     exit(1);

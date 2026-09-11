@@ -247,10 +247,7 @@ function runSingleObjectProfile(int $targetChunks): array {
         onStream: function () use ($chunks): iterable {
             $last = count($chunks) - 1;
             foreach ($chunks as $i => $chunk) {
-                yield new PartialInferenceDelta(
-                    contentDelta: $chunk,
-                    finishReason: $i === $last ? 'stop' : '',
-                );
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk), finishReason: $i === $last ? 'stop' : '',);
             }
         },
     );

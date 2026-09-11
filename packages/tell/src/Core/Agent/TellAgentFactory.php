@@ -22,21 +22,22 @@ use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Tool\ToolRegistry;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
-use Cognesy\Tell\Core\Secrets\TellCredentialNames;
-use Cognesy\Tell\Core\Paths\TellPaths;
-use Cognesy\Tell\Core\Contract\Model\CanResolveTellModel;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
 use Cognesy\Tell\Core\Contract\Agent\CanContributeTellAgent;
 use Cognesy\Tell\Core\Contract\Agent\CanDescribeTellDelegation;
 use Cognesy\Tell\Core\Contract\Agent\CanLoadTellAgentDefinitions;
 use Cognesy\Tell\Core\Contract\Agent\CanRecordTellAgentDiagnostics;
 use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
+use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
+use Cognesy\Tell\Core\Contract\Model\CanResolveTellModel;
 use Cognesy\Tell\Core\Contract\Observation\CanTraceTellExecution;
+use Cognesy\Tell\Core\Paths\TellPaths;
+use Cognesy\Tell\Core\Secrets\TellCredentialNames;
 use Cognesy\Tell\Data\TellExecutionPolicy;
 use Cognesy\Tell\Data\TellRequest;
 use InvalidArgumentException;
+use Override;
 use RuntimeException;
 
 /** Builds an agent only from services and ordered contributions selected by its host. */
@@ -54,6 +55,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         private CanTraceTellExecution $tracer,
         private CanReadTellClock $clock,
         private CanResolveTellModel $modelResolver,
+        private CanCatalogueTellProviders $providerCatalogue,
         private CanLoadTellAgentDefinitions $definitionLoader,
         private array $contributions,
         ?callable $decorateLoop = null,
@@ -65,12 +67,12 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         };
     }
 
-    #[\Override]
+    #[Override]
     public function definitions(string $projectPath): AgentDefinitionRegistry {
         return $this->definitionLoader->definitions($projectPath);
     }
 
-    #[\Override]
+    #[Override]
     public function definition(TellRequest $request): AgentDefinition {
         $definition = $this->definitions($request->directory)->get($request->agent);
 
@@ -108,7 +110,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         );
     }
 
-    #[\Override]
+    #[Override]
     public function build(
         TellRequest $request,
         ?CanProvideCancellationSignal $cancellation = null,
@@ -163,6 +165,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
             $this->tracer,
             $this->clock,
             $this->modelResolver,
+            $this->providerCatalogue,
             $this->definitionLoader,
             $this->contributions,
             $decorateLoop,
@@ -170,7 +173,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         );
     }
 
-    #[\Override]
+    #[Override]
     public function assertReady(TellRequest $request): void {
         if ($this->driver !== null && $request->reasoningEffort === null) {
             return;
@@ -203,8 +206,12 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
             return;
         }
         $selection = ReasoningSelection::effort($request->reasoningEffort);
-        $capabilities = BundledInferenceDrivers::capabilities($driver, $model)?->reasoning();
-        if ($capabilities?->supports($selection) === true) {
+        $capabilities = $this->providerCatalogue
+            ->catalog($request->directory)
+            ->find($driver, $model)
+            ->capabilities
+            ->reasoning;
+        if ($capabilities->supports($selection)) {
             return;
         }
 
@@ -224,7 +231,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
 
         throw new RuntimeException(
             "Missing credential {$variable} for connection '{$connection}'. "
-            . "Set it in the process environment, workspace .env, or with `tell auth set {$connection} --stdin`.",
+            . "Set it in the process environment, workspace .tell/.env, or with `tell auth set {$connection} --stdin`.",
         );
     }
 

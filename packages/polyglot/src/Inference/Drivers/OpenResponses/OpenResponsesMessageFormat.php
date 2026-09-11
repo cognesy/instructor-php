@@ -8,11 +8,10 @@ use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
+use Cognesy\Polyglot\Inference\Data\ReplayEnvelope;
 use Cognesy\Polyglot\Inference\Drivers\MessageMapper;
-use Cognesy\Utils\Json\Json;
 
 /**
  * Formats messages for OpenResponses API.
@@ -36,11 +35,57 @@ class OpenResponsesMessageFormat implements CanMapMessages
     /** @return array[] */
     protected function mapMessageToItems(Message $message): array
     {
-        return match ($message->type()) {
-            MessageType::AssistantToolCalls => $this->toFunctionCallItems($message),
-            MessageType::ToolResult => [$this->toFunctionCallOutputItem($message)],
+        return match (true) {
+            $message->isAssistant() => $this->toAssistantItems($message),
+            $message->type() === MessageType::ToolResult => [$this->toFunctionCallOutputItem($message)],
             default => [$this->toMessageItem($message)],
         };
+    }
+
+    /** @return array[] */
+    private function toAssistantItems(Message $message): array
+    {
+        $replay = ReplayEnvelope::fromMessage($message, OpenResponsesReplay::OWNER);
+        $items = [];
+        foreach ($message->parts() as $position => $part) {
+            $item = match (true) {
+                $part->isTextPart() && $part->isEmpty() => null,
+                $part->isTextPart() => $this->toAssistantTextItem($part),
+                $part->isReasoningPart() => OpenResponsesReplay::reasoningItem($replay, $position, $part),
+                $part->isToolCallPart() => $this->toFunctionCallItem($part),
+                default => null,
+            };
+            if ($item !== null) {
+                $items[] = $item;
+            }
+        }
+        return $items;
+    }
+
+    private function toAssistantTextItem(ContentPart $part): array
+    {
+        return [
+            'type' => 'message',
+            'role' => 'assistant',
+            'content' => [[
+                'type' => 'output_text',
+                'text' => $part->toString(),
+            ]],
+        ];
+    }
+
+    private function toFunctionCallItem(ContentPart $part): ?array
+    {
+        $toolCall = $part->toToolCall();
+        if ($toolCall === null) {
+            return null;
+        }
+        return [
+            'type' => 'function_call',
+            'call_id' => $toolCall->idString(),
+            'name' => $toolCall->name(),
+            'arguments' => $toolCall->argsAsJson(),
+        ];
     }
 
     /**
@@ -56,34 +101,6 @@ class OpenResponsesMessageFormat implements CanMapMessages
     }
 
     /**
-     * Convert assistant message with tool calls to function_call items.
-     * Returns an array of items (message content + function calls).
-     */
-    protected function toFunctionCallItems(Message $message): array
-    {
-        $items = [];
-
-        if (!$message->content()->isEmpty()) {
-            $items[] = [
-                'type' => 'message',
-                'role' => 'assistant',
-                'content' => $this->toContentItems($message->content(), 'assistant'),
-            ];
-        }
-
-        foreach ($message->toolCalls()->all() as $toolCall) {
-            $items[] = [
-                'type' => 'function_call',
-                'call_id' => $toolCall->idString(),
-                'name' => $toolCall->name(),
-                'arguments' => Json::encode($toolCall->arguments()),
-            ];
-        }
-
-        return $items;
-    }
-
-    /**
      * Convert a tool result message to function_call_output item.
      */
     protected function toFunctionCallOutputItem(Message $message): array
@@ -91,7 +108,7 @@ class OpenResponsesMessageFormat implements CanMapMessages
         return [
             'type' => 'function_call_output',
             'call_id' => $message->toolResult()->callIdString(),
-            'output' => $message->content()->toString(),
+            'output' => $message->toolResult()->content(),
         ];
     }
 

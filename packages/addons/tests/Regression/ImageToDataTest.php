@@ -35,11 +35,11 @@ it('should properly use toData() method on Image', function () {
     
     expect($messagesArray)->not->toBeEmpty();
     expect($messagesArray[0])->toHaveKey('role');
-    expect($messagesArray[0])->toHaveKey('content');
-    expect($messagesArray[0]['content'])->toBeArray();
+    expect($messagesArray[0])->toHaveKey('parts');
+    expect($messagesArray[0]['parts'])->toBeArray();
     
     // Check content structure - should have text and image
-    $content = $messagesArray[0]['content'];
+    $content = $messagesArray[0]['parts'];
     $hasText = false;
     $hasImage = false;
     

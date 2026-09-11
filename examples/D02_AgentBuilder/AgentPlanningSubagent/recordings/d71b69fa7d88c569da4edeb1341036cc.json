@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a planning specialist.\\nCreate a dense markdown plan with explicit checkpoints and tool-aware execution steps.\\nUse discovery tools (`bash`, `search_files`, `list_dir`) to inspect local context if needed.\\nUse `bash` with `rg` for fast discovery when helpful.\\nDo not implement changes.\\n\\nParent execution tools (must be respected by the final plan): read_file\\nAll execution steps in the final plan must be feasible using only those parent tools.\"},{\"role\":\"user\",\"content\":\"Goal\\nPrepare a realistic plan for a small documentation update about the repository\\u2019s planning capability, then execute only the analysis portion and provide a concise proposal.\\n\\nContext\\nThe user wants a docs update focused on planning capability in this repository. We need to first create a plan, then analyze existing docs\\\/source to infer how the capability is described and used. The final output should be a concise proposal with three outlines: (1) capability purpose section, (2) configuration options section, and (3) example usage section.\\n\\nConstraints\\n- Planner subagent may use bash\\\/search for discovery.\\n- Parent execution may use only read_file.\\n- Do not modify any files.\\n- Final response must be under 180 words.\\n- Since the request says to execute only the analysis part of the plan, do not draft full prose docs; just provide concise outlines.\\n\\nExpected Outcomes\\n- A short implementation plan for the docs update.\\n- Evidence-based analysis of existing repository docs related to planning capability.\\n- A concise proposal with three outlines:\\n  1) Capability purpose section outline\\n  2) Configuration options outline\\n  3) Example usage outline\\n\\nAcceptance Criteria\\n- Plan is realistic and sequential.\\n- Analysis is grounded in repository content.\\n- No files are modified.\\n- Final response is concise and under 180 words.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. By default, output is limited to 200 lines or 32 KiB, whichever comes first.\\nSet larger limit and max_bytes values when a larger window or the complete file is justified.\\nWhen more content exists, the result includes the exact offset or bash command needed to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 200; no fixed upper limit)\"},\"max_bytes\":{\"type\":\"integer\",\"description\":\"Maximum output bytes (default: 32768; increase explicitly for a larger or full-file read)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return bounded stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated file tools over cat, sed-based rewrites, and shell redirection.\\nIf output is truncated, narrow the command or redirect it to a file and inspect it with the dedicated read tool.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"description\":\"Search for files by name\\\/path pattern (not content). Returns matching file paths.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 finds composer.json recursively in all directories\\n- \\\"*.php\\\" \\u2192 finds PHP files in root directory only\\n- \\\"**\\\/*.php\\\" \\u2192 finds PHP files recursively in all directories\\n- \\\"src\\\/**\\\/*.php\\\" \\u2192 finds PHP files recursively under src\\\/\\n- \\\".\\\/composer.json\\\" \\u2192 finds composer.json in root directory only\\n- \\\"Config\\\" \\u2192 finds files with \\\"Config\\\" in their name, recursively\\n\\nNote: Use read_file to examine file contents after finding them.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\",\"description\":\"Search pattern. Examples: \\\"composer.json\\\" (recursive), \\\"**\\\/*.php\\\" (recursive glob), \\\"*.json\\\" (root only), \\\".\\\/README.md\\\" (exact path)\"},\"patterns\":{\"type\":\"array\",\"description\":\"Multiple patterns to search at once. Example: [\\\"composer.json\\\", \\\"package.json\\\", \\\"*.xml\\\"]\",\"items\":{\"type\":\"string\"}}},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"list_dir\",\"description\":\"List directory contents. Shows files and subdirectories with [file] or [dir] markers.\\n\\nExamples:\\n- \\\".\\\" or \\\"\\\" \\u2192 list project root\\n- \\\"src\\\" \\u2192 list src directory\\n- \\\"packages\\\/addons\\\/src\\\" \\u2192 list nested directory\\n\\nUse to explore project structure before searching for specific files.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Directory path. Examples: \\\".\\\" (root), \\\"src\\\", \\\"packages\\\/addons\\\"\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:47:40 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1047"
+            ],
+            "cf-ray": [
+                "a394b8ea0c7decc7-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "454"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999550"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "req_e9cf37f7aa754b2ea719821ce1d8b344"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpKuaksQewGkPtlfCAXyi7dlO0pZ\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109260,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_KSH99KE9DcBfLRqL11MGeori\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"list_dir\",\n              \"arguments\": \"{\\\"path\\\":\\\".\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1137,\n    \"completion_tokens\": 17,\n    \"total_tokens\": 1154,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

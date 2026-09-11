@@ -36,19 +36,27 @@ final class InferenceResponseEventPayload
         InferenceRequest $request,
         ?string $executionId,
     ): array {
+        $modelProfile = $request->modelProfile();
         $payload = [
             'executionId' => $executionId,
             'requestId' => $request->id()->toString(),
             'model' => $request->model(),
             'responseId' => $response->id->toString(),
             'finishReason' => $response->finishReason()->value,
-            'contentLength' => strlen($response->content()),
-            'reasoningContentLength' => strlen($response->reasoningContent()),
-            'hasToolCalls' => $response->hasToolCalls(),
-            'toolCallCount' => $response->toolCalls()->count(),
+            'contentLength' => strlen($response->message()->content()->toString()),
+            'reasoningContentLength' => strlen($response->message()->reasoningContent()),
+            'hasToolCalls' => $response->message()->hasToolCalls(),
+            'toolCallCount' => $response->message()->toolCalls()->count(),
             'usage' => $response->usage()->toArray(),
             'isPartial' => $response->isPartial(),
         ];
+
+        if ($modelProfile !== null) {
+            $payload['modelKey'] = $modelProfile->key->toString();
+            $payload['modelCatalogVersion'] = $modelProfile->catalogVersion;
+            $payload['modelCatalogSource'] = $modelProfile->source;
+            $payload['modelSupportStatus'] = $modelProfile->status->value;
+        }
 
         $statusCode = $response->responseData()->statusCode();
         if ($statusCode > 0) {

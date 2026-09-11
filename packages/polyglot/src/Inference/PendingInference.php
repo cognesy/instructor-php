@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference;
 
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Core\InferenceExecutionSession;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
@@ -15,7 +16,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * Responsibilities:
  * - trigger provider execution only when response data is requested
  * - coordinate one-shot access across `get()`, `response()`, and `stream()`
- * - expose raw convenience accessors over the finalized response
+ * - expose the finalized assistant message and explicit data projections
  *
  * Non-responsibilities:
  * - it does not own the mutable raw execution lifecycle directly
@@ -42,8 +43,8 @@ class PendingInference
         return $this->session->isStreamed();
     }
 
-    public function get() : string {
-        return $this->response()->content();
+    public function get() : Message {
+        return $this->response()->message();
     }
 
     public function stream() : InferenceStream {

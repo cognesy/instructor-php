@@ -3,11 +3,11 @@
 namespace Cognesy\Addons\ToolUse\Drivers\ToolCalling;
 
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
-use Cognesy\Addons\ToolUse\Data\ToolExecution;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolResult;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Failure;
@@ -19,24 +19,12 @@ class ToolExecutionFormatter
     public function makeExecutionMessages(ToolExecutions $toolExecutions) : Messages {
         $messages = Messages::empty();
         foreach ($toolExecutions->all() as $toolExecution) {
-            $messages = $messages->appendMessages($this->toolExecutionMessages($toolExecution));
+            $messages = $messages->appendMessage($this->toolExecutionResultMessage(
+                $toolExecution->toolCall(),
+                $toolExecution->result(),
+            ));
         }
         return $messages;
-    }
-
-    protected function toolExecutionMessages(ToolExecution $toolExecution) : Messages {
-        $messages = Messages::empty();
-        $messages = $messages->appendMessage($this->toolInvocationMessage($toolExecution->toolCall()));
-        $messages = $messages->appendMessage($this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));
-        return $messages;
-    }
-
-    protected function toolInvocationMessage(ToolCall $toolCall) : Message {
-        return new Message(
-            role: 'assistant',
-            content: '',
-            toolCalls: new ToolCalls($toolCall),
-        );
     }
 
     protected function toolExecutionResultMessage(ToolCall $toolCall, Result $result) : Message {
@@ -59,12 +47,11 @@ class ToolExecutionFormatter
         };
         return new Message(
             role: 'tool',
-            content: $content,
-            toolResult: new ToolResult(
+            parts: new ContentParts(ContentPart::toolResult(new ToolResult(
                 content: $content,
                 callId: $toolCall->id(),
                 toolName: $toolCall->name(),
-            ),
+            ))),
         );
     }
 
@@ -72,13 +59,12 @@ class ToolExecutionFormatter
         $content = "Error in tool call: " . $result->errorMessage();
         return new Message(
             role: 'tool',
-            content: $content,
-            toolResult: new ToolResult(
+            parts: new ContentParts(ContentPart::toolResult(new ToolResult(
                 content: $content,
                 callId: $toolCall->id(),
                 toolName: $toolCall->name(),
                 isError: true,
-            ),
+            ))),
         );
     }
 }

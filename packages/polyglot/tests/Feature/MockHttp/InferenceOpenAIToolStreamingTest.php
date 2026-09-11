@@ -43,8 +43,8 @@ it('aggregates tool call arguments across streaming deltas', function () {
         ->final();
 
     expect($final)->not->toBeNull();
-    expect($final->hasToolCalls())->toBeTrue();
-    $tool = $final->toolCalls()->first();
+    expect($final->message()->hasToolCalls())->toBeTrue();
+    $tool = $final->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
@@ -86,10 +86,10 @@ it('supports parallel tool calls across streaming deltas', function () {
         ->final();
 
     expect($final)->not->toBeNull();
-    expect($final->hasToolCalls())->toBeTrue();
-    expect($final->toolCalls()->count())->toBe(2);
+    expect($final->message()->hasToolCalls())->toBeTrue();
+    expect($final->message()->toolCalls()->count())->toBe(2);
 
-    $tools = $final->toolCalls()->all();
+    $tools = $final->message()->toolCalls()->all();
     expect($tools[0]->name())->toBe('search');
     expect($tools[0]->value('q'))->toBe('Hello');
     expect($tools[1]->name())->toBe('calculate');

@@ -3,13 +3,16 @@
 namespace Cognesy\Polyglot\Inference\Drivers\OpenResponses;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageAssembler;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageParseResult;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunk;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunks;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Messages\ToolCallId;
 use Cognesy\Polyglot\Inference\Drivers\Support\DecodesJsonPayload;
 use RuntimeException;
 
@@ -40,19 +43,22 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $data = $this->decodeResponseData($response->body());
 
+        $parsed = $this->parseAssistantMessage($data);
         return new InferenceResponse(
-            content: $this->extractContent($data),
             finishReason: $this->mapStatusFromData($data),
-            toolCalls: $this->extractToolCalls($data),
-            reasoningContent: $this->extractReasoningContent($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $response,
+            message: AssistantMessageAssembler::fromParts(
+                parts: $parsed->parts(),
+                replay: $parsed->replay(),
+            )->message(),
         );
     }
 
     #[\Override]
     public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
         $ctx = new OpenResponsesStreamContext();
+        $replay = new OpenResponsesReplayState();
 
         foreach ($eventBodies as $eventBody) {
             if (trim($eventBody) === '') {
@@ -64,22 +70,19 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 continue;
             }
 
-            $eventType = $data['type'] ?? '';
-            $this->updateItemContext($ctx, $data);
+            $event = $ctx->resolve($data);
+            $replay->observe($event);
 
-            $delta = new PartialInferenceDelta(
-                contentDelta: $this->extractStreamContentDelta($ctx, $data, $eventType),
-                reasoningContentDelta: $this->extractStreamReasoningDelta($ctx, $data, $eventType),
-                toolId: $this->extractStreamToolId($ctx, $data, $eventType),
-                toolName: $this->extractStreamToolName($ctx, $data, $eventType),
-                toolArgs: $this->extractStreamToolArgs($ctx, $data, $eventType),
-                finishReason: $this->extractStreamFinishReason($data, $eventType),
-                usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
+            yield new PartialInferenceDelta(
+                messageChunks: $this->makeStreamMessageChunks($event),
+                finishReason: $this->extractStreamFinishReason($event),
+                usage: $this->hasUsageData($event->wireData())
+                    ? $this->usageFormat->fromData($event->wireData())
+                    : null,
                 usageIsCumulative: true,
                 responseData: $responseData,
+                replay: $replay->replay(),
             );
-
-            yield $delta;
         }
     }
 
@@ -130,87 +133,6 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         return $data;
     }
 
-    // RESPONSE EXTRACTION ////////////////////////////////////////////
-
-    /**
-     * Extract text content from output items.
-     */
-    protected function extractContent(array $data): string {
-        $output = $data['output'] ?? [];
-        $contentParts = [];
-
-        foreach ($output as $item) {
-            $type = $item['type'] ?? '';
-            if ($type === 'message' && ($item['role'] ?? '') === 'assistant') {
-                $content = $item['content'] ?? [];
-                foreach ($content as $part) {
-                    $partType = $part['type'] ?? '';
-                    if ($partType === 'output_text') {
-                        $contentParts[] = $part['text'] ?? '';
-                    }
-                }
-            }
-        }
-
-        return implode('', $contentParts);
-    }
-
-    /**
-     * Extract reasoning content from reasoning items.
-     */
-    protected function extractReasoningContent(array $data): string {
-        $output = $data['output'] ?? [];
-        $reasoningParts = [];
-
-        foreach ($output as $item) {
-            $type = $item['type'] ?? '';
-            if ($type === 'reasoning') {
-                // Check for content array (raw reasoning)
-                $content = $item['content'] ?? [];
-                foreach ($content as $part) {
-                    $partType = $part['type'] ?? '';
-                    if (in_array($partType, ['reasoning_text', 'output_text'], true)) {
-                        $reasoningParts[] = $part['text'] ?? '';
-                    }
-                }
-                // Also check summary
-                $summary = $item['summary'] ?? [];
-                foreach ($summary as $part) {
-                    $partType = $part['type'] ?? '';
-                    if (in_array($partType, ['summary_text', 'reasoning_summary_text'], true)) {
-                        $reasoningParts[] = $part['text'] ?? '';
-                    }
-                }
-            }
-        }
-
-        return implode('', $reasoningParts);
-    }
-
-    /**
-     * Extract tool calls from function_call items.
-     */
-    protected function extractToolCalls(array $data): ToolCalls {
-        $output = $data['output'] ?? [];
-        $toolCalls = [];
-
-        foreach ($output as $item) {
-            $type = $item['type'] ?? '';
-            if ($type === 'function_call') {
-                $toolCall = $this->makeToolCall($item);
-                if ($toolCall !== null) {
-                    $toolCalls[] = $toolCall;
-                }
-            }
-        }
-
-        return ToolCalls::fromArray(array_map(fn($tc) => [
-            'id' => (string) ($tc->id() ?? ''),
-            'name' => $tc->name(),
-            'arguments' => $tc->argsAsJson(),
-        ], $toolCalls));
-    }
-
     protected function makeToolCall(array $item): ?ToolCall {
         $callId = $item['call_id'] ?? $item['id'] ?? '';
         $name = $item['name'] ?? '';
@@ -224,6 +146,52 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             'name' => $name,
             'arguments' => $arguments,
         ])->withId($callId);
+    }
+
+    private function parseAssistantMessage(array $data): AssistantMessageParseResult
+    {
+        $parts = [];
+        $replayParts = [];
+        foreach ($data['output'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $type = (string) ($item['type'] ?? '');
+            if ($type === 'function_call') {
+                $toolCall = $this->makeToolCall($item);
+                if ($toolCall !== null) {
+                    $parts[] = ContentPart::toolCall($toolCall);
+                    $replayParts[] = null;
+                }
+                continue;
+            }
+            if ($type === 'reasoning') {
+                $parts[] = ContentPart::reasoning(OpenResponsesReplay::reasoningText($item));
+                $replayParts[] = OpenResponsesReplay::metadataForReasoningItem($item);
+                continue;
+            }
+            if ($type !== 'message' || ($item['role'] ?? '') !== 'assistant') {
+                continue;
+            }
+            foreach ($item['content'] ?? [] as $part) {
+                if (!is_array($part) || ($part['type'] ?? '') !== 'output_text') {
+                    continue;
+                }
+                $parts[] = ContentPart::text((string) ($part['text'] ?? ''));
+                $replayParts[] = null;
+            }
+        }
+        return AssistantMessageParseResult::fromParts(
+            owner: OpenResponsesReplay::OWNER,
+            parts: $parts,
+            replayParts: $replayParts,
+            response: array_filter([
+                'id' => $data['id'] ?? null,
+                'model' => $data['model'] ?? null,
+                'status' => $data['status'] ?? null,
+            ], static fn(mixed $value): bool => is_string($value) && $value !== ''),
+        );
     }
 
     /**
@@ -249,226 +217,38 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
     // STREAMING EXTRACTION ////////////////////////////////////////////
 
-    protected function updateItemContext(OpenResponsesStreamContext $ctx, array $data): void {
-        $eventType = $data['type'] ?? '';
-
-        if ($eventType === 'response.output_item.added' || $eventType === 'response.output_item.done') {
-            $this->handleOutputItemEvent($ctx, $data);
-        }
-
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === null) {
-            return;
-        }
-        $ctx->currentItemId = $itemId;
-    }
-
-    protected function handleOutputItemEvent(OpenResponsesStreamContext $ctx, array $data): void {
-        $item = $data['item'] ?? [];
-        if (empty($item)) {
-            return;
-        }
-
-        $itemId = $item['id'] ?? ($data['item_id'] ?? '');
-        if ($itemId === '') {
-            return;
-        }
-
-        $itemResponseId = OpenResponseItemId::fromString((string) $itemId);
-        $ctx->currentItemId = $itemResponseId;
-        $ctx->currentItemType = $item['type'] ?? '';
-
-        if ($ctx->currentItemType !== 'function_call') {
-            return;
-        }
-
-        $callId = $item['call_id'] ?? $itemId;
-        $name = $item['name'] ?? '';
-        $itemKey = $itemResponseId->toString();
-        $ctx->itemToCallId[$itemKey] = ToolCallId::fromString((string) $callId);
-        $ctx->itemToName[$itemKey] = (string) $name;
-    }
-
-    protected function extractStreamContentDelta(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
-        return match($eventType) {
-            'response.output_text.delta' => $this->markOutputTextSeen($ctx, $data, (string) ($data['delta'] ?? '')),
-            'response.text.delta' => $this->markOutputTextSeen($ctx, $data, (string) ($data['delta'] ?? '')),
-            'response.output_text.done' => $this->maybeEmitDoneText($ctx, $data),
-            'response.text.done' => $this->maybeEmitDoneText($ctx, $data),
+    protected function extractStreamFinishReason(OpenResponsesStreamEvent $event): string {
+        return match($event->type()) {
+            'response.completed' => $this->mapStatusFromData($event->response() ?? ['status' => 'completed']),
+            'response.failed' => $this->mapStatusFromData($event->response() ?? ['status' => 'failed']),
+            'response.incomplete' => $this->mapStatusFromData($event->response() ?? ['status' => 'incomplete']),
+            'response.done' => $this->mapStatusFromData($event->response() ?? ['status' => 'completed']),
             default => '',
         };
     }
 
-    protected function extractStreamReasoningDelta(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
-        return match($eventType) {
-            'response.reasoning_text.delta' => $this->markReasoningSeen($ctx, $data, (string) ($data['delta'] ?? '')),
-            'response.reasoning.delta' => $this->markReasoningSeen($ctx, $data, (string) ($data['delta'] ?? '')),
-            'response.reasoning_summary_text.delta' => $this->markReasoningSeen($ctx, $data, (string) ($data['delta'] ?? '')),
-            'response.reasoning_text.done' => $this->maybeEmitDoneReasoning($ctx, $data),
-            'response.reasoning_summary_text.done' => $this->maybeEmitDoneReasoning($ctx, $data),
-            default => '',
-        };
-    }
-
-    protected function extractStreamToolId(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
-        return match($eventType) {
-            'response.output_item.added' => match($data['item']['type'] ?? '') {
-                'function_call' => $data['item']['call_id'] ?? $data['item']['id'] ?? '',
-                default => '',
-            },
-            'response.output_item.done' => match($data['item']['type'] ?? '') {
-                'function_call' => $data['item']['call_id'] ?? $data['item']['id'] ?? '',
-                default => '',
-            },
-            'response.function_call_arguments.delta' => (string) ($this->resolveCallId($ctx, $data) ?? ''),
-            'response.function_call_arguments.done' => (string) ($this->resolveCallId($ctx, $data) ?? ''),
-            default => '',
-        };
-    }
-
-    protected function extractStreamToolName(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
-        return match($eventType) {
-            'response.output_item.added' => match($data['item']['type'] ?? '') {
-                'function_call' => $data['item']['name'] ?? '',
-                default => '',
-            },
-            'response.output_item.done' => match($data['item']['type'] ?? '') {
-                'function_call' => $data['item']['name'] ?? '',
-                default => '',
-            },
-            'response.function_call_arguments.done' => $this->resolveToolName($ctx, $data),
-            default => '',
-        };
-    }
-
-    protected function extractStreamToolArgs(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
-        return match($eventType) {
-            'response.function_call_arguments.delta' => $this->markToolArgsSeen($ctx, $data, (string) ($data['delta'] ?? '')),
-            'response.function_call_arguments.done' => $this->maybeEmitDoneToolArgs($ctx, $data),
-            'response.output_item.done' => match($data['item']['type'] ?? '') {
-                'function_call' => $this->maybeEmitDoneToolArgs($ctx, $data, (string) ($data['item']['arguments'] ?? '')),
-                default => '',
-            },
-            default => '',
-        };
-    }
-
-    protected function extractStreamFinishReason(array $data, string $eventType): string {
-        return match($eventType) {
-            'response.completed' => $this->mapStatusFromData($data['response'] ?? ['status' => 'completed']),
-            'response.failed' => $this->mapStatusFromData($data['response'] ?? ['status' => 'failed']),
-            'response.incomplete' => $this->mapStatusFromData($data['response'] ?? ['status' => 'incomplete']),
-            'response.done' => $this->mapStatusFromData($data['response'] ?? ['status' => 'completed']),
-            default => '',
-        };
-    }
-
-    protected function resolveItemId(OpenResponsesStreamContext $ctx, array $data): ?OpenResponseItemId {
-        if (isset($data['item_id']) && $data['item_id'] !== '') {
-            return OpenResponseItemId::fromString((string) $data['item_id']);
+    private function makeStreamMessageChunks(OpenResponsesStreamEvent $event): AssistantMessageChunks {
+        $chunks = [];
+        if ($event->reasoningDelta() !== '') {
+            $chunks[] = AssistantMessageChunk::reasoningDelta(
+                $event->reasoningBlockKey(),
+                $event->reasoningDelta(),
+            );
         }
-        if (isset($data['item']['id']) && $data['item']['id'] !== '') {
-            return OpenResponseItemId::fromString((string) $data['item']['id']);
+        if ($event->textDelta() !== '') {
+            $chunks[] = AssistantMessageChunk::textDelta(
+                $event->textBlockKey(),
+                $event->textDelta(),
+            );
         }
-        return $ctx->currentItemId;
-    }
-
-    protected function resolveCallId(OpenResponsesStreamContext $ctx, array $data): ?ToolCallId {
-        if (isset($data['call_id']) && $data['call_id'] !== '') {
-            return ToolCallId::fromString((string) $data['call_id']);
+        if ($event->isToolEvent() && $event->hasToolData()) {
+            $chunks[] = AssistantMessageChunk::toolCallDelta(
+                index: $event->toolBlockKey(),
+                id: (string) ($event->toolCallId() ?? ''),
+                name: $event->toolName(),
+                arguments: $event->toolArgumentsDelta(),
+            );
         }
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === null) {
-            return null;
-        }
-        $itemKey = $itemId->toString();
-        if (isset($ctx->itemToCallId[$itemKey])) {
-            return $ctx->itemToCallId[$itemKey];
-        }
-        return ToolCallId::fromString($itemKey);
-    }
-
-    protected function resolveToolName(OpenResponsesStreamContext $ctx, array $data): string {
-        if (isset($data['name']) && $data['name'] !== '') {
-            return (string) $data['name'];
-        }
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === null) {
-            return '';
-        }
-        return $ctx->itemToName[$itemId->toString()] ?? '';
-    }
-
-    protected function markOutputTextSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId !== null) {
-            $ctx->seenOutputTextItems[$itemId->toString()] = true;
-        }
-        return $delta;
-    }
-
-    protected function hasSeenOutputText(OpenResponsesStreamContext $ctx, array $data): bool {
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === null) {
-            return false;
-        }
-        return $ctx->seenOutputTextItems[$itemId->toString()] ?? false;
-    }
-
-    protected function maybeEmitDoneText(OpenResponsesStreamContext $ctx, array $data): string {
-        if ($this->hasSeenOutputText($ctx, $data)) {
-            return '';
-        }
-        return (string) ($data['text'] ?? '');
-    }
-
-    protected function markReasoningSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId !== null) {
-            $ctx->seenReasoningItems[$itemId->toString()] = true;
-        }
-        return $delta;
-    }
-
-    protected function hasSeenReasoning(OpenResponsesStreamContext $ctx, array $data): bool {
-        $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === null) {
-            return false;
-        }
-        return $ctx->seenReasoningItems[$itemId->toString()] ?? false;
-    }
-
-    protected function maybeEmitDoneReasoning(OpenResponsesStreamContext $ctx, array $data): string {
-        if ($this->hasSeenReasoning($ctx, $data)) {
-            return '';
-        }
-        return (string) ($data['text'] ?? '');
-    }
-
-    protected function markToolArgsSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
-        $callId = $this->resolveCallId($ctx, $data);
-        if ($callId !== null) {
-            $ctx->toolArgsSeen[$callId->toString()] = true;
-        }
-        return $delta;
-    }
-
-    protected function hasSeenToolArgs(OpenResponsesStreamContext $ctx, array $data): bool {
-        $callId = $this->resolveCallId($ctx, $data);
-        if ($callId === null) {
-            return false;
-        }
-        return $ctx->toolArgsSeen[$callId->toString()] ?? false;
-    }
-
-    /**
-     * Done event is a completion signal — if we already received deltas, ignore it.
-     * Only emit the full args if no deltas were seen (non-streaming response path).
-     */
-    protected function maybeEmitDoneToolArgs(OpenResponsesStreamContext $ctx, array $data, ?string $arguments = null): string {
-        if ($this->hasSeenToolArgs($ctx, $data)) {
-            return '';
-        }
-        return (string) ($arguments ?? ($data['arguments'] ?? ''));
+        return new AssistantMessageChunks(...$chunks);
     }
 }

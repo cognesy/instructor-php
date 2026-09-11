@@ -25,9 +25,9 @@ it('processes messages with context processors', function () {
     $state = new ChatState();
     $state = $chat->nextStep($state);
 
-    $messages = $state->messages()->toArray();
+    $messages = $state->messages()->all();
     
     expect(count($messages))->toBe(1);
-    expect($messages[0]['content'])->toContain('Long message:');
-    expect($messages[0]['content'])->toContain(str_repeat('x', 100));
+    expect($messages[0]->content()->toString())->toContain('Long message:');
+    expect($messages[0]->content()->toString())->toContain(str_repeat('x', 100));
 });

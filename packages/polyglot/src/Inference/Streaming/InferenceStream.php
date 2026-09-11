@@ -270,7 +270,7 @@ class InferenceStream
             executionId: $this->execution->id->toString(),
             requestStartedAt: $startedAt,
             model: $this->execution->request()->model(),
-            initialContent: $delta->contentDelta,
+            initialContent: $delta->messageChunks->textDelta(),
         ));
     }
 
@@ -281,7 +281,7 @@ class InferenceStream
         if ($this->emitDeltaCreated) {
             $this->events->dispatch(new PartialInferenceDeltaCreated([
                 'executionId' => $this->executionIdString ??= $this->execution->id->toString(),
-                'contentDelta' => $delta->contentDelta,
+                'contentDelta' => $delta->messageChunks->textDelta(),
             ]));
         }
 

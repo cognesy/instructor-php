@@ -17,6 +17,7 @@ use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Capability\Execution\System\SystemTellClock;
 use Cognesy\Tell\Capability\Model\Polyglot\PolyglotTellModelResolver;
+use Cognesy\Tell\Capability\Discovery\Polyglot\PolyglotTellProviderCatalogue;
 use Cognesy\Tell\Capability\Secrets\Standard\StandardTellSecretResolver;
 use Cognesy\Tell\Capability\Agent\ComposerDiscovery\ComposerTellAgentContribution;
 use Cognesy\Tell\Capability\Agent\Definitions\FilesystemTellAgentDefinitions;
@@ -60,6 +61,7 @@ $factory = new TellAgentFactory(
     tracer: new \Cognesy\Tell\Capability\Observation\FilesystemTrace\StandardTellExecutionTracer($paths),
     clock: new SystemTellClock(),
     modelResolver: new PolyglotTellModelResolver($paths, new StandardTellSecretResolver($paths, $project)),
+    providerCatalogue: new PolyglotTellProviderCatalogue($paths),
     definitionLoader: new FilesystemTellAgentDefinitions($paths),
     contributions: [
         new ComposerTellAgentContribution(

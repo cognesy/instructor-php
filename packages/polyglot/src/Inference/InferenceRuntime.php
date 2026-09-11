@@ -3,34 +3,55 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Logging\EventLog;
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Http\Creation\HttpClientDefaults;
 use Cognesy\Http\Contracts\CanManageStreamCache;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientDefaults;
+use Cognesy\Logging\EventLog;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
-use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Core\InferenceRequestPreflight;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Events\InferenceDriverBuilt;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
+use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 use InvalidArgumentException;
+use Override;
 
 final class InferenceRuntime implements CanCreateInference
 {
+    private readonly ModelCatalog $models;
+    private readonly InferenceRequestPreflight $preflight;
+
     public function __construct(
         private readonly CanProcessInferenceRequest $driver,
         private readonly CanHandleEvents $events,
-    ) {}
+        ?ModelCatalog $models = null,
+        private readonly string $driverName = '',
+        private readonly string $defaultModel = '',
+    ) {
+        $this->models = $models ?? ModelCatalog::discover();
+        $this->preflight = new InferenceRequestPreflight();
+    }
 
-    #[\Override]
+    #[Override]
     public function create(InferenceRequest $request): PendingInference {
+        $model = match ($request->model()) {
+            '' => $this->defaultModel,
+            default => $request->model(),
+        };
+        $request = $request
+            ->withModel($model)
+            ->withModelProfile($this->models->find($this->driverName, $model));
+        $request = $this->preflight->apply($request);
+
         return new PendingInference(
             execution: InferenceExecution::fromRequest($request),
             driver: $this->driver,
@@ -44,6 +65,7 @@ final class InferenceRuntime implements CanCreateInference
         ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
+        ?ModelCatalog $models = null,
     ): InferenceRuntime {
         $events = self::resolveEvents($events);
         $httpClient = self::resolveHttpClient($events, $httpClient);
@@ -57,6 +79,9 @@ final class InferenceRuntime implements CanCreateInference
         return new self(
             driver: $driver,
             events: $events,
+            models: $models,
+            driverName: $config->driver,
+            defaultModel: $config->model,
         );
     }
 
@@ -66,6 +91,7 @@ final class InferenceRuntime implements CanCreateInference
         ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
+        ?ModelCatalog $models = null,
     ): InferenceRuntime {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
@@ -85,6 +111,9 @@ final class InferenceRuntime implements CanCreateInference
         return new self(
             driver: $driver,
             events: $events,
+            models: $models,
+            driverName: $config->driver,
+            defaultModel: $config->model,
         );
     }
 
@@ -94,6 +123,7 @@ final class InferenceRuntime implements CanCreateInference
         ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
+        ?ModelCatalog $models = null,
     ): InferenceRuntime {
         return self::fromResolver(
             resolver: $provider,
@@ -101,6 +131,7 @@ final class InferenceRuntime implements CanCreateInference
             httpClient: $httpClient,
             streamCacheManager: $streamCacheManager,
             drivers: $drivers,
+            models: $models,
         );
     }
 
@@ -146,7 +177,6 @@ final class InferenceRuntime implements CanCreateInference
         };
     }
 
-
     private static function makeDriver(
         LLMConfig $config,
         CanHandleEvents $events,
@@ -174,7 +204,7 @@ final class InferenceRuntime implements CanCreateInference
     }
 
     private static function resolveDrivers(?CanProvideInferenceDrivers $drivers): CanProvideInferenceDrivers {
-        return $drivers ?? BundledInferenceDrivers::registry();
+        return $drivers ?? InferenceDriverRegistry::default();
     }
 
     /**

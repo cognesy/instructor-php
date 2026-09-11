@@ -1,0 +1,87 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Candidate -1. Think step by step: What month is it now if it has been 3 weeks, 10 days, and 2 hours since May 1, 2024 6pm?\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"reasoning_steps\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"}},\"month\":{\"type\":\"string\"}},\"required\":[\"reasoning_steps\",\"month\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:54:54 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a394c37b094595a1-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1182"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999903"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_fc010746de244e88a80bcc10a5e8b445"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpRsjJGLtaZsztM2rdTdjyAq8f1l\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109692,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_kuMOC9UogSZXtbzF2i1WdGp6\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"reasoning_steps\\\":[\\\"Start from May 1, 2024, at 6 PM.\\\",\\\"Add 3 weeks to May 1, 2024.\\\",\\\"3 weeks from May 1 is May 22, 2024.\\\",\\\"Add 10 days to May 22, 2024.\\\",\\\"10 days from May 22 is June 1, 2024.\\\",\\\"Add 2 hours to June 1, 2024, 6 PM.\\\",\\\"The final result is June 1, 2024, at 8 PM.\\\"],\\\"month\\\":\\\"June 2024\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 163,\n    \"completion_tokens\": 118,\n    \"total_tokens\": 281,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_700dba369c\"\n}\n"
+    }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EMpPvNx8BNQygVAvobgzRZ5d6tMGJ",
+  "object": "chat.completion",
+  "created": 1789109571,
+  "model": "gpt-4.1-nano-2025-04-14",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"service\": \"Billing API\",\n  \"severity\": \"high\",\n  \"owner\": \"finance ops\",\n  \"status\": \"open\",\n  \"reportedAt\": \"2026-07-11T09:10:00Z\"\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 460,
+    "completion_tokens": 52,
+    "total_tokens": 512,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_a806186e36"
+}

@@ -17,7 +17,7 @@ use Cognesy\Addons\Tests\Support\FakeInferenceDriver;
 it('handles multi-participant chat with role mapping', function () {
     // Create two different assistants
     $driverA = new FakeInferenceDriver([
-        new InferenceResponse(content: 'Response from A'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Response from A')),
     ]);
     $inferenceA = Inference::fromRuntime(
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
@@ -27,7 +27,7 @@ it('handles multi-participant chat with role mapping', function () {
     $assistantA = new LLMParticipant(name: 'assistantA', inference: $inferenceA, systemPrompt: 'You are assistant A');
 
     $driverB = new FakeInferenceDriver([
-        new InferenceResponse(content: 'Response from B'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Response from B')),
     ]);
     $inferenceB = Inference::fromRuntime(
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
@@ -57,12 +57,12 @@ it('handles multi-participant chat with role mapping', function () {
     $state = $chat->nextStep($state);
     $state = $chat->nextStep($state);
 
-    $finalMessages = $state->messages()->toArray();
+    $finalMessages = $state->messages()->all();
     
     // We should have original 3 + 2 new messages
     expect(count($finalMessages))->toBe(5);
     
     // Last two messages should be from the assistants
-    expect($finalMessages[3]['content'])->toBe('Response from A');
-    expect($finalMessages[4]['content'])->toBe('Response from B');
+    expect($finalMessages[3]->content()->toString())->toBe('Response from A');
+    expect($finalMessages[4]->content()->toString())->toBe('Response from B');
 });

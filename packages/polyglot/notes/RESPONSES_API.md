@@ -148,8 +148,8 @@ packages/polyglot/src/Inference/Drivers/
     └── OpenAIResponsesRequestAdapter.php # OpenAI auth headers
 ```
 
-Both entries are declared in `BundledInferenceDrivers` as `InferenceDriverSpec` rows and are
-executed by `SpecifiedInferenceDriver`; the request adapters retain the protocol-specific URL
+Both entries are declared in `InferenceDriverRegistry` as `InferenceDriverSpec` rows and are
+executed by `BaseInferenceRequestDriver`; the request adapters retain the protocol-specific URL
 and header behavior.
 
 ## Key Design Principle
@@ -189,7 +189,7 @@ $stream = (new Inference())
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 
 $final = $stream->final();

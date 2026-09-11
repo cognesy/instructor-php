@@ -89,8 +89,8 @@ The available terminal methods are:
 
 | Method | Returns | Description |
 |---|---|---|
-| `get()` | `string` | The plain-text content of the response. |
-| `response()` | `InferenceResponse` | The full response object with content, usage, tool calls, and metadata. |
+| `get()` | `Message` | The complete assistant message. |
+| `response()` | `InferenceResponse` | The assistant `Message` plus usage, finish reason, and provider data. |
 | `asJson()` | `string` | The response content parsed as a JSON string. |
 | `asJsonData()` | `array` | The response content parsed into a PHP array. |
 | `stream()` | `InferenceStream` | A streamed response you can iterate over in real time. |
@@ -150,7 +150,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 

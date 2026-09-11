@@ -26,7 +26,7 @@ it('streams partial responses and assembles final content (Gemini SSE)', functio
     iterator_to_array($stream->deltas());
     $final = $stream->final();
     expect($final)->not->toBeNull();
-    expect($final->content())->toBe('Hello!');
+    expect($final->message()->content()->toString())->toBe('Hello!');
 });
 
 it('correctly accumulates cumulative token usage in streaming (regression test)', function () {
@@ -75,7 +75,7 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
     $final = $stream->final();
 
     // Verify final content is assembled correctly
-    expect($final->content())->toBe('Hello world!');
+    expect($final->message()->content()->toString())->toBe('Hello world!');
 
     // CRITICAL REGRESSION TEST: Token counts should NOT be additive
     // Before fix: input tokens would grow exponentially: 125 -> 250 -> 375

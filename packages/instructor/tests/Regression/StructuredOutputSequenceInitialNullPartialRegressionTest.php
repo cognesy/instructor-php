@@ -13,9 +13,9 @@ if (!class_exists('SequenceNullPartialPerson')) {
 
 it('sequence() ignores initial no-value chunks on deterministic fake driver streams', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":['),
-        new PartialInferenceDelta(contentDelta: '{"name":"Alice","age":25},{"name":"Bob"'),
-        new PartialInferenceDelta(contentDelta: ',"age":30}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Alice","age":25},{"name":"Bob"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);

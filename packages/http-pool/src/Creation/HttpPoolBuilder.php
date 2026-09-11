@@ -61,7 +61,7 @@ final class HttpPoolBuilder
 
     private function buildPoolHandler(HttpPoolConfig $config): CanHandleRequestPool {
         $name = $config->driver;
-        $registry = $this->pools ?? BundledHttpPools::registry();
+        $registry = $this->pools ?? HttpPoolRegistry::default();
 
         if (!$registry->has($name)) {
             throw new InvalidArgumentException("Unknown pool handler: {$name}");

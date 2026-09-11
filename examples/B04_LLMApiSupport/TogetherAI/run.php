@@ -39,7 +39,7 @@ $answer = Inference::using('together')
         messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]
     )
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

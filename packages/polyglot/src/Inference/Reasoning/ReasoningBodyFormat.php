@@ -25,11 +25,9 @@ final readonly class ReasoningBodyFormat implements CanMapRequestBody
     public function __construct(
         private CanMapRequestBody $bodyFormat,
         private CanTranslateReasoning $translator,
-        private string $defaultModel = '',
     ) {}
 
-    public function toRequestBody(InferenceRequest $request): array
-    {
+    public function toRequestBody(InferenceRequest $request): array {
         $body = $this->bodyFormat->toRequestBody($request);
         $selection = $request->reasoning();
         if ($selection->isDefault()) {
@@ -39,14 +37,14 @@ final readonly class ReasoningBodyFormat implements CanMapRequestBody
         $this->assertNoRawReasoning($request->options());
         $this->assertNoRawReasoning($body);
 
-        $model = $request->model() ?: $this->defaultModel;
-        $translation = $this->translator->translate($model, $selection);
+        $capabilities = $request->modelProfile()?->capabilities->reasoning
+            ?? ReasoningCapabilities::unknown();
+        $translation = $this->translator->translate($capabilities, $selection);
 
         return array_replace_recursive($body, $translation->options->toArray());
     }
 
-    private function assertNoRawReasoning(array $options): void
-    {
+    private function assertNoRawReasoning(array $options): void {
         foreach (array_keys($options) as $key) {
             if (in_array((string) $key, self::REASONING_KEYS, true)) {
                 throw new InvalidArgumentException(

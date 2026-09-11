@@ -21,11 +21,20 @@ class CachedInferenceContext
         ?ToolDefinitions $tools = null,
         ?ToolChoice $toolChoice = null,
         ?ResponseFormat $responseFormat = null,
+        private ?string $ttl = null,
     ) {
+        if ($ttl !== null && !in_array($ttl, ['5m', '1h'], true)) {
+            throw new \InvalidArgumentException('Cache TTL must be 5m or 1h.');
+        }
         $this->messages = $messages ?? Messages::empty();
         $this->tools = $tools ?? ToolDefinitions::empty();
         $this->toolChoice = $toolChoice ?? ToolChoice::empty();
         $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
+    }
+
+    public function ttl(): ?string
+    {
+        return $this->ttl;
     }
 
     public function messages(): Messages
@@ -55,6 +64,7 @@ class CachedInferenceContext
             tools: $this->tools,
             toolChoice: $this->toolChoice,
             responseFormat: $this->responseFormat,
+            ttl: $this->ttl,
         );
     }
 
@@ -65,6 +75,7 @@ class CachedInferenceContext
             tools: $tools,
             toolChoice: $this->toolChoice,
             responseFormat: $this->responseFormat,
+            ttl: $this->ttl,
         );
     }
 
@@ -75,6 +86,7 @@ class CachedInferenceContext
             tools: $this->tools,
             toolChoice: $toolChoice,
             responseFormat: $this->responseFormat,
+            ttl: $this->ttl,
         );
     }
 
@@ -85,6 +97,7 @@ class CachedInferenceContext
             tools: $this->tools,
             toolChoice: $this->toolChoice,
             responseFormat: $responseFormat,
+            ttl: $this->ttl,
         );
     }
 
@@ -99,6 +112,7 @@ class CachedInferenceContext
     public function toArray(): array
     {
         return [
+            ...array_filter(['ttl' => $this->ttl], static fn(mixed $value): bool => $value !== null),
             'messages' => $this->messages->toArray(),
             'tools' => $this->tools->toArray(),
             'toolChoice' => $this->toolChoice->toArray(),
@@ -113,6 +127,7 @@ class CachedInferenceContext
             tools: self::toolsFromArray($data),
             toolChoice: self::toolChoiceFromArray($data),
             responseFormat: self::responseFormatFromArray($data),
+            ttl: $data['ttl'] ?? null,
         );
     }
 

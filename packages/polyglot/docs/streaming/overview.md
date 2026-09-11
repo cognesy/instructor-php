@@ -31,7 +31,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 
@@ -44,9 +44,7 @@ Every `PartialInferenceDelta` carries the incremental data from a single streami
 
 | Property | Description |
 |---|---|
-| `contentDelta` | New text content received in this chunk. |
-| `reasoningContentDelta` | New reasoning / chain-of-thought content (for models that support it). |
-| `toolName`, `toolArgs`, `toolId` | Tool call fragments streamed incrementally. |
+| `messageChunks` | Ordered assistant block starts, deltas, and completed blocks. |
 | `finishReason` | Empty until the final chunk, then contains the stop reason (e.g. `stop`, `tool_calls`). |
 | `usage` | Token usage statistics, when provided by the provider. |
 | `value` | An optional arbitrary value attached to the delta by higher-level layers. |
@@ -69,11 +67,11 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 
 $response = $stream->final();
-echo $response->content();    // full accumulated text
+echo $response->message()->content()->toString(); // full accumulated text
 echo $response->usage();      // token usage for the request
 ```
 
@@ -93,7 +91,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $stream = Inference::using('openai')
     ->withMessages(Messages::fromString('Write a short poem about queues.'))
     ->stream()
-    ->onDelta(fn($delta) => print($delta->contentDelta));
+    ->onDelta(fn($delta) => print($delta->messageChunks->textDelta()));
 
 // Drain the stream to trigger the callbacks
 $stream->final();
@@ -119,8 +117,9 @@ $stream = Inference::using('openai')
 $wordCount = 0;
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
-    $wordCount += str_word_count($delta->contentDelta);
+    $text = $delta->messageChunks->textDelta();
+    echo $text;
+    $wordCount += str_word_count($text);
 
     if ($wordCount >= 100) {
         echo "\n[Stopped after ~100 words]\n";
@@ -162,7 +161,7 @@ When working with streaming responses, keep a few things in mind:
 - **Output flushing.** In CLI scripts or streaming HTTP responses, flush the output buffer after each chunk so the user sees incremental output:
   ```php
   foreach ($stream->deltas() as $delta) {
-      echo $delta->contentDelta;
+      echo $delta->messageChunks->textDelta();
       flush();
   }
   ```

@@ -102,13 +102,7 @@ final readonly class AgentRun
         $steps = is_array($data['steps'] ?? null) ? EvalSteps::fromArray($data['steps'], $policy) : EvalSteps::none();
         $stopSignal = is_array($data['stopSignal'] ?? null) ? StopSignal::fromArray($data['stopSignal']) : null;
         $llmData = $data['llmProfile'] ?? null;
-        $llmProfile = is_array($llmData) ? new LLMConfigProfile(
-            driver: is_string($llmData['driver'] ?? null) ? $llmData['driver'] : '',
-            model: is_string($llmData['model'] ?? null) ? $llmData['model'] : '',
-            maxTokens: is_int($llmData['maxTokens'] ?? null) ? $llmData['maxTokens'] : 0,
-            contextLength: is_int($llmData['contextLength'] ?? null) ? $llmData['contextLength'] : 0,
-            maxOutputLength: is_int($llmData['maxOutputLength'] ?? null) ? $llmData['maxOutputLength'] : 0,
-        ) : null;
+        $llmProfile = is_array($llmData) ? LLMConfigProfile::fromArray($llmData) : null;
         return new self(
             reply: is_string($data['reply'] ?? null) ? $data['reply'] : '',
             status: $status,

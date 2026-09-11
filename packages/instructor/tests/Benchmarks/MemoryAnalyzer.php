@@ -138,7 +138,7 @@ final class MemoryAnalyzer
     private function measureSync(string $driver, int $payloadSize): array
     {
         $json = $this->makeJson($payloadSize);
-        $fakeDriver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
+        $fakeDriver = new FakeInferenceDriver(responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($json))]);
 
         // Clean baseline
         gc_collect_cycles();
@@ -279,11 +279,11 @@ final class MemoryAnalyzer
         }
 
         $chunks = [];
-        $chunks[] = new PartialInferenceDelta(contentDelta: $open);
+        $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $open));
         foreach ($items as $piece) {
-            $chunks[] = new PartialInferenceDelta(contentDelta: $piece);
+            $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $piece));
         }
-        $chunks[] = new PartialInferenceDelta(contentDelta: $close, finishReason: 'stop');
+        $chunks[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $close), finishReason: 'stop');
 
         return $chunks;
     }

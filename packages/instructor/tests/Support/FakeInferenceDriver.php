@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Tests\Support;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -44,7 +43,7 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
         if (!empty($this->responses)) {
             return array_shift($this->responses);
         }
-        return new InferenceResponse(content: '');
+        return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''));
     }
 
     /** @return iterable<PartialInferenceDelta> */
@@ -57,10 +56,6 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
 
         $batch = !empty($this->streamBatches) ? array_shift($this->streamBatches) : [];
         yield from $this->emitBatch($batch);
-    }
-
-    public function capabilities(?string $model = null): DriverCapabilities {
-        return new DriverCapabilities();
     }
 
     /** @param iterable<PartialInferenceDelta> $batch */

@@ -3,12 +3,14 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonExtractor;
 use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
+use InvalidArgumentException;
 
 /**
  * Represents a response from the LLM.
@@ -17,28 +19,21 @@ final readonly class InferenceResponse
 {
     use TracksObjectCreation;
 
-    private const THINK_START_TAG = '<think>';
-    private const THINK_END_TAG = '</think>';
-
     public InferenceResponseId $id;
     public DateTimeImmutable $createdAt;
     public DateTimeImmutable $updatedAt;
 
-    private string $content;
-    private string $reasoningContent;
     private string $finishReason;
 
-    private ToolCalls $toolCalls;
+    private Message $message;
     private InferenceUsage $usage;
     private HttpResponse $responseData;
 
     private bool $isPartial;
 
     public function __construct(
-        string $content = '',
+        ?Message $message = null,
         string $finishReason = '',
-        ?ToolCalls $toolCalls = null,
-        string $reasoningContent = '',
         ?InferenceUsage $usage = null,
         ?HttpResponse $responseData = null,
         bool $isPartial = false,
@@ -51,10 +46,11 @@ final readonly class InferenceResponse
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
-        $this->content = $content;
+        $this->message = $message ?? new Message(role: MessageRole::Assistant);
+        if (!$this->message->isAssistant()) {
+            throw new InvalidArgumentException('InferenceResponse message must have the assistant role.');
+        }
         $this->finishReason = $finishReason;
-        $this->toolCalls = $toolCalls ?? new ToolCalls();
-        $this->reasoningContent = $reasoningContent;
         $this->responseData = $responseData ?? HttpResponse::empty();
         $this->usage = $usage ?? new InferenceUsage();
 
@@ -68,20 +64,12 @@ final readonly class InferenceResponse
 
     // ACCESSORS /////////////////////////////////////////////
 
-    public function content(): string {
-        return $this->content;
-    }
-
-    public function reasoningContent(): string {
-        return $this->reasoningContent;
+    public function message(): Message {
+        return $this->message;
     }
 
     public function usage(): InferenceUsage {
         return $this->usage;
-    }
-
-    public function toolCalls(): ToolCalls {
-        return $this->toolCalls;
     }
 
     public function finishReason(): InferenceFinishReason {
@@ -96,53 +84,39 @@ final readonly class InferenceResponse
         return $this->responseData;
     }
 
-    // HAS/IS ////////////////////////////////////////////////
-
-    public function hasContent(): bool {
-        return $this->content !== '';
-    }
-
-    public function hasReasoningContent(): bool {
-        return $this->reasoningContent !== '';
-    }
-
-    public function hasToolCalls(): bool {
-        return $this->toolCalls->hasAny();
-    }
-
     public function hasFinishReason(): bool {
         return $this->finishReason !== '';
     }
 
     public function findJsonData(): Json {
-        $extracted = JsonExtractor::first($this->content);
-        return $extracted !== null ? Json::fromArray($extracted) : Json::none();
+        $extracted = JsonExtractor::first($this->message->content()->toString());
+        return match ($extracted) {
+            null => Json::none(),
+            default => Json::fromArray($extracted),
+        };
     }
 
     public function findToolCallJsonData(): Json {
+        $toolCalls = $this->message->toolCalls();
         return match (true) {
-            !$this->hasToolCalls() => Json::fromArray([]),
-            $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()?->args() ?? []),
-            default => Json::fromArray($this->toolCalls->toArray()),
+            $toolCalls->hasNone() => Json::fromArray([]),
+            $toolCalls->hasSingle() => Json::fromArray($toolCalls->first()?->args() ?? []),
+            default => Json::fromArray($toolCalls->toArray()),
         };
     }
 
     // MUTATORS //////////////////////////////////////////////
 
     public function with(
-        ?string $content = null,
+        ?Message $message = null,
         ?string $finishReason = null,
-        ?ToolCalls $toolCalls = null,
-        ?string $reasoningContent = null,
         ?InferenceUsage $usage = null,
         ?HttpResponse $responseData = null,
         ?bool $isPartial = null,
     ): self {
         return new self(
-            content: $content ?? $this->content,
+            message: $message ?? $this->message,
             finishReason: $finishReason ?? $this->finishReason,
-            toolCalls: $toolCalls ?? $this->toolCalls,
-            reasoningContent: $reasoningContent ?? $this->reasoningContent,
             usage: $usage ?? $this->usage,
             responseData: $responseData ?? $this->responseData,
             isPartial: $isPartial ?? $this->isPartial,
@@ -153,32 +127,29 @@ final readonly class InferenceResponse
         );
     }
 
-    public function withContent(string $content): self {
-        return $this->with(content: $content);
+    public function withMessage(Message $message): self {
+        return $this->with(message: $message);
     }
 
-    public function withReasoningContentFallbackFromContent(): self {
-        if ($this->reasoningContent !== '') {
-            return $this;
+    /** @param array<array-key, mixed> $data */
+    private static function assertCanonicalPayload(array $data): void {
+        $hasFlattenedResponseData = array_key_exists('content', $data)
+            || array_key_exists('reasoningContent', $data)
+            || array_key_exists('toolCalls', $data);
+
+        if ($hasFlattenedResponseData) {
+            throw new InvalidArgumentException(
+                'Flattened content, reasoningContent, and toolCalls fields are not supported; encode the assistant turn in message.',
+            );
         }
-        $split = self::splitThinkTags($this->content);
-        if ($split === null) {
-            return $this;
-        }
-        return $this->with(
-            content: $split->content,
-            reasoningContent: $split->reasoningContent,
-        );
     }
 
     // SERIALIZATION /////////////////////////////////////////
 
     public function toArray(): array {
         return [
-            'content' => $this->content,
+            'message' => $this->message->toArray(),
             'finishReason' => $this->finishReason,
-            'toolCalls' => $this->toolCalls->toArray(),
-            'reasoningContent' => $this->reasoningContent,
             'usage' => $this->usage->toArray(),
             'responseData' => $this->responseData->toArray(), // raw response data
             'isPartial' => $this->isPartial,
@@ -190,15 +161,17 @@ final readonly class InferenceResponse
     }
 
     public static function fromArray(array $data): self {
+        self::assertCanonicalPayload($data);
+
         $responseData = $data['responseData'] ?? null;
+        $messageData = $data['message'] ?? null;
+        if (!is_array($messageData)) {
+            throw new InvalidArgumentException('InferenceResponse data must contain an assistant message.');
+        }
 
         return new self(
-            content: $data['content'] ?? '',
+            message: Message::fromArray($messageData),
             finishReason: $data['finishReason'] ?? '',
-            toolCalls: (isset($data['toolCalls']) && is_array($data['toolCalls']))
-                ? ToolCalls::fromArray($data['toolCalls'])
-                : null,
-            reasoningContent: $data['reasoningContent'] ?? '',
             usage: (isset($data['usage']) && is_array($data['usage']))
                 ? InferenceUsage::fromArray($data['usage'])
                 : null,
@@ -221,29 +194,4 @@ final readonly class InferenceResponse
         );
     }
 
-    private static function splitThinkTags(string $content): ?ReasoningContentSplit {
-        $start = strpos($content, self::THINK_START_TAG);
-        if ($start === false) {
-            return null;
-        }
-        $end = strpos($content, self::THINK_END_TAG);
-        if ($end === false) {
-            return null;
-        }
-        if ($end <= $start) {
-            return null;
-        }
-
-        $startPos = $start + strlen(self::THINK_START_TAG);
-        $reasoning = substr($content, $startPos, $end - $startPos);
-        if ($reasoning === '') {
-            return null;
-        }
-
-        $before = substr($content, 0, $start);
-        $after = substr($content, $end + strlen(self::THINK_END_TAG));
-        $cleanContent = trim($before . $after);
-
-        return new ReasoningContentSplit($cleanContent, $reasoning);
-    }
 }

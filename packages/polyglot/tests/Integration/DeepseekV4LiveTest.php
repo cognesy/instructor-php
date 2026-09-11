@@ -31,6 +31,6 @@ it('completes a DeepSeek V4 Pro thinking request', function () {
         ])
         ->response();
 
-    expect($response->content())->toContain('V4_OK')
-        ->and($response->reasoningContent())->not->toBe('');
+    expect($response->message()->content()->toString())->toContain('V4_OK')
+        ->and($response->message()->reasoningContent())->not->toBe('');
 })->group('deepseek-live');

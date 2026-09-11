@@ -21,17 +21,10 @@ function _add(int $a, int $b): int { return $a + $b; }
 
 it('does not produce empty assistant messages after tool call step', function () {
     // Step 1: LLM returns a tool call (content is empty as expected for tool calls)
-    $toolCallResponse = new InferenceResponse(
-        content: '',
-        toolCalls: new ToolCalls(new ToolCall('_add', ['a' => 2, 'b' => 3])),
-        usage: new InferenceUsage(10, 20),
-    );
+    $toolCallResponse = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('_add', ['a' => 2, 'b' => 3]))), usage: new InferenceUsage(10, 20));
 
     // Step 2: LLM returns a final text answer
-    $finalResponse = new InferenceResponse(
-        content: 'The result is 5.',
-        usage: new InferenceUsage(15, 10),
-    );
+    $finalResponse = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('The result is 5.'), usage: new InferenceUsage(15, 10));
 
     $driver = new FakeInferenceDriver([$toolCallResponse, $finalResponse]);
 

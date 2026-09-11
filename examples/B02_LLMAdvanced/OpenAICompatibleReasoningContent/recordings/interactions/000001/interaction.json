@@ -1,0 +1,68 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "7f568326521e604d048ee68ae226aa3cd41c2c793843b6f42d1170305a749c4e",
+    "request": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 161,
+            "sha256": "5d1ce1aabb7b9905c59b50dc27eeb2200464acced34c87bac58a2a356fcce4d6"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application/json"
+            ],
+            "date": [
+                "Fri, 11 Sep 2026 07:37:54 GMT"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "elb"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-credentials": [
+                "true"
+            ],
+            "x-ds-trace-id": [
+                "dbb0ee1733554a546fee55d11f8be069"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 468e47fcac84113811588850de707f4a.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P3"
+            ],
+            "x-amz-cf-id": [
+                "zpYN74skvkg33uIo_0gadOCmxi5rz9GcyzC2g1lkXwC87vTEDGdNMA=="
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 609,
+            "sha256": "c6810d6873c7638298aa6f14d535a39a8eab5f7abe6cd2c0eb4738fe9a01faed"
+        }
+    }
+}

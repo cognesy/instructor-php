@@ -3,7 +3,6 @@
 namespace Cognesy\Agents\Drivers\ReAct\Utils;
 
 use Cognesy\Agents\Data\ToolExecution;
-use Cognesy\Agents\Drivers\ReAct\Contracts\Decision;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Json\Json;
@@ -11,17 +10,6 @@ use Throwable;
 
 final class ReActFormatter
 {
-    public function assistantThoughtActionMessage(Decision $decision): Message {
-        $content = 'Thought: ' . $decision->thought();
-        if ($decision->isCall()) {
-            $content .= "\nAction: " . ($decision->tool() ?? '');
-            $content .= "\nAction Input: " . Json::encode($decision->args());
-        } else {
-            $content .= "\nAction: final_answer";
-        }
-        return new Message(role: 'assistant', content: $content);
-    }
-
     public function observationMessage(ToolExecution $execution): Message {
         $content = match (true) {
             $execution->hasError() => 'Observation: ERROR - ' . ($execution->error()?->getMessage() ?? ''),

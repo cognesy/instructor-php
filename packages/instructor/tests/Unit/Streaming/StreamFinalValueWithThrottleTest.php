@@ -52,7 +52,7 @@ function throttledSequenceJson(int $items): string {
 /** @return list<PartialInferenceDelta> tiny tail chunks the throttle will skip */
 function tinyChunkDeltas(string $json, bool $withFinish): array {
     $deltas = array_map(
-        static fn(string $chunk): PartialInferenceDelta => new PartialInferenceDelta(contentDelta: $chunk),
+        static fn(string $chunk): PartialInferenceDelta => new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk)),
         str_split($json, 3),
     );
     if ($withFinish) {
@@ -82,7 +82,7 @@ it('yields the full final sequence even when the stream ends without a finish re
 
 it('yields the full final sequence for a single-delta stream without finish reason', function () {
     [, $final] = streamSequenceThrough([
-        new PartialInferenceDelta(contentDelta: throttledSequenceJson(3)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", throttledSequenceJson(3))),
     ]);
 
     expect(count($final))->toBe(3);

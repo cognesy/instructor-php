@@ -34,9 +34,9 @@ it('emits StructuredOutputResponseGenerated exactly once across stream and respo
     });
 
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"name":"Alice"', usage: new InferenceUsage(outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: ',"age":', usage: new InferenceUsage(outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: '30}', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Alice"'), usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":'), usage: new InferenceUsage(outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '30}'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
     ];
 
     $driver = new FakeInferenceDriver(

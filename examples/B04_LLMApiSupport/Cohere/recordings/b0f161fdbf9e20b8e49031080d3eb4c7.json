@@ -1,0 +1,78 @@
+{
+    "request": {
+        "url": "https:\/\/api.cohere.ai\/v2\/chat",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "X-Client-Name": ""
+        },
+        "body": "{\"model\":\"command-r-plus-08-2024\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France? Answer with the city name only.\"}],\"max_tokens\":128}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "access-control-expose-headers": [
+                "X-Debug-Trace-ID"
+            ],
+            "cache-control": [
+                "no-cache, no-store, no-transform, must-revalidate, private, max-age=0"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "expires": [
+                "Thu, 01 Jan 1970 00:00:00 GMT"
+            ],
+            "num_chars": [
+                "1240"
+            ],
+            "num_tokens": [
+                "16"
+            ],
+            "pragma": [
+                "no-cache"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "x-accel-expires": [
+                "0"
+            ],
+            "x-debug-trace-id": [
+                "cb13636538e46533b303dfdec4103191"
+            ],
+            "x-endpoint-monthly-call-limit": [
+                "1000"
+            ],
+            "x-trial-endpoint-call-limit": [
+                "40"
+            ],
+            "x-trial-endpoint-call-remaining": [
+                "39"
+            ],
+            "date": [
+                "Fri, 11 Sep 2026 08:21:19 GMT"
+            ],
+            "content-length": [
+                "278"
+            ],
+            "x-envoy-upstream-service-time": [
+                "204"
+            ],
+            "server": [
+                "envoy"
+            ],
+            "via": [
+                "1.1 google"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            ]
+        },
+        "body": "{\"id\":\"ec7d08b4-40b3-470d-9e80-06a4c5d03feb\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"Paris.\"}]},\"finish_reason\":\"COMPLETE\",\"usage\":{\"billed_units\":{\"input_tokens\":14,\"output_tokens\":2},\"tokens\":{\"input_tokens\":215,\"output_tokens\":3},\"cached_tokens\":208}}"
+    }
+}

@@ -4,7 +4,7 @@ use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 it('keeps existing fields when with() receives null', function () {
-    $response = new InferenceResponse(content: '{"ok":true}');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"ok":true}'));
     $attempt = new StructuredOutputAttempt(
         inferenceResponse: $response,
         isFinalized: true,

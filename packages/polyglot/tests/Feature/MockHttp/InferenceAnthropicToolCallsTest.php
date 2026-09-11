@@ -19,9 +19,8 @@ it('handles tool calls in non-streaming Anthropic response', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Weather'))
         ->response();
 
-    expect($response->hasToolCalls())->toBeTrue();
-    $tool = $response->toolCalls()->first();
+    expect($response->message()->hasToolCalls())->toBeTrue();
+    $tool = $response->message()->toolCalls()->first();
     expect($tool->name())->toBe('get_weather');
     expect($tool->value('city'))->toBe('Paris');
 });
-

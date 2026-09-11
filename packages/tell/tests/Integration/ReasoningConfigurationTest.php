@@ -50,9 +50,17 @@ it('exposes model-specific reasoning capability through the public catalogue', f
     $qwenFactory = tellTestFactory();
     $deepseek = tellTestOpen($project, $deepseekFactory)->catalogue()->models('deepseek');
     $qwen = tellTestOpen($project, $qwenFactory)->catalogue()->models('qwen');
+    $deepseekFlash = array_values(array_filter(
+        $deepseek,
+        static fn (array $model): bool => $model['model'] === 'deepseek-v4-flash',
+    ))[0];
+    $qwenMax = array_values(array_filter(
+        $qwen,
+        static fn (array $model): bool => $model['model'] === 'qwen3.8-max',
+    ))[0];
 
-    expect($deepseek[0]['capabilities']['reasoningEffort'])->toBeTrue()
-        ->and($qwen[0]['capabilities']['reasoningEffort'])->toBeTrue();
+    expect($deepseekFlash['capabilities']['reasoningEffort'])->toBeTrue()
+        ->and($qwenMax['capabilities']['reasoningEffort'])->toBeTrue();
 });
 
 it('applies request-over-branch reasoning precedence', function (): void {

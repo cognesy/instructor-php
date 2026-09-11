@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"For tasks that involve multiple implementation steps, call `plan_with_subagent` first.\\n\\nParent execution tools available (hard constraint): read_file\\n\\nWhen you execute after planning, use only the parent execution tools listed above.\\n\\nWhen calling `plan_with_subagent`, provide a task specification with these sections:\\n- Goal\\n- Context\\n- Constraints\\n- Expected Outcomes\\n- Acceptance Criteria\"},{\"role\":\"user\",\"content\":\"Prepare a realistic plan for a small docs update about planning capability in this repository.\\n\\nFirst, create a plan.\\nThen execute only the analysis part of the plan and provide a concise proposal:\\n1. Capability purpose section outline\\n2. Configuration options outline\\n3. Example usage outline\\n\\nConstraints:\\n- planner subagent may use bash\\\/search for discovery\\n- parent execution may use only read_file\\n- do not modify any files\\n- keep the final response under 180 words\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_XbbEY7sgGRCnbsMg9pU7gqHx\",\"type\":\"function\",\"function\":{\"name\":\"plan_with_subagent\",\"arguments\":\"{\\\"specification\\\":\\\"Goal\\\\nPrepare a realistic plan for a small documentation update about the repository\\\\u2019s planning capability, then execute only the analysis portion and provide a concise proposal.\\\\n\\\\nContext\\\\nThe user wants a docs update focused on planning capability in this repository. We need to first create a plan, then analyze existing docs\\\\\\\/source to infer how the capability is described and used. The final output should be a concise proposal with three outlines: (1) capability purpose section, (2) configuration options section, and (3) example usage section.\\\\n\\\\nConstraints\\\\n- Planner subagent may use bash\\\\\\\/search for discovery.\\\\n- Parent execution may use only read_file.\\\\n- Do not modify any files.\\\\n- Final response must be under 180 words.\\\\n- Since the request says to execute only the analysis part of the plan, do not draft full prose docs; just provide concise outlines.\\\\n\\\\nExpected Outcomes\\\\n- A short implementation plan for the docs update.\\\\n- Evidence-based analysis of existing repository docs related to planning capability.\\\\n- A concise proposal with three outlines:\\\\n  1) Capability purpose section outline\\\\n  2) Configuration options outline\\\\n  3) Example usage outline\\\\n\\\\nAcceptance Criteria\\\\n- Plan is realistic and sequential.\\\\n- Analysis is grounded in repository content.\\\\n- No files are modified.\\\\n- Final response is concise and under 180 words.\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_XbbEY7sgGRCnbsMg9pU7gqHx\",\"content\":\"Planning subagent produced no plan.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_eo8qJ7hJ4XBiTPZ0mKfNWKi7\",\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"arguments\":\"{\\\"path\\\":\\\"README.md\\\",\\\"offset\\\":0,\\\"limit\\\":200,\\\"max_bytes\\\":20000}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_eo8qJ7hJ4XBiTPZ0mKfNWKi7\",\"content\":\"     1\\t\\n     2\\t# About This Monorepo\\n     3\\t\\n     4\\tThis monorepo contains a set of dev-friendly, framework agnostic components offering 3 main capabilities:\\n     5\\t\\n     6\\t- **Instructor for PHP** - structured data extraction in PHP - powered by LLMs, designed for simplicity, transparency, and control; supports custom LLM output processors (not just JSON),\\n     7\\t- **Polyglot for PHP** - unified LLM API - write code once, deploy with any LLM provider: OpenAI chat completions API, OpenAI responses API, Anthropic, Gemini, Ollama, etc.; you can write own LLM drivers,\\n     8\\t- **Agent SDK for PHP** - lightweight but powerful agent SDK, supports custom tools, lifecycle hooks, subagents, context management, custom stop \\\/ continuation criteria, observability via events, packaged capabilities, agent templates, session management, and more.\\n     9\\t\\n    10\\tFramework integration packages:\\n    11\\t\\n    12\\t- **Laravel Package** - first-party Laravel integration for facades, HTTP transport, native agents, telemetry, logging, and testing\\n    13\\t- **Symfony Package** - first-party batteries-included Symfony integration package, currently being introduced under `packages\\\/symfony`\\n    14\\t\\n    15\\t## Read More\\n    16\\t\\n    17\\t- Official website https:\\\/\\\/instructorphp.com\\n    18\\t- Docs website (Mintlify) https:\\\/\\\/docs.instructorphp.com\\n    19\\t- Docs (Github Pages) https:\\\/\\\/cognesy.github.io\\\/instructor-php\\\/\\n    20\\t\\n    21\\t## Overview of Capabilities\\n    22\\t\\n    23\\tThe library offers a set of small, focused building blocks.\\n    24\\t\\n    25\\t### Structured output\\n    26\\t\\n    27\\tPurpose: turn messy model output into typed PHP data.\\n    28\\tBenefit: you stop hand-parsing JSON or text before using LLM results.\\n    29\\t\\n    30\\t```php\\n    31\\tuse Cognesy\\\\Instructor\\\\StructuredOutput;\\n    32\\t\\n    33\\tfinal class Person {\\n    34\\t    public string $name;\\n    35\\t    public int $age;\\n    36\\t}\\n    37\\t\\n    38\\t$person = StructuredOutput::using('openai')\\n    39\\t    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)\\n    40\\t    ->get();\\n    41\\t```\\n    42\\t\\n    43\\tDetailed docs: [packages\\\/instructor\\\/docs\\\/](packages\\\/instructor\\\/docs\\\/)\\n    44\\t\\n    45\\t### Unified inference\\n    46\\t\\n    47\\tPurpose: call different LLM providers through one API.\\n    48\\tBenefit: switch providers without rewriting request code.\\n    49\\t\\n    50\\t```php\\n    51\\tuse Cognesy\\\\Polyglot\\\\Inference\\\\Inference;\\n    52\\t\\n    53\\t$text = Inference::using('openai')\\n    54\\t    ->withMessages('Say hello in one sentence.')\\n    55\\t    ->get();\\n    56\\t```\\n    57\\t\\n    58\\tDetailed docs: [packages\\\/polyglot\\\/docs\\\/](packages\\\/polyglot\\\/docs\\\/)\\n    59\\t\\n    60\\t### Embeddings\\n    61\\t\\n    62\\tPurpose: generate vectors through the same provider layer.\\n    63\\tBenefit: keep retrieval and inference in one stack.\\n    64\\t\\n    65\\t```php\\n    66\\tuse Cognesy\\\\Polyglot\\\\Embeddings\\\\Embeddings;\\n    67\\t\\n    68\\t$vectors = Embeddings::using('openai')\\n    69\\t    ->withInputs(['hello world'])\\n    70\\t    ->vectors();\\n    71\\t```\\n    72\\t\\n    73\\tDetailed docs: [packages\\\/polyglot\\\/docs\\\/](packages\\\/polyglot\\\/docs\\\/)\\n    74\\t\\n    75\\t### Agents SDK\\n    76\\t\\n    77\\tPurpose: build tool-using agents as a simple loop over state.\\n    78\\tBenefit: add tools and control flow without inventing your own agent runtime first.\\n    79\\t\\n    80\\t```php\\n    81\\tuse Cognesy\\\\Agents\\\\AgentLoop;\\n    82\\tuse Cognesy\\\\Agents\\\\Data\\\\AgentState;\\n    83\\t\\n    84\\t$result = AgentLoop::default()->execute(\\n    85\\t    AgentState::empty()->withUserMessage('What is 2+2?')\\n    86\\t);\\n    87\\t```\\n    88\\t\\n    89\\tDetailed docs: [packages\\\/agents\\\/docs\\\/](packages\\\/agents\\\/docs\\\/)\\n    90\\t\\n    91\\t### Code agent bridges\\n    92\\t\\n    93\\tPurpose: drive external coding agents like Codex, Claude Code, and OpenCode from PHP.\\n    94\\tBenefit: automate reviews, summaries, and coding workflows through one interface.\\n    95\\t\\n    96\\t```php\\n    97\\tuse Cognesy\\\\AgentCtrl\\\\AgentCtrl;\\n    98\\t\\n    99\\t$response = AgentCtrl::codex()->execute('Summarize this repository.');\\n   100\\t```\\n   101\\t\\n   102\\tDetailed docs: [packages\\\/agent-ctrl\\\/docs\\\/](packages\\\/agent-ctrl\\\/docs\\\/)\\n   103\\t\\n   104\\t### Framework integration\\n   105\\t\\n   106\\tPurpose: install framework-native runtime wiring instead of assembling your own glue.\\n   107\\tBenefit: get a supported bundle or package surface for container bindings, events, observability, and testing.\\n   108\\t\\n   109\\t- Laravel package: [packages\\\/laravel\\\/](packages\\\/laravel\\\/)\\n   110\\t- Symfony package: [packages\\\/symfony\\\/](packages\\\/symfony\\\/)\\n   111\\t\\n   112\\tSymfony docs highlights:\\n   113\\t\\n   114\\t- quickstart: [packages\\\/symfony\\\/docs\\\/quickstart.md](packages\\\/symfony\\\/docs\\\/quickstart.md)\\n   115\\t- configuration: [packages\\\/symfony\\\/docs\\\/configuration.md](packages\\\/symfony\\\/docs\\\/configuration.md)\\n   116\\t- operations: [packages\\\/symfony\\\/docs\\\/operations.md](packages\\\/symfony\\\/docs\\\/operations.md)\\n   117\\t- migration: [packages\\\/symfony\\\/docs\\\/migration.md](packages\\\/symfony\\\/docs\\\/migration.md)\\n   118\\t\\n   119\\t\\n   120\\t## What is Instructor?\\n   121\\t\\n   122\\tInstructor is a library that allows you to extract structured, validated data from multiple types of inputs: text, images or OpenAI style chat sequence arrays. It is powered by Large Language Models (LLMs).\\n   123\\t\\n   124\\tInstructor simplifies LLM integration in PHP projects. It handles the complexity of extracting structured data from LLM outputs, so you can focus on building your application logic and iterate faster.\\n   125\\t\\n   126\\tInstructor for PHP is inspired by the [Instructor](https:\\\/\\\/jxnl.github.io\\\/instructor\\\/) library for Python created by [Jason Liu](https:\\\/\\\/twitter.com\\\/jxnlco).\\n   127\\t\\n   128\\t![image](docs\\\/images\\\/concept.png)\\n   129\\t\\n   130\\tHere's a simple CLI demo app using Instructor to extract structured data from text:\\n   131\\t\\n   132\\t![image](docs\\\/images\\\/extraction.gif)\\n   133\\t\\n   134\\t\\n   135\\t## How Instructor Enhances Your Workflow\\n   136\\t\\n   137\\tInstructor introduces three key enhancements compared to direct API usage.\\n   138\\t\\n   139\\t### Response Model\\n   140\\t\\n   141\\tSpecify a PHP class to extract data into via the 'magic' of LLM chat completion. And that's it.\\n   142\\t\\n   143\\tInstructor reduces brittleness of the code extracting the information from textual data by leveraging structured LLM responses.\\n   144\\t\\n   145\\tInstructor helps you write simpler, easier to understand code: you no longer have to define lengthy function call definitions or write code for assigning returned JSON into target data objects.\\n   146\\t\\n   147\\t### Validation\\n   148\\t\\n   149\\tResponse model generated by LLM can be automatically validated, following set of rules. Currently, Instructor supports only Symfony validation.\\n   150\\t\\n   151\\tYou can also provide a context object to use enhanced validator capabilities.\\n   152\\t\\n   153\\t### Max Retries\\n   154\\t\\n   155\\tYou can set the number of retry attempts for requests.\\n   156\\t\\n   157\\tInstructor will repeat requests in case of validation or deserialization error up to the specified number of times, trying to get a valid response from LLM.\\n   158\\t\\n   159\\t### Support for LLM Providers\\n   160\\t\\n   161\\tInstructor offers out-of-the-box support for the following LLM providers:\\n   162\\t\\n   163\\t- A21 \\\/ Mamba\\n   164\\t- Anthropic\\n   165\\t- Azure OpenAI\\n   166\\t- Cerebras\\n   167\\t- Cohere (v2 OpenAI compatible)\\n   168\\t- Deepseek\\n   169\\t- Fireworks\\n   170\\t- Google Gemini (native and OpenAI compatible)\\n   171\\t- Groq\\n   172\\t- HuggingFace\\n   173\\t- Inception\\n   174\\t- Minimaxi\\n   175\\t- Mistral\\n   176\\t- Moonshot \\\/ Kimi\\n   177\\t- Ollama (on localhost)\\n   178\\t- OpenAI\\n   179\\t- OpenRouter\\n   180\\t- Perplexity\\n   181\\t- Qwen\\n   182\\t- Sambanova\\n   183\\t- xAI \\\/ Grok\\n   184\\t\\n   185\\tFor usage examples, check Hub section or `examples` directory in the code repository.\\n   186\\t\\n   187\\t\\n   188\\t\\n   189\\t\\n   190\\t\\n   191\\t\\n   192\\t\\n   193\\t\\n   194\\t\\n   195\\t## Usage\\n   196\\t\\n   197\\t### Installation\\n   198\\t\\n   199\\tYou can install Instructor via Composer:\\n   200\\t\\n\\n[Output limited to 200 lines or 20000 bytes from a 18984-byte file. Use offset=200 to continue.]\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. By default, output is limited to 200 lines or 32 KiB, whichever comes first.\\nSet larger limit and max_bytes values when a larger window or the complete file is justified.\\nWhen more content exists, the result includes the exact offset or bash command needed to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 200; no fixed upper limit)\"},\"max_bytes\":{\"type\":\"integer\",\"description\":\"Maximum output bytes (default: 32768; increase explicitly for a larger or full-file read)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"plan_with_subagent\",\"description\":\"Generate an implementation plan using an isolated planning subagent.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"specification\":{\"type\":\"string\",\"description\":\"Task specification text with goal, context, expected outcomes, and acceptance criteria.\"}},\"required\":[\"specification\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:47:59 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1105"
+            ],
+            "cf-ray": [
+                "a394b95db9ecb8f5-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "608"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3997787"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "33ms"
+            ],
+            "x-request-id": [
+                "req_1ebf6c503fe549d4ae5ca6018c9eb12d"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpLClRYXwaGWdJL7EOshKpqVnV3T\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109278,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_7IvZiFuahjZQAWUyHVKEE1hN\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"read_file\",\n              \"arguments\": \"{\\\"path\\\":\\\"README.md\\\",\\\"offset\\\":195,\\\"limit\\\":120,\\\"max_bytes\\\":12000}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 3165,\n    \"completion_tokens\": 32,\n    \"total_tokens\": 3197,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

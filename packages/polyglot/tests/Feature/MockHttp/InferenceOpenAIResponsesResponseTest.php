@@ -38,7 +38,7 @@ it('returns content for OpenAI Responses API (non-streaming)', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
-    expect($content)->toBe('Hi there!');
+    expect($content->content()->toString())->toBe('Hi there!');
 });
 
 it('extracts system messages to instructions field', function () {
@@ -70,7 +70,7 @@ it('extracts system messages to instructions field', function () {
         ]))
         ->get();
 
-    expect($content)->toBe('Hello!');
+    expect($content->content()->toString())->toBe('Hello!');
 });
 
 it('uses max_output_tokens instead of max_tokens', function () {
@@ -104,7 +104,7 @@ it('uses max_output_tokens instead of max_tokens', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
-    expect($content)->toBe('Response');
+    expect($content->content()->toString())->toBe('Response');
 });
 
 it('maps completed status to stop finish reason', function () {

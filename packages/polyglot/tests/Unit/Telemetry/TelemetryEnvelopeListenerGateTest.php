@@ -74,11 +74,7 @@ function telemetryGateSession(
         execution: InferenceExecution::fromRequest($request),
         driver: new FakeInferenceDriver(
             responses: [
-                new InferenceResponse(
-                    content: 'OK',
-                    finishReason: 'stop',
-                    usage: new InferenceUsage(inputTokens: 5, outputTokens: 2),
-                ),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 5, outputTokens: 2)),
             ],
         ),
         events: $events,
@@ -112,7 +108,7 @@ it('builds no telemetry envelope when no lifecycle event has listeners', functio
 
     $response = telemetryGateSession($events, telemetryProbeRequest())->response();
 
-    expect($response->content())->toBe('OK')
+    expect($response->message()->content()->toString())->toBe('OK')
         ->and($events->dispatched)->toBeEmpty();
 });
 
@@ -145,7 +141,9 @@ it('carries the telemetry envelope when a listener is registered', function () {
         // The conversation IS serialised here -- that is the point of the fail-open half
         // of the gate. (Per-message id/createdAt are not asserted; they vary per run.)
         ->and($seen[0]['io']['input'][0]['role'] ?? null)->toBe('user')
-        ->and($seen[0]['io']['input'][0]['content'] ?? null)->toBe('hello');
+        ->and($seen[0]['io']['input'][0]['parts'] ?? null)->toBe([
+            ['type' => 'text', 'text' => 'hello'],
+        ]);
 });
 
 it('gates the failure path, which also runs error redaction', function () {

@@ -10,8 +10,8 @@ use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 it('throws on second full-pass iteration', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceDelta(contentDelta: '}', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '}'), finishReason: 'stop'),
         ]],
     );
 

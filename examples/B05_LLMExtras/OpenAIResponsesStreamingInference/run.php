@@ -32,13 +32,13 @@ $stream = Inference::using('openai-responses')
     ->withOptions(['max_output_tokens' => 256])
     ->withStreaming()
     ->stream()
-    ->onDelta(fn($delta) => print($delta->contentDelta));
+    ->onDelta(fn($delta) => print($delta->messageChunks->textDelta()));
 
 $assembled = '';
 $deltaCount = 0;
 
 foreach ($stream->deltas() as $delta) {
-    $contentDelta = $delta->contentDelta;
+    $contentDelta = $delta->messageChunks->textDelta();
     if ($contentDelta === '') {
         continue;
     }
@@ -48,14 +48,14 @@ foreach ($stream->deltas() as $delta) {
 
 $final = $stream->final();
 assert($final !== null, 'Expected a final response');
-$finalContent = $final->content();
+$finalContent = $final->message()->content()->toString();
 
 echo "\nFinal response:\n{$finalContent}\n";
 
 assert($deltaCount > 0, 'Expected at least one streamed delta');
 assert($assembled !== '', 'Expected non-empty assembled content');
 assert(Str::contains($assembled, $expectedPhrase, false), 'Expected phrase in streamed content');
-assert(Str::contains($final->content(), $expectedPhrase, false), 'Expected phrase in final content');
+assert(Str::contains($final->message()->content()->toString(), $expectedPhrase, false), 'Expected phrase in final content');
 assert(trim($assembled) === trim($finalContent), 'Expected assembled content to match final content');
 ?>
 ```

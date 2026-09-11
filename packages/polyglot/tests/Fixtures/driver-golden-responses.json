@@ -586,7 +586,7 @@
         "discriminating": {
             "threw": null,
             "content": "Paris",
-            "reasoningContent": "",
+            "reasoningContent": "Recalled the capital of France.",
             "finishReason": "tool_calls",
             "toolCalls": [
                 {
@@ -662,7 +662,7 @@
         "discriminating": {
             "threw": null,
             "content": "Paris",
-            "reasoningContent": "",
+            "reasoningContent": "Recalled the capital of France.",
             "finishReason": "tool_calls",
             "toolCalls": [
                 {
@@ -868,7 +868,7 @@
         "discriminating": {
             "threw": null,
             "content": "Paris",
-            "reasoningContent": "",
+            "reasoningContent": "Recalled the capital of France.",
             "finishReason": "tool_calls",
             "toolCalls": [
                 {

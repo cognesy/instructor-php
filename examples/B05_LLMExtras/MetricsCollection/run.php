@@ -155,7 +155,7 @@ $stream = Inference::fromRuntime($runtime)
 echo "USER: {$prompt}\n";
 echo "ASSISTANT: ";
 foreach ($stream as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 echo "\n\n";
 

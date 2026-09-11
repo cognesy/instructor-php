@@ -50,3 +50,21 @@ test('uses a plain PHP example without materializing a temporary script', functi
         @unlink($source);
     }
 });
+
+test('materializes a fenced PHP example with CRLF line endings', function (): void {
+    $directory = sys_get_temp_dir().'/instructor-hub-example-'.bin2hex(random_bytes(4));
+    mkdir($directory);
+    $source = $directory.'/run.php';
+    $script = null;
+    file_put_contents($source, "---\r\ntitle: Example\r\n---\r\n\r\n```php\r\n<?php echo 'crlf';\r\n```\r\n");
+
+    try {
+        $script = ExampleScript::fromRunPath($source);
+
+        expect(trim((string) shell_exec('php '.escapeshellarg($script->path))))->toBe('crlf');
+    } finally {
+        $script?->cleanup();
+        @unlink($source);
+        @rmdir($directory);
+    }
+});

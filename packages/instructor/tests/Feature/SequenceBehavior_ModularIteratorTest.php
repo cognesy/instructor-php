@@ -24,13 +24,13 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
     // Item 3: Built across chunks 3-4
     $chunks = [
         // Chunk 1: Start of sequence, partial first item (name only)
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Alice"')),
         // Chunk 2: Complete first item, start second item (name only)
-        new PartialInferenceDelta(contentDelta: ',"age":25},{"name":"Bob"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":25},{"name":"Bob"')),
         // Chunk 3: Complete second item, start third item (name only)
-        new PartialInferenceDelta(contentDelta: ',"age":30},{"name":"Carol"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30},{"name":"Carol"')),
         // Chunk 4: Complete third item and close sequence
-        new PartialInferenceDelta(contentDelta: ',"age":35}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":35}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
@@ -79,10 +79,10 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
 it('[modular] sequence() yields single update per COMPLETED sequence item only', function () {
     // Same chunks as previous test - items built across multiple chunks
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice"'),
-        new PartialInferenceDelta(contentDelta: ',"age":25},{"name":"Bob"'),
-        new PartialInferenceDelta(contentDelta: ',"age":30},{"name":"Carol"'),
-        new PartialInferenceDelta(contentDelta: ',"age":35}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Alice"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":25},{"name":"Bob"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30},{"name":"Carol"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":35}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
@@ -116,11 +116,11 @@ it('[modular] sequence() yields single update per COMPLETED sequence item only',
 it('[modular] sequence() does not yield incomplete items even if many chunks arrive', function () {
     // Extreme case: Many chunks for a single item, then another item starts
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":[{"na'),
-        new PartialInferenceDelta(contentDelta: 'me":"Da'),
-        new PartialInferenceDelta(contentDelta: 've","a'),
-        new PartialInferenceDelta(contentDelta: 'ge":40}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Eve","age":45}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"na')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'me":"Da')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 've","a')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'ge":40}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Eve","age":45}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
@@ -148,12 +148,12 @@ it('[modular] sequence() does not yield incomplete items even if many chunks arr
 it('[modular] partials() yields MORE updates than sequence() for same stream', function () {
     // Realistic scenario: LLM streams JSON with varying chunk sizes
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":['),
-        new PartialInferenceDelta(contentDelta: '{"name":"John",'),
-        new PartialInferenceDelta(contentDelta: '"age":28},'),
-        new PartialInferenceDelta(contentDelta: '{"name":"Jane"'),
-        new PartialInferenceDelta(contentDelta: ',"age":32}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Jake","age":29}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"John",')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '"age":28},')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Jane"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":32}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Jake","age":29}]}'), finishReason: 'stop'),
     ];
 
     // Test partials()

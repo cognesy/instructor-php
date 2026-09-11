@@ -21,6 +21,7 @@ require "examples/boot.php";
 
 use Cognesy\Events\Event;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
@@ -70,8 +71,12 @@ My name is Jason. I am is 25 years old. I am developer.
 My phone number is +1 123 34 45 and social security number is 123-45-6789
 TEXT;
 
+$validationFailureCount = 0;
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using("openai"))
     ->withMaxRetries(2)
+    ->onEvent(ResponseValidationFailed::class, function(Event $event) use (&$validationFailureCount) {
+        $validationFailureCount++;
+    })
     ->wiretap(fn(Event $e) => $e->print()); // let's check the internals of Instructor processing
 
 $user = new StructuredOutput($runtime)
@@ -80,6 +85,12 @@ $user = new StructuredOutput($runtime)
 
 dump($user);
 
-assert(!Str::contains(implode("\n", $user->details), "123-45-6789"));
+$details = implode("\n", $user->details);
+assert($validationFailureCount >= 1);
+assert($user->name === 'Jason');
+assert(!Str::contains($details, '+1 123 34 45'));
+assert(!Str::contains($details, '123-45-6789'));
+assert(Str::contains($details, '25'));
+assert(Str::contains(strtolower($details), 'developer'));
 ?>
 ```

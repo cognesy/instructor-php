@@ -42,7 +42,7 @@ try {
             messages: Messages::fromString('Answer in one sentence: what is the capital of France?'),
             options: ['max_tokens' => 48],
         )
-        ->get();
+        ->get()->content()->toString();
 
     $entries = ExampleEventLog::read($logPath);
 } finally {

@@ -24,7 +24,7 @@ it('dispatches StructuredOutputResponseGenerated with normalized payload for syn
 
     $pending = (new StructuredOutput(makeStructuredRuntime(
         driver: new FakeInferenceDriver([
-            new InferenceResponse(content: '{"name":"Ava","age":34}', finishReason: 'stop'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ava","age":34}'), finishReason: 'stop'),
         ]),
         events: $events,
         outputMode: OutputMode::Json,

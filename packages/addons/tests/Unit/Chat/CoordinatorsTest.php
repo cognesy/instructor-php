@@ -27,7 +27,7 @@ it('LLMBasedCoordinator selects participant by LLM response', function () {
     $state = new ChatState();
 
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"participantName": "assistant", "reason": "Assistant should respond"}'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"participantName": "assistant", "reason": "Assistant should respond"}')),
     ]);
     $structuredOutput = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(

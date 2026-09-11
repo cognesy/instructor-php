@@ -16,7 +16,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 
-$text = Inference::using('openai')
+$message = Inference::using('openai')
     ->withModel('gpt-5.6')
     ->withMessages('Check whether this argument is logically sound.')
     ->withReasoning(
@@ -57,20 +57,22 @@ Capabilities are resolved for the model and protocol together. Unknown model
 IDs fail closed for explicit reasoning selections; Polyglot does not infer
 support from a provider name or a model-name substring.
 
-| Bundled route | Curated model family | Portable selection |
+| Bundled route | Exact bundled offering(s) | Portable selection |
 | --- | --- | --- |
-| OpenAI Chat Completions | GPT-5.6 | disabled; low, medium, high, xhigh |
-| OpenAI Responses | GPT-5.6 | disabled; low, medium, high, xhigh, max |
-| Anthropic | Claude 4.6 | modes, budget; low, medium, high, max |
-| DeepSeek | DeepSeek V4 | disabled; low, high, max |
-| Gemini native | Gemini 3 / 2.5 | 3: low/high; 2.5: modes and budget |
-| GLM | GLM-4.7 | disabled, enabled, adaptive |
-| Qwen | Qwen3.8 | disabled, enabled, adaptive, budget; low, medium, xhigh |
-| Cohere | Command A Reasoning | disabled, enabled, adaptive, budget |
-| Mistral | Magistral Medium | disabled; high |
-| Moonshot | Kimi K2.5/K2.6 | disabled, enabled, adaptive |
-| xAI | Grok 4.6 | low, medium, high, xhigh; reasoning is mandatory |
-| OpenRouter | OpenAI GPT-OSS 120B | all selection kinds and named efforts |
+| OpenAI Chat Completions | `openai` / `gpt-5.6` | disabled; low, medium, high, xhigh |
+| OpenAI Responses | `openai-responses` / `gpt-5.6` | disabled; low, medium, high, xhigh, max |
+| Anthropic | `claude-opus-4-6`, `claude-sonnet-4-6` | disabled, adaptive, budget; low, medium, high, max |
+| DeepSeek | `deepseek-v4-flash`, `deepseek-v4-flash-vision-exp`, `deepseek-v4-pro` | disabled; low, high, max |
+| Gemini native | `gemini-2.5-flash-lite` | disabled, adaptive, budget |
+| Gemini native | `gemini-3.1-pro-preview` | low, high; reasoning is mandatory |
+| Gemini OpenAI protocol | `gemini-3.1-pro-preview` | low, high; reasoning is mandatory |
+| GLM | `glm-4.7` | disabled, enabled, adaptive |
+| Qwen | `qwen3.8-max` | disabled, enabled, adaptive, budget; low, medium, xhigh |
+| Cohere | `command-a-reasoning-08-2025` | disabled, enabled, adaptive, budget |
+| Mistral | `magistral-medium-latest` | disabled; high |
+| Moonshot | `kimi-k2.5`, `kimi-k2.6` | disabled, enabled, adaptive |
+| xAI | `grok-4.6` | low, medium, high, xhigh; reasoning is mandatory |
+| OpenRouter | `openai/gpt-oss-120b` | all selection kinds and named efforts |
 
 DeepSeek documents `medium` and `xhigh` as aliases that behave like `high`.
 Polyglot records those as lossy mappings and does not accept them by default;
@@ -78,8 +80,30 @@ callers can select `high` explicitly and retain truthful effective intent.
 
 ## Capability Inspection
 
-Driver capabilities expose a structured `reasoning()` value. It reports
-whether the profile is known, accepted selection kinds, effort mappings,
-budget bounds, provider-default behavior, and visibility of reasoning content
-or token counts. The legacy `supportsReasoningEffort()` accessor remains as a
-derived compatibility projection.
+Inspect reasoning metadata on the exact `(driver, wire model)` profile:
+
+```php
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
+
+$reasoning = ModelCatalog::discover()
+    ->find('qwen', 'qwen3.8-max')
+    ->capabilities
+    ->reasoning;
+
+$reasoning->known;
+$reasoning->selectionKinds->all();
+$reasoning->effortMappings->all();
+$reasoning->budgetRange;
+$reasoning->defaultBehavior;
+$reasoning->reasoningContentVisible;
+$reasoning->reasoningTokensVisible;
+$reasoning->supports(
+    ReasoningSelection::effort(ReasoningEffort::Medium),
+);
+```
+
+A missing exact pair returns an unknown profile, so `known` is `false` and
+explicit reasoning selections fail preflight instead of inheriting facts from
+a provider or similarly named model.

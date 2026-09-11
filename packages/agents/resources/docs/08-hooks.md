@@ -332,11 +332,13 @@ state change for later lifecycle phases or subsequent steps.
 ```php
 $hook = new CallableHook(function (HookContext $ctx): HookContext {
     $response = $ctx->inferenceResponse();
-    if ($response === null || $response->content() !== '') {
+    if ($response === null || !$response->message()->content()->isEmpty()) {
         return $ctx;
     }
 
-    return $ctx->withInferenceResponse($response->withContent('No content returned.'));
+    return $ctx->withInferenceResponse($response->withMessage(
+        $response->message()->withContent('No content returned.'),
+    ));
 });
 ```
 

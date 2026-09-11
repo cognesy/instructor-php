@@ -4,5 +4,3 @@ apiKey: '${DEEPSEEK_API_KEY}'
 endpoint: /chat/completions
 model: deepseek-v4-pro
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 384000

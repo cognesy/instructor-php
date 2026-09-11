@@ -71,7 +71,7 @@ describe('StructuredPromptPlanBuilder', function () {
 
     it('keeps retry turns in live messages only', function () {
         $execution = makeStructuredPromptExecution()->withFailedAttempt(
-            inferenceResponse: new InferenceResponse(content: '{"name": 1}'),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name": 1}')),
             errors: ['Field `name` must be a string.'],
         );
 

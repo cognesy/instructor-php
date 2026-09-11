@@ -7,7 +7,9 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Tell\Adapter\Console\Command\AuthCommand;
 use Cognesy\Tell\Adapter\Console\Command\DescribeCommand;
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+use Cognesy\Tell\Capability\Secrets\Standard\StandardTellSecretResolver;
 use Cognesy\Tell\Capability\Secrets\Standard\TellCredentialStore;
+use Cognesy\Tell\Core\Paths\TellPaths;
 use HelgeSverre\Toon\Toon;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -79,7 +81,10 @@ it('reports safe credential provenance in deterministic precedence order', funct
     $variable = 'TELL_LAYERED_TEST_API_KEY';
     $original = getenv($variable);
     tellTestCredentials($factory)->set($variable, 'tell-value');
-    file_put_contents($workspace . '/.env', $variable . '="workspace-value"' . "\n");
+    $nested = $workspace . '/nested/project';
+    mkdir($workspace . '/.tell', 0700, true);
+    mkdir($nested, 0755, true);
+    file_put_contents($workspace . '/.tell/.env', $variable . '="workspace-value"' . "\n");
     putenv($variable . '=process-value');
 
     try {
@@ -88,7 +93,7 @@ it('reports safe credential provenance in deterministic precedence order', funct
             'action' => 'status',
             'provider' => 'layered-test',
             '--variable' => $variable,
-            '--dir' => $workspace,
+            '--dir' => $nested,
             '--json' => true,
         ]);
         $process = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -98,17 +103,17 @@ it('reports safe credential provenance in deterministic precedence order', funct
             'action' => 'status',
             'provider' => 'layered-test',
             '--variable' => $variable,
-            '--dir' => $workspace,
+            '--dir' => $nested,
             '--json' => true,
         ]);
         $workspaceSource = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-        unlink($workspace . '/.env');
+        unlink($workspace . '/.tell/.env');
         $tester->execute([
             'action' => 'status',
             'provider' => 'layered-test',
             '--variable' => $variable,
-            '--dir' => $workspace,
+            '--dir' => $nested,
             '--json' => true,
         ]);
         $tell = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
@@ -126,6 +131,21 @@ it('reports safe credential provenance in deterministic precedence order', funct
             default => putenv($variable . '=' . $original),
         };
     }
+});
+
+it('does not misclassify the user profile dotenv while walking workspace ancestors', function (): void {
+    $factory = tellTestFactory(credentials: []);
+    $root = tellLastTemporaryRoot();
+    $paths = new TellPaths($factory->paths()->packageAgents, $root . '/.tell');
+    $nested = $root . '/nested/project';
+    $variable = 'TELL_USER_PROFILE_TEST_API_KEY';
+    mkdir($nested, 0755, true);
+    (new TellCredentialStore($paths))->set($variable, 'user-value');
+
+    $resolved = (new StandardTellSecretResolver($paths, $nested))->resolve($variable);
+
+    expect($resolved?->source)->toBe('tell-credentials')
+        ->and($resolved?->value())->toBe('user-value');
 });
 
 it('requires explicit stdin and removes only Tell-owned credentials', function (): void {

@@ -101,7 +101,7 @@ function captureValidationEvents(CanValidateObject $objectValidator): array
     );
 
     try {
-        $processor->processInferenceResponse($execution, new InferenceResponse(content: '{"name":"Ann"}'));
+        $processor->processInferenceResponse($execution, new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ann"}')));
     } catch (Throwable) {
         // A rejected response is one of the cases under test; the events are what matter.
     }

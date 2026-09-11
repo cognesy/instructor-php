@@ -30,13 +30,7 @@ it('continues a named session with its prior messages in the next compiled reque
     (new CommandTester($command))->execute(['prompt' => 'second turn', '--session' => 's1', '--dir' => $project]);
 
     $sessionRef = new SessionRef(SessionId::from('s1'));
-    $secondRequest = array_map(
-        static fn (array $message): array => [
-            'role' => $message['role'],
-            'content' => $message['content'],
-        ],
-        $recorder->requests[1],
-    );
+    $secondRequest = $recorder->textProjection(1);
     expect((new FilesystemArena($workspace))->readRef($sessionRef->refName())->head)->not->toBeNull()
         ->and($recorder->requests)->toHaveCount(2)
         ->and($secondRequest)->toContain(['role' => 'user', 'content' => 'first turn'])

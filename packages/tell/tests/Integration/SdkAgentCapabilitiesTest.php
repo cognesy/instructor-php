@@ -29,7 +29,8 @@ it('discovers connection metadata and invokes one direct public SDK tool without
 
     expect($catalogue['connections'])->not->toBeEmpty()
         ->and($catalogue['errors'])->toBeArray()
-        ->and($models[0]['connection'])->toBe('openai')
+        ->and($models[0]['provider'])->toBe('openai')
+        ->and($models[0]['connections'])->toContain('openai')
         ->and($result->success)->toBeTrue()
         ->and($result->data['text'])->toContain('direct evidence')
         ->and($result->execution())->toBe(['mode' => 'direct', 'inference' => false, 'durable' => false])

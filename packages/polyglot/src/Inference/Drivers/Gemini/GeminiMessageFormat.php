@@ -8,9 +8,9 @@ use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
+use Cognesy\Polyglot\Inference\Data\ReplayEnvelope;
 use Cognesy\Polyglot\Inference\Drivers\MessageMapper;
 use Cognesy\Utils\Str;
 
@@ -33,11 +33,62 @@ class GeminiMessageFormat implements CanMapMessages
 
     private function mapMessage(Message $message): array
     {
-        return match ($message->type()) {
-            MessageType::AssistantToolCalls => $this->toNativeToolCall($message),
-            MessageType::ToolResult => $this->toNativeToolResult($message),
+        return match (true) {
+            $message->isAssistant() => $this->toNativeAssistantMessage($message),
+            $message->type() === MessageType::ToolResult => $this->toNativeToolResult($message),
             default => $this->toNativeTextMessage($message),
         };
+    }
+
+    private function toNativeAssistantMessage(Message $message): array
+    {
+        $replay = ReplayEnvelope::fromMessage($message, GeminiReplay::OWNER);
+        $parts = [];
+        foreach ($message->parts() as $position => $part) {
+            $native = $this->assistantPartToNative($part, GeminiReplay::metadata($replay, $position, $part));
+            if ($native !== null) {
+                $parts[] = $native;
+            }
+        }
+        return [
+            'role' => 'model',
+            'parts' => $parts,
+        ];
+    }
+
+    /** @param null|array{thoughtSignature:string} $replay */
+    private function assistantPartToNative(ContentPart $part, ?array $replay): ?array
+    {
+        $native = match (true) {
+            $part->isTextPart() && $part->isEmpty() => null,
+            $part->isTextPart() => ['text' => $part->toString()],
+            $part->isReasoningPart() && $replay !== null => [
+                'text' => $part->reasoningText(),
+                'thought' => true,
+            ],
+            $part->isReasoningPart() => null,
+            $part->isToolCallPart() => $this->toolCallPartToNative($part),
+            default => null,
+        };
+        if ($native === null || $replay === null) {
+            return $native;
+        }
+        $native['thoughtSignature'] = $replay['thoughtSignature'];
+        return $native;
+    }
+
+    private function toolCallPartToNative(ContentPart $part): ?array
+    {
+        $toolCall = $part->toToolCall();
+        if ($toolCall === null) {
+            return null;
+        }
+        return [
+            'functionCall' => [
+                'name' => $toolCall->name(),
+                'args' => $toolCall->arguments(),
+            ],
+        ];
     }
 
     private function toNativeTextMessage(Message $message): array
@@ -45,29 +96,6 @@ class GeminiMessageFormat implements CanMapMessages
         return [
             'role' => $this->mapRole($message->role()->value),
             'parts' => $this->toNativeContentParts($message->content()),
-        ];
-    }
-
-    private function toNativeToolCall(Message $message): array
-    {
-        $parts = match (true) {
-            $message->content()->isEmpty() => [],
-            default => $this->toNativeContentParts($message->content()),
-        };
-
-        return [
-            'role' => 'model',
-            'parts' => [
-                ...$parts,
-                ...$message->toolCalls()->map(
-                    fn (ToolCall $tc) => [
-                        'functionCall' => [
-                            'name' => $tc->name(),
-                            'args' => $tc->arguments(),
-                        ],
-                    ],
-                ),
-            ],
         ];
     }
 
@@ -82,7 +110,7 @@ class GeminiMessageFormat implements CanMapMessages
                     'name' => $toolName,
                     'response' => [
                         'name' => $toolName,
-                        'content' => $message->content()->toString(),
+                        'content' => $message->toolResult()->content(),
                     ],
                 ],
             ]],

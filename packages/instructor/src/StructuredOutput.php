@@ -134,6 +134,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         string $system = '',
         string $prompt = '',
         array $examples = [],
+        ?string $ttl = null,
     ): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withCachedContext(
@@ -142,6 +143,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
                 system: $system,
                 prompt: $prompt,
                 examples: $examples,
+                ttl: $ttl,
             )
         );
         return $copy;

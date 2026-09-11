@@ -3,7 +3,6 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Creation\BundledHttpDrivers;
 use Cognesy\Http\Creation\HttpDriverRegistry;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
@@ -13,7 +12,7 @@ use Cognesy\Http\Data\HttpResponse;
  *
  * Written BEFORE the fromArray()/memoization change and green against the pre-refactor code,
  * so they describe what must NOT change. The assertions that describe the change itself live
- * in BundledHttpDriversMemoTest.
+ * in HttpDriverRegistryMemoTest.
  *
  * This registry had no test of its own at all -- not even an incidental one. It also sits on
  * the HttpClientRuntime path, which every inference runtime construction traverses.
@@ -88,7 +87,7 @@ it('throws a named error for an unregistered driver', function () {
 })->group('driver-registry');
 
 it('resolves every bundled driver name to a real driver', function () {
-    $registry = BundledHttpDrivers::registry();
+    $registry = HttpDriverRegistry::default();
 
     // Order and count pinned: fromArray() is about to stop folding the wither.
     expect($registry->driverNames())->toBe(['curl', 'guzzle', 'symfony']);

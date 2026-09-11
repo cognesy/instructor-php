@@ -73,11 +73,11 @@ it('emits SequenceUpdated events including final sequence item', function () {
     }
 
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Jason","age":25}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Jane","age":18}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"John","age":30}'),
-        new PartialInferenceDelta(contentDelta: ',{"name":"Anna","age":28}'),
-        new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Jason","age":25}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Jane","age":18}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"John","age":30}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',{"name":"Anna","age":28}')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ']}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);

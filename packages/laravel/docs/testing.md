@@ -159,7 +159,7 @@ final class InferenceFakeTest extends TestCase
         )->get();
 
         // Assert
-        $this->assertEquals('The answer is 4.', $response);
+        $this->assertEquals('The answer is 4.', $response->content()->toString());
         $fake->assertCalled();
         $fake->assertCalledWith('What is 2+2?');
     }
@@ -200,9 +200,12 @@ $fake->respondWithSequence([
     'Third response',
 ]);
 
-// Returns responses in order
-$first = Inference::with(...)->get();  // "First response"
-$second = Inference::with(...)->get(); // "Second response"
+// Returns assistant messages in order
+$first = Inference::with(...)->get();
+$second = Inference::with(...)->get();
+
+$first->content()->toString();  // "First response"
+$second->content()->toString(); // "Second response"
 ```
 
 ### Available Assertions

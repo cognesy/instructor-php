@@ -26,10 +26,12 @@ Use a preset for the normal path:
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Messages\Messages;
 
-$text = Inference::using('openai')
+$message = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
     ->withMessages(Messages::fromString('Say hello in one sentence.'))
     ->get();
+
+$text = $message->content()->toString();
 ```
 
 Get parsed JSON:
@@ -127,7 +129,7 @@ $pending = Inference::using('openai')
 ```php
 $pending = $inference->create();
 
-$text = $inference->get();
+$message = $inference->get();
 $response = $inference->response();
 $json = $inference->asJson();
 $data = $inference->asJsonData();
@@ -136,13 +138,53 @@ $toolData = $inference->asToolCallJsonData();
 $stream = $inference->stream();
 
 $isStreamed = $pending->isStreamed();
-$text = $pending->get();
+$message = $pending->get();
 $response = $pending->response();
 $json = $pending->asJson();
 $data = $pending->asJsonData();
 $toolJson = $pending->asToolCallJson();
 $toolData = $pending->asToolCallJsonData();
 $stream = $pending->stream();
+```
+
+## Reasoning, Model Facts, and Pricing
+
+Reasoning is projected from the ordered assistant message:
+
+```php
+$reasoning = $response->message()->reasoningContent();
+
+foreach ($stream->deltas() as $delta) {
+    echo $delta->messageChunks->reasoningDelta();
+}
+```
+
+Read model facts using one exact `(driver, wire model)` key. An absent key
+returns unknown facts; the catalog does not infer from the model name:
+
+```php
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
+
+$profile = ModelCatalog::discover()->find('qwen', 'qwen3.8-max');
+$profile->limits->contextWindow;
+$profile->capabilities->tools;
+$profile->capabilities->reasoning;
+```
+
+Pricing is caller-owned and is not stored in model catalog records:
+
+```php
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
+
+$cost = (new FlatRateCostCalculator())->calculate(
+    usage: $response->usage(),
+    // Illustrative USD rates per 1M tokens; supply your current sourced rates.
+    pricing: new InferencePricing(
+        inputPerMToken: 0.20,
+        outputPerMToken: 0.80,
+    ),
+);
 ```
 
 ## Streaming (`InferenceStream`)
@@ -157,10 +199,10 @@ foreach ($stream->deltas() as $delta) {
     // PartialInferenceDelta
 }
 
-$mapped = $stream->map(fn($delta) => $delta->contentDelta);
-$filtered = $stream->filter(fn($delta) => $delta->contentDelta !== '');
+$mapped = $stream->map(fn($delta) => $delta->messageChunks->textDelta());
+$filtered = $stream->filter(fn($delta) => $delta->messageChunks->textDelta() !== '');
 $total = $stream->reduce(
-    fn($carry, $delta) => $carry + strlen($delta->contentDelta),
+    fn($carry, $delta) => $carry + strlen($delta->messageChunks->textDelta()),
     0,
 );
 
@@ -194,9 +236,9 @@ $provider = LLMProvider::using('openai')
 Driver registry helpers:
 
 ```php
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
-$drivers = BundledInferenceDrivers::registry()
+$drivers = InferenceDriverRegistry::default()
     ->withDriver('custom', $driverFactory);
 
 $runtime = InferenceRuntime::fromConfig(

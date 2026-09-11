@@ -12,6 +12,7 @@ final readonly class TellPaths
     public string $configFile;
     public string $credentials;
     public string $connections;
+    public string $models;
     public string $userAgents;
     public string $runtime;
     public string $sessions;
@@ -26,8 +27,9 @@ final readonly class TellPaths
     ) {
         $this->configDirectory = $this->join($home, 'config');
         $this->configFile = $this->join($this->configDirectory, 'tell.json');
-        $this->credentials = $this->join($this->configDirectory, 'credentials.env');
+        $this->credentials = $this->join($home, '.env');
         $this->connections = $this->join($this->configDirectory, 'connections');
+        $this->models = $this->join($this->configDirectory, 'models.json');
         $this->userAgents = $this->join($this->configDirectory, 'agents');
         $this->runtime = $this->join($home, 'runtime');
         $this->sessions = $this->join($this->runtime, 'sessions');
@@ -53,7 +55,7 @@ final readonly class TellPaths
         };
 
         return new self(
-            packageAgents: dirname(__DIR__, 2) . '/resources/agents',
+            packageAgents: dirname(__DIR__, 3) . '/resources/agents',
             home: $tellHome,
         );
     }
@@ -64,6 +66,7 @@ final readonly class TellPaths
             'home' => $this->home,
             'config' => $this->configFile,
             'connections' => $this->connections,
+            'models' => $this->models,
             'agents' => $this->userAgents,
             'runtime' => $this->runtime,
             'sessions' => $this->sessions,

@@ -16,16 +16,16 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:41:43 GMT"
+                "Fri, 11 Sep 2026 06:46:51 GMT"
             ],
             "content-type": [
                 "application\/json"
             ],
             "content-length": [
-                "1161"
+                "1113"
             ],
             "cf-ray": [
-                "a16eaf66bd4be5d7-WAW"
+                "a394b7b9e9e8ecbf-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "1533"
+                "559"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -78,15 +78,13 @@
                 "1ms"
             ],
             "x-request-id": [
-                "req_81ad0580139c424c8c1455e9249c7e07"
+                "req_00c0de2ef3df4ec891c02132241cd430"
             ],
-            "set-cookie": [
-                "__cf_bm=JHR7MFTwDhhdwdC0_oTzeduXVa.kyZK7Utwbh1wi6Hw-1783341702.1958244-1.0.1.1-gDs.UGZ56q866GdQsMy_DiFh4o9I41g7QWilVCVZUw.pQ1C1ZVrTxWPd94TfRnak5238Jq8L056WHyyvlXVjkyaDdjfVNpfBpPYFHAnU_aTbQkAGG2.iQJSz4OWSlWWz; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:43 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-Dycvm2kKxG06pYJzzj8jXqh03kAcc\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341702,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_LiVIKoD4346zRE7j8HAD3bwd\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"facts\\\":[\\\"Alice puts the book on the table.\\\",\\\"Alice leaves the room.\\\",\\\"Alice would think the book is on the table.\\\"]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 253,\n    \"completion_tokens\": 41,\n    \"total_tokens\": 294,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMpK7IUmgBeciDA11S70qbtKbnyaw\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109211,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_kovYmqFVrg0rswPiHbQ23QC3\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"facts\\\":[\\\"Alice puts the book on the table.\\\",\\\"Alice leaves the room.\\\"]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 253,\n    \"completion_tokens\": 31,\n    \"total_tokens\": 284,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

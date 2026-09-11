@@ -9,7 +9,7 @@ use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('is lazy until response data is accessed and memoizes the finalized raw response', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: 'hello world'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hello world')),
     ]);
 
     $request = (new InferenceRequestBuilder())
@@ -26,10 +26,11 @@ it('is lazy until response data is accessed and memoizes the finalized raw respo
 
     $firstResponse = $pending->response();
     $secondResponse = $pending->response();
-    $text = $pending->get();
+    $message = $pending->get();
 
     expect($driver->responseCalls)->toBe(1);
     expect($firstResponse)->toBe($secondResponse);
-    expect($text)->toBe('hello world');
-    expect($firstResponse->content())->toBe('hello world');
+    expect($message)->toBe($firstResponse->message());
+    expect($message->content()->toString())->toBe('hello world');
+    expect($firstResponse->message()->content()->toString())->toBe('hello world');
 });

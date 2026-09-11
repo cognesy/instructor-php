@@ -64,13 +64,8 @@ describe('Agent with File Tools', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(
-                content: '',
-                toolCalls: new ToolCalls($toolCall),
-            ),
-            new InferenceResponse(
-                content: 'The file contains "Hello World"',
-            ),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('The file contains "Hello World"')),
         ]);
 
         $tools = new Tools(
@@ -102,13 +97,8 @@ describe('Agent with File Tools', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(
-                content: '',
-                toolCalls: new ToolCalls($toolCall),
-            ),
-            new InferenceResponse(
-                content: 'File created successfully',
-            ),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('File created successfully')),
         ]);
 
         $tools = new Tools(
@@ -142,13 +132,8 @@ describe('Agent with File Tools', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(
-                content: '',
-                toolCalls: new ToolCalls($toolCall),
-            ),
-            new InferenceResponse(
-                content: 'File edited successfully',
-            ),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('File edited successfully')),
         ]);
 
         $tools = new Tools(
@@ -192,10 +177,10 @@ describe('Agent with File Tools', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($readCall)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($editCall)),
-            new InferenceResponse(content: 'All operations complete'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($writeCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($readCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($editCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('All operations complete')),
         ]);
 
         $tools = new Tools(

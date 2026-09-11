@@ -201,7 +201,7 @@ it('creates a content-safe extraction failure summary', function () {
     );
 
     $result = $generator->fromInferenceResponse(
-        response: new InferenceResponse(content: '{"name":"Ava"}'),
+        response: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ava"}')),
         responseModel: makeAnyResponseModel(NormalizedPayloadUser::class),
         mode: OutputMode::Json,
     );

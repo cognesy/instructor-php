@@ -127,8 +127,8 @@ $restored = InferenceRequest::fromArray($array);
 ### Consuming Results
 
 ```php
-// Get plain text content
-$text = $pending->get();
+// Get the complete assistant message
+$message = $pending->get();
 
 // Get the full response object
 $response = $pending->response();
@@ -155,23 +155,28 @@ The underlying `InferenceExecutionSession` handles retry logic, event dispatchin
 
 ## InferenceResponse
 
-`InferenceResponse` is a `final readonly` value object that normalizes the provider's result into a consistent shape.
+`InferenceResponse` is a `final readonly` envelope around the provider's complete
+assistant `Message` and inference metadata. The message preserves the provider's block
+order; text, reasoning, and tool calls are projections rather than parallel response fields.
 
 **Namespace:** `Cognesy\Polyglot\Inference\Data\InferenceResponse`
 
 ### Reading the Response
 
 ```php
-$response->content();           // string -- the generated text
-$response->reasoningContent();  // string -- chain-of-thought (if available)
-$response->toolCalls();         // ToolCalls collection
+$message = $response->message(); // Message -- the ordered assistant turn
+$message->parts();               // ContentParts in provider order
+$message->content()->toString(); // generated text projection
+$message->reasoningContent();    // reasoning projection
+$message->toolCalls();            // ToolCalls projection
 $response->usage();             // InferenceUsage object with token counts
 $response->finishReason();      // InferenceFinishReason enum
 $response->responseData();      // HttpResponse -- the raw HTTP response
 $response->isPartial();         // bool -- true for intermediate streaming results
 ```
 
-Predicate methods: `hasContent()`, `hasReasoningContent()`, `hasToolCalls()`, `hasFinishReason()`.
+Message predicates such as `isEmpty()` and `hasToolCalls()` live on `Message`;
+`hasFinishReason()` remains on the response envelope.
 
 ### JSON Extraction
 
@@ -189,17 +194,19 @@ $json = $response->findToolCallJsonData();  // Json object
 
 When a response has a single tool call, `findToolCallJsonData()` returns the arguments of that call. When there are multiple tool calls, it returns an array of all tool call data.
 
-### Reasoning Content Fallback
+### Reasoning Normalization
 
-Some providers embed reasoning in `<think>` tags within the content rather than in a dedicated field. The `withReasoningContentFallbackFromContent()` method handles this:
+Some providers embed reasoning in `<think>` tags within a text field rather than in a
+dedicated block. Response adapters normalize that representation before constructing the
+assistant message:
 
 ```php
-$response = $response->withReasoningContentFallbackFromContent();
-// Now $response->reasoningContent() contains the extracted reasoning
-// And $response->content() has the <think> tags removed
+$message = $response->message();
+$message->reasoningContent();    // extracted reasoning
+$message->content()->toString(); // visible text without the tags
 ```
 
-This is a no-op if the response already has dedicated reasoning content or if no `<think>` tags are present.
+Dedicated reasoning blocks remain ordered and retain provider replay metadata.
 
 ### Finish Reason
 
@@ -223,7 +230,8 @@ $restored = InferenceResponse::fromArray($array);
 
 ## PartialInferenceDelta
 
-During streaming, the driver emits `PartialInferenceDelta` objects for each SSE event. Each delta carries only the incremental change from that event.
+During streaming, the driver emits `PartialInferenceDelta` objects for each SSE event.
+Each delta carries ordered assistant-message block changes from that event.
 
 **Namespace:** `Cognesy\Polyglot\Inference\Data\PartialInferenceDelta`
 
@@ -231,18 +239,17 @@ During streaming, the driver emits `PartialInferenceDelta` objects for each SSE 
 
 | Field | Type | Description |
 |---|---|---|
-| `contentDelta` | `string` | Incremental text content |
-| `reasoningContentDelta` | `string` | Incremental reasoning content |
-| `toolId` | `ToolCallId\|string\|null` | Tool call identifier |
-| `toolName` | `string` | Tool name (first delta of a tool call) |
-| `toolArgs` | `string` | Incremental tool call arguments |
+| `messageChunks` | `AssistantMessageChunks` | Ordered block starts, text/reasoning/tool deltas, and completed blocks |
 | `finishReason` | `string` | Set on the final delta |
 | `usage` | `?InferenceUsage` | Token usage (typically on the last delta) |
 | `usageIsCumulative` | `bool` | Whether usage represents total (true) or incremental (false) |
 | `responseData` | `?HttpResponse` | Raw response data for this event |
-| `value` | `mixed` | Optional provider-specific value |
+| `value` | `mixed` | Optional higher-level value |
+| `replay` | `?ReplayEnvelope` | Provider replay state carried by this event |
 
-The `InferenceStream` accumulates these deltas internally using `InferenceStreamState` and assembles the final `InferenceResponse` when the stream completes. A `VisibilityTracker` ensures that only deltas with meaningful content changes are yielded to the caller.
+The `InferenceStream` applies the chunks to a shared assistant-message assembler and
+constructs the same `Message` shape produced by synchronous adapters. Stable block
+indices preserve interleaving and allow replay metadata to round-trip.
 
 
 ## InferenceUsage
@@ -272,7 +279,9 @@ $usage->toString(); // "Tokens: 150 (i:100 o:40 c:0 r:10)"
 
 ### Cost Calculation
 
-Cost is calculated externally using a calculator rather than through methods on the usage object. Pricing is specified in USD per 1 million tokens:
+Cost is calculated externally using a calculator rather than through methods
+on the usage object. The caller supplies current pricing in USD per 1 million
+tokens; model catalog records do not contain pricing:
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferencePricing;

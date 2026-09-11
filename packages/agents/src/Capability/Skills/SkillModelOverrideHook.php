@@ -31,20 +31,7 @@ final readonly class SkillModelOverrideHook implements HookInterface
 
         // Create a new config based on existing with overridden model
         $newConfig = $currentConfig !== null
-            ? new LLMConfig(
-                apiUrl: $currentConfig->apiUrl,
-                apiKey: $currentConfig->apiKey,
-                endpoint: $currentConfig->endpoint,
-                queryParams: $currentConfig->queryParams,
-                metadata: $currentConfig->metadata,
-                model: $model,
-                maxTokens: $currentConfig->maxTokens,
-                contextLength: $currentConfig->contextLength,
-                maxOutputLength: $currentConfig->maxOutputLength,
-                driver: $currentConfig->driver,
-                options: $currentConfig->options,
-                pricing: $currentConfig->pricing,
-            )
+            ? $currentConfig->withOverrides(['model' => $model])
             : new LLMConfig(model: $model);
 
         return $context->withState($context->state()->withLLMConfig($newConfig));

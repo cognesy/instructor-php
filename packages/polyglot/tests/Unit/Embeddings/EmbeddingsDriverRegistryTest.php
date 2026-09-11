@@ -4,7 +4,6 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 use Cognesy\Polyglot\Tests\Support\FakeEmbeddingsDriver;
 
@@ -81,7 +80,7 @@ it('throws a named error for an unregistered driver', function () {
 })->group('driver-registry');
 
 it('resolves every bundled driver name to a real driver', function () {
-    $registry = BundledEmbeddingsDrivers::registry();
+    $registry = EmbeddingsDriverRegistry::default();
     $names = $registry->driverNames();
 
     // Order and count are both pinned: fromArray() is about to stop folding the wither, and a
@@ -103,7 +102,7 @@ it('resolves every bundled driver name to a real driver', function () {
 it('keeps the three names that share one OpenAI driver', function () {
     // mistral, openai and ollama all map to the same class. Three names, one behaviour --
     // the entries most likely to be lost when a table is rebuilt by hand.
-    $registry = BundledEmbeddingsDrivers::registry();
+    $registry = EmbeddingsDriverRegistry::default();
     $httpClient = (new HttpClientBuilder())->create();
     $events = new EventDispatcher();
 

@@ -3,20 +3,22 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Logging\EventLog;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Creation\HttpClientDefaults;
-use Cognesy\Http\Contracts\CanSendHttpRequests;
+use Cognesy\Logging\EventLog;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsDrivers;
 use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsDriverBuilt;
 use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
+use InvalidArgumentException;
+use Override;
 
 final class EmbeddingsRuntime implements CanCreateEmbeddings
 {
@@ -25,10 +27,10 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         private readonly CanHandleEvents $events,
     ) {}
 
-    #[\Override]
+    #[Override]
     public function create(EmbeddingsRequest $request): PendingEmbeddings {
         if (!$request->hasInputs()) {
-            throw new \InvalidArgumentException('Input data is required');
+            throw new InvalidArgumentException('Input data is required');
         }
 
         return new PendingEmbeddings(
@@ -111,7 +113,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     ): CanHandleVectorization {
         $driverName = $config->driver;
         if (empty($driverName)) {
-            throw new \InvalidArgumentException('Provider type not specified in the configuration.');
+            throw new InvalidArgumentException('Provider type not specified in the configuration.');
         }
 
         $driver = self::resolveDrivers($drivers)->makeDriver($driverName, $config, $httpClient, $events);
@@ -126,7 +128,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     }
 
     private static function resolveDrivers(?CanProvideEmbeddingsDrivers $drivers): CanProvideEmbeddingsDrivers {
-        return $drivers ?? BundledEmbeddingsDrivers::registry();
+        return $drivers ?? EmbeddingsDriverRegistry::default();
     }
 
     private static function resolveHttpClient(

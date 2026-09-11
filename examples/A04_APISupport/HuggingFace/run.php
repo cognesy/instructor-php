@@ -41,7 +41,7 @@ class User {
 
 $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromProvider(LLMProvider::using('huggingface'))
-        ->withOutputMode(OutputMode::Json)
+        ->withOutputMode(OutputMode::JsonSchema)
         ->withMaxRetries(2)
 );
 
@@ -58,7 +58,7 @@ $user = $structuredOutput
                       'output' => ['firstName' => 'John', 'role' => 'admin', 'hobbies' => ['surfing'], 'username' => 'jx90', 'age' => 19],
                   ]],
         //model: 'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
-        options: ['temperature' => 0.5],
+        options: ['temperature' => 0.0],
     )->get();
 
 print("Completed response model:\n\n");
@@ -71,7 +71,9 @@ assert(isset($user->age));
 assert(isset($user->hobbies));
 assert(isset($user->username));
 assert(is_array($user->hobbies));
-assert(count($user->hobbies) > 0);
+assert(count($user->hobbies) === 2);
+assert(in_array('playing football', $user->hobbies, true));
+assert(in_array('reading books', $user->hobbies, true));
 assert($user->role === UserType::Admin);
 assert($user->age === 25);
 assert($user->firstName === 'Jason');

@@ -10,13 +10,13 @@ it('tracks content and value changes for json emissions', function () {
     $fingerprint = EmissionFingerprint::fresh();
 
     $first = stateWith(
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
     );
     $sameSnapshot = stateWith(
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
     );
     $valued = stateWith(
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
         (object) ['name' => 'Ann'],
     );
 
@@ -32,15 +32,15 @@ it('tracks tool snapshot changes independently in tools mode', function () {
     $fingerprint = EmissionFingerprint::fresh();
 
     $first = stateWith(
-        new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: '{"name":"Ann"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract_data', '{"name":"Ann"')),
     );
     $second = stateWith(
-        new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: '{"name":"Ann"'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract_data', '{"name":"Ann"')),
         null,
-        new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: ',"age":30}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract_data', ',"age":30}')),
     );
     $sameSnapshot = stateWith(
-        new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: '{"name":"Ann","age":30}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract_data', '{"name":"Ann","age":30}')),
     );
 
     expect($fingerprint->hasChanged(EmissionSnapshot::fromState($first), OutputMode::Tools))->toBeTrue();

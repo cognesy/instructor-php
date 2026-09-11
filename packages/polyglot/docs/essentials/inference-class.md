@@ -135,8 +135,8 @@ $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('What is PHP?'))
     ->withModel('gpt-4.1-nano');
 
-// Plain text content
-$text = $inference->get();
+// Complete assistant message
+$message = $inference->get();
 
 // Full InferenceResponse object (with usage, finish reason, etc.)
 $response = $inference->response();
@@ -164,7 +164,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $partial) {
-    echo $partial->contentDelta;
+    echo $partial->messageChunks->textDelta();
 }
 ```
 
@@ -181,7 +181,7 @@ $pending = Inference::using('openai')
 
 // Nothing has been sent to the provider yet.
 // Execution happens here:
-$text = $pending->get();
+$message = $pending->get();
 ```
 
 `PendingInference` exposes the same response methods as `Inference`: `get()`,

@@ -42,23 +42,23 @@ it('does not pre-buffer SSE stream before yielding first partial', function () {
 
     $iter = $stream->deltas();
     expect($iter->valid())->toBeTrue();
-    expect($iter->current()->contentDelta)->toBe('Hel');
+    expect($iter->current()->messageChunks->textDelta())->toBe('Hel');
 
     // If stream is pre-buffered, the gated source would already throw above.
     $allowThirdChunk = true;
 
     $iter->next();
     expect($iter->valid())->toBeTrue();
-    expect($iter->current()->contentDelta)->toBe('lo');
+    expect($iter->current()->messageChunks->textDelta())->toBe('lo');
 
     $iter->next();
     expect($iter->valid())->toBeTrue();
-    expect($iter->current()->contentDelta)->toBe('!');
+    expect($iter->current()->messageChunks->textDelta())->toBe('!');
 
     $iter->next();
     expect($iter->valid())->toBeFalse();
 
     $final = $stream->final();
     expect($final)->not()->toBeNull();
-    expect($final->content())->toBe('Hello!');
+    expect($final->message()->content()->toString())->toBe('Hello!');
 });

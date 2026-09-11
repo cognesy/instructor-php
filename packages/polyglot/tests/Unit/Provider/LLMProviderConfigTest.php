@@ -4,7 +4,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 it('lists bundled preset names without resolving their environment templates', function () {
@@ -25,7 +25,7 @@ it('creates driver from explicit config and resolves correct class', function ()
 
     $provider = LLMProvider::new()->withLLMConfig($config);
     $httpClient = (new HttpClientBuilder())->create();
-    $driver = BundledInferenceDrivers::registry()->makeDriver(
+    $driver = InferenceDriverRegistry::default()->makeDriver(
         'openai',
         $provider->resolveConfig(),
         $httpClient,

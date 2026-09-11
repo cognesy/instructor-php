@@ -25,6 +25,7 @@ import 'just/release.just'
 import 'just/git.just'
 import 'just/cli.just'
 import 'just/examples.just'
+import 'just/models.just'
 
 # Pre-push check: fast tests + full QA (the preferred local flow).
 [group('workflow'), doc('Fast tests + full QA — run before pushing')]

@@ -4,6 +4,7 @@ use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\InferenceCaseParams;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
 describe('InferenceCases capability filtering', function () {
 
@@ -158,6 +159,44 @@ describe('InferenceCases capability filtering', function () {
         expect($cases[0]->mode)->toBe(OutputMode::Text);
         expect($cases[0]->isStreamed)->toBeFalse();
         expect($cases[0]->llmConfig)->toBeInstanceOf(LLMConfig::class);
+    });
+
+    it('filters from the exact configured offering without constructing a driver', function () {
+        $catalog = ModelCatalog::fromArray([
+            'version' => 'test',
+            'models' => [[
+                'driver' => 'openai',
+                'model' => 'restricted-model',
+                'status' => 'supported',
+                'capabilities' => ['tools' => 'unsupported'],
+            ]],
+        ]);
+        $cases = iterator_to_array(InferenceCases::only(
+            connections: ['custom'],
+            modes: [OutputMode::Tools, OutputMode::Text],
+            stream: [false],
+            connectionConfigs: [
+                'custom' => ['driver' => 'openai', 'model' => 'restricted-model'],
+            ],
+            models: $catalog,
+        ), false);
+
+        expect(array_map(static fn ($case) => $case->mode, $cases))
+            ->toBe([OutputMode::Text]);
+    });
+
+    it('keeps unknown exact offerings eligible instead of guessing from the driver', function () {
+        $cases = iterator_to_array(InferenceCases::only(
+            connections: ['custom'],
+            modes: [OutputMode::Tools, OutputMode::JsonSchema],
+            stream: [true],
+            connectionConfigs: [
+                'custom' => ['driver' => 'openai', 'model' => 'private-model'],
+            ],
+            models: new ModelCatalog(version: 'test'),
+        ), false);
+
+        expect($cases)->toHaveCount(2);
     });
 
 });

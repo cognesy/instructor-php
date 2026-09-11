@@ -13,6 +13,7 @@ use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Messages\ToolCalls;
@@ -48,7 +49,7 @@ function makeTestLoop(LLMProvider $llm, Tools $tools, int $maxIterations): TestA
 describe('Agent Loop', function () {
     it('completes a simple interaction', function () {
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: 'Hello! How can I help you?'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Hello! How can I help you?')),
         ]);
 
         $llm = LLMProvider::new()->withDriver($driver);
@@ -75,8 +76,8 @@ describe('Agent Loop', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'Tool executed successfully.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Tool executed successfully.')),
         ]);
 
         $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
@@ -106,8 +107,8 @@ describe('Agent Loop', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'Tool executed successfully.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Tool executed successfully.')),
         ]);
 
         $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
@@ -128,7 +129,7 @@ describe('Agent Loop', function () {
         expect($steps[1]->stepType())->toBe(AgentStepType::FinalResponse);
     });
 
-    it('does not append tool args content when tool calls are present', function () {
+    it('preserves provider text exactly when tool calls are present', function () {
         $toolCall = ToolCall::fromArray([
             'id' => 'call_1',
             'name' => 'test_tool',
@@ -136,8 +137,8 @@ describe('Agent Loop', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '{"arg":"val"}', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'Tool executed successfully.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"arg":"val"}')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Tool executed successfully.')),
         ]);
 
         $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
@@ -152,14 +153,14 @@ describe('Agent Loop', function () {
 
         $finalState = $agent->execute($state);
         $step = $finalState->steps()->stepAt(0);
-        $messages = $step->outputMessages()->toArray();
+        $messages = $step->outputMessages()->all();
         $contents = array_map(
-            static fn(array $message): string => (string) ($message['content'] ?? ''),
+            static fn(Message $message): string => $message->content()->toString(),
             $messages,
         );
 
         expect(count($messages))->toBe(2);
-        expect($contents)->not->toContain('{"arg":"val"}');
+        expect($contents)->toContain('{"arg":"val"}');
     });
 
     it('appends natural language content when tool calls are present', function () {
@@ -170,8 +171,8 @@ describe('Agent Loop', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: 'Calling tool', toolCalls: new ToolCalls($toolCall)),
-            new InferenceResponse(content: 'Tool executed successfully.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Calling tool')->withToolCalls(new ToolCalls($toolCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Tool executed successfully.')),
         ]);
 
         $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
@@ -186,20 +187,20 @@ describe('Agent Loop', function () {
 
         $finalState = $agent->execute($state);
         $step = $finalState->steps()->stepAt(0);
-        $messages = $step->outputMessages()->toArray();
+        $messages = $step->outputMessages()->all();
 
-        expect(count($messages))->toBe(3);
-        expect($messages[2]['content'] ?? null)->toBe('Calling tool');
+        expect(count($messages))->toBe(2);
+        expect($messages[0]->content()->toString())->toBe('Calling tool');
     });
 
     it('hydrates state llm config from driver when missing', function () {
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: 'Hydrated'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Hydrated')),
         ]);
 
         $defaultConfig = new LLMConfig(
             model: 'driver-default-model',
-            contextLength: 64000,
+            maxTokens: 2048,
         );
 
         $llm = LLMProvider::new()
@@ -212,12 +213,12 @@ describe('Agent Loop', function () {
 
         expect($finalState->llmConfig())->not->toBeNull()
             ->and($finalState->llmConfig()?->model)->toBe('driver-default-model')
-            ->and($finalState->llmConfig()?->contextLength)->toBe(64000);
+            ->and($finalState->llmConfig()?->maxTokens)->toBe(2048);
     });
 
     it('prefers state llm config over driver defaults', function () {
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: 'Override'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Override')),
         ]);
 
         $driverConfig = new LLMConfig(model: 'driver-model');

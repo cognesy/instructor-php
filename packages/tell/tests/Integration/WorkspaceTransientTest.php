@@ -60,16 +60,8 @@ it('runs transient and durable turns with the same compiled workspace context wh
         '--output' => 'json',
     ]))->toBe(0);
 
-    $messages = static fn (array $request): array => array_map(
-        static fn (array $message): array => [
-            'role' => $message['role'],
-            'content' => $message['content'],
-        ],
-        $request,
-    );
-
     expect($recorder->requests)->toHaveCount(2)
-        ->and($messages($recorder->requests[0]))->toBe($messages($recorder->requests[1]));
+        ->and($recorder->textProjection(0))->toBe($recorder->textProjection(1));
 });
 
 it('reads named canonical workspace session history without changing the arena', function (): void {
@@ -91,13 +83,7 @@ it('reads named canonical workspace session history without changing the arena',
         '--output' => 'json',
     ]))->toBe(0);
 
-    $messages = array_map(
-        static fn (array $message): array => [
-            'role' => $message['role'],
-            'content' => $message['content'],
-        ],
-        $recorder->requests[0],
-    );
+    $messages = $recorder->textProjection(0);
 
     expect($messages)->toContain([
         'role' => 'user',

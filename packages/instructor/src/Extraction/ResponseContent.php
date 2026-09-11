@@ -13,15 +13,15 @@ final class ResponseContent
     {
         return match ($mode) {
             OutputMode::Tools => self::fromToolCalls($response),
-            default => $response->content(),
+            default => $response->message()->content()->toString(),
         };
     }
 
     private static function fromToolCalls(InferenceResponse $response): string
     {
-        $toolCalls = $response->toolCalls();
+        $toolCalls = $response->message()->toolCalls();
         if ($toolCalls->isEmpty()) {
-            return $response->content();
+            return $response->message()->content()->toString();
         }
 
         try {

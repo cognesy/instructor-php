@@ -40,11 +40,16 @@ final readonly class Message
 
     protected string $role;
     protected string $name;
+    protected ContentParts $parts;
     protected Content $content;
-    protected Metadata $metadata;
-    protected ?MessageId $parentId;
     protected ToolCalls $toolCalls;
     protected ?ToolResult $toolResult;
+    protected string $reasoningContent;
+    protected MessageType $type;
+    protected bool $isEmpty;
+    protected bool $isComposite;
+    protected Metadata $metadata;
+    protected ?MessageId $parentId;
 
     /**
      * @param string|MessageRole|null $role
@@ -61,11 +66,10 @@ final readonly class Message
         string $name = '',
         Metadata|array $metadata = [],
         ?MessageId $parentId = null,
-        ?ToolCalls $toolCalls = null,
-        ?ToolResult $toolResult = null,
         // Identity fields - for deserialization
         ?MessageId $id = null,
         ?DateTimeImmutable $createdAt = null,
+        ?ContentParts $parts = null,
     ) {
         $this->id = $id ?? MessageId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
@@ -79,15 +83,47 @@ final readonly class Message
             default => MessageRole::fromString($role)->value,
         };
         $this->name = $name;
-        $this->content = Content::fromAny($content);
+        $this->parts = $parts ?? Content::fromAny($content)->partsList();
         $this->metadata = match(true) {
             $metadata instanceof Metadata => $metadata,
             is_array($metadata) => Metadata::fromArray($metadata),
             default => throw new \InvalidArgumentException('Metadata must be an array or Metadata instance.'),
         };
         $this->parentId = $parentId;
-        $this->toolCalls = $toolCalls ?? ToolCalls::empty();
+
+        $renderableParts = [];
+        $reasoningParts = [];
+        $toolCalls = [];
+        $toolResult = null;
+        $hasNonEmptyPart = false;
+        foreach ($this->parts as $part) {
+            $hasNonEmptyPart = $hasNonEmptyPart || !$part->isEmpty();
+            if ($part->isRenderableContentPart()) {
+                $renderableParts[] = $part;
+            }
+            if ($part->isReasoningPart()) {
+                $reasoningParts[] = $part;
+            }
+            $toolCall = $part->toToolCall();
+            if ($toolCall !== null) {
+                $toolCalls[] = $toolCall;
+            }
+            $toolResult ??= $part->toToolResult();
+        }
+
+        $this->content = new Content(...$renderableParts);
+        $this->toolCalls = new ToolCalls(...$toolCalls);
         $this->toolResult = $toolResult;
+        $this->reasoningContent = (new ContentParts(...$reasoningParts))->toString();
+        $this->type = match (true) {
+            $this->role === MessageRole::Assistant->value && $this->toolCalls->hasAny()
+                => MessageType::AssistantToolCalls,
+            $this->role === MessageRole::Tool->value && $this->toolResult !== null
+                => MessageType::ToolResult,
+            default => MessageType::Text,
+        };
+        $this->isEmpty = !$hasNonEmptyPart && $this->metadata->isEmpty();
+        $this->isComposite = $this->content->isComposite();
     }
 
     // CONSTRUCTORS ///////////////////////////////////////
@@ -192,17 +228,13 @@ final readonly class Message
     }
 
     public function type(): MessageType {
-        return match (true) {
-            $this->isAssistant() && $this->hasToolCalls() => MessageType::AssistantToolCalls,
-            $this->isTool() && $this->hasToolResult() => MessageType::ToolResult,
-            default => MessageType::Text,
-        };
+        return $this->type;
     }
 
     // TOOL ACCESSORS ///////////////////////////////////////
 
     public function hasToolCalls(): bool {
-        return !$this->toolCalls->isEmpty();
+        return $this->toolCalls->hasAny();
     }
 
     public function toolCalls(): ToolCalls {
@@ -231,15 +263,20 @@ final readonly class Message
         return $this->content->partsList();
     }
 
+    public function parts(): ContentParts {
+        return $this->parts;
+    }
+
+    public function reasoningContent(): string {
+        return $this->reasoningContent;
+    }
+
     public function isEmpty(): bool {
-        return $this->content->isEmpty()
-            && $this->metadata()->isEmpty()
-            && $this->toolCalls->isEmpty()
-            && $this->toolResult === null;
+        return $this->isEmpty;
     }
 
     public function isComposite(): bool {
-        return $this->content->isComposite();
+        return $this->isComposite;
     }
 
     public function metadata(): Metadata {
@@ -257,44 +294,61 @@ final readonly class Message
     public function withMetadata(string $key, mixed $value): self {
         return new self(
             role: $this->role,
-            content: $this->content,
+            content: null,
             name: $this->name,
             metadata: $this->metadata->withKeyValue($key, $value),
             parentId: $this->parentId,
-            toolCalls: $this->toolCalls,
-            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
+            parts: $this->parts,
         );
     }
 
     // MUTATORS ///////////////////////////////////////
 
     public function withContent(Content $content): self {
+        return $this->withParts($this->replaceParts(
+            fn(ContentPart $part) => $part->isRenderableContentPart(),
+            $content->partsList(),
+            true,
+        ));
+    }
+
+    public function withReasoningContent(string $reasoningContent): self {
+        $replacement = match ($reasoningContent) {
+            '' => ContentParts::empty(),
+            default => new ContentParts(ContentPart::reasoning($reasoningContent)),
+        };
+        return $this->withParts($this->replaceParts(
+            fn(ContentPart $part) => $part->isReasoningPart(),
+            $replacement,
+            true,
+        ));
+    }
+
+    public function withParts(ContentParts $parts): self {
         return new self(
             role: $this->role,
-            content: $content,
+            content: null,
             name: $this->name,
             metadata: $this->metadata,
             parentId: $this->parentId,
-            toolCalls: $this->toolCalls,
-            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
+            parts: $parts,
         );
     }
 
     public function withName(string $name): self {
         return new self(
             role: $this->role,
-            content: $this->content,
+            content: null,
             name: $name,
             metadata: $this->metadata,
             parentId: $this->parentId,
-            toolCalls: $this->toolCalls,
-            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
+            parts: $this->parts,
         );
     }
 
@@ -302,61 +356,45 @@ final readonly class Message
     public function withRole(string|MessageRole $role): self {
         return new self(
             role: MessageRole::fromAny($role),
-            content: $this->content,
+            content: null,
             name: $this->name,
             metadata: $this->metadata,
             parentId: $this->parentId,
-            toolCalls: $this->toolCalls,
-            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
+            parts: $this->parts,
         );
     }
 
     public function withParentId(?MessageId $parentId): self {
         return new self(
             role: $this->role,
-            content: $this->content,
+            content: null,
             name: $this->name,
             metadata: $this->metadata,
             parentId: $parentId,
-            toolCalls: $this->toolCalls,
-            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
+            parts: $this->parts,
         );
     }
 
     public function withToolCalls(ToolCalls $toolCalls): self {
-        return new self(
-            role: $this->role,
-            content: $this->content,
-            name: $this->name,
-            metadata: $this->metadata,
-            parentId: $this->parentId,
-            toolCalls: $toolCalls,
-            toolResult: $this->toolResult,
-            id: $this->id,
-            createdAt: $this->createdAt,
-        );
+        return $this->withParts($this->replaceParts(
+            fn(ContentPart $part) => $part->isToolCallPart(),
+            new ContentParts(...array_map(ContentPart::toolCall(...), $toolCalls->all())),
+        ));
     }
 
     public function withToolResult(ToolResult $toolResult): self {
-        return new self(
-            role: $this->role,
-            content: $this->content,
-            name: $this->name,
-            metadata: $this->metadata,
-            parentId: $this->parentId,
-            toolCalls: $this->toolCalls,
-            toolResult: $toolResult,
-            id: $this->id,
-            createdAt: $this->createdAt,
-        );
+        return $this->withParts($this->replaceParts(
+            fn(ContentPart $part) => $part->isToolResultPart(),
+            new ContentParts(ContentPart::toolResult($toolResult)),
+        ));
     }
 
     public function addContentFrom(Message $source): self {
-        $newContent = $this->content;
+        $newContent = $this->content();
         foreach ($source->content()->partsList()->all() as $part) {
             $newContent = $newContent->addContentPart($part);
         }
@@ -376,27 +414,54 @@ final readonly class Message
      * @throws \InvalidArgumentException if either message carries a tool result
      */
     public function withMergedFrom(Message $source): self {
-        if ($this->toolResult !== null || $source->hasToolResult()) {
+        if ($this->hasToolResult() || $source->hasToolResult()) {
             throw new \InvalidArgumentException(
                 'Cannot merge messages carrying a tool result - a tool result is bound to a single tool call id.'
             );
         }
         return new self(
             role: $this->role,
-            content: $this->addContentFrom($source)->content(),
+            content: null,
             name: $this->name,
             metadata: $this->metadata->withMergedData($source->metadata()->toArray()),
             parentId: $this->parentId,
-            toolCalls: new ToolCalls(...[...$this->toolCalls->all(), ...$source->toolCalls()->all()]),
-            toolResult: null,
             id: $this->id,
             createdAt: $this->createdAt,
+            parts: $this->parts->append($source->parts()),
         );
     }
 
     public function addContentPart(string|array|ContentPart $part): self {
-        $newContent = $this->content->addContentPart(ContentPart::fromAny($part));
-        return $this->withContent($newContent);
+        return $this->withParts($this->parts->add(ContentPart::fromAny($part)));
+    }
+
+    /**
+     * @param callable(ContentPart): bool $matches
+     */
+    private function replaceParts(
+        callable $matches,
+        ContentParts $replacement,
+        bool $prependWhenMissing = false,
+    ): ContentParts {
+        $result = [];
+        $inserted = false;
+        foreach ($this->parts as $part) {
+            if (!$matches($part)) {
+                $result[] = $part;
+                continue;
+            }
+            if (!$inserted) {
+                $result = [...$result, ...$replacement->all()];
+                $inserted = true;
+            }
+        }
+        if (!$inserted) {
+            $result = match ($prependWhenMissing) {
+                true => [...$replacement->all(), ...$result],
+                false => [...$result, ...$replacement->all()],
+            };
+        }
+        return new ContentParts(...$result);
     }
 
     // CONVERSIONS / TRANSFORMATIONS ///////////////////////////////////////
@@ -408,20 +473,9 @@ final readonly class Message
             'parentId' => $this->parentId !== null ? (string) $this->parentId : null,
             'role' => $this->role,
             'name' => $this->name,
-            'content' => match (true) {
-                $this->content->isEmpty() => '',
-                $this->content->isComposite() => $this->content->toArray(),
-                default => $this->content->toString(),
-            },
+            'parts' => $this->parts->toArray(),
             '_metadata' => $this->metadata->toArray(),
         ];
-
-        if (!$this->toolCalls->isEmpty()) {
-            $data['tool_calls'] = $this->toolCalls->toArray();
-        }
-        if ($this->toolResult !== null) {
-            $data['tool_result'] = $this->toolResult->toArray();
-        }
 
         if ($data['parentId'] === null) {
             unset($data['parentId']);
@@ -450,7 +504,7 @@ final readonly class Message
      */
     public static function isMessage(array $message): bool {
         return isset($message['role']) && (
-            isset($message['content']) || isset($message['_metadata'])
+            isset($message['content']) || isset($message['parts']) || isset($message['_metadata'])
         );
     }
 
@@ -472,4 +526,5 @@ final readonly class Message
     public static function becomesComposite(array $message): bool {
         return is_array($message['content'] ?? null);
     }
+
 }

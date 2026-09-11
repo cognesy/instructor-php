@@ -3,6 +3,7 @@
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Errors\ProviderErrorClassifier;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderTransientException;
@@ -57,4 +58,24 @@ it('retry policy retries provider errors classified from HTTP 408', function () 
     $policy = new InferenceRetryPolicy(maxAttempts: 3);
 
     expect($policy->shouldRetryException($providerError))->toBeTrue();
+});
+
+it('classifies a transport timeout without a response as retriable', function () {
+    $request = new HttpRequest(
+        url: 'https://api.example.com/v1/chat/completions',
+        method: 'POST',
+        headers: [],
+        body: [],
+        options: [],
+    );
+    $providerError = ProviderErrorClassifier::fromHttpException(new TimeoutException(
+        message: 'Operation timed out',
+        request: $request,
+        duration: 30.0,
+    ));
+
+    expect($providerError)->toBeInstanceOf(ProviderTransientException::class)
+        ->and($providerError->statusCode)->toBeNull()
+        ->and($providerError->isRetriable())->toBeTrue()
+        ->and((new InferenceRetryPolicy(maxAttempts: 2))->shouldRetryException($providerError))->toBeTrue();
 });

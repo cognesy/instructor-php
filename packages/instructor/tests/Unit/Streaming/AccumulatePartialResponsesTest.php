@@ -21,8 +21,8 @@ final class AccumulatedUser
 
 it('hydrates recoverable json partials and refines them as snapshots grow', function () {
     $responses = [
-        new PartialInferenceDelta(contentDelta: '{"name"'),
-        new PartialInferenceDelta(contentDelta: ':"Ann","age":30}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ':"Ann","age":30}')),
     ];
 
     $result = accumulateSnapshots(
@@ -60,7 +60,7 @@ it('preserves the last-good parsed value for unchanged snapshots', function () {
     };
 
     $responses = [
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann","age":30}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann","age":30}')),
         new PartialInferenceDelta(finishReason: 'stop'),
     ];
 
@@ -98,7 +98,7 @@ it('preserves the last-good parsed value when only usage changes', function () {
     };
 
     $responses = [
-        new PartialInferenceDelta(contentDelta: '{"name":"Ann","age":30}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann","age":30}')),
         new PartialInferenceDelta(usage: \Cognesy\Polyglot\Inference\Data\InferenceUsage::fromArray([
             'inputTokens' => 1,
             'outputTokens' => 2,
@@ -130,8 +130,8 @@ it('preserves the last-good parsed value when only usage changes', function () {
 
 it('hydrates recoverable tool argument partials and refines them as snapshots grow', function () {
     $responses = [
-        new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: '{"name"'),
-        new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: ':"Ann","age":30}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract_data', '{"name"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract_data', ':"Ann","age":30}')),
     ];
 
     $result = accumulateSnapshots(

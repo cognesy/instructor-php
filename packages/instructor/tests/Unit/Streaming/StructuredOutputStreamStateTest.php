@@ -8,19 +8,17 @@ it('accumulates json content, reasoning, finish reason, usage, and parsed value 
     $state = StructuredOutputStreamState::empty();
 
     $state->applyDelta(new PartialInferenceDelta(
-        contentDelta: '{"name"',
-        reasoningContentDelta: 'thinking',
+        messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withReasoningDelta('test:reasoning:0', 'thinking')
+            ->withTextDelta('test:text:0', '{"name"'),
         usage: new InferenceUsage(outputTokens: 1),
     ));
     $state->setValue(['name' => '']);
 
     $first = $state->partialResponse();
 
-    $state->applyDelta(new PartialInferenceDelta(
-        contentDelta: ':"Ann"}',
-        finishReason: 'stop',
-        usage: new InferenceUsage(outputTokens: 2),
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ':"Ann"}'), finishReason: 'stop',
+    usage: new InferenceUsage(outputTokens: 2),));
     $state->setValue(['name' => 'Ann']);
 
     $second = $state->partialResponse();
@@ -38,8 +36,8 @@ it('accumulates json content, reasoning, finish reason, usage, and parsed value 
 it('accumulates markdown-json content without changing ownership away from state', function () {
     $state = StructuredOutputStreamState::empty();
 
-    $state->applyDelta(new PartialInferenceDelta(contentDelta: "```json\n{\"name\""));
-    $state->applyDelta(new PartialInferenceDelta(contentDelta: ":\"Ann\"}\n```"));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", "```json\n{\"name\"")));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ":\"Ann\"}\n```")));
     $state->setValue(['name' => 'Ann']);
 
     $partial = $state->partialResponse();
@@ -51,20 +49,11 @@ it('accumulates markdown-json content without changing ownership away from state
 it('accumulates tool argument fragments and exposes the latest tool snapshot', function () {
     $state = StructuredOutputStreamState::empty();
 
-    $state->applyDelta(new PartialInferenceDelta(
-        toolId: 'tool-1',
-        toolName: 'extract',
-        toolArgs: '{"name"',
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract', '{"name"'), ));
 
     $first = $state->partialResponse();
 
-    $state->applyDelta(new PartialInferenceDelta(
-        toolId: 'tool-1',
-        toolName: 'extract',
-        toolArgs: ':"Ann"}',
-        finishReason: 'stop',
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract', ':"Ann"}'), finishReason: 'stop',));
     $state->setValue(['name' => 'Ann']);
 
     $second = $state->partialResponse();
@@ -80,11 +69,7 @@ it('accumulates tool argument fragments and exposes the latest tool snapshot', f
 it('memoizes derived tool calls and snapshot until state changes', function () {
     $state = StructuredOutputStreamState::empty();
 
-    $state->applyDelta(new PartialInferenceDelta(
-        toolId: 'tool-1',
-        toolName: 'extract',
-        toolArgs: '{"name":"Ann"}',
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', 'extract', '{"name":"Ann"}'), ));
     $state->setValue(['name' => 'Ann']);
 
     $firstToolCalls = $state->toolCalls();
@@ -92,10 +77,7 @@ it('memoizes derived tool calls and snapshot until state changes', function () {
     $firstSnapshot = $state->snapshot();
     $secondSnapshot = $state->snapshot();
 
-    $state->applyDelta(new PartialInferenceDelta(
-        toolId: 'tool-1',
-        toolArgs: ',"age":30}',
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'tool-1', 'tool-1', arguments: ',"age":30}'), ));
 
     $updatedToolCalls = $state->toolCalls();
     $updatedSnapshot = $state->snapshot();
@@ -104,4 +86,40 @@ it('memoizes derived tool calls and snapshot until state changes', function () {
         ->and($firstSnapshot)->toBe($secondSnapshot)
         ->and($updatedToolCalls)->not->toBe($firstToolCalls)
         ->and($updatedSnapshot)->not->toBe($firstSnapshot);
+});
+
+it('memoizes normalized partial and final responses until state changes', function () {
+    $state = StructuredOutputStreamState::empty();
+    $state->applyDelta(new PartialInferenceDelta(
+        messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withTextDelta('test:text:0', '<think>check facts</think>answer'),
+    ));
+
+    $partial = $state->partialInferenceResponse();
+    $partialResponse = $state->partialResponse();
+    $final = $state->finalInferenceResponse();
+    $finalResponse = $state->finalResponse();
+
+    expect($state->partialInferenceResponse())->toBe($partial)
+        ->and($state->partialResponse())->toBe($partialResponse)
+        ->and($state->finalInferenceResponse())->toBe($final)
+        ->and($state->finalResponse())->toBe($finalResponse)
+        ->and($partial->message()->reasoningContent())->toBe('check facts')
+        ->and($partial->message()->content()->toString())->toBe('answer');
+
+    $state->setPreview(['name' => 'Ann']);
+
+    expect($state->partialInferenceResponse())->not->toBe($partial)
+        ->and($state->partialResponse())->not->toBe($partialResponse);
+});
+
+it('keeps memoized responses when the assigned value is unchanged', function () {
+    $state = StructuredOutputStreamState::empty();
+    $value = (object) ['name' => 'Ann'];
+    $state->setValue($value);
+    $response = $state->partialResponse();
+
+    $state->setValue($value);
+
+    expect($state->partialResponse())->toBe($response);
 });

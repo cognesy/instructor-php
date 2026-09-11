@@ -49,8 +49,8 @@ it('inspects an empty workspace context without loop construction or persistence
         ->and($payload['compiled']['messageCount'])->toBe(0)
         ->and($payload['compiled']['toolCallCount'])->toBe(0)
         ->and($payload['compiled']['toolResultCount'])->toBe(0)
-        ->and($payload['tokens']['modelCapacity']['value'])->toBeNull()
-        ->and($payload['tokens']['modelCapacity']['status'])->toBe('unknown')
+        ->and($payload['tokens']['modelCapacity']['value'])->toBe(400_000)
+        ->and($payload['tokens']['modelCapacity']['status'])->toBe('exact')
         ->and($payload['tokens']['context']['status'])->toBe('estimated')
         ->and($payload['tokens']['context']['estimator'])->toMatchArray([
             'identity' => 'gpt3-bpe',
@@ -91,10 +91,10 @@ it('reports the compiled AgentState, tool-heavy context, configured thresholds, 
         ])
         ->and($payload['tokens']['context']['value'])->toBe(123)
         ->and($payload['tokens']['context']['status'])->toBe('estimated')
-        ->and($payload['tokens']['configuredLimit']['status'])->toBe('exact')
-        ->and($payload['tokens']['remainingConfiguredLimit']['status'])->toBe('estimated')
+        ->and($payload['tokens']['modelCapacity']['status'])->toBe('exact')
+        ->and($payload['tokens']['remainingModelCapacity']['status'])->toBe('estimated')
         ->and($payload['warningThresholds']['warning']['tokens'])->toBe(
-            (int) floor($payload['tokens']['configuredLimit']['value'] * 0.80),
+            (int) floor($payload['tokens']['modelCapacity']['value'] * 0.80),
         )
         ->and($payload['configuration'])->toMatchArray([
             'connection' => 'openai',
@@ -142,16 +142,14 @@ it('keeps unknown configured capacity explicit and fails corrupt contexts withou
 
     expect($unknown->execute([
         '--dir' => $project,
-        '--dsn' => 'driver=openai,model=unknown,contextLength=0',
+        '--dsn' => 'driver=openai,model=unknown',
         '--json' => true,
     ]))->toBe(0);
     $unknownPayload = json_decode($unknown->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     expect($unknownPayload['tokens']['modelCapacity']['value'])->toBeNull()
         ->and($unknownPayload['tokens']['modelCapacity']['status'])->toBe('unknown')
-        ->and($unknownPayload['tokens']['configuredLimit']['value'])->toBeNull()
-        ->and($unknownPayload['tokens']['configuredLimit']['status'])->toBe('unknown')
-        ->and($unknownPayload['tokens']['remainingConfiguredLimit']['value'])->toBeNull()
-        ->and($unknownPayload['tokens']['remainingConfiguredLimit']['status'])->toBe('unknown');
+        ->and($unknownPayload['tokens']['remainingModelCapacity']['value'])->toBeNull()
+        ->and($unknownPayload['tokens']['remainingModelCapacity']['status'])->toBe('unknown');
 
     file_put_contents($arena->objectPath($root), '{"kind":"conversation"}');
     $before = tellContextSnapshot($workspace->paths->arena);

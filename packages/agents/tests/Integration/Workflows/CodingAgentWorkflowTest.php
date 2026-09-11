@@ -61,9 +61,9 @@ describe('Coding Agent Workflow', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($editCall)),
-            new InferenceResponse(content: 'Config file created and updated.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($writeCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($editCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Config file created and updated.')),
         ]);
 
         $tools = new Tools(
@@ -115,9 +115,9 @@ describe('Coding Agent Workflow', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($bashCall)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
-            new InferenceResponse(content: 'Environment verified and documented.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($bashCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($writeCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Environment verified and documented.')),
         ]);
 
         $tools = new Tools(
@@ -156,8 +156,8 @@ describe('Coding Agent Workflow', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($todoCall)),
-            new InferenceResponse(content: 'Tasks created.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($todoCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Tasks created.')),
         ]);
 
         $tools = new Tools(new TodoWriteTool());
@@ -195,8 +195,8 @@ describe('Coding Agent Workflow', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
-            new InferenceResponse(content: 'File written.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($writeCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('File written.')),
         ]);
 
         $tools = new Tools(WriteFileTool::inDirectory($this->tempDir));
@@ -255,10 +255,10 @@ describe('Coding Agent Workflow', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($write1)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($write2)),
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($read1, $read2)),
-            new InferenceResponse(content: 'Both files created and verified.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($write1))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($write2))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($read1, $read2))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Both files created and verified.')),
         ]);
 
         $tools = new Tools(
@@ -296,8 +296,8 @@ describe('Coding Agent Workflow', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            new InferenceResponse(content: '', toolCalls: new ToolCalls($readCall)),
-            new InferenceResponse(content: 'File contains test content.'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($readCall))),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('File contains test content.')),
         ]);
 
         $tools = new Tools(ReadFileTool::inDirectory($this->tempDir));

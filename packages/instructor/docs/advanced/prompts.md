@@ -150,3 +150,21 @@ The generic `Template` package supports Twig, Blade, and Arrowpipe. That does no
 the bundled Instructor prompts engine-selectable: the bundled prompt set uses Twig.
 Render alternate templates before passing them to `StructuredOutput`, or supply custom
 prompt classes. See the Template package documentation for full details.
+
+
+## Anthropic Prompt Caching
+
+Automatic caching is opt-in through
+`$structuredOutput->withOptions(['cache_control' => ['type' => 'ephemeral']])`.
+Anthropic advances the breakpoint as the supplied conversation grows.
+Use `['type' => 'ephemeral', 'ttl' => '1h']` for a one-hour automatic cache.
+
+For a stable prefix reused across independent requests, use
+`$structuredOutput->withCachedContext(system: $instructions, ttl: '1h')`.
+Explicit TTL accepts `'5m'` and `'1h'`; omission uses the five-minute default.
+All context is still transmitted with each request.
+
+Claude Haiku 4.5 requires a 4,096-token prefix; Sonnet 4.5/4.6 require 1,024 tokens
+(verified September 6, 2026). Shorter prefixes silently bypass caching.
+See [Anthropic's caching guide](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+for other model/platform thresholds, breakpoint limits, TTL ordering, and pricing.

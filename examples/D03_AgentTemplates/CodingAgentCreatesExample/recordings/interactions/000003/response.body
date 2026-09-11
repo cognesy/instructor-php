@@ -1,0 +1,45 @@
+{
+  "id": "chatcmpl-EMpMAUhONwxu00YYFtX3HRQj7VBSm",
+  "object": "chat.completion",
+  "created": 1789109338,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_o0N7AL2fxdHTu4yEFRppU9YI",
+            "type": "function",
+            "function": {
+              "name": "write",
+              "arguments": "{\"path\":\"/tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\",\"content\":\"<?php\\nrequire '/Users/ddebowczyk/projects/_instructor/instructor-php/examples/boot.php';\\n\\nuse Cognesy\\\\Instructor\\\\StructuredOutput;\\n\\nconst EXAMPLE_STATUS = 'draft';\\n\\nclass MeetingActionItem {\\n    public string $owner;\\n    public string $action;\\n    public string $due_date;\\n}\\n\\n$text = \\\"In today's planning meeting, Maya will draft the launch checklist by 2026-10-15.\\\";\\nprint(\\\"Input text:\\\\n\\\");\\nprint($text . \\\"\\\\n\\\\n\\\");\\nprint(\\\"Example status: \\\" . EXAMPLE_STATUS . \\\"\\\\n\\\");\\n\\nprint(\\\"Extracting meeting action item using LLM...\\\\n\\\\n\\\");\\n$actionItem = StructuredOutput::using('openai')\\n    ->withMessages($text)\\n    ->withResponseClass(MeetingActionItem::class)\\n    ->get();\\n\\nprint(\\\"Extracted data:\\\\n\\\");\\ndump($actionItem);\\n\\nassert(isset($actionItem->owner));\\nassert(isset($actionItem->action));\\nassert(isset($actionItem->due_date));\\nassert($actionItem->owner === 'Maya');\\nassert($actionItem->action === 'draft the launch checklist');\\nassert($actionItem->due_date === '2026-10-15');\\n?>\\n\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2486,
+    "completion_tokens": 347,
+    "total_tokens": 2833,
+    "prompt_tokens_details": {
+      "cached_tokens": 2304,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

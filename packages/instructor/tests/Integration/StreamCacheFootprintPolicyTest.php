@@ -13,8 +13,8 @@ it('keeps structured stream replay cache empty with none policy', function () {
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceDelta(contentDelta: ',"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}'), finishReason: 'stop'),
         ]],
     );
 
@@ -46,8 +46,8 @@ it('stores structured stream replay cache with memory policy', function () {
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceDelta(contentDelta: ',"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}'), finishReason: 'stop'),
         ]],
     );
 

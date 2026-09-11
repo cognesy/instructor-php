@@ -16,6 +16,8 @@ use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
@@ -38,10 +40,10 @@ function _sum(int $a, int $b): int { return $a + $b; }
 
 it('continues loop on tool failure and formats error message', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: '',
-            toolCalls: new ToolCalls(new ToolCall('_sum', ['a' => 2])) // missing required 'b'
-        ),
+        new InferenceResponse(message: new Message(
+            role: 'assistant',
+            parts: new ContentParts(ContentPart::toolCall(new ToolCall('_sum', ['a' => 2]))),
+        )), // missing required 'b'
     ]);
 
     $tools = new Tools(FunctionTool::fromCallable(_sum(...)));
@@ -96,7 +98,7 @@ it('converts driver exceptions into failure steps', function () {
 
 it('stops on configured finish reasons (FinishReasonCheck)', function () {
     $state = new ToolUseState();
-    $resp = new InferenceResponse(content: '', finishReason: 'stop');
+    $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''), finishReason: 'stop');
     $step = new ToolUseStep(inferenceResponse: $resp);
     $state = $state->withAddedStep($step);
     $state = $state->withCurrentStep($step);

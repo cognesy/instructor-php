@@ -20,6 +20,7 @@ use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -41,11 +42,7 @@ it('applies inference hooks at the real provider boundary and emits post-hook ev
     });
 
     $inference = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: 'provider response',
-            finishReason: 'stop',
-            usage: new InferenceUsage(inputTokens: 1, outputTokens: 2),
-        ),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('provider response'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 1, outputTokens: 2)),
     ]);
     $hook = new CallableHook(function (HookContext $context) use (&$log, &$seenRequestMessages): HookContext {
         return match ($context->triggerType()) {
@@ -61,7 +58,7 @@ it('applies inference hooks at the real provider boundary and emits post-hook ev
                 return $context
                     ->withState($context->state()->withMetadata('after_hook', true))
                     ->withInferenceResponse($context->inferenceResponse()?->with(
-                        content: 'hook response',
+                        message: Message::asAssistant('hook response'),
                         finishReason: 'length',
                         usage: new InferenceUsage(inputTokens: 3, outputTokens: 7),
                     ));
@@ -88,7 +85,7 @@ it('applies inference hooks at the real provider boundary and emits post-hook ev
         ->and($seenRequestMessages)->toBe($inference->requests[0]->messages()->toArray())
         ->and($inference->requests[0]->model())->toBe('hook-model')
         ->and($step?->inputMessages()->toArray())->toBe($inference->requests[0]->messages()->toArray())
-        ->and($step?->inferenceResponse()->content())->toBe('hook response')
+        ->and($step?->inferenceResponse()->message()->content()->toString())->toBe('hook response')
         ->and($final->metadata()->get('before_hook'))->toBeTrue()
         ->and($final->metadata()->get('after_hook'))->toBeTrue()
         ->and($log)->toBe(['before_hook', 'request_event', 'after_hook', 'response_event'])
@@ -105,7 +102,7 @@ it('applies inference hooks at the real provider boundary and emits post-hook ev
 it('rebinds a replacement loop interceptor before inference', function () {
     $initialCalls = 0;
     $replacementCalls = 0;
-    $inference = new FakeInferenceDriver([new InferenceResponse(content: 'done')]);
+    $inference = new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('done'))]);
     $initial = new CallableHook(function (HookContext $context) use (&$initialCalls): HookContext {
         $initialCalls++;
         return $context->withInferenceRequest($context->inferenceRequest()?->withModel('initial-model'));

@@ -36,7 +36,7 @@ it('serializes and deserializes state timestamps', function () {
 it('round-trips llm config in state serialization', function () {
     $config = new LLMConfig(
         model: 'gpt-4o-mini',
-        contextLength: 128000,
+        maxTokens: 2048,
     );
 
     $state = AgentState::empty()->withLLMConfig($config);
@@ -44,7 +44,7 @@ it('round-trips llm config in state serialization', function () {
 
     expect($restored->llmConfig())->not->toBeNull()
         ->and($restored->llmConfig()?->model)->toBe('gpt-4o-mini')
-        ->and($restored->llmConfig()?->contextLength)->toBe(128000);
+        ->and($restored->llmConfig()?->maxTokens)->toBe(2048);
 });
 
 it('preserves null execution on round-trip serialization', function () {
@@ -168,7 +168,7 @@ it('returns no final response for a tool-execution step', function () {
 
     $step = new AgentStep(
         outputMessages: Messages::fromString('Tool trace'),
-        inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
     );
 
     $state = AgentState::empty()
@@ -201,7 +201,7 @@ it('returns final response in multi-step execution before execution completion',
 
     $toolStep = new AgentStep(
         outputMessages: Messages::fromString('tool trace'),
-        inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
     );
 
     $finalStep = new AgentStep(
@@ -227,7 +227,7 @@ it('returns final response in multi-step execution after execution completion', 
 
     $toolStep = new AgentStep(
         outputMessages: Messages::fromString('tool trace'),
-        inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
     );
 
     $finalStep = new AgentStep(
@@ -261,7 +261,7 @@ it('returns no final response during second execution when current turn is incom
         ->withUserMessage('Turn 2 question')
         ->withCurrentStep(new AgentStep(
             outputMessages: Messages::fromString('turn 2 tool trace'),
-            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
         ));
 
     expect($secondTurnInProgress->stepCount())->toBe(1)

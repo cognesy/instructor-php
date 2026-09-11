@@ -22,9 +22,9 @@ it('Gemini native: parses final response content and tool calls deterministicall
     $httpResp = MockHttpResponseFactory::json($data);
 
     $res = $adapter->fromResponse($httpResp);
-    expect($res->content())->toContain('Hello');
-    expect($res->hasToolCalls())->toBeTrue();
-    $tool = $res->toolCalls()->first();
+    expect($res->message()->content()->toString())->toContain('Hello');
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    $tool = $res->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
@@ -46,8 +46,8 @@ it('Gemini native: keeps content empty for tool-only responses', function () {
     $httpResp = MockHttpResponseFactory::json($data);
 
     $res = $adapter->fromResponse($httpResp);
-    expect($res->content())->toBe('');
-    expect($res->hasToolCalls())->toBeTrue();
+    expect($res->message()->content()->toString())->toBe('');
+    expect($res->message()->hasToolCalls())->toBeTrue();
 });
 
 it('Gemini native: parses streaming partial with text and tool args', function () {
@@ -64,7 +64,7 @@ it('Gemini native: parses streaming partial with text and tool args', function (
 
     $delta1 = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
     expect($delta1)->not->toBeNull();
-    expect($delta1->contentDelta)->toBe('Hel');
+    expect($delta1->messageChunks->textDelta())->toBe('Hel');
 
     $event2 = json_encode([
         'candidates' => [[
@@ -77,10 +77,11 @@ it('Gemini native: parses streaming partial with text and tool args', function (
     ]);
     $delta2 = iterator_to_array($adapter->fromStreamDeltas([$event2]))[0] ?? null;
     expect($delta2)->not->toBeNull();
-    expect($delta2->contentDelta)->toBe('');
-    expect($delta2->toolId)->toBe('part:0');
-    expect($delta2->toolName)->toBe('search');
-    expect($delta2->toolArgs)->toContain('Hello');
+    $toolChunk = $delta2->messageChunks->all()[0];
+    expect($delta2->messageChunks->textDelta())->toBe('');
+    expect($toolChunk->toolCallId)->toBe('candidate:0:part:0');
+    expect($toolChunk->toolCallName)->toBe('search');
+    expect($toolChunk->toolCallArguments)->toContain('Hello');
 });
 
 it('Gemini native: uses extracted per-part tool id even for single tool delta in chunk', function () {
@@ -98,9 +99,10 @@ it('Gemini native: uses extracted per-part tool id even for single tool delta in
 
     $delta = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
     expect($delta)->not->toBeNull();
-    expect($delta->toolId)->toBe('cand_1:part:0');
-    expect($delta->toolName)->toBe('search');
-    expect($delta->toolArgs)->toContain('Hello');
+    $toolChunk = $delta->messageChunks->all()[0];
+    expect((string) $toolChunk->toolCallId)->toBe('cand_1:part:0');
+    expect($toolChunk->toolCallName)->toBe('search');
+    expect($toolChunk->toolCallArguments)->toContain('Hello');
 });
 
 it('Gemini native: sets usageIsCumulative=true for streaming responses with usage data', function () {
@@ -117,7 +119,7 @@ it('Gemini native: sets usageIsCumulative=true for streaming responses with usag
 
     $delta = iterator_to_array($adapter->fromStreamDeltas([$eventWithUsage]))[0] ?? null;
     expect($delta)->not->toBeNull();
-    expect($delta->contentDelta)->toBe('Hello');
+    expect($delta->messageChunks->textDelta())->toBe('Hello');
 
     // CRITICAL: Verify that usageIsCumulative is set to true
     // This prevents exponential token growth during accumulation

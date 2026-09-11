@@ -24,6 +24,8 @@ use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
  * Values that legitimately vary run to run -- ids, durations, timestamps -- are normalised by
  * VALUE SHAPE, not by key name. Normalising by key name is how you end up with a golden test
  * that quietly stops comparing the ids nested inside the telemetry envelope.
+ *
+ * Fixture changes must be explicit and reviewed with the lifecycle contract change.
  */
 const LIFECYCLE_GOLDEN_FIXTURE = __DIR__ . '/../../Fixtures/inference-lifecycle-sequences.json';
 
@@ -110,9 +112,7 @@ function lifecycleUsage(): InferenceUsage {
 function lifecycleScenarios(): array {
     return [
         'success' => fn(EventDispatcher $e) => lifecyclePending(
-            new FakeInferenceDriver(onResponse: fn() => new InferenceResponse(
-                content: 'hi', finishReason: 'stop', usage: lifecycleUsage(),
-            )),
+            new FakeInferenceDriver(onResponse: fn() => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi'), finishReason: 'stop', usage: lifecycleUsage())),
             $e, streamed: false,
         )->response(),
 
@@ -123,7 +123,7 @@ function lifecycleScenarios(): array {
                     if (++$calls === 1) {
                         throw new TimeoutException('upstream timeout');
                     }
-                    return new InferenceResponse(content: 'hi', finishReason: 'stop', usage: lifecycleUsage());
+                    return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi'), finishReason: 'stop', usage: lifecycleUsage());
                 }),
                 $e, streamed: false,
                 policy: new InferenceRetryPolicy(maxAttempts: 2, baseDelayMs: 0),
@@ -141,8 +141,8 @@ function lifecycleScenarios(): array {
             return lifecyclePending(
                 new FakeInferenceDriver(onResponse: function () use (&$calls) {
                     return (++$calls === 1)
-                        ? new InferenceResponse(content: 'trunc', finishReason: 'length', usage: lifecycleUsage())
-                        : new InferenceResponse(content: 'trunc done', finishReason: 'stop', usage: lifecycleUsage());
+                        ? new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('trunc'), finishReason: 'length', usage: lifecycleUsage())
+                        : new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('trunc done'), finishReason: 'stop', usage: lifecycleUsage());
                 }),
                 $e, streamed: false,
                 policy: new InferenceRetryPolicy(
@@ -152,17 +152,15 @@ function lifecycleScenarios(): array {
         },
 
         'content_filter' => fn(EventDispatcher $e) => lifecyclePending(
-            new FakeInferenceDriver(onResponse: fn() => new InferenceResponse(
-                content: '', finishReason: 'content_filter', usage: lifecycleUsage(),
-            )),
+            new FakeInferenceDriver(onResponse: fn() => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(''), finishReason: 'content_filter', usage: lifecycleUsage())),
             $e, streamed: false,
         )->response(),
 
         'stream_success' => function (EventDispatcher $e) {
             $pending = lifecyclePending(
                 new FakeInferenceDriver(onStream: fn() => [
-                    new PartialInferenceDelta(contentDelta: 'he'),
-                    new PartialInferenceDelta(contentDelta: 'llo', finishReason: 'stop'),
+                    new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'he')),
+                    new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'llo'), finishReason: 'stop'),
                 ]),
                 $e, streamed: true,
             );
@@ -187,7 +185,7 @@ function lifecycleScenarios(): array {
         'stream_failure_after_first_delta' => function (EventDispatcher $e) {
             $pending = lifecyclePending(
                 new FakeInferenceDriver(onStream: function (): iterable {
-                    yield new PartialInferenceDelta(contentDelta: 'he');
+                    yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'he'));
                     throw new TimeoutException('stream died mid-flight');
                 }),
                 $e, streamed: true,
@@ -204,8 +202,8 @@ function lifecycleScenarios(): array {
             return lifecyclePending(
                 new FakeInferenceDriver(onResponse: function () use (&$calls) {
                     return (++$calls <= 3)
-                        ? new InferenceResponse(content: 'trunc', finishReason: 'length', usage: lifecycleUsage())
-                        : new InferenceResponse(content: 'done', finishReason: 'stop', usage: lifecycleUsage());
+                        ? new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('trunc'), finishReason: 'length', usage: lifecycleUsage())
+                        : new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('done'), finishReason: 'stop', usage: lifecycleUsage());
                 }),
                 $e, streamed: false,
                 policy: new InferenceRetryPolicy(
@@ -220,8 +218,8 @@ function lifecycleScenarios(): array {
         // dispatch InferenceCompleted twice.
         'stream_response_without_draining' => fn(EventDispatcher $e) => lifecyclePending(
             new FakeInferenceDriver(onStream: fn() => [
-                new PartialInferenceDelta(contentDelta: 'he'),
-                new PartialInferenceDelta(contentDelta: 'llo', finishReason: 'stop'),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'he')),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'llo'), finishReason: 'stop'),
             ]),
             $e, streamed: true,
         )->response(),
@@ -232,7 +230,7 @@ function lifecycleScenarios(): array {
         // catch a regression here: the guard is checked in two separate callbacks.
         'stream_response_without_draining_failure' => fn(EventDispatcher $e) => lifecyclePending(
             new FakeInferenceDriver(onStream: function (): iterable {
-                yield new PartialInferenceDelta(contentDelta: 'he');
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'he'));
                 throw new TimeoutException('stream died mid-flight');
             }),
             $e, streamed: true,
@@ -242,12 +240,12 @@ function lifecycleScenarios(): array {
 }
 
 it('emits the pinned lifecycle event sequence for every execution path', function () {
-    $golden = json_decode((string) file_get_contents(LIFECYCLE_GOLDEN_FIXTURE), true, 512, JSON_THROW_ON_ERROR);
-
     $actual = [];
     foreach (lifecycleScenarios() as $name => $scenario) {
         $actual[$name] = lifecycleRecord($scenario);
     }
+
+    $golden = json_decode((string) file_get_contents(LIFECYCLE_GOLDEN_FIXTURE), true, 512, JSON_THROW_ON_ERROR);
 
     expect($actual)->toBe($golden);
 })->group('lifecycle-sequence');

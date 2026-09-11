@@ -3,6 +3,7 @@ title: 'Agent Control Runtime Switching'
 docname: 'agent_ctrl_switching'
 id: '87de'
 tags:
+  - 'no-replay'
   - 'broken'
   - 'agent-ctrl'
   - 'runtime-switching'

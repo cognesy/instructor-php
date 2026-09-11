@@ -50,11 +50,7 @@ final readonly class LLMCollaborator implements CanCollaborate
         $response = $this->inference->create($request)->response();
         $this->emitChatInferenceResponseReceived($response);
 
-        $outputMessages = new Messages(new Message(
-            role: 'assistant',
-            content: $response->content(),
-            name: $this->name,
-        ));
+        $outputMessages = new Messages($response->message()->withName($this->name));
 
         return new CollaborationStep(
             collaboratorName: $this->name,

@@ -4,5 +4,3 @@ apiKey: '${GEMINI_API_KEY}'
 endpoint: '/models/{model}:generateContent'
 model: gemini-2.5-flash-lite
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 8192

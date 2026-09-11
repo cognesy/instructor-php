@@ -1,0 +1,1236 @@
+{
+    "version": "2026-09-11",
+    "models": [
+        {
+            "driver": "a21",
+            "model": "jamba-mini",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 256000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "anthropic",
+            "model": "claude-haiku-4-5",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 200000,
+                "maxOutput": 64000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "unsupported",
+                "inputFile": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "unsupported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "anthropic",
+            "model": "claude-opus-4-6",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort",
+                        "budget",
+                        "adaptive"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "budget": {
+                        "min": 1024
+                    },
+                    "default": "adaptive",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "anthropic",
+            "model": "claude-sonnet-4-6",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort",
+                        "budget",
+                        "adaptive"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "budget": {
+                        "min": 1024
+                    },
+                    "default": "adaptive",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "azure",
+            "model": "gpt-4o-mini",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 16384
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "bedrock-openai",
+            "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 200000,
+                "maxOutput": 8192
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "cerebras",
+            "model": "llama3.1-8b",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 2048
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "cohere",
+            "model": "command-a-reasoning-08-2025",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "enabled",
+                        "budget",
+                        "adaptive"
+                    ],
+                    "budget": {
+                        "min": 1
+                    },
+                    "default": "enabled",
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "cohere",
+            "model": "command-r-plus-08-2024",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 4000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "unsupported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "cohere",
+            "model": "command-r7b-12-2024",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 4000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported"
+            },
+            "source": "bundled-example"
+        },
+        {
+            "driver": "deepseek",
+            "model": "deepseek-v4-flash",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 1000000,
+                "maxOutput": 384000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "unsupported",
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium",
+                            "effective": "high",
+                            "quality": "lossy"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh",
+                            "effective": "high",
+                            "quality": "lossy"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "default": "enabled",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "deepseek",
+            "model": "deepseek-v4-flash-vision-exp",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium",
+                            "effective": "high",
+                            "quality": "lossy"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh",
+                            "effective": "high",
+                            "quality": "lossy"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "default": "enabled",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "deepseek",
+            "model": "deepseek-v4-pro",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 1000000,
+                "maxOutput": 384000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "unsupported",
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium",
+                            "effective": "high",
+                            "quality": "lossy"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh",
+                            "effective": "high",
+                            "quality": "lossy"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "default": "enabled",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "fireworks",
+            "model": "accounts/fireworks/models/deepseek-v3p1",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 65000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "gemini",
+            "model": "gemini-2.5-flash-lite",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 1000000,
+                "maxOutput": 8192
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported",
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "budget",
+                        "adaptive"
+                    ],
+                    "budget": {
+                        "min": 1
+                    },
+                    "default": "adaptive",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "gemini",
+            "model": "gemini-3.1-pro-preview",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        }
+                    ],
+                    "default": "mandatory",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "gemini-oai",
+            "model": "gemini-2.5-flash-lite",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 1048576,
+                "maxOutput": 65536
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "supported",
+                "inputFile": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "gemini-oai",
+            "model": "gemini-3.1-pro-preview",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        }
+                    ],
+                    "default": "mandatory"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "glm",
+            "model": "glm-4.5",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 131072,
+                "maxOutput": 98304
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "unsupported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "glm",
+            "model": "glm-4.7",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "enabled",
+                        "adaptive"
+                    ],
+                    "default": "enabled"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "groq",
+            "model": "openai/gpt-oss-20b",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 131072,
+                "maxOutput": 65536
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "huggingface",
+            "model": "openai/gpt-oss-120b:fireworks-ai",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 131072,
+                "maxOutput": 32768
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "unsupported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "inception",
+            "model": "mercury",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "meta",
+            "model": "meta-llama/llama-3.3-70b-instruct:free",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 8192
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "minimaxi",
+            "model": "MiniMax-Text-01",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 1000000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "mistral",
+            "model": "magistral-medium-latest",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        }
+                    ],
+                    "default": "enabled"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "mistral",
+            "model": "mistral-small-latest",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 256000,
+                "maxOutput": 256000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "moonshot",
+            "model": "kimi-k2.5",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "enabled",
+                        "adaptive"
+                    ],
+                    "default": "enabled"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "moonshot",
+            "model": "kimi-k2.6",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "enabled",
+                        "adaptive"
+                    ],
+                    "default": "enabled"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "moonshot",
+            "model": "kimi-latest",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "ollama",
+            "model": "gpt-oss:20b",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 131072,
+                "maxOutput": 32768
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "unsupported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "openai",
+            "model": "gpt-4o-mini",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 16384
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "unsupported",
+                "inputFile": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "openai",
+            "model": "gpt-5.4-mini",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 400000,
+                "maxOutput": 128000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "openai",
+            "model": "gpt-5.6",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh"
+                        }
+                    ],
+                    "default": "enabled"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "openai-responses",
+            "model": "gpt-5.4-mini",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 400000,
+                "maxOutput": 128000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "supported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "openai-responses",
+            "model": "gpt-5.6",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "default": "enabled"
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "openrouter",
+            "model": "google/gemini-2.0-flash-001",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 8192
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "openrouter",
+            "model": "openai/gpt-oss-120b",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "enabled",
+                        "effort",
+                        "budget",
+                        "adaptive"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "minimal",
+                            "provider": "minimal"
+                        },
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh"
+                        },
+                        {
+                            "requested": "max",
+                            "provider": "max"
+                        }
+                    ],
+                    "budget": {
+                        "min": 1
+                    },
+                    "default": "enabled",
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "perplexity",
+            "model": "sonar",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "inputImage": "unsupported",
+                "inputAudio": "unsupported",
+                "inputFile": "unsupported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "unsupported",
+                "toolChoice": "unsupported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "qwen",
+            "model": "qwen3-max-preview",
+            "status": "supported",
+            "capabilities": {
+                "jsonObject": "supported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "qwen",
+            "model": "qwen3.8-max",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 1000000,
+                "maxOutput": 131072
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "unsupported",
+                "reasoning": {
+                    "selections": [
+                        "disabled",
+                        "enabled",
+                        "effort",
+                        "budget",
+                        "adaptive"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh"
+                        }
+                    ],
+                    "budget": {
+                        "min": 1
+                    },
+                    "default": "adaptive",
+                    "contentVisible": true,
+                    "tokensVisible": true
+                }
+            },
+            "source": "bundled-override"
+        },
+        {
+            "driver": "sambanova",
+            "model": "Meta-Llama-3.1-8B-Instruct",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 2048
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "unsupported",
+                "responseFormatWithTools": "unsupported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "together",
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 4096
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "xai",
+            "model": "grok-3",
+            "status": "supported",
+            "limits": {
+                "contextWindow": 128000,
+                "maxOutput": 128000
+            },
+            "modalities": {
+                "inputText": "supported",
+                "outputText": "supported"
+            },
+            "capabilities": {
+                "streaming": "supported",
+                "tools": "supported",
+                "toolChoice": "supported",
+                "jsonObject": "supported",
+                "jsonSchema": "supported",
+                "responseFormatWithTools": "supported"
+            },
+            "source": "bundled-preset"
+        },
+        {
+            "driver": "xai",
+            "model": "grok-4.6",
+            "status": "supported",
+            "capabilities": {
+                "reasoning": {
+                    "selections": [
+                        "effort"
+                    ],
+                    "efforts": [
+                        {
+                            "requested": "low",
+                            "provider": "low"
+                        },
+                        {
+                            "requested": "medium",
+                            "provider": "medium"
+                        },
+                        {
+                            "requested": "high",
+                            "provider": "high"
+                        },
+                        {
+                            "requested": "xhigh",
+                            "provider": "xhigh"
+                        }
+                    ],
+                    "default": "mandatory"
+                }
+            },
+            "source": "bundled-override"
+        }
+    ]
+}

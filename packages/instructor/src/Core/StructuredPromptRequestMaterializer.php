@@ -33,7 +33,7 @@ final class StructuredPromptRequestMaterializer implements CanMaterializeRequest
             responseFormat: $responseModel->responseFormat(),
             options: $request->options(),
             cachedContext: ($this->cacheProjector ?? new StructuredPromptCacheProjector())
-                ->projectMessages($plan->toCachedMessages()),
+                ->projectMessages($plan->toCachedMessages(), $request->cachedContext()->ttl()),
             responseCachePolicy: $execution->config()->responseCachePolicy(),
             telemetryCorrelation: StructuredOutputTelemetry::inferenceCorrelation($execution),
         );

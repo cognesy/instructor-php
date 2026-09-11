@@ -40,7 +40,6 @@ use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
@@ -48,7 +47,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -155,18 +153,15 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
                 validationType: 'decision',
                 errors: [$validation->getErrorMessage()],
             );
-            $step = $this->buildValidationFailureStep($validation, $messages);
+            $step = $this->buildValidationFailureStep($validation, $messages, $inferenceResponse);
             return $state->withCurrentStep($step)->withFailure(new AgentException($validation->getErrorMessage()));
         }
 
         $toolCalls = (new MakeToolCalls($this->tools, $validator))($decision);
 
-        $usage = $inferenceResponse->usage();
-
         if (!$decision->isCall()) {
             $step = $this->buildFinalAnswerStep(
                 decision: $decision,
-                usage: $usage,
                 inferenceResponse: $inferenceResponse,
                 messages: $messages,
                 cachedContext: $state->context()->toCachedContext(),
@@ -176,14 +171,14 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
         $executions = $this->executor->executeTools($toolCalls, $state);
 
-        $outputMessages = $this->makeFollowUps($decision, $executions);
-        $responseWithCalls = $this->withToolCalls($inferenceResponse, $toolCalls);
+        $outputMessages = $this->makeFollowUps($inferenceResponse, $executions);
 
         $step = new AgentStep(
             inputMessages: $messages,
             outputMessages: $outputMessages,
-            inferenceResponse: $responseWithCalls,
+            inferenceResponse: $inferenceResponse,
             toolExecutions: $executions,
+            requestedToolCalls: $toolCalls,
         );
 
         return $state->withCurrentStep($step);
@@ -320,7 +315,11 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return $this->structuredOutput->create($request);
     }
 
-    private function buildValidationFailureStep(ValidationResult $validation, Messages $context): AgentStep {
+    private function buildValidationFailureStep(
+        ValidationResult $validation,
+        Messages $context,
+        InferenceResponse $response,
+    ): AgentStep {
         $formatter = new ReActFormatter();
         $error = new RuntimeException($validation->getErrorMessage());
         $messagesErr = $formatter->decisionExtractionErrorMessages($error);
@@ -334,6 +333,10 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return new AgentStep(
             inputMessages: $context,
             outputMessages: $messagesErr,
+            historyMessages: Messages::empty()
+                ->appendMessage($response->message())
+                ->appendMessages($messagesErr),
+            inferenceResponse: $response,
             toolExecutions: $executions,
         );
     }
@@ -357,29 +360,27 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     private function buildFinalAnswerStep(
         ReActDecision $decision,
-        ?InferenceUsage $usage,
-        ?InferenceResponse $inferenceResponse,
+        InferenceResponse $inferenceResponse,
         Messages $messages,
         CachedInferenceContext $cachedContext,
     ): AgentStep {
-        $finalText = $decision->answer();
+        $outputMessage = Message::asAssistant($decision->answer());
         if ($this->finalViaInference) {
             $pending = $this->finalizeAnswerViaInference($messages, $cachedContext);
             $inferenceResponse = $pending->response();
-            $finalText = $inferenceResponse->content();
-            $usage = $inferenceResponse->usage();
+            $outputMessage = $inferenceResponse->message();
         }
-        $responseWithUsage = $this->withUsage($inferenceResponse, $usage);
         return new AgentStep(
             inputMessages: $messages,
-            outputMessages: Messages::empty()->appendMessage(Message::asAssistant($finalText)),
-            inferenceResponse: $responseWithUsage,
+            outputMessages: Messages::empty()->appendMessage($outputMessage),
+            historyMessages: Messages::empty()->appendMessage($inferenceResponse->message()),
+            inferenceResponse: $inferenceResponse,
         );
     }
 
-    private function makeFollowUps(ReActDecision $decision, ToolExecutions $executions): Messages {
+    private function makeFollowUps(InferenceResponse $response, ToolExecutions $executions): Messages {
         $formatter = new ReActFormatter();
-        $messages = Messages::empty()->appendMessage($formatter->assistantThoughtActionMessage($decision));
+        $messages = Messages::empty()->appendMessage($response->message());
         foreach ($executions->all() as $execution) {
             $messages = $messages->appendMessage($formatter->observationMessage($execution));
         }
@@ -406,21 +407,6 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
 
         return $this->inference->create($request);
-    }
-
-    private function withToolCalls(InferenceResponse $response, ToolCalls $toolCalls): InferenceResponse {
-        if ($toolCalls->hasNone()) {
-            return $response;
-        }
-        return $response->with(toolCalls: $toolCalls);
-    }
-
-    private function withUsage(?InferenceResponse $response, ?InferenceUsage $usage): InferenceResponse {
-        $resolved = $response ?? new InferenceResponse();
-        if ($usage === null) {
-            return $resolved;
-        }
-        return $resolved->with(usage: $usage);
     }
 
     private function structuredCachedContext(AgentState $state): ?StructuredCachedContext {

@@ -71,20 +71,21 @@ The `Inference` class is the main facade for sending requests to LLM providers a
 
 Use `Inference` when you want a model response as:
 
-- Plain text via `get()` -- returns the raw content string
-- A full `InferenceResponse` via `response()` -- gives access to content, tool calls, usage, finish reason, and reasoning content
+- Assistant message via `get()` -- preserves ordered text, reasoning, and tool blocks
+- A full `InferenceResponse` via `response()` -- carries the assistant `Message` plus usage, finish reason, and provider response data
 - Decoded JSON via `asJsonData()` -- extracts and parses JSON from the response content
 - Tool call arguments via `asToolCallJsonData()` -- extracts arguments from tool/function calls
 - Streamed deltas via `stream()` -- returns an `InferenceStream` for real-time processing
 
-The `InferenceResponse` object provides rich access to the full response, including:
+The `InferenceResponse` envelope exposes:
 
-- `content()` -- the text content of the response
-- `reasoningContent()` -- reasoning/thinking content (for models that support it)
-- `toolCalls()` -- any tool calls made by the model
+- `message()` -- the ordered assistant turn; derive text, reasoning, and tool calls from it
 - `usage()` -- token usage statistics
 - `finishReason()` -- why the model stopped generating
-- `hasContent()`, `hasToolCalls()`, `hasReasoningContent()` -- presence checks
+- `responseData()` -- provider HTTP response data when available
+
+The message exposes `parts()` as its authoritative ordered block sequence and
+`content()`, `reasoningContent()`, and `toolCalls()` as projections.
 
 ### Streaming
 
@@ -136,8 +137,6 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 16384
 ```
 
 You can override any preset value at runtime using the fluent API -- for example, `withModel()` to change the model or `withMaxTokens()` to adjust the token limit.

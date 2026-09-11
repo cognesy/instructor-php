@@ -68,6 +68,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
 use Cognesy\Telemetry\Adapters\Langfuse\LangfuseConfig;
 use Cognesy\Telemetry\Adapters\Langfuse\LangfuseExporter;
@@ -419,11 +420,13 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerInference(): void
     {
+        $this->app->singleton(ModelCatalog::class, static fn (): ModelCatalog => ModelCatalog::discover());
         $this->app->singleton(Inference::class, function (Container $app) {
             $runtime = InferenceRuntime::fromProvider(
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(CanSendHttpRequests::class),
+                models: $app->make(ModelCatalog::class),
             );
             $inference = new Inference($runtime);
 
@@ -469,6 +472,7 @@ class InstructorServiceProvider extends ServiceProvider
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(CanSendHttpRequests::class),
                 structuredConfig: $this->resolveStructuredOutputConfig($app),
+                models: $app->make(ModelCatalog::class),
             );
             $instructor = new StructuredOutput($runtime);
 
@@ -491,6 +495,7 @@ class InstructorServiceProvider extends ServiceProvider
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(CanSendHttpRequests::class),
+                models: $app->make(ModelCatalog::class),
             );
         });
 
@@ -508,6 +513,7 @@ class InstructorServiceProvider extends ServiceProvider
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(CanSendHttpRequests::class),
                 structuredConfig: $this->resolveStructuredOutputConfig($app),
+                models: $app->make(ModelCatalog::class),
             );
         });
     }

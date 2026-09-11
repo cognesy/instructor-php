@@ -16,7 +16,7 @@ class PendingModeSwitchUser {
 // Guards regression from instructor-zfmi (response()/stream() mode switch terminal failure).
 it('reuses finalized response when stream is requested after non-stream response', function () {
     $driver = new FakeInferenceDriver(
-        responses: [new InferenceResponse(content: '{"name":"Ann","age":30}')],
+        responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ann","age":30}'))],
         streamBatches: [],
     );
 
@@ -42,8 +42,8 @@ it('resolves final response after getIterator consumption for all cache policies
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceDelta(contentDelta: ',"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}'), finishReason: 'stop'),
         ]],
     );
 

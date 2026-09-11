@@ -11,7 +11,7 @@ use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 it('suppresses invisible usage-only chunks while still accumulating final usage', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hi', usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hi'), usage: new InferenceUsage(outputTokens: 1)),
             new PartialInferenceDelta(usage: new InferenceUsage(outputTokens: 1)),
             new PartialInferenceDelta(finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
         ]],
@@ -27,7 +27,7 @@ it('suppresses invisible usage-only chunks while still accumulating final usage'
     $deltas = iterator_to_array($stream->deltas(), false);
 
     expect($deltas)->toHaveCount(2);
-    expect($deltas[0]->contentDelta)->toBe('Hi');
+    expect($deltas[0]->messageChunks->textDelta())->toBe('Hi');
     expect($deltas[1]->finishReason)->toBe('stop');
     expect($stream->final()?->usage()->output())->toBe(3);
 });

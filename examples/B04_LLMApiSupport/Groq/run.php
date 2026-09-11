@@ -9,8 +9,7 @@ tags:
 ---
 ## Overview
 
-Groq is LLM providers offering a very fast inference thanks to their
-custom hardware. They provide a several models - Llama2, Mixtral and Gemma.
+Groq provides low-latency inference for hosted open-weight models.
 
 Supported modes depend on the specific model, but generally include:
  - Instructor markdown-JSON fallback - fallback mode
@@ -35,7 +34,7 @@ $answer = Inference::using('groq')
         messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]
     )
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

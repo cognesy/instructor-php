@@ -61,7 +61,7 @@ final class CodexBridge implements AgentBridge
     public function __construct(
         private ?string $model = null,
         private ?SandboxMode $sandboxMode = null,
-        private bool $fullAuto = true,
+        private bool $approveForMe = true,
         private bool $dangerouslyBypass = false,
         private bool $skipGitRepoCheck = false,
         private ?string $resumeSessionId = null,
@@ -252,7 +252,7 @@ final class CodexBridge implements AgentBridge
             images: $this->images,
             workingDirectory: $this->workingDirectory,
             additionalDirs: $this->additionalDirs,
-            fullAuto: $this->fullAuto,
+            approveForMe: $this->approveForMe,
             dangerouslyBypass: $this->dangerouslyBypass,
             skipGitRepoCheck: $this->skipGitRepoCheck,
             resumeSessionId: $this->resumeSessionId,

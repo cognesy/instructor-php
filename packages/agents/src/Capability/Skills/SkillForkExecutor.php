@@ -87,20 +87,7 @@ final readonly class SkillForkExecutor
 
     private function resolveLLMConfig(Skill $skill, ?LLMConfig $parentConfig): ?LLMConfig {
         if ($skill->model !== null && $parentConfig !== null) {
-            return new LLMConfig(
-                apiUrl: $parentConfig->apiUrl,
-                apiKey: $parentConfig->apiKey,
-                endpoint: $parentConfig->endpoint,
-                queryParams: $parentConfig->queryParams,
-                metadata: $parentConfig->metadata,
-                model: $skill->model,
-                maxTokens: $parentConfig->maxTokens,
-                contextLength: $parentConfig->contextLength,
-                maxOutputLength: $parentConfig->maxOutputLength,
-                driver: $parentConfig->driver,
-                options: $parentConfig->options,
-                pricing: $parentConfig->pricing,
-            );
+            return $parentConfig->withOverrides(['model' => $skill->model]);
         }
         if ($skill->model !== null) {
             return new LLMConfig(model: $skill->model);

@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Read the composer.json file and tell me the project name and its PHP version requirement.\"},{\"role\":\"assistant\",\"content\":\"Project name: `cognesy\\\/instructor-php`  \\nPHP version requirement: `^8.3|^8.4|^8.5`\"},{\"role\":\"user\",\"content\":\"Based on what you read, does the project use PSR-4 autoloading? What are the namespace prefixes?\"},{\"role\":\"assistant\",\"content\":\"Yes \\u2014 the project uses PSR-4 autoloading.\\n\\nNamespace prefixes under `autoload.psr-4` are:\\n\\n- `Cognesy\\\\\\\\Addons\\\\\\\\`\\n- `Cognesy\\\\\\\\Agents\\\\\\\\`\\n- `Cognesy\\\\\\\\AgentCtrl\\\\\\\\`\\n- `Cognesy\\\\\\\\Auxiliary\\\\\\\\`\\n- `Cognesy\\\\\\\\Config\\\\\\\\`\\n- `Cognesy\\\\\\\\Dynamic\\\\\\\\`\\n- `Cognesy\\\\\\\\Events\\\\\\\\`\\n- `Cognesy\\\\\\\\Http\\\\\\\\`\\n- `Cognesy\\\\\\\\HttpPool\\\\\\\\`\\n- `Cognesy\\\\\\\\InstructorHub\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Laravel\\\\\\\\`\\n- `Cognesy\\\\\\\\Logging\\\\\\\\`\\n- `Cognesy\\\\\\\\Messages\\\\\\\\`\\n- `Cognesy\\\\\\\\Metrics\\\\\\\\`\\n- `Cognesy\\\\\\\\Pipeline\\\\\\\\`\\n- `Cognesy\\\\\\\\Polyglot\\\\\\\\`\\n- `Cognesy\\\\\\\\Sandbox\\\\\\\\`\\n- `Cognesy\\\\\\\\Schema\\\\\\\\`\\n- `Cognesy\\\\\\\\Setup\\\\\\\\`\\n- `Cognesy\\\\\\\\Stream\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Symfony\\\\\\\\`\\n- `Cognesy\\\\\\\\Tell\\\\\\\\`\\n- `Cognesy\\\\\\\\Template\\\\\\\\`\\n- `Cognesy\\\\\\\\Telemetry\\\\\\\\`\\n- `Cognesy\\\\\\\\Utils\\\\\\\\`\\n- `Cognesy\\\\\\\\Xprompt\\\\\\\\`\\n\\nNotably, `Cognesy\\\\\\\\Instructor\\\\\\\\` is mapped to two directories:\\n- `packages\\\/instructor\\\/src\\\/`\\n- `packages\\\/contracts\\\/src\\\/`\\n\\nThere is also `autoload-dev` PSR-4 mapping for test and dev namespaces.\"},{\"role\":\"user\",\"content\":\"Given what you know about this project, what type of project is it \\u2014 a library, framework, or application? Explain briefly.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. By default, output is limited to 200 lines or 32 KiB, whichever comes first.\\nSet larger limit and max_bytes values when a larger window or the complete file is justified.\\nWhen more content exists, the result includes the exact offset or bash command needed to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 200; no fixed upper limit)\"},\"max_bytes\":{\"type\":\"integer\",\"description\":\"Maximum output bytes (default: 32768; increase explicitly for a larger or full-file read)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:47:32 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1423"
+            ],
+            "cf-ray": [
+                "a394b8b4f909512f-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1169"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999662"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_c8f601501e64409792cd407ce10f61ca"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpKlQbyXIkdclxTzkLyuXjeEBwAe\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109251,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"It\u2019s primarily a **library\/package collection**, not a standalone application.\\n\\nWhy:\\n- The Composer name is `cognesy\/instructor-php`, which looks like a distributable package.\\n- It uses PSR-4 autoloading across many namespaced components, suggesting reusable modules.\\n- The structure includes multiple `packages\/...` source directories and contract namespaces, which is typical of a multi-package library or SDK.\\n- There\u2019s no indication it\u2019s a runnable end-user application with a main entrypoint or app-specific runtime config.\\n\\nSo the best classification is: **a PHP library\/SDK-style project, possibly with multiple subpackages**.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 796,\n    \"completion_tokens\": 133,\n    \"total_tokens\": 929,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

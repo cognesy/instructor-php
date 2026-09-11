@@ -10,8 +10,6 @@ final readonly class LLMConfigProfile
         public string $driver,
         public string $model,
         public int $maxTokens,
-        public int $contextLength,
-        public int $maxOutputLength,
     ) {}
 
     public static function fromConfig(LLMConfig $config): self {
@@ -19,8 +17,14 @@ final readonly class LLMConfigProfile
             driver: $config->driver,
             model: $config->model,
             maxTokens: $config->maxTokens,
-            contextLength: $config->contextLength,
-            maxOutputLength: $config->maxOutputLength,
+        );
+    }
+
+    public static function fromArray(array $data): self {
+        return new self(
+            driver: is_string($data['driver'] ?? null) ? $data['driver'] : '',
+            model: is_string($data['model'] ?? null) ? $data['model'] : '',
+            maxTokens: is_int($data['maxTokens'] ?? null) ? $data['maxTokens'] : 0,
         );
     }
 
@@ -30,8 +34,6 @@ final readonly class LLMConfigProfile
             'driver' => $this->driver,
             'model' => $this->model,
             'maxTokens' => $this->maxTokens,
-            'contextLength' => $this->contextLength,
-            'maxOutputLength' => $this->maxOutputLength,
         ];
     }
 }

@@ -64,8 +64,9 @@ The response object provides methods for inspecting whether the model made tool 
 ```php
 <?php
 
-if ($response->hasToolCalls()) {
-    $toolCalls = $response->toolCalls();
+$message = $response->message();
+if ($message->hasToolCalls()) {
+    $toolCalls = $message->toolCalls();
 
     foreach ($toolCalls->all() as $call) {
         $name = $call->name();        // e.g. 'get_weather'
@@ -76,7 +77,7 @@ if ($response->hasToolCalls()) {
     }
 } else {
     // The model responded with text instead
-    echo $response->content();
+    echo $message->content()->toString();
 }
 ```
 
@@ -239,7 +240,8 @@ Tool calling support varies across providers:
 | Gemini | Yes | Varies by model |
 | Other providers | Varies | Varies |
 
-You can query tool support programmatically through `DriverCapabilities::supportsToolCalling()` and `DriverCapabilities::supportsToolChoice()`.
+Query the exact offering through `ModelCatalog::find($driver, $model)->capabilities`; use its
+`tools` and `toolChoice` statuses.
 
 ## When to Use Tool Calling
 

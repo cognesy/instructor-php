@@ -22,8 +22,8 @@ it('Cohere V2: keeps content empty for tool-only responses', function () {
     ]);
 
     $res = $adapter->fromResponse($response);
-    expect($res->content())->toBe('');
-    expect($res->hasToolCalls())->toBeTrue();
+    expect($res->message()->content()->toString())->toBe('');
+    expect($res->message()->hasToolCalls())->toBeTrue();
 });
 
 it('Cohere V2: does not map tool deltas into contentDelta', function () {
@@ -44,8 +44,9 @@ it('Cohere V2: does not map tool deltas into contentDelta', function () {
 
     $delta = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
     expect($delta)->not->toBeNull();
-    expect($delta->contentDelta)->toBe('');
-    expect($delta->toolArgs)->toContain('Hello');
+    $toolChunk = $delta->messageChunks->all()[0];
+    expect($delta->messageChunks->textDelta())->toBe('');
+    expect($toolChunk->toolCallArguments)->toContain('Hello');
 });
 
 it('Cohere V2: keeps sequential no-id tool calls at local index zero distinct', function () {
@@ -82,7 +83,7 @@ it('Cohere V2: keeps sequential no-id tool calls at local index zero distinct', 
         $state->applyDelta($delta);
     }
 
-    $tools = $state->finalResponse()->toolCalls()->all();
+    $tools = $state->finalResponse()->message()->toolCalls()->all();
 
     expect($tools)->toHaveCount(2);
     expect($tools[0]->value('q'))->toBe('alpha');
@@ -106,9 +107,10 @@ it('Cohere V2: extracts tool fields from a single-object tool_calls delta', func
     ]);
 
     $deltas = iterator_to_array($adapter->fromStreamDeltas([$event]));
+    $toolChunk = $deltas[0]->messageChunks->all()[0];
 
     expect($deltas)->toHaveCount(1);
-    expect($deltas[0]->toolName)->toBe('search');
-    expect($deltas[0]->toolArgs)->toBe('{"q":"x"}');
-    expect((string) $deltas[0]->toolId)->not->toBe('');
+    expect($toolChunk->toolCallName)->toBe('search');
+    expect($toolChunk->toolCallArguments)->toBe('{"q":"x"}');
+    expect((string) $toolChunk->toolCallId)->not->toBe('');
 });

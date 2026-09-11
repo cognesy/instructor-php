@@ -30,7 +30,7 @@ final class InferenceFakeRuntime implements CanCreateInference
         return new self(new FakeInferenceDriver(responses: array_map(
             static fn (string|InferenceResponse $response): InferenceResponse => match (true) {
                 $response instanceof InferenceResponse => $response,
-                default => new InferenceResponse(content: $response),
+                default => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($response)),
             },
             $responses,
         )));

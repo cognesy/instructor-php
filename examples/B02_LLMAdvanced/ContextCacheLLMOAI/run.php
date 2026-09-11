@@ -56,10 +56,10 @@ echo "----------------------------------------\n";
 echo "\n# Summary for CTO of lead gen vendor\n";
 echo "  ({$response->usage()->cacheReadTokens} tokens read from cache)\n\n";
 echo "----------------------------------------\n";
-echo $response->content()."\n";
+echo $response->message()->content()->toString()."\n";
 
-assert(! empty($response->content()));
-assert(Str::contains($response->content(), 'lead', false));
+assert(! empty($response->message()->content()->toString()));
+assert(Str::contains($response->message()->content()->toString(), 'lead', false));
 if ($response->usage()->cacheReadTokens === 0 && $response->usage()->cacheWriteTokens === 0) {
     echo "Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n";
 }
@@ -76,12 +76,10 @@ echo "----------------------------------------\n";
 echo "\n# Summary for CIO of insurance company\n";
 echo "  ({$response2->usage()->cacheReadTokens} tokens read from cache)\n\n";
 echo "----------------------------------------\n";
-echo $response2->content()."\n";
+echo $response2->message()->content()->toString()."\n";
 
-assert(! empty($response2->content()));
-assert(Str::contains($response2->content(), 'insurance', false));
-if ($response2->usage()->cacheReadTokens === 0) {
-    echo "Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n";
-}
+assert(! empty($response2->message()->content()->toString()));
+assert(Str::contains($response2->message()->content()->toString(), 'insurance', false));
+assert($response2->usage()->cacheReadTokens > 0);
 ?>
 ```

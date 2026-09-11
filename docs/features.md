@@ -479,7 +479,7 @@ Reduce costs with cached context (Anthropic):
 <?php
 ->withCachedContext([
     'Large document or context here...',
-    'This won\'t be re-sent on retries'
+    'This prefix is re-sent; Anthropic can reuse its cached computation'
 ])
 ```
 

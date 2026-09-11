@@ -5,16 +5,16 @@
   "autoload": {
     "psr-4": {
       "Cognesy\\Polyglot\\": "src/"
-    },
-    "files": [
-      "src/deprecated_aliases.php"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {
       "Cognesy\\Polyglot\\Tests\\": "tests/"
     }
   },
+  "bin": [
+    "bin/instructor-catalog"
+  ],
   "require": {
     "php": "^8.3",
     "cognesy/instructor-metrics": "^2.9",

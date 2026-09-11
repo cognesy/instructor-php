@@ -145,7 +145,7 @@ class Predictor
             messages: $prompt,
             model: $this->requestInfo->model(),
         );
-        return $this->inference->create($request)->get();
+        return $this->inference->create($request)->get()->content()->toString();
     }
 
     protected function predictStructure(array $callArgs) : mixed {

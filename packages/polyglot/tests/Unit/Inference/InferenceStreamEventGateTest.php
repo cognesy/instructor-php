@@ -63,8 +63,8 @@ function drainStreamWith(EventDispatcherInterface $events): void
         )),
         driver: new FakeInferenceDriver(
             streamBatches: [[
-                new PartialInferenceDelta(contentDelta: 'He', usage: new InferenceUsage(outputTokens: 1)),
-                new PartialInferenceDelta(contentDelta: 'llo', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2)),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'He'), usage: new InferenceUsage(outputTokens: 1)),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'llo'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2)),
             ]],
         ),
         eventDispatcher: $events,
@@ -129,7 +129,7 @@ it('carries the memoized execution id on the streamed response event', function 
         execution: $execution,
         driver: new FakeInferenceDriver(
             streamBatches: [[
-                new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2)),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 2)),
             ]],
         ),
         eventDispatcher: $events,

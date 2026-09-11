@@ -5,7 +5,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('keeps existing nullable fields when with() receives null', function () {
-    $response = new InferenceResponse(content: 'ok', usage: new InferenceUsage(inputTokens: 2, outputTokens: 3));
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), usage: new InferenceUsage(inputTokens: 2, outputTokens: 3));
     $attempt = new InferenceAttempt(
         response: $response,
         usage: new InferenceUsage(inputTokens: 5, outputTokens: 7),

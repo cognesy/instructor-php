@@ -101,7 +101,7 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
         $project,
         '--output=json',
     ])[0])->toBe(0);
-    $compactedContinuation = tellP0Messages($recorder->requests[array_key_last($recorder->requests)]);
+    $compactedContinuation = $recorder->textProjection(array_key_last($recorder->requests));
     expect($compactedContinuation)
         ->toContain(['role' => 'assistant', 'content' => 'verified semantic response'])
         ->toContain(['role' => 'user', 'content' => 'continue after compaction']);
@@ -131,7 +131,7 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
         '--output=json',
     ])[0])->toBe(0);
 
-    $restartedContinuation = tellP0Messages($recorder->requests[array_key_last($recorder->requests)]);
+    $restartedContinuation = $recorder->textProjection(array_key_last($recorder->requests));
     expect($restartedContinuation)
         ->toContain(['role' => 'user', 'content' => 'restart after clear'])
         ->toContain(['role' => 'assistant', 'content' => 'verified semantic response'])
@@ -200,15 +200,4 @@ function tellP0Snapshot(string $directory): array {
     ksort($files);
 
     return $files;
-}
-
-/** @return list<array{role: string, content: string}> */
-function tellP0Messages(array $request): array {
-    return array_map(
-        static fn (array $message): array => [
-            'role' => $message['role'],
-            'content' => $message['content'],
-        ],
-        $request,
-    );
 }

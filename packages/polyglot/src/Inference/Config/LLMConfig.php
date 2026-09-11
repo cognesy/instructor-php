@@ -9,7 +9,6 @@ use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
 use Cognesy\Config\EnvTemplate;
 use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
-use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use InvalidArgumentException;
 use Throwable;
 
@@ -18,7 +17,20 @@ final class LLMConfig
     public const CONFIG_GROUP = 'llm';
 
     /** @var list<string> */
-    private const INT_FIELDS = ['maxTokens', 'contextLength', 'maxOutputLength'];
+    private const INT_FIELDS = ['maxTokens'];
+
+    /** @var list<string> */
+    private const FIELDS = [
+        'apiUrl',
+        'apiKey',
+        'endpoint',
+        'queryParams',
+        'metadata',
+        'model',
+        'maxTokens',
+        'driver',
+        'options',
+    ];
 
     public static function group(): string
     {
@@ -37,12 +49,9 @@ final class LLMConfig
         public array $metadata = [],
         public string $model = '',
         public int $maxTokens = 1024,
-        public int $contextLength = 8000,
-        public int $maxOutputLength = 4096,
         public string $driver = 'openai-compatible',
         #[\SensitiveParameter]
         public array $options = [],
-        public array $pricing = [],
     ) {
         $this->assertNoRetryPolicyInOptions($this->options);
     }
@@ -99,8 +108,10 @@ final class LLMConfig
 
     public static function fromArray(#[\SensitiveParameter] array $config): LLMConfig
     {
-        $typed = self::coerceScalarTypes($config);
+        $known = array_intersect_key($config, array_fill_keys(self::FIELDS, true));
+        $typed = $known;
         try {
+            $typed = self::coerceScalarTypes($known);
             $instance = new self(...$typed);
         } catch (Throwable $e) {
             $fields = SensitiveDataRedactor::summarizeFieldTypes($typed);
@@ -135,17 +146,9 @@ final class LLMConfig
             'metadata' => $this->metadata,
             'model' => $this->model,
             'maxTokens' => $this->maxTokens,
-            'contextLength' => $this->contextLength,
-            'maxOutputLength' => $this->maxOutputLength,
             'driver' => $this->driver,
             'options' => $this->options,
-            'pricing' => $this->pricing,
         ];
-    }
-
-    public function getPricing(): InferencePricing
-    {
-        return InferencePricing::fromArray($this->pricing);
     }
 
     private function assertNoRetryPolicyInOptions(#[\SensitiveParameter] array $options): void

@@ -99,6 +99,37 @@ it('DeepSeek V4: omits response_format when tools are present', function () {
     $json = $body->toRequestBody($req);
 
     expect($json)->toHaveKey('tools')
-        ->toHaveKey('tool_choice')
+        ->toHaveKey('tool_choice', 'auto')
         ->not->toHaveKey('response_format');
+});
+
+it('DeepSeek V4: preserves a specific tool choice when thinking is disabled', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://api.deepseek.com',
+        apiKey: 'KEY',
+        endpoint: '/chat/completions',
+        model: 'deepseek-v4-flash',
+        driver: 'deepseek',
+    );
+
+    $body = new DeepseekBodyFormat($config, new OpenAIMessageFormat());
+    $request = new InferenceRequest(
+        messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
+        model: 'deepseek-v4-flash',
+        tools: ToolDefinitions::fromArray([[
+            'type' => 'function',
+            'function' => [
+                'name' => 'extract_data',
+                'description' => 'Extract data',
+                'parameters' => ['type' => 'object', 'properties' => []],
+            ],
+        ]]),
+        toolChoice: ToolChoice::specific('extract_data'),
+        options: ['thinking' => ['type' => 'disabled']],
+    );
+
+    expect($body->toRequestBody($request)['tool_choice'])->toBe([
+        'type' => 'function',
+        'function' => ['name' => 'extract_data'],
+    ]);
 });

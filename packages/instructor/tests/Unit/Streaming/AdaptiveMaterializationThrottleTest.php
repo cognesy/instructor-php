@@ -61,7 +61,7 @@ function runThrottled(array $deltas, int &$calls, int $interval = 1): array {
 
 it('materializes the first parseable snapshot immediately (time-to-first-value)', function () {
     $calls = 0;
-    runThrottled([new PartialInferenceDelta(contentDelta: '{"t":"a')], $calls);
+    runThrottled([new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"t":"a'))], $calls);
 
     expect($calls)->toBe(1);
 });
@@ -69,10 +69,10 @@ it('materializes the first parseable snapshot immediately (time-to-first-value)'
 it('skips re-materialization while growth stays below the 8-byte floor', function () {
     $calls = 0;
     $result = runThrottled([
-        new PartialInferenceDelta(contentDelta: '{"t":"a'), // len 7 -> first value, calls=1
-        new PartialInferenceDelta(contentDelta: 'b'),       // growth 1 < 8 -> skip
-        new PartialInferenceDelta(contentDelta: 'c'),       // growth 2 < 8 -> skip
-        new PartialInferenceDelta(contentDelta: 'defg'),    // growth 6 < 8 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"t":"a')), // len 7 -> first value, calls=1
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'b')),       // growth 1 < 8 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'c')),       // growth 2 < 8 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'defg')),    // growth 6 < 8 -> skip
     ], $calls);
 
     expect($calls)->toBe(1);
@@ -83,9 +83,9 @@ it('skips re-materialization while growth stays below the 8-byte floor', functio
 it('materializes once accumulated growth reaches the 8-byte floor', function () {
     $calls = 0;
     $result = runThrottled([
-        new PartialInferenceDelta(contentDelta: '{"t":"a'), // len 7 -> calls=1
-        new PartialInferenceDelta(contentDelta: 'bcd'),     // growth 3 -> skip
-        new PartialInferenceDelta(contentDelta: 'efghi'),   // growth 8 >= 8 -> calls=2
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"t":"a')), // len 7 -> calls=1
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'bcd')),     // growth 3 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'efghi')),   // growth 8 >= 8 -> calls=2
     ], $calls);
 
     expect($calls)->toBe(2);
@@ -97,11 +97,11 @@ it('scales the required growth with buffer size (len/32)', function () {
     $calls = 0;
     $big = '{"t":"' . str_repeat('x', 3193) . 'a'; // len 3200 -> calls=1
     runThrottled([
-        new PartialInferenceDelta(contentDelta: $big),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $big)),
         // growth 50, required max(8, intdiv(3250,32))=101 -> skip
-        new PartialInferenceDelta(contentDelta: str_repeat('y', 50)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", str_repeat('y', 50))),
         // growth 110, required max(8, intdiv(3310,32))=103 -> materialize
-        new PartialInferenceDelta(contentDelta: str_repeat('z', 60)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", str_repeat('z', 60))),
     ], $calls);
 
     expect($calls)->toBe(2);
@@ -110,8 +110,8 @@ it('scales the required growth with buffer size (len/32)', function () {
 it('always materializes on finishReason regardless of growth', function () {
     $calls = 0;
     $result = runThrottled([
-        new PartialInferenceDelta(contentDelta: '{"t":"a'), // calls=1
-        new PartialInferenceDelta(contentDelta: 'b"}'),     // growth 3 < 8 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"t":"a')), // calls=1
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'b"}')),     // growth 3 < 8 -> skip
         new PartialInferenceDelta(finishReason: 'stop'),    // forced -> calls=2
     ], $calls);
 
@@ -122,10 +122,10 @@ it('always materializes on finishReason regardless of growth', function () {
 it('uses pure delta-count throttling when an explicit interval > 1 is set', function () {
     $calls = 0;
     runThrottled([
-        new PartialInferenceDelta(contentDelta: '{"t":"a'), // first value -> calls=1
-        new PartialInferenceDelta(contentDelta: 'b'),       // count 1 < 3 -> skip
-        new PartialInferenceDelta(contentDelta: 'c'),       // count 2 < 3 -> skip
-        new PartialInferenceDelta(contentDelta: 'd'),       // count 3 >= 3 -> calls=2 (growth only 3 bytes)
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"t":"a')), // first value -> calls=1
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'b')),       // count 1 < 3 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'c')),       // count 2 < 3 -> skip
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'd')),       // count 3 >= 3 -> calls=2 (growth only 3 bytes)
     ], $calls, interval: 3);
 
     expect($calls)->toBe(2);

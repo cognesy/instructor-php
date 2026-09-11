@@ -38,8 +38,8 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
                 throw new TimeoutException('stream timeout');
             }
             return [
-                new PartialInferenceDelta(contentDelta: 'Hello'),
-                new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello')),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' world'), finishReason: 'stop'),
             ];
         },
     );
@@ -63,7 +63,7 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
 
     $response = $pending->response();
 
-    expect($response->content())->toBe('Hello world');
+    expect($response->message()->content()->toString())->toBe('Hello world');
     // The driver's makeStreamResponsesFor was called twice (first failed, second succeeded)
     expect($driver->streamCalls)->toBe(2);
 });
@@ -94,8 +94,8 @@ it('does not re-execute when response() is called after stream() and dispatches 
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello'),
-            new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' world'), finishReason: 'stop'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
@@ -116,12 +116,12 @@ it('does not re-execute when response() is called after stream() and dispatches 
     // First: consume the stream
     $stream = $pending->stream();
     $finalFromStream = $stream->final();
-    expect($finalFromStream->content())->toBe('Hello world');
+    expect($finalFromStream->message()->content()->toString())->toBe('Hello world');
     expect($driver->streamCalls)->toBe(1);
 
     // Second: calling response() must reuse the stream, not re-execute
     $responseResult = $pending->response();
-    expect($responseResult->content())->toBe('Hello world');
+    expect($responseResult->message()->content()->toString())->toBe('Hello world');
     expect($driver->streamCalls)->toBe(1); // still 1 — no second driver call
 
     // Lifecycle events must be dispatched even through stream-first path
@@ -146,8 +146,8 @@ it('dispatches started events before response created in stream-first flow', fun
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello'),
-            new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' world'), finishReason: 'stop'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
@@ -194,13 +194,13 @@ it('creates a fresh stream for length recovery continuation', function () {
             $requestMessages[] = $request->messages();
             if ($streamAttempts === 1) {
                 return [
-                    new PartialInferenceDelta(contentDelta: 'partial'),
-                    new PartialInferenceDelta(contentDelta: ' answer', finishReason: 'length'),
+                    new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'partial')),
+                    new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' answer'), finishReason: 'length'),
                 ];
             }
             return [
-                new PartialInferenceDelta(contentDelta: 'complete'),
-                new PartialInferenceDelta(contentDelta: ' response', finishReason: 'stop'),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'complete')),
+                new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' response'), finishReason: 'stop'),
             ];
         },
     );
@@ -228,7 +228,7 @@ it('creates a fresh stream for length recovery continuation', function () {
     $response = $pending->response();
 
     // The continuation request got a fresh stream and succeeded
-    expect($response->content())->toBe('complete response');
+    expect($response->message()->content()->toString())->toBe('complete response');
     // Two calls: original + length recovery continuation
     expect($requestMessages)->toHaveCount(2);
 });
@@ -253,11 +253,8 @@ it('reports partial usage in failure event when stream throws after emitting chu
     $driver = new FakeInferenceDriver(
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
         onStream: function (): iterable {
-            yield new PartialInferenceDelta(
-                contentDelta: 'partial',
-                usage: new InferenceUsage(inputTokens: 10, outputTokens: 5),
-                usageIsCumulative: true,
-            );
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'partial'), usage: new InferenceUsage(inputTokens: 10, outputTokens: 5),
+            usageIsCumulative: true,);
             throw new TimeoutException('connection lost mid-stream');
         },
     );
@@ -327,8 +324,8 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello'),
-            new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' world'), finishReason: 'stop'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
@@ -353,11 +350,11 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
 
     // First response() — dispatches lifecycle events via stream-first branch
     $first = $pending->response();
-    expect($first->content())->toBe('Hello world');
+    expect($first->message()->content()->toString())->toBe('Hello world');
 
     // Second response() — must hit existingResponse early return, no new events
     $second = $pending->response();
-    expect($second->content())->toBe('Hello world');
+    expect($second->message()->content()->toString())->toBe('Hello world');
     expect($second)->toBe($first); // same instance
 
     // Driver never called again
@@ -393,8 +390,8 @@ it('throws and dispatches failure events when stream-first response has a failed
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'truncated'),
-            new PartialInferenceDelta(contentDelta: ' output', finishReason: 'length'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'truncated')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' output'), finishReason: 'length'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
@@ -447,7 +444,7 @@ it('re-throws on repeated response() calls after non-streaming failure', functio
     $events = new EventDispatcher();
 
     $driver = new FakeInferenceDriver(
-        responses: [new InferenceResponse(content: 'truncated', finishReason: 'length')],
+        responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('truncated'), finishReason: 'length')],
     );
 
     $request = (new InferenceRequestBuilder())
@@ -501,9 +498,9 @@ it('does not retry generic finish reason failures even when runtime exceptions a
         onResponse: function () use (&$responseCalls): InferenceResponse {
             $responseCalls++;
             if ($responseCalls === 1) {
-                return new InferenceResponse(content: 'failed', finishReason: 'error');
+                return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('failed'), finishReason: 'error');
             }
-            return new InferenceResponse(content: 'ok', finishReason: 'stop');
+            return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop');
         },
     );
 
@@ -533,8 +530,8 @@ it('re-throws on repeated response() calls after stream-first failure', function
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'partial'),
-            new PartialInferenceDelta(contentDelta: ' content', finishReason: 'content_filter'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'partial')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' content'), finishReason: 'content_filter'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );

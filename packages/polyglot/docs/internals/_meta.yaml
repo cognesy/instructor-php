@@ -2,6 +2,7 @@ order:
   - overview
   - lifecycle
   - configuration
+  - model-catalog
   - providers
   - adapters
   - http-client

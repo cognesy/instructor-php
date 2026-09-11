@@ -60,8 +60,8 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         $state->applyDelta($delta);
     }
     $final = $state->finalResponse();
-    expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
-    $tool = $final->toolCalls()->first();
+    expect(str_starts_with($final->message()->content()->toString(), 'Hello'))->toBeTrue();
+    $tool = $final->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });

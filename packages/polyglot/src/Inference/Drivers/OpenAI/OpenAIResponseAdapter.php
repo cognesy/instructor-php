@@ -3,7 +3,10 @@
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\ToolCalls;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageAssembler;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -12,6 +15,8 @@ use Cognesy\Messages\ToolCallId;
 use Cognesy\Polyglot\Inference\Data\ToolCallIdByStreamIndex;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunk;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunks;
 use Cognesy\Polyglot\Inference\Drivers\Support\DecodesJsonPayload;
 use RuntimeException;
 
@@ -27,11 +32,10 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $data = $this->decodeResponseData($response->body());
         return new InferenceResponse(
-            content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $response,
+            message: AssistantMessageAssembler::fromParts($this->makeAssistantParts($data))->message(),
         );
     }
 
@@ -52,27 +56,7 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
                 continue;
             }
 
-            $first = $toolDeltas[0];
-            yield new PartialInferenceDelta(
-                contentDelta: $delta->contentDelta,
-                reasoningContentDelta: $delta->reasoningContentDelta,
-                toolId: $first->id,
-                toolName: $first->name,
-                toolArgs: $first->args,
-                finishReason: $delta->finishReason,
-                usage: $delta->usage,
-                usageIsCumulative: $delta->usageIsCumulative,
-                responseData: $delta->responseData,
-                value: $delta->value,
-            );
-
-            foreach (array_slice($toolDeltas, 1) as $tool) {
-                yield new PartialInferenceDelta(
-                    toolId: $tool->id,
-                    toolName: $tool->name,
-                    toolArgs: $tool->args,
-                );
-            }
+            yield $delta->withMessageChunks($this->makeStreamMessageChunks($delta, $toolDeltas));
         }
     }
 
@@ -82,7 +66,8 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
      */
     protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
-            contentDelta: $this->makeContentDelta($data),
+            messageChunks: AssistantMessageChunks::empty()
+                ->withTextDelta('openai:text:0', $this->makeContentDelta($data)),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             usageIsCumulative: true,
@@ -146,6 +131,36 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 
     protected function makeContentDelta(array $data): string {
         return $data['choices'][0]['delta']['content'] ?? '';
+    }
+
+    protected function makeAssistantParts(array $data): ContentParts
+    {
+        $parts = ContentParts::empty();
+        $content = $this->makeContent($data);
+        if ($content !== '') {
+            $parts = $parts->add(ContentPart::text($content));
+        }
+        foreach ($this->makeToolCalls($data)->each() as $toolCall) {
+            $parts = $parts->add(ContentPart::toolCall($toolCall));
+        }
+        return $parts;
+    }
+
+    /** @param list<ToolCallDelta> $toolDeltas */
+    protected function makeStreamMessageChunks(
+        PartialInferenceDelta $delta,
+        array $toolDeltas,
+    ): AssistantMessageChunks {
+        $chunks = $delta->messageChunks;
+        foreach ($toolDeltas as $tool) {
+            $chunks = $chunks->add(AssistantMessageChunk::toolCallDelta(
+                index: 'openai:tool:' . $tool->id,
+                id: $tool->id,
+                name: $tool->name,
+                arguments: $tool->args,
+            ));
+        }
+        return $chunks;
     }
 
     /**

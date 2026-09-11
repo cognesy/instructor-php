@@ -14,7 +14,7 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 final class CodexBridgeBuilder extends AbstractBridgeBuilder
 {
     private ?SandboxMode $sandboxMode = null;
-    private bool $fullAuto = true;
+    private bool $approveForMe = true;
     private bool $dangerouslyBypass = false;
     private bool $skipGitRepoCheck = false;
     private ?string $resumeSessionId = null;
@@ -42,6 +42,8 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
     public function withSandbox(SandboxMode $mode): static
     {
         $this->sandboxMode = $mode;
+        $this->approveForMe = false;
+        $this->dangerouslyBypass = false;
         return $this;
     }
 
@@ -53,16 +55,19 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
      */
     public function disableSandbox(): static
     {
-        $this->sandboxMode = SandboxMode::DangerFullAccess;
-        return $this;
+        return $this->withSandbox(SandboxMode::DangerFullAccess);
     }
 
     /**
-     * Enable full auto mode (workspace write + on-failure approvals).
+     * Route approval requests through automatic review.
      */
-    public function fullAuto(bool $enabled = true): static
+    public function approveForMe(bool $enabled = true): static
     {
-        $this->fullAuto = $enabled;
+        $this->approveForMe = $enabled;
+        if ($enabled) {
+            $this->sandboxMode = null;
+            $this->dangerouslyBypass = false;
+        }
         return $this;
     }
 
@@ -72,6 +77,10 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
     public function dangerouslyBypass(bool $enabled = true): static
     {
         $this->dangerouslyBypass = $enabled;
+        if ($enabled) {
+            $this->sandboxMode = null;
+            $this->approveForMe = false;
+        }
         return $this;
     }
 
@@ -131,7 +140,7 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
             executionId: $this->executionId(),
             model: $this->model,
             sandboxMode: $this->sandboxMode,
-            fullAuto: $this->fullAuto,
+            approveForMe: $this->approveForMe,
             dangerouslyBypass: $this->dangerouslyBypass,
             skipGitRepoCheck: $this->skipGitRepoCheck,
             resumeSessionId: $this->resumeSessionId,

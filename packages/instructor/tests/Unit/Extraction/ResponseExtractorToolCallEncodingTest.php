@@ -10,7 +10,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 it('returns failure when tool call JSON encoding fails', function () {
     $invalidUtf8 = "\xC3\x28";
     $toolCalls = new ToolCalls(new ToolCall('test', ['bad' => $invalidUtf8]));
-    $response = new InferenceResponse(toolCalls: $toolCalls, finishReason: 'stop');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls($toolCalls), finishReason: 'stop');
 
     expect(fn() => ExtractionInput::fromResponse($response, OutputMode::Tools))
         ->toThrow(ExtractionException::class);

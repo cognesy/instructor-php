@@ -108,8 +108,8 @@ function stageFailureRuntime(
         default => '{"name":"PRIVATE-CONTENT"}',
     };
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: $content),
-        new InferenceResponse(content: $content),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content)),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content)),
     ]);
 
     return match ($stage) {
@@ -213,7 +213,7 @@ it('records the exact failure object and throwable in the retry attempt', functi
     $updated = (new DefaultRetryPolicy($events))->recordFailure(
         execution: $execution,
         result: $result,
-        inference: new InferenceResponse(content: 'private'),
+        inference: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('private')),
     );
 
     expect($updated->errors()[0])->toBe($failure)
@@ -236,7 +236,7 @@ it('emits one correlated result-neutral event with the actual result type', func
         $captured[] = $event->data;
     });
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: $content)]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content))]),
         events: $events,
         outputMode: OutputMode::Json,
     );
@@ -341,11 +341,7 @@ it('deduplicates streaming preview failures and excludes raw content', function 
     );
     $accumulator = $reducer->init();
     foreach (range(1, 8) as $index) {
-        $accumulator = $reducer->step($accumulator, new PartialInferenceDelta(
-            toolId: "tool-{$index}",
-            toolName: 'extract_data',
-            toolArgs: '{"name":"PRIVATE-PARTIAL-CONTENT"}',
-        ));
+        $accumulator = $reducer->step($accumulator, new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . "tool-{$index}", "tool-{$index}", 'extract_data', '{"name":"PRIVATE-PARTIAL-CONTENT"}'), ));
     }
 
     expect($captured)->toHaveCount(1)

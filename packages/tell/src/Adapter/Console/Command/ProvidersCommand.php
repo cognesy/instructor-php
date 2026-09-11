@@ -39,7 +39,7 @@ final class ProvidersCommand extends Command implements CanDescribeOperationalPl
         $fields = FieldSelection::from(
             (string) $input->getOption('fields'),
             ['connection', 'provider', 'defaultModel', 'source'],
-            ['connection', 'provider', 'source', 'defaultModel', 'availableModels', 'contextCapacity', 'maxOutputTokens', 'capabilities', 'unknown', 'provenance'],
+            ['connection', 'provider', 'source', 'defaultModel', 'availableModels', 'status', 'contextCapacity', 'maxOutputTokens', 'modalities', 'capabilities', 'catalogSource', 'catalogVersion', 'provenance'],
         );
         (new StructuredOutput($output))->write([
             'count' => count($catalogue['connections']),
@@ -56,11 +56,11 @@ final class ProvidersCommand extends Command implements CanDescribeOperationalPl
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'providers',
-            responsibility: 'Inspect Polyglot-owned connection presets and declared provider capabilities.',
-            ownedState: 'No Tell state; preset and driver metadata remain Polyglot-owned.',
+            responsibility: 'Inspect Polyglot-owned connections joined to exact model offerings.',
+            ownedState: 'No Tell state; presets and model catalogs remain Polyglot-owned.',
             input: 'Optional project directory and field selection.',
-            output: 'Sorted, redacted connection/provider metadata with explicit unknown fields.',
-            authority: 'Read-only local preset inspection; never resolves credentials or opens a network connection.',
+            output: 'Sorted, redacted connections with exact catalog limits, capabilities, and provenance.',
+            authority: 'Read-only local preset and catalog inspection; never resolves credentials or opens a network connection.',
             degradedBehavior: 'Reports malformed preset diagnostics while preserving other catalogue rows.',
         );
     }

@@ -13,9 +13,9 @@ if (!class_exists('SequenceStreamPerson')) {
 
 it('partials() skips null updates emitted before sequence value appears', function () {
     $chunks = [
-        new PartialInferenceDelta(contentDelta: '{"list":['),
-        new PartialInferenceDelta(contentDelta: '{"name":"Alice","age":25},{"name":"Bob"'),
-        new PartialInferenceDelta(contentDelta: ',"age":30}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Alice","age":25},{"name":"Bob"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);
@@ -39,7 +39,7 @@ it('partials() skips null updates emitted before sequence value appears', functi
 it('sequence() ignores transient non-sequence partial values and yields finalized items', function () {
     $chunks = [
         new PartialInferenceDelta(value: ['tool_fragment' => true]),
-        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice","age":25}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"list":[{"name":"Alice","age":25}]}'), finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);

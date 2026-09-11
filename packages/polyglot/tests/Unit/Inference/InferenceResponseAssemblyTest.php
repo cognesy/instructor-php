@@ -2,6 +2,7 @@
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
+use Cognesy\Polyglot\Inference\Assembly\ThinkTagMessageNormalizer;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 function applyDeltas(array $partials): InferenceStreamState {
@@ -15,13 +16,13 @@ function applyDeltas(array $partials): InferenceStreamState {
 
 it('accumulates content across partial responses', function () {
     $partials = [
-        new PartialInferenceDelta(contentDelta: 'Hel', usage: new InferenceUsage(inputTokens: 1, outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: 'lo', usage: new InferenceUsage(inputTokens: 0, outputTokens: 1)),
-        new PartialInferenceDelta(contentDelta: '!', finishReason: 'stop', usage: new InferenceUsage(inputTokens: 0, outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hel'), usage: new InferenceUsage(inputTokens: 1, outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'lo'), usage: new InferenceUsage(inputTokens: 0, outputTokens: 1)),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '!'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 0, outputTokens: 1)),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->content())->toBe('Hello!');
+    expect($res->message()->content()->toString())->toBe('Hello!');
     expect($res->hasFinishReason())->toBeTrue();
     expect($res->usage()->input())->toBe(1);
     expect($res->usage()->output())->toBe(3);
@@ -29,12 +30,12 @@ it('accumulates content across partial responses', function () {
 
 it('aggregates tool arguments from partial responses (single tool)', function () {
     $partials = [
-        new PartialInferenceDelta(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":"Hel', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolId: 'call_1', toolArgs: 'lo"}', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', 'search', '{"q":"Hel'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', arguments: 'lo"}'), usage: new InferenceUsage()),
     ];
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->hasToolCalls())->toBeTrue();
-    $tool = $res->toolCalls()->first();
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    $tool = $res->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
@@ -42,29 +43,27 @@ it('aggregates tool arguments from partial responses (single tool)', function ()
 it('keeps raw cumulative tool args snapshot while assembling', function () {
     $state = new InferenceStreamState();
 
-    $state->applyDelta(new PartialInferenceDelta(
-        toolId: 'call_1', toolName: 'search', toolArgs: '{"q":"Hel',
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', 'search', '{"q":"Hel'), ));
     expect($state->toolArgsSnapshot())->toBe('{"q":"Hel');
 
-    $state->applyDelta(new PartialInferenceDelta(
-        toolId: 'call_1', toolArgs: 'lo"}',
-    ));
+    $state->applyDelta(new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', arguments: 'lo"}'), ));
     expect($state->toolArgsSnapshot())->toBe('{"q":"Hello"}');
 });
 
 it('accumulates multiple tools in sequence (name-based)', function () {
     $partials = [
-        new PartialInferenceDelta(toolName: 'search', toolArgs: '{"q":"Hel', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolArgs: 'lo"}', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolName: 'calculate', toolArgs: '{"expr":"2+', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolArgs: '2"}', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'search', name: 'search', arguments: '{"q":"Hel'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withToolCallDelta('test:tool:search', arguments: 'lo"}'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'calculate', name: 'calculate', arguments: '{"expr":"2+'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+            ->withToolCallDelta('test:tool:calculate', arguments: '2"}'), usage: new InferenceUsage()),
     ];
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->hasToolCalls())->toBeTrue();
-    expect($res->toolCalls()->count())->toBe(2);
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    expect($res->message()->toolCalls()->count())->toBe(2);
 
-    $tools = $res->toolCalls()->all();
+    $tools = $res->message()->toolCalls()->all();
     expect($tools[0]->name())->toBe('search');
     expect($tools[0]->value('q'))->toBe('Hello');
     expect($tools[1]->name())->toBe('calculate');
@@ -73,15 +72,15 @@ it('accumulates multiple tools in sequence (name-based)', function () {
 
 it('treats repeated same-name tool deltas without id as one continuing call', function () {
     $partials = [
-        new PartialInferenceDelta(toolName: 'search', toolArgs: '{"q":"Paris"', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolName: 'search', toolArgs: ',"lang":"en"}', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'search', name: 'search', arguments: '{"q":"Paris"'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'search', name: 'search', arguments: ',"lang":"en"}'), usage: new InferenceUsage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->hasToolCalls())->toBeTrue();
-    expect($res->toolCalls()->count())->toBe(1);
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    expect($res->message()->toolCalls()->count())->toBe(1);
 
-    $tool = $res->toolCalls()->first();
+    $tool = $res->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Paris');
     expect($tool->value('lang'))->toBe('en');
@@ -89,17 +88,17 @@ it('treats repeated same-name tool deltas without id as one continuing call', fu
 
 it('accumulates tools by ID with multiple deltas (ID-based preferred)', function () {
     $partials = [
-        new PartialInferenceDelta(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolId: 'call_1', toolArgs: '"test', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolId: 'call_1', toolArgs: '"}', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolId: 'call_2', toolName: 'calculate', toolArgs: '{"n":', usage: new InferenceUsage()),
-        new PartialInferenceDelta(toolId: 'call_2', toolArgs: '42}', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', 'search', '{"q":'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', arguments: '"test'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', arguments: '"}'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_2', 'call_2', 'calculate', '{"n":'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_2', 'call_2', arguments: '42}'), usage: new InferenceUsage()),
     ];
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->hasToolCalls())->toBeTrue();
-    expect($res->toolCalls()->count())->toBe(2);
+    expect($res->message()->hasToolCalls())->toBeTrue();
+    expect($res->message()->toolCalls()->count())->toBe(2);
 
-    $tools = $res->toolCalls()->all();
+    $tools = $res->message()->toolCalls()->all();
     expect($tools[0]->name())->toBe('search');
     expect($tools[0]->value('q'))->toBe('test');
     expect($tools[1]->name())->toBe('calculate');
@@ -123,9 +122,9 @@ it('preserves first non-default HttpResponse across accumulation', function () {
     ]);
 
     $deltas = [
-        new PartialInferenceDelta(contentDelta: 'Hello', responseData: $response1),
-        new PartialInferenceDelta(contentDelta: ' ', responseData: $response2),
-        new PartialInferenceDelta(contentDelta: 'World'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), responseData: $response1),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' '), responseData: $response2),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'World')),
     ];
 
     $res = applyDeltas($deltas)->finalResponse();
@@ -135,27 +134,27 @@ it('preserves first non-default HttpResponse across accumulation', function () {
 
 it('handles finish reason propagation correctly', function () {
     $partials = [
-        new PartialInferenceDelta(contentDelta: 'Hello', usage: new InferenceUsage()),
-        new PartialInferenceDelta(contentDelta: ' World', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' World'), usage: new InferenceUsage()),
         new PartialInferenceDelta(finishReason: 'stop', usage: new InferenceUsage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->content())->toBe('Hello World');
+    expect($res->message()->content()->toString())->toBe('Hello World');
     expect($res->finishReason()->value)->toBe('stop');
 });
 
 it('correctly handles finish reason values for streaming', function () {
     // Test 1: Finish reason stability - once set, should persist
     $partials1 = [
-        new PartialInferenceDelta(contentDelta: 'First', usage: new InferenceUsage()),
-        new PartialInferenceDelta(contentDelta: ' chunk', finishReason: 'length', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'First'), usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ' chunk'), finishReason: 'length', usage: new InferenceUsage()),
         new PartialInferenceDelta(usage: new InferenceUsage(inputTokens: 10, outputTokens: 20)), // Usage-only chunk after finish
     ];
 
     $res1 = applyDeltas($partials1)->finalResponse();
     expect($res1->finishReason()->value)->toBe('length')
-        ->and($res1->content())->toBe('First chunk')
+        ->and($res1->message()->content()->toString())->toBe('First chunk')
         ->and($res1->usage()->input())->toBe(10)
         ->and($res1->usage()->output())->toBe(20);
 
@@ -170,7 +169,7 @@ it('correctly handles finish reason values for streaming', function () {
     ];
     foreach ($finishReasonTests as $test) {
         $partials = [
-            new PartialInferenceDelta(contentDelta: 'test'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'test')),
             new PartialInferenceDelta(finishReason: $test['input']),
         ];
 
@@ -180,33 +179,46 @@ it('correctly handles finish reason values for streaming', function () {
 
     // Test 3: Empty finish reason in early chunks doesn't override
     $partials3 = [
-        new PartialInferenceDelta(contentDelta: 'A', finishReason: ''),
-        new PartialInferenceDelta(contentDelta: 'B', finishReason: ''),
-        new PartialInferenceDelta(contentDelta: 'C', finishReason: 'stop'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'A'), finishReason: ''),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'B'), finishReason: ''),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'C'), finishReason: 'stop'),
     ];
 
     $res3 = applyDeltas($partials3)->finalResponse();
     expect($res3->finishReason()->value)->toBe('stop')
-        ->and($res3->content())->toBe('ABC');
+        ->and($res3->message()->content()->toString())->toBe('ABC');
 });
 
 it('accumulates reasoning content across deltas', function () {
     $partials = [
-        new PartialInferenceDelta(reasoningContentDelta: 'First ', usage: new InferenceUsage()),
-        new PartialInferenceDelta(reasoningContentDelta: 'I think', usage: new InferenceUsage()),
-        new PartialInferenceDelta(reasoningContentDelta: ' about it', usage: new InferenceUsage()),
+        new PartialInferenceDelta(
+            messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withReasoningDelta('test:reasoning:0', 'First '),
+            usage: new InferenceUsage(),
+        ),
+        new PartialInferenceDelta(
+            messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withReasoningDelta('test:reasoning:0', 'I think'),
+            usage: new InferenceUsage(),
+        ),
+        new PartialInferenceDelta(
+            messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withReasoningDelta('test:reasoning:0', ' about it'),
+            usage: new InferenceUsage(),
+        ),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
-    expect($res->reasoningContent())->toBe('First I think about it');
+    expect($res->message()->reasoningContent())->toBe('First I think about it');
 });
 
 it('extracts reasoning content from think tags in accumulated content', function () {
     $partials = [
-        new PartialInferenceDelta(contentDelta: '<think>Because it is.</think>Paris', usage: new InferenceUsage()),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '<think>Because it is.</think>Paris'), usage: new InferenceUsage()),
     ];
 
-    $res = applyDeltas($partials)->finalResponse()->withReasoningContentFallbackFromContent();
-    expect($res->reasoningContent())->toBe('Because it is.')
-        ->and($res->content())->toBe('Paris');
+    $res = applyDeltas($partials)->finalResponse();
+    $message = (new ThinkTagMessageNormalizer())->normalize($res->message());
+    expect($message->reasoningContent())->toBe('Because it is.')
+        ->and($message->content()->toString())->toBe('Paris');
 });

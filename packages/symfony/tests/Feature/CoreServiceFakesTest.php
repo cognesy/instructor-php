@@ -25,7 +25,7 @@ it('overrides inference services through the public runtime contract', function 
                 ->get();
 
             expect($app->service(CanCreateInference::class))->toBe($fake)
-                ->and($result)->toBe('fake-answer')
+                ->and($result->content()->toString())->toBe('fake-answer')
                 ->and($fake->recorded())->toHaveCount(1)
                 ->and($fake->recorded()[0]->messages()->toArray())->toHaveCount(1);
         },

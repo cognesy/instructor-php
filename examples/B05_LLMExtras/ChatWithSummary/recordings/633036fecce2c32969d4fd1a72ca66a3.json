@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Summarize the content of following sequence of messages for further reference:\"},{\"role\":\"user\",\"content\":\"Is there a specific mindset I should adopt?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Be a trusted teacher, not a reactive vendor: bring a useful new perspective, tie it to their business impact, and confidently guide the sale.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"Can you provide an example of a successful sales interaction using Challenger Sale?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"A rep tells a CFO, \\u201cYour discounting isn\\u2019t the real problem\\u2014your quote approval cycle is costing you 12% of margin,\\u201d shows a quick benchmark, and asks for a 20-minute working session to quantify the loss and agree on next steps.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"How can I tailor my approach to different types of clients?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Lead with the insight that matters most to each client\\u2019s top pain\\u2014cost, risk, speed, or growth\\u2014and adapt your teaching and close to that business priority.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"This sequence is about getting better sales results using the **Challenger Sale** approach. The advice given was to:\\n- **Teach** buyers a new, valuable insight\\n- **Tailor** the message to their specific pain points\\n- **Take control** of the next step with a clear ask\\n\\nPractical next steps included:\\n- Pick one target account\\n- Identify a likely money-losing problem\\n- Draft a 3-point insight and ask for a next meeting\\n- Send a short note that challenges a common assumption and request 15 minutes\\n- Reframe the conversation around a hidden cost or missed opportunity\\n- Avoid being too generic, relying only on discovery questions, or ending with vague follow-ups\\n\\nThe last user message appears unrelated and instead provides a summary of **Instructor for PHP**, a framework-agnostic PHP library for structured LLM outputs.\"}],\"max_completion_tokens\":512}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:46:44 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1736"
+            ],
+            "cf-ray": [
+                "a394b784dfa17dc4-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1149"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999584"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "req_6c89026c282348538e6dfdc9d48d84e0"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpJyvbdXKTutKOBwaQbVjlTawA7j\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109202,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Summary of the conversation:\\n\\n- The discussion focused on improving sales results using the **Challenger Sale** approach.\\n- Core advice was to:\\n  - **Teach** buyers a valuable new insight\\n  - **Tailor** the message to the client\u2019s specific pain points\\n  - **Take control** of the next step with a clear ask\\n\\n- Practical guidance included:\\n  - Pick one target account\\n  - Identify a likely money-losing problem\\n  - Draft a 3-point insight and ask for a next meeting\\n  - Send a short note that challenges a common assumption and requests 15 minutes\\n  - Reframe the conversation around a hidden cost or missed opportunity\\n  - Avoid being too generic, relying only on discovery questions, or ending with vague follow-ups\\n\\n- The last user message does **not** continue the sales topic; it appears to shift to a different subject and instead provides a summary of **Instructor for PHP**, a framework-agnostic PHP library for structured LLM outputs.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 391,\n    \"completion_tokens\": 214,\n    \"total_tokens\": 605,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

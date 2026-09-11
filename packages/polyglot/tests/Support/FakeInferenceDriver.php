@@ -4,7 +4,6 @@ namespace Cognesy\Polyglot\Tests\Support;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -19,7 +18,6 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
     private ?Closure $onResponse;
     /** @var null|Closure(InferenceRequest, self):iterable<PartialInferenceDelta> */
     private ?Closure $onStream;
-    private DriverCapabilities $capabilities;
 
     public int $responseCalls = 0;
     public int $streamCalls = 0;
@@ -35,13 +33,11 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
         array $streamBatches = [],
         ?Closure $onResponse = null,
         ?Closure $onStream = null,
-        ?DriverCapabilities $capabilities = null,
     ) {
         $this->responses = $responses;
         $this->streamBatches = $streamBatches;
         $this->onResponse = $onResponse;
         $this->onStream = $onStream;
-        $this->capabilities = $capabilities ?? new DriverCapabilities();
     }
 
     public function makeResponseFor(InferenceRequest $request): InferenceResponse {
@@ -67,10 +63,6 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
             ? array_shift($this->streamBatches)
             : [];
         yield from $this->emitDeltas($batch);
-    }
-
-    public function capabilities(?string $model = null): DriverCapabilities {
-        return $this->capabilities;
     }
 
     /** @param iterable<PartialInferenceDelta> $partials */

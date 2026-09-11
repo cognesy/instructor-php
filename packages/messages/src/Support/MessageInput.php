@@ -11,8 +11,6 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\MessageId;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Support\ContentInput;
-use Cognesy\Messages\ToolCalls;
-use Cognesy\Messages\ToolResult;
 use Cognesy\Utils\TextRepresentation;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -52,8 +50,15 @@ final class MessageInput
     }
 
     public static function fromArray(array $message): Message {
+        self::assertCanonicalToolParts($message);
+
         $role = $message['role'] ?? Message::DEFAULT_ROLE;
+        $parts = match (true) {
+            isset($message['parts']) && is_array($message['parts']) => ContentParts::fromArray($message['parts']),
+            default => null,
+        };
         $content = match (true) {
+            $parts !== null => null,
             self::isMessageShape($message) => ContentInput::fromAny($message['content'] ?? ''),
             self::isArrayOfStrings($message) => ContentInput::fromAny(array_map(
                 fn(string $text) => ContentPart::text($text),
@@ -66,37 +71,15 @@ final class MessageInput
 
         $metadata = $message['_metadata'] ?? $message['metadata'] ?? [];
 
-        // Hydrate tool_calls: from top-level 'tool_calls', or legacy _metadata.tool_calls
-        $toolCallsRaw = $message['tool_calls'] ?? $metadata['tool_calls'] ?? null;
-        $toolCalls = match (true) {
-            $toolCallsRaw instanceof ToolCalls => $toolCallsRaw,
-            is_array($toolCallsRaw) && $toolCallsRaw !== [] => ToolCalls::fromArray($toolCallsRaw),
-            default => null,
-        };
-
-        // Hydrate tool_result: from top-level 'tool_result', or legacy _metadata.tool_result
-        $toolResultRaw = $message['tool_result'] ?? $metadata['tool_result'] ?? null;
-        $toolResult = match (true) {
-            $toolResultRaw instanceof ToolResult => $toolResultRaw,
-            is_array($toolResultRaw) && $toolResultRaw !== [] => ToolResult::fromArray($toolResultRaw),
-            default => null,
-        };
-
-        // Remove tool data from metadata — it lives on the Message now
-        if (is_array($metadata)) {
-            unset($metadata['tool_calls'], $metadata['tool_result']);
-        }
-
         return new Message(
             role: $role,
             content: $content,
             name: $message['name'] ?? '',
             metadata: $metadata,
             parentId: isset($message['parentId']) ? new MessageId((string)$message['parentId']) : null,
-            toolCalls: $toolCalls,
-            toolResult: $toolResult,
             id: isset($message['id']) ? new MessageId((string)$message['id']) : null,
             createdAt: isset($message['createdAt']) ? new DateTimeImmutable($message['createdAt']) : null,
+            parts: $parts,
         );
     }
 
@@ -121,6 +104,7 @@ final class MessageInput
     private static function isMessageShape(array $message): bool {
         return array_key_exists('role', $message)
             || array_key_exists('content', $message)
+            || array_key_exists('parts', $message)
             || array_key_exists('_metadata', $message);
     }
 
@@ -136,5 +120,23 @@ final class MessageInput
             fn(bool $carry, $item) => $carry && is_string($item),
             true,
         );
+    }
+
+    /** @param array<array-key, mixed> $message */
+    private static function assertCanonicalToolParts(array $message): void
+    {
+        $metadata = $message['_metadata'] ?? $message['metadata'] ?? [];
+        $hasFlattenedToolData = array_key_exists('tool_calls', $message)
+            || array_key_exists('tool_result', $message)
+            || (is_array($metadata) && (
+                array_key_exists('tool_calls', $metadata)
+                || array_key_exists('tool_result', $metadata)
+            ));
+
+        if ($hasFlattenedToolData) {
+            throw new InvalidArgumentException(
+                'Flattened tool_calls and tool_result fields are not supported; encode tool blocks in parts.',
+            );
+        }
     }
 }

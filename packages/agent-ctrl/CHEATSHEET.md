@@ -105,7 +105,7 @@ $builder = AgentCtrl::codex()->withConfig(AgentCtrlConfig::fromArray([
 
 - `withSandbox(SandboxMode $mode): static`
 - `disableSandbox(): static`
-- `fullAuto(bool $enabled = true): static`
+- `approveForMe(bool $enabled = true): static`
 - `dangerouslyBypass(bool $enabled = true): static`
 - `skipGitRepoCheck(bool $enabled = true): static`
 - `continueSession(): static`

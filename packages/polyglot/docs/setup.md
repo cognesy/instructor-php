@@ -135,8 +135,6 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-contextLength: 1000000
-maxOutputLength: 16384
 ```
 
 The `driver` field determines which Polyglot driver handles the request.
@@ -248,12 +246,9 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
 | `endpoint` | string | `''` | API endpoint path |
 | `model` | string | `''` | Model identifier |
 | `maxTokens` | int | `1024` | Maximum tokens in the response |
-| `contextLength` | int | `8000` | Context window size |
-| `maxOutputLength` | int | `4096` | Maximum output length |
 | `queryParams` | array | `[]` | Additional query parameters |
 | `metadata` | array | `[]` | Provider-specific metadata |
 | `options` | array | `[]` | Additional driver options |
-| `pricing` | array | `[]` | Token pricing configuration (per 1M tokens) |
 
 
 #### Overriding a Preset at Runtime

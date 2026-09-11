@@ -100,7 +100,7 @@ final readonly class TellCredentialStore implements CanManageTellCredentials
 
     /** @param array<string, string> $credentials */
     private function write(#[SensitiveParameter] array $credentials): void {
-        $directory = (new CredentialStorage($this->paths))->ensureConfig();
+        $directory = (new CredentialStorage($this->paths))->ensureHome();
         if (is_link($this->paths->credentials)) {
             throw new RuntimeException('Refusing to replace a symbolic-link Tell credentials file.');
         }
@@ -142,7 +142,7 @@ final readonly class TellCredentialStore implements CanManageTellCredentials
         }
         $permissions = fileperms($this->paths->credentials);
         if (is_int($permissions) && ($permissions & 0077) !== 0) {
-            throw new RuntimeException('Tell credentials file permissions are too broad; run chmod 600 ~/.tell/config/credentials.env.');
+            throw new RuntimeException('Tell credentials file permissions are too broad; run chmod 600 ~/.tell/.env.');
         }
     }
 

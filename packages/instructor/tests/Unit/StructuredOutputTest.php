@@ -19,7 +19,7 @@ class TestUserStruct {
 
 it('deserializes basic JSON into response class', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"Jason","age":25}')
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Jason","age":25}'))
     ]);
 
     $user = (new StructuredOutput)
@@ -40,7 +40,7 @@ it('uses tool call args in Tools mode when present', function () {
         new ToolCall('extract', ['name' => 'Jane', 'age' => 22])
     );
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '', toolCalls: $toolCalls)
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls($toolCalls))
     ]);
 
     $user = (new StructuredOutput)
@@ -58,7 +58,7 @@ it('uses tool call args in Tools mode when present', function () {
 
 it('caches processed response within the same PendingStructuredOutput', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"A","age":1}')
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"A","age":1}'))
     ]);
 
     $pending = (new StructuredOutput)
@@ -92,7 +92,7 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
         new ToolCall('extract', ['name' => 'Jason', 'age' => 25])
     );
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '', toolCalls: $toolCalls)
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls($toolCalls))
     ]);
 
     $user = (new StructuredOutput)
@@ -114,7 +114,7 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
 
 it('supports runtime-style create with explicit request', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"name":"Mia","age":31}')
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Mia","age":31}'))
     ]);
 
     $pending = (new StructuredOutput)

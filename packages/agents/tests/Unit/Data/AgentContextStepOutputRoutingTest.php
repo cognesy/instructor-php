@@ -22,7 +22,7 @@ describe('AgentState::withCurrentStep metadata tagging', function () {
         ]);
         $step = new AgentStep(
             outputMessages: Messages::fromString('tool result', 'tool'),
-            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
         );
 
         $context = new AgentContext(
@@ -83,7 +83,7 @@ describe('AgentState::withCurrentStep metadata tagging', function () {
         ]);
         $traceStep = new AgentStep(
             outputMessages: Messages::fromString('trace from exec 1', 'tool'),
-            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls($toolCall))),
         );
         $finalStep = new AgentStep(
             outputMessages: Messages::fromString('answer from exec 1', 'assistant'),

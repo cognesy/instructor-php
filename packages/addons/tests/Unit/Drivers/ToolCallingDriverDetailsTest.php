@@ -22,14 +22,10 @@ function _inc(int $x): int { return $x + 1; }
 function _dbl(int $x): int { return $x * 2; }
 
 it('executes multiple tool calls and preserves follow-up order and usage', function () {
-    $resp = new InferenceResponse(
-        content: '',
-        toolCalls: new ToolCalls(
+    $resp = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(
             new ToolCall('_inc', ['x' => 1]),
             new ToolCall('_dbl', ['x' => 2])
-        ),
-        usage: new InferenceUsage(3,4)
-    );
+        )), usage: new InferenceUsage(3,4));
     $driver = new FakeInferenceDriver([$resp]);
 
     $tools = new Tools(
@@ -63,9 +59,9 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     $invocations = array_values(array_filter($allMessages, fn(Message $m) => $m->hasToolCalls()));
     $results = array_values(array_filter($allMessages, fn(Message $m) => $m->toolResult() !== null));
 
-    expect(count($invocations))->toBe(2)
+    expect(count($invocations))->toBe(1)
         ->and($invocations[0]->toolCalls()->first()->name())->toBe('_inc')
-        ->and($invocations[1]->toolCalls()->first()->name())->toBe('_dbl');
+        ->and($invocations[0]->toolCalls()->all()[1]->name())->toBe('_dbl');
 
     expect(count($results))->toBe(2)
         ->and($results[0]->toolResult()->toolName())->toBe('_inc')

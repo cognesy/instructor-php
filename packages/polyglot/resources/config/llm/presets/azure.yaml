@@ -8,5 +8,3 @@ metadata:
   deploymentId: gpt-4o-mini
 model: gpt-4o-mini
 maxTokens: 1024
-contextLength: 128000
-maxOutputLength: 16384

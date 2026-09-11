@@ -111,8 +111,8 @@ describe('MessageList', function () {
         expect($array[0])->toHaveKey('id');
         expect($array[0])->toHaveKey('createdAt');
         expect($array[0]['role'])->toBe('user');
-        expect($array[0]['content'])->toBe('Hello');
+        expect($array[0]['parts'])->toBe([['type' => 'text', 'text' => 'Hello']]);
         expect($array[1]['role'])->toBe('assistant');
-        expect($array[1]['content'])->toBe('World');
+        expect($array[1]['parts'])->toBe([['type' => 'text', 'text' => 'World']]);
     });
 });

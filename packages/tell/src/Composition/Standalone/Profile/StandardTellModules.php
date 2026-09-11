@@ -155,6 +155,7 @@ final readonly class StandardTellModules
             requires: [
                 CanResolveTellPaths::class,
                 CanResolveTellModel::class,
+                CanCatalogueTellProviders::class,
                 CanReadTellClock::class,
                 CanTraceTellExecution::class,
                 CanLoadTellAgentDefinitions::class,
@@ -163,6 +164,7 @@ final readonly class StandardTellModules
             factory: static function (
                 CanResolveTellPaths $paths,
                 CanResolveTellModel $model,
+                CanCatalogueTellProviders $providerCatalogue,
                 CanReadTellClock $clock,
                 CanTraceTellExecution $tracer,
                 CanLoadTellAgentDefinitions $definitions,
@@ -186,6 +188,7 @@ final readonly class StandardTellModules
                     tracer: $tracer,
                     clock: $clock,
                     modelResolver: $model,
+                    providerCatalogue: $providerCatalogue,
                     definitionLoader: $definitions,
                     contributions: $selected,
                     driver: $driverFactory === null ? null : $driverFactory(),

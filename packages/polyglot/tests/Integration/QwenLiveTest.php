@@ -25,5 +25,5 @@ it('completes a Qwen3.8-Max request through the bundled preset', function () {
         )
         ->get();
 
-    expect($response)->toContain('QWEN_OK');
+    expect($response->content()->toString())->toContain('QWEN_OK');
 })->group('qwen-live');

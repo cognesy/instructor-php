@@ -18,10 +18,10 @@ it('appends a user message to the default section', function () {
 
     $next = $state->withUserMessage('Hello');
 
-    $messages = $next->messages()->toArray();
+    $messages = $next->messages()->all();
     expect($messages)->toHaveCount(1)
-        ->and($messages[0]['role'])->toBe('user')
-        ->and($messages[0]['content'])->toBe('Hello');
+        ->and($messages[0]->role()->value)->toBe('user')
+        ->and($messages[0]->content()->toString())->toBe('Hello');
 });
 
 it('resets execution state for continuation', function () {

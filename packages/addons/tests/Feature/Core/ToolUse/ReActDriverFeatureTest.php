@@ -76,23 +76,23 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'I need to add 2455 and 3558 first',
                     'type' => 'call_tool',
                     'tool' => 'react_add_numbers',
                     'args' => ['a' => 2455, 'b' => 3558]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Now I need to subtract 4344 from 6013',
                     'type' => 'call_tool',
                     'tool' => 'react_subtract_numbers',
                     'args' => ['a' => 6013, 'b' => 4344]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'I have completed the calculation',
                     'type' => 'final_answer',
                     'answer' => 'The result is 1669'
-                ])),
+                ]))),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver);
@@ -124,18 +124,18 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'I will call a non-existent tool',
                     'type' => 'call_tool',
                     'tool' => 'nonexistent_tool',
                     'args' => ['a' => 1, 'b' => 2]
-                ])),
+                ]))),
                 // Second response won't be used since error stops iteration
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'The tool does not exist, I will provide an answer',
                     'type' => 'final_answer',
                     'answer' => 'Unable to complete calculation'
-                ])),
+                ]))),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver);
@@ -171,23 +171,23 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Adding 2455 and 3558',
                     'type' => 'call_tool',
                     'tool' => 'react_add_numbers',
                     'args' => ['a' => 2455, 'b' => 3558]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Subtracting 4344 from 6013',
                     'type' => 'call_tool',
                     'tool' => 'react_subtract_numbers',
                     'args' => ['a' => 6013, 'b' => 4344]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Calculation complete',
                     'type' => 'final_answer',
                     'answer' => 'The final result is 1669'
-                ])),
+                ]))),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver);
@@ -222,17 +222,17 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Step 1',
                     'type' => 'call_tool',
                     'tool' => 'react_add_numbers',
                     'args' => ['a' => 10, 'b' => 20]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Step 2',
                     'type' => 'final_answer',
                     'answer' => '30'
-                ])),
+                ]))),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver);
@@ -263,23 +263,23 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Adding numbers',
                     'type' => 'call_tool',
                     'tool' => 'react_add_numbers',
                     'args' => ['a' => 2455, 'b' => 3558]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Subtracting from result',
                     'type' => 'call_tool',
                     'tool' => 'react_subtract_numbers',
                     'args' => ['a' => 6013, 'b' => 4344]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Done',
                     'type' => 'final_answer',
                     'answer' => 'Result: 1669'
-                ])),
+                ]))),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver);
@@ -306,19 +306,19 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Adding',
                     'type' => 'call_tool',
                     'tool' => 'react_add_numbers',
                     'args' => ['a' => 100, 'b' => 50]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Ready to finalize',
                     'type' => 'final_answer',
                     'answer' => 'stub answer'
-                ])),
+                ]))),
                 // Final via inference (plain text)
-                new InferenceResponse(content: 'The calculated result is 150'),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('The calculated result is 150')),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver, finalViaInference: true);
@@ -344,11 +344,11 @@ describe('ReActDriver Feature Tests', function () {
             [$tools, $continuationCriteria] = makeToolsAndCriteria();
 
             $driver = new FakeInferenceDriver([
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Already have answer',
                     'type' => 'final_answer',
                     'answer' => 'The answer is 42'
-                ])),
+                ]))),
             ]);
 
             $reactDriver = makeReActDriverFromFake($driver);
@@ -375,17 +375,17 @@ describe('ReActDriver Feature Tests', function () {
         it('produces same result across all three patterns', function () {
             // Arrange: Shared mock responses
             $mockResponses = [
-                new InferenceResponse(content: json_encode([
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Adding',
                     'type' => 'call_tool',
                     'tool' => 'react_add_numbers',
                     'args' => ['a' => 5, 'b' => 3]
-                ])),
-                new InferenceResponse(content: json_encode([
+                ]))),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
                     'thought' => 'Done',
                     'type' => 'final_answer',
                     'answer' => 'Sum is 8'
-                ])),
+                ]))),
             ];
 
             $query = 'Add 5 and 3';

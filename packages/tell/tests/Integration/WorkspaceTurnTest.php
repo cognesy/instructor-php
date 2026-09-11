@@ -51,13 +51,7 @@ it('continues a canonical workspace transcript with a fresh Tell process', funct
     $second = new CommandTester(tellTestCommand($freshFactory));
     expect($second->execute(['prompt' => 'second turn', '--dir' => $project]))->toBe(0);
 
-    $secondRequest = array_map(
-        static fn (array $message): array => [
-            'role' => $message['role'],
-            'content' => $message['content'],
-        ],
-        $recorder->requests[1],
-    );
+    $secondRequest = $recorder->textProjection(1);
     $workspace = tellWorkspace($freshFactory, $project);
     $store = new FilesystemArena($workspace);
     $head = $store->readRef()->head;
@@ -106,16 +100,11 @@ it('writes only semantic canonical data and excludes provider observations', fun
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: Messages::fromString('semantic answer', 'assistant'),
-                inferenceResponse: new InferenceResponse(
-                    content: 'semantic answer',
-                    reasoningContent: 'provider reasoning must remain outside arena',
-                    usage: new InferenceUsage(41, 17),
-                    responseData: HttpResponse::sync(
+                inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('semantic answer')->withReasoningContent('provider reasoning must remain outside arena'), usage: new InferenceUsage(41, 17), responseData: HttpResponse::sync(
                         200,
                         ['authorization' => 'Bearer provider-wire-secret'],
                         'provider-wire-payload',
-                    ),
-                ),
+                    )),
             ));
         }
     };
@@ -183,7 +172,7 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
                         ),
                         'assistant',
                     )),
-                    inferenceResponse: new InferenceResponse(content: 'partly semantic'),
+                    inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('partly semantic')),
                 ));
             }
         },

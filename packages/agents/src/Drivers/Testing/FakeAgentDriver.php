@@ -212,10 +212,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
         if ($toolCalls->hasNone()) {
             return $step->toAgentStep($state, $inputMessages);
         }
-        $response = new InferenceResponse(
-            toolCalls: $toolCalls,
-            usage: $step->usage,
-        );
+        $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls($toolCalls), usage: $step->usage);
         $executions = match ($step->executeTools) {
             true => $executor->executeTools($toolCalls, $state),
             false => null,
@@ -232,10 +229,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
 
     private function defaultStep(AgentState $state): AgentStep {
         $inputMessages = $this->messageCompiler->compile($state);
-        $response = new InferenceResponse(
-            toolCalls: ToolCalls::empty(),
-            usage: $this->defaultUsage,
-        );
+        $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(ToolCalls::empty()), usage: $this->defaultUsage);
         $errors = $this->errorsForType($this->defaultStepType);
         return new AgentStep(
             inputMessages: $inputMessages,

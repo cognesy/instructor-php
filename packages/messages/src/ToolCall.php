@@ -16,6 +16,7 @@ final readonly class ToolCall
         private string $name,
         private array $arguments = [],
         ToolCallId|string|null $id = null,
+        private ?string $rawArguments = null,
     ) {
         $this->id = self::normalizeId($id);
     }
@@ -26,6 +27,7 @@ final readonly class ToolCall
             name: self::nameFrom($data),
             arguments: self::argumentsFrom($data),
             id: self::idFrom($data),
+            rawArguments: self::rawArgumentsFrom($data),
         );
     }
 
@@ -77,13 +79,18 @@ final readonly class ToolCall
 
     public function argumentsAsJson(): string
     {
-        return Json::encode($this->arguments);
+        return $this->rawArguments ?? Json::encode($this->arguments);
     }
 
     /** Alias for argumentsAsJson() — polyglot compatibility */
     public function argsAsJson(): string
     {
-        return Json::encode($this->arguments);
+        return $this->argumentsAsJson();
+    }
+
+    public function rawArguments(): ?string
+    {
+        return $this->rawArguments;
     }
 
     public function hasArgs(): bool
@@ -117,6 +124,7 @@ final readonly class ToolCall
             name: $name ?? $this->name,
             arguments: $args ?? $this->arguments,
             id: self::normalizeId($id ?? $this->id),
+            rawArguments: $args === null ? $this->rawArguments : null,
         );
     }
 
@@ -126,6 +134,7 @@ final readonly class ToolCall
             name: $this->name,
             arguments: $this->arguments,
             id: is_string($id) ? new ToolCallId($id) : $id,
+            rawArguments: $this->rawArguments,
         );
     }
 
@@ -135,6 +144,7 @@ final readonly class ToolCall
             name: $name,
             arguments: $this->arguments,
             id: $this->id,
+            rawArguments: $this->rawArguments,
         );
     }
 
@@ -144,6 +154,7 @@ final readonly class ToolCall
             name: $this->name,
             arguments: is_array($args) ? $args : JsonDecoder::decodeToArray($args),
             id: $this->id,
+            rawArguments: is_string($args) ? $args : null,
         );
     }
 
@@ -157,11 +168,15 @@ final readonly class ToolCall
 
     public function toArray(): array
     {
-        return [
+        $data = [
             'id' => $this->id?->toNullableString(),
             'name' => $this->name,
             'arguments' => $this->arguments,
         ];
+        if ($this->rawArguments !== null) {
+            $data['raw_arguments'] = $this->rawArguments;
+        }
+        return $data;
     }
 
     public function toString(): string
@@ -201,6 +216,17 @@ final readonly class ToolCall
             is_string($arguments) => JsonDecoder::decodeToArray($arguments),
             default => throw new InvalidArgumentException('ToolCall arguments must be an array, JSON string, or null.'),
         };
+    }
+
+    private static function rawArgumentsFrom(array $data): ?string
+    {
+        $raw = $data['raw_arguments']
+            ?? $data['arguments']
+            ?? $data['args']
+            ?? $data['function']['arguments']
+            ?? null;
+
+        return is_string($raw) ? $raw : null;
     }
 
     private static function idFrom(array $data): ?ToolCallId

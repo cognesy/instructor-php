@@ -21,6 +21,7 @@ use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
 it('emits inference requested metadata without materializing the full request', function () {
     $events = new EventDispatcher();
@@ -29,7 +30,7 @@ it('emits inference requested metadata without materializing the full request', 
         $captured[] = $event;
     });
 
-    $request = new class(
+    $request = (new class(
         messages: Messages::fromString('large sensitive message history'),
         model: 'gpt-metadata',
         tools: new ToolDefinitions(new ToolDefinition(
@@ -59,7 +60,15 @@ it('emits inference requested metadata without materializing the full request', 
         public function toArray(): array {
             throw new RuntimeException('InferenceRequested must not materialize the full request.');
         }
-    };
+    })->withModelProfile(ModelCatalog::fromArray([
+        'version' => 'telemetry-test-v1',
+        'models' => [[
+            'driver' => 'openai',
+            'model' => 'gpt-metadata',
+            'status' => 'supported',
+            'source' => 'telemetry-test',
+        ]],
+    ])->find('openai', 'gpt-metadata'));
 
     $driver = new class(
         new LLMConfig(),
@@ -90,7 +99,7 @@ it('emits inference requested metadata without materializing the full request', 
         },
         new class implements CanTranslateInferenceResponse {
             public function fromResponse(HttpResponse $response): ?InferenceResponse {
-                return new InferenceResponse(content: 'ok', finishReason: 'stop');
+                return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop');
             }
 
             public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
@@ -111,6 +120,10 @@ it('emits inference requested metadata without materializing the full request', 
     expect($payload)->toMatchArray([
         'requestId' => $request->id()->toString(),
         'model' => 'gpt-metadata',
+        'modelKey' => 'openai/gpt-metadata',
+        'modelCatalogVersion' => 'telemetry-test-v1',
+        'modelCatalogSource' => 'telemetry-test',
+        'modelSupportStatus' => 'supported',
         'isStreamed' => true,
         'messageCount' => 1,
         'toolCount' => 1,

@@ -25,12 +25,12 @@ it('emits the same correlation identifiers for response.generated on sync and st
             true => new FakeInferenceDriver(
                 responses: [],
                 streamBatches: [[
-                    new PartialInferenceDelta(contentDelta: '{"name":'),
-                    new PartialInferenceDelta(contentDelta: '"Ada"}'),
+                    new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":')),
+                    new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '"Ada"}')),
                 ]],
             ),
             false => new FakeInferenceDriver([
-                new InferenceResponse(content: '{"name":"Ada"}', finishReason: 'stop'),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"name":"Ada"}'), finishReason: 'stop'),
             ]),
         };
 

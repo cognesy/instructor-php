@@ -33,6 +33,6 @@ class SummarizeMessages implements CanSummarizeMessages
             options: ['max_tokens' => $tokenLimit],
         );
 
-        return $this->inference->create($request)->get();
+        return $this->inference->create($request)->get()->content()->toString();
     }
 }

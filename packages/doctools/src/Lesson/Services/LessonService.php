@@ -29,7 +29,7 @@ class LessonService
         return $this->inference->create(new InferenceRequest(
             messages: Messages::fromString($prompt),
             options: ['max_tokens' => $this->config->maxTokens],
-        ))->get();
+        ))->get()->content()->toString();
     }
 
     private function buildPrompt(string $exampleTitle, string $codeContent): string

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Tests\Unit\Drivers;
 
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
@@ -31,12 +33,11 @@ class BareToolMessageDispatchTest extends TestCase
     {
         return new Message(
             role: 'tool',
-            content: '{"temperature": 72}',
-            toolResult: new ToolResult(
+            parts: new ContentParts(ContentPart::toolResult(new ToolResult(
                 content: '{"temperature": 72}',
                 callId: new ToolCallId('call_abc'),
                 toolName: 'get_weather',
-            ),
+            ))),
         );
     }
 

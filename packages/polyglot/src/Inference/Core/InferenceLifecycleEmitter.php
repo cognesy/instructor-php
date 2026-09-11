@@ -17,6 +17,7 @@ use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
+use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 use Cognesy\Polyglot\Telemetry\InferenceTelemetry;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use Psr\EventDispatcher\EventDispatcherInterface;

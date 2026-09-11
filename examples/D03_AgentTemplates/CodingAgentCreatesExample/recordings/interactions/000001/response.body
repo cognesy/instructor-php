@@ -1,0 +1,45 @@
+{
+  "id": "chatcmpl-EMpM8eG81UambAzS4uDT317Wq5vfA",
+  "object": "chat.completion",
+  "created": 1789109336,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_d1L9DOtazb22vqp9IW0kUoXu",
+            "type": "function",
+            "function": {
+              "name": "read",
+              "arguments": "{\"path\":\"/Users/ddebowczyk/projects/_instructor/instructor-php/examples/A01_Basics/Basic/run.php\",\"offset\":0,\"limit\":400,\"max_bytes\":40000}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1640,
+    "completion_tokens": 54,
+    "total_tokens": 1694,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

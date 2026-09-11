@@ -325,9 +325,9 @@ test('can convert messages to array', function () {
     expect($array)->toBeArray()
         ->and($array)->toHaveCount(2)
         ->and($array[0]['role'])->toBe('user')
-        ->and($array[0]['content'])->toBe('Hello')
+        ->and($array[0]['parts'])->toBe([['type' => 'text', 'text' => 'Hello']])
         ->and($array[1]['role'])->toBe('assistant')
-        ->and($array[1]['content'])->toBe('Hi');
+        ->and($array[1]['parts'])->toBe([['type' => 'text', 'text' => 'Hi']]);
 });
 
 test('can convert messages to string', function () {

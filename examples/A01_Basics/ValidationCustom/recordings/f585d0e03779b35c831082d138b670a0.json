@@ -16,7 +16,7 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:39:25 GMT"
+                "Fri, 11 Sep 2026 07:35:21 GMT"
             ],
             "content-type": [
                 "application\/json"
@@ -25,7 +25,7 @@
                 "1066"
             ],
             "cf-ray": [
-                "a16eac0bca70e188-WAW"
+                "a394fec29897ef8d-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "702"
+                "544"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -78,15 +78,13 @@
                 "1ms"
             ],
             "x-request-id": [
-                "req_89a25f85cc364d7b93a5fb22d4a53e16"
+                "req_e299fba5d2ce49d3b338f1bd6d521295"
             ],
-            "set-cookie": [
-                "__cf_bm=aMI1voY6czc9gF5fhKRrAAX4dDr0.7snZqvaFz7K5rE-1783341564.7646396-1.0.1.1-3XCz7Zy7rJltUbFl.Kola_4KcNN3j8zkyRedjuOXYYPr62tnvB25JInJDQcSmm1iIXsn3ZE.CNqdKS2CrWoR6SwPZPYw0nj5TaUsU7TCKlUnECDc9R6EIQCSi.oAynzV; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:25 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-DyctZ5cf5gsVBvNe1MqYQhoONKqOA\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341565,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_h8XzpuKMEvN1M95NPq3epUx5\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"name\\\":\\\"jason\\\",\\\"age\\\":25}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 186,\n    \"completion_tokens\": 23,\n    \"total_tokens\": 209,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMq53gwZBVdm6k3AlFCFbt00y7d1B\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789112121,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_8ib3AOOCW8bIrAKb3Ofa7vGx\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"name\\\":\\\"jason\\\",\\\"age\\\":25}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 186,\n    \"completion_tokens\": 23,\n    \"total_tokens\": 209,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

@@ -24,16 +24,16 @@ final class ClaudeCommandBuilder
         $argv = $argv->with('-p')->with($request->prompt());
         $argv = $this->appendPermissionMode($argv, $request->permissionMode());
         $argv = $this->appendOutputFormat($argv, $request->outputFormat());
-        $argv = $this->appendIncludePartial($argv, $request->includePartialMessages());
+        $argv = $this->appendFlag($argv, '--include-partial-messages', $request->includePartialMessages());
         $argv = $this->appendInputFormat($argv, $request->inputFormat());
         $argv = $this->appendMaxTurns($argv, $request->maxTurns());
         $argv = $this->appendModel($argv, $request->model());
         $argv = $this->appendSystemPrompts($argv, $request->systemPrompt(), $request->systemPromptFile(), $request->appendSystemPrompt());
         $argv = $this->appendAgents($argv, $request->agentsJson());
         $argv = $this->appendAdditionalDirs($argv, $request->additionalDirs()->toArray());
-        $argv = $this->appendVerbose($argv, $request->verbose());
+        $argv = $this->appendFlag($argv, '--verbose', $request->verbose());
         $argv = $this->appendPermissionPromptTool($argv, $request->permissionPromptTool());
-        $argv = $this->appendDangerousSkip($argv, $request->dangerouslySkipPermissions());
+        $argv = $this->appendFlag($argv, '--dangerously-skip-permissions', $request->dangerouslySkipPermissions());
         return new CommandSpec($argv, $request->stdin());
     }
 
@@ -50,13 +50,6 @@ final class ClaudeCommandBuilder
         return $argv
             ->with('--output-format')
             ->with($format->value);
-    }
-
-    private function appendIncludePartial(Argv $argv, bool $include) : Argv {
-        if (!$include) {
-            return $argv;
-        }
-        return $argv->with('--include-partial-messages');
     }
 
     private function appendInputFormat(Argv $argv, ?InputFormat $format) : Argv {
@@ -135,13 +128,6 @@ final class ClaudeCommandBuilder
         return $current;
     }
 
-    private function appendVerbose(Argv $argv, bool $verbose) : Argv {
-        if (!$verbose) {
-            return $argv;
-        }
-        return $argv->with('--verbose');
-    }
-
     private function appendPermissionPromptTool(Argv $argv, ?string $tool) : Argv {
         if ($tool === null || trim($tool) === '') {
             return $argv;
@@ -149,13 +135,6 @@ final class ClaudeCommandBuilder
         return $argv
             ->with('--permission-prompt-tool')
             ->with($tool);
-    }
-
-    private function appendDangerousSkip(Argv $argv, bool $skip) : Argv {
-        if (!$skip) {
-            return $argv;
-        }
-        return $argv->with('--dangerously-skip-permissions');
     }
 
     private function appendSessionFlags(Argv $argv, bool $continueMostRecent, string|Stringable|null $resumeSessionId) : Argv {

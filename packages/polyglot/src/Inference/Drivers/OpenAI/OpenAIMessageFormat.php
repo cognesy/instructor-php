@@ -57,7 +57,7 @@ class OpenAIMessageFormat implements CanMapMessages
         return [
             'role' => 'tool',
             'tool_call_id' => $message->toolResult()->callIdString(),
-            'content' => $message->content()->toString(),
+            'content' => $message->toolResult()->content(),
         ];
     }
 

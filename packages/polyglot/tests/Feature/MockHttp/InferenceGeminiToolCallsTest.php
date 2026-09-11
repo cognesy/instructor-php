@@ -31,9 +31,8 @@ it('handles tool calls in non-streaming Gemini response', function () {
         ->withMessages(\Cognesy\Messages\Messages::fromString('Search'))
         ->response();
 
-    expect($response->hasToolCalls())->toBeTrue();
-    $tool = $response->toolCalls()->first();
+    expect($response->message()->hasToolCalls())->toBeTrue();
+    $tool = $response->message()->toolCalls()->first();
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
-

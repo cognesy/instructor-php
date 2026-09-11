@@ -64,7 +64,7 @@ $response = Inference::using('openai')
     )
     ->response();
 
-$data = $response->toolCalls()->first()?->args() ?? [];
+$data = $response->message()->toolCalls()->first()?->args() ?? [];
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";

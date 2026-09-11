@@ -3,13 +3,16 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageAssembler;
+use Cognesy\Polyglot\Inference\Assembly\AssistantMessageParseResult;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunk;
+use Cognesy\Polyglot\Inference\Data\AssistantMessageChunks;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Polyglot\Inference\Drivers\Support\DecodesJsonPayload;
 use RuntimeException;
@@ -25,17 +28,21 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     #[\Override]
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $data = $this->decodeResponseData($response->body());
+        $parsed = $this->parseAssistantMessage($data);
         return new InferenceResponse(
-            content: $this->makeContent($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $response,
+            message: AssistantMessageAssembler::fromParts(
+                parts: $parsed->parts(),
+                replay: $parsed->replay(),
+            )->message(),
         );
     }
 
     #[\Override]
     public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $stream = new GeminiStreamContext();
         foreach ($eventBodies as $eventBody) {
             $data = $this->decodeJsonData($eventBody, 'Gemini stream payload');
             if (empty($data)) {
@@ -43,43 +50,21 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
             }
 
             $delta = $this->fromDecodedStreamData($data, $responseData);
-            $toolDeltas = $this->extractStreamToolDeltas($data);
-
-            if ($toolDeltas === []) {
-                yield $delta;
-                continue;
-            }
-
-            $first = $toolDeltas[0];
+            $chunks = $this->makeStreamMessageChunks($data, $stream);
             yield new PartialInferenceDelta(
-                contentDelta: $delta->contentDelta,
-                reasoningContentDelta: $delta->reasoningContentDelta,
-                toolId: $first->id,
-                toolName: $first->name,
-                toolArgs: $first->args,
+                messageChunks: $chunks,
                 finishReason: $delta->finishReason,
                 usage: $delta->usage,
                 usageIsCumulative: $delta->usageIsCumulative,
                 responseData: $delta->responseData,
                 value: $delta->value,
+                replay: $stream->replay(),
             );
-
-            foreach (array_slice($toolDeltas, 1) as $tool) {
-                yield new PartialInferenceDelta(
-                    toolId: $tool->id,
-                    toolName: $tool->name,
-                    toolArgs: $tool->args,
-                );
-            }
         }
     }
 
     protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
-            contentDelta: $this->makeContentDelta($data),
-            toolId: $data['candidates'][0]['id'] ?? '',
-            toolName: $this->makeToolName($data),
-            toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             usageIsCumulative: true,
@@ -114,121 +99,93 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function makeToolCalls(array $data) : ToolCalls {
-        /** @var array<array<string, mixed>> $parts */
-        $parts = $data['candidates'][0]['content']['parts'] ?? [];
-        $functionCalls = array_filter($parts, fn(array $part) => isset($part['functionCall']));
-        return ToolCalls::fromMapper(
-            array_map(fn(array $part) => $part['functionCall'], $functionCalls),
-            fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['args'] ?? '']),
+    private function parseAssistantMessage(array $data): AssistantMessageParseResult
+    {
+        $parts = [];
+        $replayParts = [];
+        foreach ($this->responseParts($data) as $part) {
+            $semantic = $this->makeAssistantPart($part);
+            if ($semantic !== null) {
+                $parts[] = $semantic;
+                $replayParts[] = GeminiReplay::metadataForWirePart($part);
+            }
+        }
+        $candidate = $data['candidates'][0] ?? null;
+        $response = match (true) {
+            is_array($candidate) => array_filter([
+                'id' => $candidate['id'] ?? null,
+                'finishReason' => $candidate['finishReason'] ?? null,
+            ], static fn(mixed $value): bool => is_string($value) && $value !== ''),
+            default => null,
+        };
+        return AssistantMessageParseResult::fromParts(
+            owner: GeminiReplay::OWNER,
+            parts: $parts,
+            replayParts: $replayParts,
+            response: $response,
         );
     }
 
-    private function makeContent(array $data) : string {
-        $partCount = count($data['candidates'][0]['content']['parts'] ?? []);
-        if ($partCount === 1) {
-            return $this->makeContentPart($data, 0);
+    /** @param array<string,mixed> $part */
+    private function makeAssistantPart(array $part): ?ContentPart
+    {
+        if (isset($part['functionCall']) && is_array($part['functionCall'])) {
+            $call = $part['functionCall'];
+            return ContentPart::toolCall(ToolCall::fromArray([
+                'id' => $call['id'] ?? '',
+                'name' => $call['name'] ?? '',
+                'arguments' => match (true) {
+                    is_array($call['args'] ?? null) => Json::encode($call['args']),
+                    default => $call['args'] ?? '',
+                },
+            ]));
         }
-        $content = '';
-        $separator = '';
-        for ($i = 0; $i < $partCount; $i++) {
-            $part = $this->makeContentPart($data, $i);
-            if ($part === '') {
+        if (!isset($part['text']) || !is_string($part['text'])) {
+            return null;
+        }
+        return match ($part['thought'] ?? false) {
+            true => ContentPart::reasoning($part['text']),
+            default => ContentPart::text($part['text']),
+        };
+    }
+
+    private function makeStreamMessageChunks(array $data, GeminiStreamContext $stream): AssistantMessageChunks
+    {
+        $chunks = AssistantMessageChunks::empty();
+        $candidateId = (string) ($data['candidates'][0]['id'] ?? 'candidate:0');
+        foreach ($this->responseParts($data) as $index => $part) {
+            $blockKey = $stream->blockKey($candidateId, $part);
+            if (isset($part['functionCall']) && is_array($part['functionCall'])) {
+                $call = $part['functionCall'];
+                $args = $call['args'] ?? '';
+                $chunks = $chunks->add(AssistantMessageChunk::toolCallDelta(
+                    index: $blockKey,
+                    id: (string) ($call['id'] ?? $this->resolveToolId($candidateId, $index)),
+                    name: (string) ($call['name'] ?? ''),
+                    arguments: is_array($args) ? Json::encode($args) : '',
+                ));
                 continue;
             }
-            $content .= $separator . $part;
-            $separator = "\n\n";
-        }
-        return $content;
-    }
-
-    private function makeContentPart(array $data, int $index) : string {
-        if (isset($data['candidates'][0]['content']['parts'][$index]['text'])) {
-            return $data['candidates'][0]['content']['parts'][$index]['text'];
-        }
-        return '';
-    }
-
-    private function makeContentDelta(array $data): string {
-        $partCount = count($data['candidates'][0]['content']['parts'] ?? []);
-        if ($partCount === 1) {
-            return  $this->makeContentDeltaPart($data, 0);
-        }
-
-        $content = '';
-        $separator = '';
-        for ($i = 0; $i < $partCount; $i++) {
-            $part = $this->makeContentDeltaPart($data, $i);
-            if ($part === '') {
+            $text = $part['text'] ?? null;
+            if (!is_string($text) || $text === '') {
                 continue;
             }
-            $content .= $separator . $part;
-            $separator = "\n";
+            $chunks = match ($part['thought'] ?? false) {
+                true => $chunks->add(AssistantMessageChunk::reasoningDelta($blockKey, $text)),
+                default => $chunks->add(AssistantMessageChunk::textDelta($blockKey, $text)),
+            };
         }
-        return $content;
+        return $chunks;
     }
 
-    private function makeContentDeltaPart(array $data, int $index) : string {
-        if (isset($data['candidates'][0]['content']['parts'][$index]['text'])) {
-            return $data['candidates'][0]['content']['parts'][$index]['text'];
-        }
-        return '';
-    }
-
-    private function makeToolName(array $data) : string {
+    /** @return list<array<string,mixed>> */
+    private function responseParts(array $data): array
+    {
         $parts = $data['candidates'][0]['content']['parts'] ?? [];
-        foreach ($parts as $part) {
-            if (!is_array($part)) {
-                continue;
-            }
-            $name = $part['functionCall']['name'] ?? '';
-            if ($name !== '') {
-                return (string)$name;
-            }
-        }
-        return '';
-    }
-
-    private function makeToolArgs(array $data) : string {
-        $parts = $data['candidates'][0]['content']['parts'] ?? [];
-        foreach ($parts as $part) {
-            if (!is_array($part)) {
-                continue;
-            }
-            $value = $part['functionCall']['args'] ?? '';
-            if (is_array($value)) {
-                return Json::encode($value);
-            }
-        }
-        return '';
-    }
-
-    /**
-     * @return list<ToolCallDelta>
-     */
-    private function extractStreamToolDeltas(array $data): array {
-        $parts = $data['candidates'][0]['content']['parts'] ?? [];
-        if (!is_array($parts) || $parts === []) {
+        if (!is_array($parts)) {
             return [];
         }
-
-        $candidateId = (string)($data['candidates'][0]['id'] ?? '');
-        $toolDeltas = [];
-        foreach ($parts as $index => $part) {
-            if (!is_array($part) || !isset($part['functionCall']) || !is_array($part['functionCall'])) {
-                continue;
-            }
-            $functionCall = $part['functionCall'];
-            $args = $functionCall['args'] ?? '';
-            $explicitId = (string)($functionCall['id'] ?? '');
-            $toolDeltas[] = new ToolCallDelta(
-                id: $explicitId !== '' ? $explicitId : $this->resolveToolId($candidateId, $index),
-                name: (string)($functionCall['name'] ?? ''),
-                args: is_array($args) ? Json::encode($args) : '',
-            );
-        }
-
-        return $toolDeltas;
+        return array_values(array_filter($parts, is_array(...)));
     }
 
     private function resolveToolId(string $candidateId, int|string $index): string {

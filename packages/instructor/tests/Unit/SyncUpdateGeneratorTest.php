@@ -20,6 +20,7 @@ use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
@@ -85,7 +86,7 @@ function makeInferenceProvider(FakeInferenceDriver $fakeDriver): InferenceProvid
 }
 
 it('makes single inference request and marks as exhausted', function () {
-    $response = InferenceResponse::empty()->withContent('{"name":"Alice","age":30}');
+    $response = new InferenceResponse(message: Message::asAssistant('{"name":"Alice","age":30}'));
     $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
     $execution = makeSyncExecution();
@@ -101,13 +102,13 @@ it('makes single inference request and marks as exhausted', function () {
     $updated = $driver->execution();
     expect($updated->isFinalized())->toBeTrue();
     expect($updated->inferenceResponse())->not->toBeNull();
-    expect($updated->inferenceResponse()->content())->toBe('{"name":"Alice","age":30}');
+    expect($updated->inferenceResponse()->message()->content()->toString())->toBe('{"name":"Alice","age":30}');
 
     expect($driver->hasNextEmission())->toBeFalse();
 });
 
 it('finalizes sync execution with an empty partial response snapshot', function () {
-    $response = InferenceResponse::empty()->withContent('{"name":"Bob","age":25}');
+    $response = new InferenceResponse(message: Message::asAssistant('{"name":"Bob","age":25}'));
     $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
     $execution = makeSyncExecution();
@@ -122,11 +123,11 @@ it('finalizes sync execution with an empty partial response snapshot', function 
     expect($updated->activeAttempt())->toBeNull();
     expect($updated->lastFinalizedAttempt())->not->toBeNull();
     expect($updated->lastFinalizedAttempt()?->isFinalized())->toBeTrue();
-    expect($updated->lastFinalizedAttempt()?->inferenceResponse()?->content())->toBe('{"name":"Bob","age":25}');
+    expect($updated->lastFinalizedAttempt()?->inferenceResponse()?->message()->content()->toString())->toBe('{"name":"Bob","age":25}');
 });
 
 it('normalizes content based on output mode', function () {
-    $response = InferenceResponse::empty()->withContent('  {"name":"Charlie","age":35}  ');
+    $response = new InferenceResponse(message: Message::asAssistant('  {"name":"Charlie","age":35}  '));
     $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
     $execution = makeSyncExecution();
@@ -137,14 +138,14 @@ it('normalizes content based on output mode', function () {
     expect($emission)->not->toBeNull();
 
     $updated = $driver->execution();
-    $content = $updated->inferenceResponse()->content();
+    $content = $updated->inferenceResponse()->message()->content()->toString();
     expect($content)->toBeString();
     expect($content)->toContain('name');
     expect($content)->toContain('Charlie');
 });
 
 it('returns no emission when already completed', function () {
-    $response = InferenceResponse::empty()->withContent('{"name":"Dave","age":40}');
+    $response = new InferenceResponse(message: Message::asAssistant('{"name":"Dave","age":40}'));
     $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
     $execution = makeSyncExecution();

@@ -58,7 +58,7 @@ echo "🚀 Starting Inference request...\n";
 $response = $inference
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->withMaxTokens(50)
-    ->get();
+    ->get()->content()->toString();
 
 echo '📊 Response: '.($response ?: 'Empty response')."\n";
 

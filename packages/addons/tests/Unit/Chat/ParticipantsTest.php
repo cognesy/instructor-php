@@ -23,7 +23,7 @@ it('external participant uses provider to generate messages', function () {
 
 it('llm participant uses provided inference driver', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: 'hi there!'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi there!')),
     ]);
     $inference = Inference::fromRuntime(
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(

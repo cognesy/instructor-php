@@ -64,6 +64,7 @@ final class ResponseParser
         $messageId = null;
         $messageText = '';
         $totalCost = 0.0;
+        $hasReportedCost = false;
         $finalUsage = null;
 
         foreach ($lines as $lineIndex => $line) {
@@ -102,6 +103,9 @@ final class ResponseParser
                     $messageId = $eventMessageId;
                 }
                 $totalCost += $event->cost;
+                $part = $decoded['part'] ?? null;
+                $hasReportedCost = $hasReportedCost
+                    || (is_array($part) && array_key_exists('cost', $part));
 
                 // Keep the last non-null usage (from final step)
                 if ($event->tokens !== null) {
@@ -117,7 +121,7 @@ final class ResponseParser
             messageId: $messageId,
             messageText: $messageText,
             usage: $finalUsage,
-            cost: $totalCost > 0 ? $totalCost : null,
+            cost: $hasReportedCost ? $totalCost : null,
             parseFailures: $parseFailures,
             parseFailureSamples: $parseFailureSamples,
         );

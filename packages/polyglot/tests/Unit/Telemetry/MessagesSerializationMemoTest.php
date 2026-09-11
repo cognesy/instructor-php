@@ -52,11 +52,7 @@ function runMemoSession(Messages $messages, EventDispatcher $events, array $resp
 }
 
 function okResponse(string $content = 'Paris.'): InferenceResponse {
-    return new InferenceResponse(
-        content: $content,
-        finishReason: 'stop',
-        usage: new InferenceUsage(inputTokens: 10, outputTokens: 2),
-    );
+    return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 10, outputTokens: 2));
 }
 
 it('serialises the conversation once, not four times, across a whole request', function () {
@@ -111,7 +107,7 @@ it('re-serialises when a length-recovery retry rewrites the conversation', funct
         memoConversation(),
         $events,
         [
-            new InferenceResponse(content: 'Par', finishReason: 'length', usage: new InferenceUsage(inputTokens: 10, outputTokens: 1)),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Par'), finishReason: 'length', usage: new InferenceUsage(inputTokens: 10, outputTokens: 1)),
             okResponse('Paris.'),
         ],
         lengthRecovery: 'continue',
@@ -122,6 +118,6 @@ it('re-serialises when a length-recovery retry rewrites the conversation', funct
 
     // The rewrite appends the partial assistant turn and the continue prompt.
     expect($inputs[1])->toHaveCount(4)
-        ->and($inputs[1][2]['content'])->toBe('Par')
-        ->and($inputs[1][3]['content'])->toBe('Continue.');
+        ->and($inputs[1][2]['parts'])->toBe([['type' => 'text', 'text' => 'Par']])
+        ->and($inputs[1][3]['parts'])->toBe([['type' => 'text', 'text' => 'Continue.']]);
 });

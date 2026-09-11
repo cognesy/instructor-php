@@ -29,5 +29,5 @@ it('streams partial responses and assembles final content (OpenAI SSE)', functio
 
     $final = $stream->final();
     expect($final)->not->toBeNull();
-    expect($final->content())->toBe('Hello!');
+    expect($final->message()->content()->toString())->toBe('Hello!');
 });

@@ -29,10 +29,7 @@ function subtract_numbers(int $a, int $b): int { return $a - $b; }
 
 it('executes a tool call and builds follow-up messages', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: '',
-            toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
-        ),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3])))),
     ]);
 
     $tools = new Tools(
@@ -62,11 +59,8 @@ it('executes a tool call and builds follow-up messages', function () {
 
 it('iterates until no more tool calls and returns final response', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: '',
-            toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
-        ),
-        new InferenceResponse(content: '5'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3])))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('5')),
     ]);
 
     $tools = new Tools(FunctionTool::fromCallable(add_numbers(...)));
@@ -90,11 +84,8 @@ it('iterates until no more tool calls and returns final response', function () {
 
 it('separates context and transcript messages between input and output collections', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(
-            content: '',
-            toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
-        ),
-        new InferenceResponse(content: '5'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3])))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('5')),
     ]);
 
     $tools = new Tools(FunctionTool::fromCallable(add_numbers(...)));

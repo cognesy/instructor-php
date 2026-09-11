@@ -17,8 +17,8 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
  * invisible on the wire. If a single byte of the emitted fragment moves, this fails, and
  * `git diff` on the fixture is the review artifact.
  *
- * Regenerating the fixture is almost always the wrong fix. It is only correct when a provider
- * genuinely changes its API, and then the diff belongs in the commit that changes it.
+ * Capability fallback runs before these body formats. The fixture therefore records only the
+ * provider's rendering of the response format it receives.
  */
 const RF_GOLDEN_FIXTURE = __DIR__ . '/../../Fixtures/response-format-fragments.json';
 
@@ -177,10 +177,11 @@ it('keeps every driver in the fixture distinguishable from the base default', fu
         ->and($golden['minimaxi/json_object']['type'])->toBe('json_schema')
         ->and($golden['perplexity/json_object']['type'])->toBe('json_schema');
 
-    // Distinct payload keys: schema under `schema`, under `value`, and without name/strict.
+    // Distinct payload keys: schema under `schema`, the OpenAI envelope, and envelopes
+    // without name/strict.
     expect($golden['cohere/json_schema'])->toHaveKey('schema')
         ->and($golden['fireworks/json_schema'])->toHaveKey('schema')
-        ->and($golden['huggingface/json_schema'])->toHaveKey('value')
+        ->and($golden['huggingface/json_schema'])->toBe($golden['openai/json_schema'])
         ->and(array_keys($golden['perplexity/json_schema']['json_schema']))->toBe(['schema'])
         ->and(array_keys($golden['minimaxi/json_schema']['json_schema']))->toBe(['name', 'schema']);
 

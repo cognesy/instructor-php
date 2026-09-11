@@ -17,7 +17,7 @@ it('builds request with messages, model, options, streaming, max tokens and resp
         ->withResponseFormat(ResponseFormat::jsonObject())
         ->create();
 
-    expect($req->messages()->toArray()[0]['content'])->toBe('Hello');
+    expect($req->messages()->first()?->content()->toString())->toBe('Hello');
     expect($req->model())->toBe('gpt-4o-mini');
     expect($req->options()['temperature'] ?? null)->toBe(0.1);
     expect($req->options()['max_tokens'] ?? null)->toBe(50);

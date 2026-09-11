@@ -10,8 +10,9 @@ it('streams partial responses and assembles final content (Anthropic SSE)', func
         ->post('https://api.anthropic.com/v1/messages')
         ->withStream(true)
         ->replySSEFromJson([
-            [ 'delta' => [ 'text' => 'Hel' ] ],
-            [ 'delta' => [ 'text' => 'lo' ] ],
+            ['type' => 'content_block_start', 'index' => 0, 'content_block' => ['type' => 'text', 'text' => '']],
+            ['type' => 'content_block_delta', 'index' => 0, 'delta' => ['type' => 'text_delta', 'text' => 'Hel']],
+            ['type' => 'content_block_delta', 'index' => 0, 'delta' => ['type' => 'text_delta', 'text' => 'lo']],
             'event: message_stop',
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
@@ -25,7 +26,7 @@ it('streams partial responses and assembles final content (Anthropic SSE)', func
     iterator_to_array($stream->deltas());
     $final = $stream->final();
     expect($final)->not->toBeNull();
-    expect($final->content())->toBe('Hello');
+    expect($final->message()->content()->toString())->toBe('Hello');
 });
 
 it('correctly accumulates cumulative token usage in streaming (regression test)', function () {
@@ -36,21 +37,33 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
         ->replySSEFromJson([
             // Chunk 1: First text with cumulative token count
             [
+                'type' => 'content_block_start',
+                'index' => 0,
+                'content_block' => ['type' => 'text', 'text' => ''],
+            ],
+            [
+                'type' => 'content_block_delta',
+                'index' => 0,
                 'delta' => ['text' => 'Hello'],
                 'usage' => ['input_tokens' => 150, 'output_tokens' => 1]
             ],
             // Chunk 2: More text with cumulative token count (not incremental!)
             [
+                'type' => 'content_block_delta',
+                'index' => 0,
                 'delta' => ['text' => ' there'],
                 'usage' => ['input_tokens' => 150, 'output_tokens' => 3]  // Total so far, not +2
             ],
             // Chunk 3: Final text with final cumulative totals
             [
+                'type' => 'content_block_delta',
+                'index' => 0,
                 'delta' => ['text' => '!'],
                 'usage' => ['input_tokens' => 150, 'output_tokens' => 4]  // Final total
             ],
             // Final message stop event
             [
+                'type' => 'message_delta',
                 'delta' => ['stop_reason' => 'end_turn'],
                 'usage' => ['input_tokens' => 150, 'output_tokens' => 4]
             ],
@@ -70,7 +83,7 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
     $final = $stream->final();
 
     // Verify final content is assembled correctly
-    expect($final->content())->toBe('Hello there!');
+    expect($final->message()->content()->toString())->toBe('Hello there!');
 
     // CRITICAL REGRESSION TEST: Token counts should NOT be additive
     // Before fix: input tokens would grow exponentially: 150 -> 300 -> 450 -> 600

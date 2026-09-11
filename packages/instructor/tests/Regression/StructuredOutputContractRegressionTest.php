@@ -134,7 +134,7 @@ final class ContractRegressionSelfTransformer implements CanDeserializeSelf, Can
 function contractRegressionOutput(string $content = '{"status":"open"}'): StructuredOutput
 {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: $content),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content)),
     ]);
 
     return (new StructuredOutput())
@@ -333,7 +333,7 @@ it('rejects invalid scalar enum values for every target kind', function () {
 it('keeps sync and completed stream parity for every final target kind', function (string $target) {
     $syncTransformer = new ContractRegressionIdentityTransformer();
     $syncRuntime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"status":"open"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}'))]),
         outputMode: OutputMode::Json,
         transformer: $syncTransformer,
     );
@@ -342,8 +342,8 @@ it('keeps sync and completed stream parity for every final target kind', functio
     $streamTransformer = new ContractRegressionIdentityTransformer();
     $streamRuntime = makeStructuredRuntime(
         driver: new FakeInferenceDriver(streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"status":"'),
-            new PartialInferenceDelta(contentDelta: 'open"}'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"status":"')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'open"}')),
             new PartialInferenceDelta(finishReason: 'stop'),
         ]]),
         outputMode: OutputMode::Json,
@@ -388,7 +388,7 @@ it('reports nested Structure hydration failure with its field path', function ()
 it('runs configured array transformation exactly once for get and completed stream', function () {
     $syncTransformer = new ContractRegressionCountingTransformer();
     $syncDriver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"status":"open"}'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}')),
     ]);
     $syncRuntime = makeStructuredRuntime(
         driver: $syncDriver,
@@ -401,8 +401,8 @@ it('runs configured array transformation exactly once for get and completed stre
 
     $streamTransformer = new ContractRegressionCountingTransformer();
     $streamDriver = new FakeInferenceDriver(streamBatches: [[
-        new PartialInferenceDelta(contentDelta: '{"status":"'),
-        new PartialInferenceDelta(contentDelta: 'open"}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"status":"')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'open"}')),
         new PartialInferenceDelta(finishReason: 'stop'),
     ]]);
     $streamRuntime = makeStructuredRuntime(
@@ -425,7 +425,7 @@ it('runs configured array transformation exactly once for get and completed stre
 it('validates completed streaming data before final transformation', function () {
     $transformer = new ContractRegressionCountingTransformer();
     $driver = new FakeInferenceDriver(streamBatches: [[
-        new PartialInferenceDelta(contentDelta: '{"status":"pending"}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"status":"pending"}')),
         new PartialInferenceDelta(finishReason: 'stop'),
     ]]);
     $runtime = makeStructuredRuntime(
@@ -446,8 +446,8 @@ it('validates completed streaming data before final transformation', function ()
 it('fails and retries instead of returning input after transformation failure', function () {
     $syncTransformer = new ContractRegressionFailOnceTransformer();
     $syncDriver = new FakeInferenceDriver([
-        new InferenceResponse(content: '{"status":"open"}'),
-        new InferenceResponse(content: '{"status":"open"}'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}')),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}')),
     ]);
     $syncRuntime = makeStructuredRuntime(
         driver: $syncDriver,
@@ -461,7 +461,7 @@ it('fails and retries instead of returning input after transformation failure', 
 
     $streamTransformer = new ContractRegressionFailOnceTransformer();
     $batch = [
-        new PartialInferenceDelta(contentDelta: '{"status":"open"}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"status":"open"}')),
         new PartialInferenceDelta(finishReason: 'stop'),
     ];
     $streamDriver = new FakeInferenceDriver(streamBatches: [$batch, $batch]);
@@ -493,7 +493,7 @@ it('treats a null transformer result as documented identity success', function (
     });
     $transformer = new ContractRegressionNullTransformer();
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"status":"open"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}'))]),
         events: $events,
         outputMode: OutputMode::Json,
         transformer: $transformer,
@@ -523,7 +523,7 @@ it('emits balanced success events for configured and self transformation', funct
 
     $configured = new ContractRegressionCountingTransformer();
     $configuredRuntime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"status":"open"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}'))]),
         events: $events,
         outputMode: OutputMode::Json,
         transformer: $configured,
@@ -534,7 +534,7 @@ it('emits balanced success events for configured and self transformation', funct
 
     $counter = new ContractRegressionCallCounter();
     $selfRuntime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"status":"open"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}'))]),
         events: $events,
         outputMode: OutputMode::Json,
     );
@@ -558,8 +558,8 @@ it('preserves the distinct failure stage through retry telemetry', function () {
     $transformer = new ContractRegressionFailOnceTransformer();
     $runtime = makeStructuredRuntime(
         driver: new FakeInferenceDriver([
-            new InferenceResponse(content: '{"status":"open"}'),
-            new InferenceResponse(content: '{"status":"open"}'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}')),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}')),
         ]),
         events: $events,
         outputMode: OutputMode::Json,
@@ -583,7 +583,7 @@ it('emits a result-neutral materialization event with the actual result type', f
         $captured[] = $event->data;
     });
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"status":"open"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}'))]),
         events: $events,
         outputMode: OutputMode::Json,
     );
@@ -639,7 +639,7 @@ it('ignores removed legacy inline prompt keys when building the structured promp
 it('keeps raw toArray data distinct from the final structured array', function () {
     $transformer = new ContractRegressionCountingTransformer();
     $runtime = makeStructuredRuntime(
-        driver: new FakeInferenceDriver([new InferenceResponse(content: '{"status":"open"}')]),
+        driver: new FakeInferenceDriver([new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"status":"open"}'))]),
         outputMode: OutputMode::Json,
         transformer: $transformer,
     );

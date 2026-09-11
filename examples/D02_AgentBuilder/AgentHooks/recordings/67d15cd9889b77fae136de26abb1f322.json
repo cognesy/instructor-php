@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"List the files in the current directory and show the date\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_KVQZP5R4JYfDV7oBpBY6UyMk\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"pwd; ls -la\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_KVQZP5R4JYfDV7oBpBY6UyMk\",\"content\":\"\\\/Users\\\/ddebowczyk\\\/projects\\\/_instructor\\\/instructor-php\\ntotal 8112\\ndrwxr-xr-x@  68 ddebowczyk  staff     2176 Sep 11 06:59 .\\ndrwxr-xr-x@   8 ddebowczyk  staff      256 Aug 28 10:22 ..\\n-rw-r--r--@   1 ddebowczyk  staff       68 Mar 29 08:56 .actrc\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Jul  6 21:48 .archlet\\ndrwx------@  17 ddebowczyk  staff      544 Sep 10 23:16 .beads\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Mar 14 12:05 .claude\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Jul  6 21:49 .codegraph\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Mar 29 09:17 .codex\\n-rw-r--r--@   1 ddebowczyk  staff     4732 Sep  4 08:33 .env\\n-rw-r--r--@   1 ddebowczyk  staff     1306 Mar 19 09:36 .env-dist\\ndrwxr-xr-x@  19 ddebowczyk  staff      608 Sep 11 08:41 .git\\n-rw-r--r--@   1 ddebowczyk  staff     2524 Mar 12  2026 .gitattributes\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jan 10  2026 .github\\n-rw-r--r--@   1 ddebowczyk  staff     2506 Aug  6 18:05 .gitignore\\ndrwxr-xr-x@  17 ddebowczyk  staff      544 May  8 21:42 .idea\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Sep 11 08:42 .instructor-hub\\ndrwxr-xr-x@   4 ddebowczyk  staff      128 Mar 17 19:37 .logfire\\n-rw-r--r--@   1 ddebowczyk  staff      133 Aug 30 00:11 .phpactor.json\\n-rw-r--r--@   1 ddebowczyk  staff    13202 Mar  6  2026 .phpunit.result.cache\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Aug  5 09:29 .qa\\ndrwxr-xr-x@   4 ddebowczyk  staff      128 Aug  5 08:27 .qmd\\n-rw-r--r--@   1 ddebowczyk  staff      320 Mar 13 12:42 .semgrepignore\\ndrwxr-xr-x@   8 ddebowczyk  staff      256 Aug  2 13:01 .venv\\ndrwxr-xr-x@   6 ddebowczyk  staff      192 Mar  2  2026 .venv-semgrep\\ndrwxr-xr-x@   4 ddebowczyk  staff      128 Apr 11 14:53 .xqa\\n-rw-r--r--@   1 ddebowczyk  staff     4588 Mar 19 15:32 ADDING-PACKAGE.md\\n-rw-r--r--@   1 ddebowczyk  staff    14961 Aug  2 13:12 AGENTS.md\\n-rw-r--r--@   1 ddebowczyk  staff     4844 Aug  6 17:36 CONTENTS.md\\n-rw-r--r--@   1 ddebowczyk  staff    11235 Aug  6 17:38 CONTRIBUTING.md\\n-rw-r--r--@   1 ddebowczyk  staff    60220 Jan 10  2026 Doxyfile\\n-rw-r--r--@   1 ddebowczyk  staff     1074 Jan 10  2026 LICENSE\\n-rw-r--r--@   1 ddebowczyk  staff    16741 Mar 13 09:53 PACKAGES.md\\n-rw-r--r--@   1 ddebowczyk  staff    17046 Sep 11 07:04 QUALITY.md\\n-rw-r--r--@   1 ddebowczyk  staff    18984 Sep  1 22:16 README.md\\ndrwxr-xr-x@   6 ddebowczyk  staff      192 Aug  4 09:21 bin\\ndrwxr-xr-x@   7 ddebowczyk  staff      224 Sep 11 08:03 builds\\n-rw-r--r--@   1 ddebowczyk  staff    13079 Sep 10 23:04 composer.json\\n-rw-r--r--@   1 ddebowczyk  staff   488528 Aug 30 09:30 composer.lock\\n-rwxr-xr-x    1 ddebowczyk  staff  3283968 Jan 18  2026 composer.phar\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jan 10  2026 data\\ndrwxr-xr-x@  19 ddebowczyk  staff      608 Aug 30 02:19 docs\\ndrwxr-xr-x@   7 ddebowczyk  staff      224 Jan 10  2026 evals\\ndrwxr-xr-x@  32 ddebowczyk  staff     1024 Aug 25 14:58 examples\\ndrwx------@   3 ddebowczyk  staff       96 Sep 11 06:59 examples-recordings\\ndrwxr-xr-x@  12 ddebowczyk  staff      384 Sep 10 23:04 just\\n-rw-r--r--@   1 ddebowczyk  staff     1409 Sep 10 23:04 justfile\\n-rw-r--r--@   1 ddebowczyk  staff     1383 Jan 10  2026 mago.toml\\n-rw-r--r--@   1 ddebowczyk  staff      507 Jan 10  2026 package-config-enhanced.example.json\\n-rw-r--r--@   1 ddebowczyk  staff      214 Jan 10  2026 package-config.example.json\\ndrwxr-xr-x@  34 ddebowczyk  staff     1088 Jul  6 21:48 packages\\n-rw-r--r--@   1 ddebowczyk  staff     7443 Jul  6 21:48 packages.json\\n-rw-r--r--@   1 ddebowczyk  staff      378 Mar 12  2026 phpbench.json\\n-rw-r--r--@   1 ddebowczyk  staff     1293 Jan 10  2026 phpstan-baseline.neon\\n-rw-r--r--@   1 ddebowczyk  staff     1332 Mar  2  2026 phpstan-unused.neon\\n-rw-r--r--@   1 ddebowczyk  staff    11422 Aug  6 14:24 phpstan.neon\\n-rw-r--r--@   1 ddebowczyk  staff      248 Jan 10  2026 phpstan.neon.dist\\n-rw-r--r--@   1 ddebowczyk  staff    14037 Aug  5 09:47 phpunit.xml\\n-rw-r--r--@   1 ddebowczyk  staff     2145 Mar 12  2026 psalm.xml\\n-rw-r--r--@   1 ddebowczyk  staff      290 Aug  2 13:02 pyproject.toml\\n-rw-r--r--@   1 ddebowczyk  staff      325 Jan 10  2026 pyrightconfig.json\\ndrwxr-xr-x@ 136 ddebowczyk  staff     4352 Aug 30 21:36 research\\ndrwxr-xr-x@   9 ddebowczyk  staff      288 Jul  6 21:48 scripts\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jul 21 11:49 skills\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jan 10  2026 src\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Jan 10  2026 tests\\ndrwxr-xr-x@  13 ddebowczyk  staff      416 Sep  3 16:06 tmp\\n-rw-r--r--@   1 ddebowczyk  staff    54155 Aug  2 13:03 uv.lock\\ndrwxr-xr-x@  70 ddebowczyk  staff     2240 Aug 30 10:20 vendor\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return bounded stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated file tools over cat, sed-based rewrites, and shell redirection.\\nIf output is truncated, narrow the command or redirect it to a file and inspect it with the dedicated read tool.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:47:39 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1049"
+            ],
+            "cf-ray": [
+                "a394b8e4985adaca-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "507"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3998829"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "17ms"
+            ],
+            "x-request-id": [
+                "req_52037c8b5ae2424c9fa9eeaf03243e0c"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpKtSe24zLsbOpdBmnW3YzriticW\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109259,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_ImkJQndK76UffwCmAr5rBAAw\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"bash\",\n              \"arguments\": \"{\\\"command\\\":\\\"date\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 2375,\n    \"completion_tokens\": 17,\n    \"total_tokens\": 2392,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

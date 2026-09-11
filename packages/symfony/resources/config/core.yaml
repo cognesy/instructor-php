@@ -39,6 +39,7 @@ services:
       $events: '@Cognesy\Events\Contracts\CanHandleEvents'
       $httpClient: '@Cognesy\Http\Contracts\CanSendHttpRequests'
       $structuredConfig: '@Cognesy\Instructor\Config\StructuredOutputConfig'
+      $models: '@Cognesy\Polyglot\Inference\Models\ModelCatalog'
 
   Cognesy\Instructor\Contracts\CanCreateStructuredOutput:
     alias: Cognesy\Instructor\StructuredOutputRuntime

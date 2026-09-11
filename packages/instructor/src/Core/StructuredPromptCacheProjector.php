@@ -13,12 +13,12 @@ final class StructuredPromptCacheProjector
         return $this->projectMessages($plan->toCachedMessages());
     }
 
-    public function projectMessages(Messages $messages): CachedInferenceContext
+    public function projectMessages(Messages $messages, ?string $ttl = null): CachedInferenceContext
     {
         if ($messages->isEmpty()) {
-            return new CachedInferenceContext();
+            return new CachedInferenceContext(ttl: $ttl);
         }
 
-        return new CachedInferenceContext(messages: $messages);
+        return new CachedInferenceContext(messages: $messages, ttl: $ttl);
     }
 }

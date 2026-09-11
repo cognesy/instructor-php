@@ -109,7 +109,7 @@ class CreateLeadTool extends BaseTool
         };
 
         // Simulate API call - in real implementation, call actual CRM API
-        $leadId = 'LEAD-' . strtoupper(substr(md5((string) time()), 0, 8));
+        $leadId = 'LEAD-' . strtoupper(substr(hash('sha256', "{$name}|{$email}"), 0, 8));
 
         return "Lead created successfully!\n" .
                "  ID: {$leadId}\n" .

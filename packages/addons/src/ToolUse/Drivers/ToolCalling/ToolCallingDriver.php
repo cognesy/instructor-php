@@ -82,7 +82,7 @@ class ToolCallingDriver implements CanUseTools
     }
 
     private function getToolsToCall(InferenceResponse $response): ToolCalls {
-        return $response->toolCalls();
+        return $response->message()->toolCalls();
     }
 
     /** Builds a PendingInference configured for tool-calling. */
@@ -110,18 +110,13 @@ class ToolCallingDriver implements CanUseTools
         Messages $followUps,
         Messages $context,
     ) : ToolUseStep {
-        // Only append assistant content message if there's actual text content.
-        // When LLM returns tool calls, content is typically empty — appending an
-        // empty assistant message causes OpenAI to reject subsequent requests.
-        $outputMessages = $response->content() !== ''
-            ? $followUps->appendMessage(Message::asAssistant($response->content()))
-            : $followUps;
+        $outputMessages = $followUps->prependMessages($response->message());
 
         return new ToolUseStep(
             inputMessages: $context,
             outputMessages: $outputMessages,
             usage: $response->usage(),
-            toolCalls: $response->toolCalls(),
+            toolCalls: $response->message()->toolCalls(),
             toolExecutions: $executions,
             inferenceResponse: $response,
             stepType: $this->inferStepType($response, $executions)
@@ -131,7 +126,7 @@ class ToolCallingDriver implements CanUseTools
     private function inferStepType(InferenceResponse $response, ToolExecutions $executions) : ToolUseStepType {
         return match (true) {
             $executions->hasErrors() => ToolUseStepType::Error,
-            $response->hasToolCalls() => ToolUseStepType::ToolExecution,
+            $response->message()->hasToolCalls() => ToolUseStepType::ToolExecution,
             default => ToolUseStepType::FinalResponse,
         };
     }

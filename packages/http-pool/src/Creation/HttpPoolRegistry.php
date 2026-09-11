@@ -6,10 +6,18 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
 use Cognesy\HttpPool\Contracts\CanProvideHttpPools;
+use Cognesy\HttpPool\Drivers\Curl\Pool\CurlPool;
+use Cognesy\HttpPool\Drivers\Guzzle\GuzzlePool;
+use Cognesy\HttpPool\Drivers\Symfony\SymfonyPool;
+use GuzzleHttp\Client;
 use InvalidArgumentException;
+use Override;
+use Symfony\Component\HttpClient\HttpClient;
 
 final class HttpPoolRegistry implements CanProvideHttpPools
 {
+    private static ?self $default = null;
+
     /** @param array<string, callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool> $pools */
     private function __construct(
         private array $pools = [],
@@ -19,17 +27,32 @@ final class HttpPoolRegistry implements CanProvideHttpPools
         return new self();
     }
 
+    public static function default(): self {
+        return self::$default ??= self::fromArray([
+            'curl' => CurlPool::class,
+            'guzzle' => static fn (HttpPoolConfig $config, CanHandleEvents $events): CanHandleRequestPool => new GuzzlePool(
+                config: $config,
+                client: new Client(),
+                events: $events,
+            ),
+            'symfony' => static fn (HttpPoolConfig $config, CanHandleEvents $events): CanHandleRequestPool => new SymfonyPool(
+                client: HttpClient::create(),
+                config: $config,
+                events: $events,
+            ),
+        ]);
+    }
+
     /**
      * @param array<string, string|callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool> $pools
      */
     public static function fromArray(array $pools): self {
-        $registry = self::make();
-
+        $factories = [];
         foreach ($pools as $name => $pool) {
-            $registry = $registry->withPool($name, $pool);
+            $factories[$name] = self::toPoolFactory($pool);
         }
 
-        return $registry;
+        return new self($factories);
     }
 
     /**
@@ -47,18 +70,18 @@ final class HttpPoolRegistry implements CanProvideHttpPools
         return $copy;
     }
 
-    #[\Override]
+    #[Override]
     public function has(string $name): bool {
         return isset($this->pools[$name]);
     }
 
     /** @return array<string> */
-    #[\Override]
+    #[Override]
     public function poolNames(): array {
         return array_keys($this->pools);
     }
 
-    #[\Override]
+    #[Override]
     public function makePool(
         string $name,
         HttpPoolConfig $config,

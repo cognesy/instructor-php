@@ -11,8 +11,8 @@ it('throws when iterating responses a second time after stream completion', func
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceDelta(contentDelta: ',"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"name":"Ann"')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", ',"age":30}'), finishReason: 'stop'),
         ]],
     );
 

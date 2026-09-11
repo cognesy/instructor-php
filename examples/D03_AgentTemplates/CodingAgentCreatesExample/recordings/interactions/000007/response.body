@@ -1,0 +1,35 @@
+{
+  "id": "chatcmpl-EMpMG8ZAHZqYQWMGpT7W9hM1l8cbD",
+  "object": "chat.completion",
+  "created": 1789109344,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Generated file: /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\n\nFinal verification command:\nphp -l /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php && php /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\n\nPassed: yes\n\nFinal output included:\nExample status: verified",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3369,
+    "completion_tokens": 95,
+    "total_tokens": 3464,
+    "prompt_tokens_details": {
+      "cached_tokens": 2816,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

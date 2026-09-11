@@ -52,12 +52,8 @@ function cmWrapContent(OutputMode $mode, string $json): string {
 
 function cmSyncResponse(OutputMode $mode, string $json): InferenceResponse {
     return match ($mode) {
-        OutputMode::Tools => new InferenceResponse(
-            content: '',
-            finishReason: 'stop',
-            toolCalls: new ToolCalls(new ToolCall('extract', json_decode($json, true))),
-        ),
-        default => new InferenceResponse(content: cmWrapContent($mode, $json)),
+        OutputMode::Tools => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(new ToolCalls(new ToolCall('extract', json_decode($json, true)))), finishReason: 'stop'),
+        default => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(cmWrapContent($mode, $json))),
     };
 }
 
@@ -65,16 +61,17 @@ function cmSyncResponse(OutputMode $mode, string $json): InferenceResponse {
 function cmStreamBatch(OutputMode $mode, string $json): array {
     if ($mode === OutputMode::Tools) {
         $chunks = str_split($json, 8);
-        $deltas = [new PartialInferenceDelta(toolName: 'extract', toolArgs: array_shift($chunks))];
+        $deltas = [new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'extract', name: 'extract', arguments: array_shift($chunks)))];
         foreach ($chunks as $chunk) {
-            $deltas[] = new PartialInferenceDelta(toolArgs: $chunk);
+            $deltas[] = new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withToolCallDelta('test:tool:extract', arguments: $chunk));
         }
         $deltas[] = new PartialInferenceDelta(finishReason: 'tool_calls');
         return $deltas;
     }
 
     $deltas = array_map(
-        static fn(string $chunk): PartialInferenceDelta => new PartialInferenceDelta(contentDelta: $chunk),
+        static fn(string $chunk): PartialInferenceDelta => new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunk)),
         str_split(cmWrapContent($mode, $json), 8),
     );
     $deltas[] = new PartialInferenceDelta(finishReason: 'stop');

@@ -48,7 +48,7 @@ final class BasicToolset implements Toolset
             model: $model,
             options: $options,
         ))->response();
-        $content = $response->content();
+        $content = $response->message()->content()->toString();
         $id = substr(sha1($content), 0, 12);
         // v1: return an artifact handle keyed by content hash (content is not in transcript)
         return ResultHandle::from('artifact://rlm/llm_call/' . $id);

@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
 use Cognesy\Instructor\Tests\Support\TestConfig;
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
 class AnthropicTestUser
 {
@@ -19,7 +19,7 @@ it('works with Anthropic mock responses in tools mode', function () {
     $json = '{"age":30,"name":"Alex"}';
     $client = MockHttp::get([$json], 'anthropic');
     $config = TestConfig::llmPreset('anthropic');
-    $driver = BundledInferenceDrivers::registry()->makeDriver(
+    $driver = InferenceDriverRegistry::default()->makeDriver(
         name: 'anthropic',
         config: $config,
         httpClient: $client,
@@ -40,7 +40,7 @@ it('works with Anthropic mock responses for scalars', function () {
     $intJson = '{"age":28}';
     $client = MockHttp::get([$intJson], 'anthropic');
     $config = TestConfig::llmPreset('anthropic');
-    $driver = BundledInferenceDrivers::registry()->makeDriver(
+    $driver = InferenceDriverRegistry::default()->makeDriver(
         name: 'anthropic',
         config: $config,
         httpClient: $client,

@@ -16,13 +16,13 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:42:24 GMT"
+                "Fri, 11 Sep 2026 06:46:57 GMT"
             ],
             "content-type": [
                 "application\/json"
             ],
             "cf-ray": [
-                "a16eb067fb2ec3db-WAW"
+                "a394b7dc8a99eeb1-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -45,7 +45,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "926"
+                "861"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -75,15 +75,13 @@
                 "1ms"
             ],
             "x-request-id": [
-                "req_bc7e216ed776461795dab25b3c84d112"
+                "req_28a15a23f1164782868f0c01c2ea09de"
             ],
-            "set-cookie": [
-                "__cf_bm=WmRTEKK7tKqbrVNPDRR8qi3RGJ8hRejg_Mwo4757sT4-1783341743.3606026-1.0.1.1-z3LZEeMadNe8Jh4mLVmB8.uS7Zeqaq4UAancbJ5lTVFeBrDjYDSbWcN6OA7gId.5FNEg_2M8r_PISvhB.R8aryEIVsbwlseBgQUHJ4u3LnEsUsVGmODuQgzDDH_F_yyV; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:24 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-DycwRtd9AfhMYgQ2s9WD1w0lRvAJ4\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341743,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_dL30qZT9jsKB2pLJL9mYT3s9\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"reasoning_steps\\\":[\\\"Determine the date 3 weeks from May 1, 2024.\\\",\\\"Determine the date 10 days after that date.\\\",\\\"Add 2 hours to the time.\\\",\\\"Identify the month of the final date.\\\"],\\\"month\\\":\\\"May\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 159,\n    \"completion_tokens\": 51,\n    \"total_tokens\": 210,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_bc8dd8fd93\"\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMpKCwNKSMnY1WxipETKtbWiT1APJ\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109216,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_jVitC8St60T8AFfzhUSg2zFj\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"reasoning_steps\\\":[\\\"Starting from May 1, 2024, at 6 PM.\\\",\\\"Adding 3 weeks (21 days) makes it May 22, 2024, at 6 PM.\\\",\\\"Adding 10 days makes it June 1, 2024, at 6 PM.\\\",\\\"Adding 2 hours makes it June 1, 2024, at 8 PM.\\\"],\\\"month\\\":\\\"June\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 159,\n    \"completion_tokens\": 86,\n    \"total_tokens\": 245,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_700dba369c\"\n}\n"
     }
 }

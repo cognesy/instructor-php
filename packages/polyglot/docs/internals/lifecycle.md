@@ -38,7 +38,7 @@ The `InferenceExecution` tracks the full lifecycle state: the original request, 
 The HTTP call is triggered only when you read from the `PendingInference`:
 
 ```php
-$text = $pending->get();          // triggers execution, returns content string
+$message = $pending->get();       // triggers execution, returns assistant Message
 $response = $pending->response(); // triggers execution, returns InferenceResponse
 $stream = $pending->stream();     // triggers execution (streaming mode)
 ```
@@ -76,7 +76,9 @@ It performs these steps for a non-streaming request:
    - `InferenceCompleted` -- the entire operation is done, including total attempt count and timing
 6. **Returns `InferenceResponse`** to the caller
 
-Cost calculation is performed externally using a `FlatRateCostCalculator` with `InferencePricing` data from the `LLMConfig`, rather than being attached to the usage object in the pipeline.
+Cost calculation is performed externally using a `FlatRateCostCalculator` with
+caller-supplied `InferencePricing`, rather than being attached to the usage
+object or model catalog.
 
 ### 5. Retry Handling
 
@@ -113,7 +115,7 @@ When streaming is enabled, the flow diverges after the HTTP request is sent:
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;  // incremental text
+    echo $delta->messageChunks->textDelta(); // incremental text projection
 }
 
 $finalResponse = $stream->final();  // assembled InferenceResponse
@@ -137,13 +139,13 @@ The stream supports functional-style processing through `map()`, `reduce()`, and
 
 ```php
 // Map deltas to extracted values
-$contents = $stream->map(fn($delta) => $delta->contentDelta);
+$contents = $stream->map(fn($delta) => $delta->messageChunks->textDelta());
 
 // Reduce deltas into a single value
-$fullText = $stream->reduce(fn($carry, $delta) => $carry . $delta->contentDelta, '');
+$fullText = $stream->reduce(fn($carry, $delta) => $carry . $delta->messageChunks->textDelta(), '');
 
 // Filter deltas
-$toolDeltas = $stream->filter(fn($delta) => $delta->toolName !== '');
+$nonEmptyDeltas = $stream->filter(fn($delta) => !$delta->messageChunks->isEmpty());
 
 // Collect all visible deltas
 $allDeltas = $stream->all();
@@ -155,7 +157,7 @@ You can register a callback that fires for every visible delta:
 
 ```php
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 });
 ```
 

@@ -13,6 +13,7 @@ use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Message;
 
 /**
  * Inference class is facade for handling inference requests and responses.
@@ -67,7 +68,7 @@ final class Inference implements CanCreateInference
 
     // Shortcuts for creating responses in different formats
 
-    public function get(): string {
+    public function get(): Message {
         return $this->create()->get();
     }
 

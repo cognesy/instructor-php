@@ -66,14 +66,10 @@ function cachePolicyPending(
 function cachePolicyDriver(bool $streamed): FakeInferenceDriver {
     return $streamed
         ? new FakeInferenceDriver(onStream: fn() => [
-            new PartialInferenceDelta(contentDelta: 'he'),
-            new PartialInferenceDelta(contentDelta: 'llo', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'he')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'llo'), finishReason: 'stop'),
         ])
-        : new FakeInferenceDriver(onResponse: fn() => new InferenceResponse(
-            content: 'hi',
-            finishReason: 'stop',
-            usage: new InferenceUsage(inputTokens: 11, outputTokens: 7),
-        ));
+        : new FakeInferenceDriver(onResponse: fn() => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 11, outputTokens: 7)));
 }
 
 it('returns the same response instance from repeated response() calls, whatever the cache policy', function (
@@ -91,7 +87,7 @@ it('returns the same response instance from repeated response() calls, whatever 
     // already holds. toEqual() would also pass if the driver ran again and produced a twin.
     expect($second)->toBe($first);
     expect($third)->toBe($first);
-    expect($first->content())->toBe($streamed ? 'hello' : 'hi');
+    expect($first->message()->content()->toString())->toBe($streamed ? 'hello' : 'hi');
 
     // The real proof there is no second execution.
     expect($driver->responseCalls + $driver->streamCalls)->toBe(1);

@@ -10,8 +10,9 @@ it('builds basic pi command with json mode', function () {
     $spec = (new PiCommandBuilder())->build($request);
     $argv = $spec->argv()->toArray();
 
-    // Should contain pi binary, --mode json, and prompt
+    // Should contain pi binary, non-interactive mode, --mode json, and prompt
     expect($argv)->toContain('pi')
+        ->and($argv)->toContain('--print')
         ->and($argv)->toContain('--mode')
         ->and($argv)->toContain('json')
         ->and(end($argv))->toBe('hello world');

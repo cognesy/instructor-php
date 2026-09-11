@@ -11,10 +11,10 @@ use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 it('finalizes correctly after partial delta consumption without replaying consumed chunks', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hel', usage: new InferenceUsage(outputTokens: 1)),
-            new PartialInferenceDelta(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":"hel', usage: new InferenceUsage(outputTokens: 1)),
-            new PartialInferenceDelta(toolId: 'call_1', toolArgs: 'lo"}', usage: new InferenceUsage(outputTokens: 1)),
-            new PartialInferenceDelta(contentDelta: 'lo world', finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hel'), usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', 'search', '{"q":"hel'), usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withToolCallDelta("test:tool:" . 'call_1', 'call_1', arguments: 'lo"}'), usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'lo world'), finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
         ]],
     );
 
@@ -25,16 +25,16 @@ it('finalizes correctly after partial delta consumption without replaying consum
     );
 
     foreach ($stream->deltas() as $delta) {
-        expect($delta->contentDelta)->toBe('Hel');
+        expect($delta->messageChunks->textDelta())->toBe('Hel');
         break;
     }
 
     $final = $stream->final();
 
     expect($final)->not->toBeNull();
-    expect($final?->content())->toBe('Hello world');
-    expect($final?->toolCalls()->count())->toBe(1);
-    expect($final?->toolCalls()->first()?->name())->toBe('search');
-    expect($final?->toolCalls()->first()?->arguments())->toBe(['q' => 'hello']);
+    expect($final?->message()->content()->toString())->toBe('Hello world');
+    expect($final?->message()->toolCalls()->count())->toBe(1);
+    expect($final?->message()->toolCalls()->first()?->name())->toBe('search');
+    expect($final?->message()->toolCalls()->first()?->arguments())->toBe(['q' => 'hello']);
     expect($final?->usage()->output())->toBe(4);
 });

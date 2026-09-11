@@ -4,6 +4,7 @@ docname: 'coding_agent_creates_example'
 order: 6
 id: 'c7f2'
 tags:
+  - 'no-replay'
   - 'agent-templates'
   - 'coding-agent'
   - 'tools'
@@ -93,8 +94,10 @@ final readonly class CodingAgentExample
         // 3. Require a completed run and artifact before trying to execute it.
         $generatedExample = $this->workspace . '/run.php';
         if ($final->status()->value !== 'completed') {
+            $stop = $final->stopSignal()?->toString() ?? 'no stop signal';
             throw new RuntimeException(
-                "Agent stopped with status: {$final->status()->value}",
+                "Agent stopped with status {$final->status()->value}: {$stop}; "
+                . "usage={$final->usage()->total()} tokens",
             );
         }
 
@@ -150,7 +153,7 @@ final readonly class CodingAgentExample
         $capabilities->register('coding.prompt', new UseSystemPrompt());
         $capabilities->register(
             'coding.guards',
-            new UseGuards(maxSteps: 20, maxTokens: 32768, maxExecutionTime: 240),
+            new UseGuards(maxSteps: 12, maxTokens: 98304, maxExecutionTime: 240),
         );
 
         return $capabilities;
@@ -203,8 +206,16 @@ echo 'Agent response: '
     . "\n";
 echo "\n{$result->verificationOutput}\n";
 
+$toolNames = [];
+foreach ($result->state->steps() as $step) {
+    foreach ($step->toolExecutions()->all() as $execution) {
+        $toolNames[] = $execution->name();
+    }
+}
+
 assert($result->state->status()->value === 'completed');
 assert(is_file($result->generatedExample));
 assert(str_contains($result->verificationOutput, 'Example status: verified'));
+assert(array_diff(['read', 'bash', 'write', 'edit'], $toolNames) === []);
 ?>
 ```

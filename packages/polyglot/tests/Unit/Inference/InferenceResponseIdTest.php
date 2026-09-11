@@ -4,7 +4,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponseId;
 
 it('uses typed response id and serializes it to string', function () {
-    $response = new InferenceResponse(content: 'ok', finishReason: 'stop');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop');
     $array = $response->toArray();
     $copy = InferenceResponse::fromArray($array);
 

@@ -1,15 +1,6 @@
 <?php declare(strict_types=1);
 
-/**
- * Anthropic used to return an empty tool id when a tool block's arguments arrived
- * without a preceding content_block_start (so no id was ever remembered for that
- * block index), leaving InferenceStreamState to guess. It now synthesises a stable
- * 'idx:N' id from the wire index, as OpenAI and Gemini already did.
- *
- * The synthetic id must be minted ONLY for tool-bearing events: a non-empty toolId
- * alone makes InferenceStreamState treat a delta as a tool delta, so minting one for
- * every event would start a phantom tool call on each text chunk.
- */
+/** Anthropic maps wire block indices to stable assistant-message block identities. */
 
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicUsageFormat;
@@ -27,11 +18,11 @@ it('Anthropic: does not mint a tool id for plain text deltas', function () {
 
     $state = new InferenceStreamState();
     foreach (anthropicAdapter()->fromStreamDeltas($events) as $delta) {
-        expect($delta->toolId)->toBe('');
         $state->applyDelta($delta);
     }
 
-    expect($state->finalResponse()->toolCalls()->count())->toBe(0);
+    expect($state->finalResponse()->message()->content()->toString())->toBe('hello')
+        ->and($state->finalResponse()->message()->toolCalls()->count())->toBe(0);
 });
 
 it('Anthropic: synthesises a stable id for an orphaned tool-args block', function () {
@@ -42,16 +33,20 @@ it('Anthropic: synthesises a stable id for an orphaned tool-args block', functio
     ];
 
     $deltas = iterator_to_array(anthropicAdapter()->fromStreamDeltas($events));
+    $firstToolChunk = $deltas[0]->messageChunks->all()[0];
+    $secondToolChunk = $deltas[1]->messageChunks->all()[0];
 
-    expect($deltas[0]->toolId)->toBe('idx:3')
-        ->and($deltas[1]->toolId)->toBe('idx:3'); // remembered, so both fragments agree
+    expect($firstToolChunk->index)->toBe('3')
+        ->and($firstToolChunk->toolCallId)->toBe('idx:3')
+        ->and($secondToolChunk->index)->toBe('3')
+        ->and($secondToolChunk->toolCallId)->toBe('idx:3');
 
     $state = new InferenceStreamState();
     foreach ($deltas as $delta) {
         $state->applyDelta($delta);
     }
 
-    $calls = $state->finalResponse()->toolCalls()->all();
+    $calls = $state->finalResponse()->message()->toolCalls()->all();
     expect($calls)->toHaveCount(1)
         ->and($calls[0]->value('q'))->toBe('alpha');
 });
@@ -63,7 +58,9 @@ it('Anthropic: still prefers the explicit content_block id over a synthetic one'
     ];
 
     $deltas = iterator_to_array(anthropicAdapter()->fromStreamDeltas($events));
+    $firstToolChunk = $deltas[0]->messageChunks->all()[1];
+    $secondToolChunk = $deltas[1]->messageChunks->all()[0];
 
-    expect($deltas[0]->toolId)->toBe('toolu_real')
-        ->and($deltas[1]->toolId)->toBe('toolu_real');
+    expect($firstToolChunk->toolCallId)->toBe('toolu_real')
+        ->and($secondToolChunk->toolCallId)->toBe('toolu_real');
 });

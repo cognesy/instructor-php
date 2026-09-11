@@ -20,7 +20,7 @@ it('dispatches completion events once for streamed responses', function () {
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), finishReason: 'stop'),
         ]],
     );
 
@@ -55,7 +55,7 @@ it('dispatches completion events when a streamed response is fully consumed with
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), finishReason: 'stop'),
         ]],
     );
 
@@ -71,7 +71,7 @@ it('dispatches completion events when a streamed response is fully consumed with
     );
 
     foreach ($pending->stream()->deltas() as $delta) {
-        expect($delta->contentDelta)->toBe('Hello');
+        expect($delta->messageChunks->textDelta())->toBe('Hello');
     }
 
     $attemptSucceeded = array_filter($captured, fn(object $event): bool => $event instanceof InferenceAttemptSucceeded);
@@ -92,7 +92,7 @@ it('does not duplicate completion events when response() is called after full st
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), finishReason: 'stop'),
         ]],
     );
 
@@ -116,7 +116,7 @@ it('does not duplicate completion events when response() is called after full st
     $usageReported = array_filter($captured, fn(object $event): bool => $event instanceof InferenceUsageReported);
     $completed = array_filter($captured, fn(object $event): bool => $event instanceof InferenceCompleted);
 
-    expect($response->content())->toBe('Hello');
+    expect($response->message()->content()->toString())->toBe('Hello');
     expect(count($attemptSucceeded))->toBe(1);
     expect(count($usageReported))->toBe(1);
     expect(count($completed))->toBe(1);
@@ -131,8 +131,8 @@ it('does not duplicate completion events when response() is called after partial
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hello '),
-            new PartialInferenceDelta(contentDelta: 'world', finishReason: 'stop'),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello ')),
+            new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'world'), finishReason: 'stop'),
         ]],
     );
 
@@ -159,7 +159,7 @@ it('does not duplicate completion events when response() is called after partial
     $usageReported = array_filter($captured, fn(object $event): bool => $event instanceof InferenceUsageReported);
     $completed = array_filter($captured, fn(object $event): bool => $event instanceof InferenceCompleted);
 
-    expect($response->content())->toBe('Hello world');
+    expect($response->message()->content()->toString())->toBe('Hello world');
     expect(count($attemptSucceeded))->toBe(1);
     expect(count($usageReported))->toBe(1);
     expect(count($completed))->toBe(1);
@@ -174,8 +174,8 @@ it('dispatches failure completion events when a streamed response throws without
 
     $driver = new FakeInferenceDriver(
         onStream: function (): iterable {
-            yield new PartialInferenceDelta(contentDelta: 'part-1');
-            yield new PartialInferenceDelta(contentDelta: 'part-2');
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'part-1'));
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'part-2'));
             throw new TimeoutException('stream lost');
         },
     );
@@ -211,8 +211,8 @@ it('does not duplicate failure completion events when response() drains a partia
 
     $driver = new FakeInferenceDriver(
         onStream: function (): iterable {
-            yield new PartialInferenceDelta(contentDelta: 'part-1');
-            yield new PartialInferenceDelta(contentDelta: 'part-2');
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'part-1'));
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'part-2'));
             throw new TimeoutException('stream lost');
         },
     );

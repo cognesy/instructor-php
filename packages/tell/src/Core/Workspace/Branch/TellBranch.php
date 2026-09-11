@@ -10,6 +10,7 @@ use Cognesy\Tell\Data\TellCompactionResult;
 use Cognesy\Tell\Data\TellConversationView;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
+use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
 use Cognesy\Tell\Core\Contract\Observation\CanTraceTellExecution;
 use Cognesy\Tell\Core\Contract\Workspace\CanOpenTellWorkspace;
 use Cognesy\Tell\Core\Contract\Workspace\CanUseTellBranch;
@@ -34,6 +35,7 @@ final readonly class TellBranch implements CanUseTellBranch
         private CanBuildTellAgent $agents,
         private CanTraceTellExecution $tracer,
         private CanOpenTellWorkspace $workspaces,
+        private CanCatalogueTellProviders $providers,
         private string $directory,
         string $name,
         private bool $invocationLocal = true,
@@ -97,7 +99,7 @@ final readonly class TellBranch implements CanUseTellBranch
         $request = $this->inBranch($request);
         $definition = $this->agents->definition($request);
 
-        return new TellContext((new ContextInspector())->inspect(
+        return new TellContext((new ContextInspector($this->providers->catalog($this->directory)))->inspect(
             conversation: $this->inspection(),
             definition: $definition,
             connection: $request->connection,
@@ -112,7 +114,7 @@ final readonly class TellBranch implements CanUseTellBranch
             throw new WorkspaceException("Tell branch '{$this->name}' is empty and cannot be pinned.");
         }
 
-        return new TellRef($this->agents, $this->workspaces, $this->directory, $head->toString());
+        return new TellRef($this->agents, $this->workspaces, $this->providers, $this->directory, $head->toString());
     }
 
     /** Pin this branch's immutable conversation root. */
@@ -123,7 +125,7 @@ final readonly class TellBranch implements CanUseTellBranch
             throw new WorkspaceException("Tell branch '{$this->name}' is empty and has no conversation root.");
         }
 
-        return new TellRef($this->agents, $this->workspaces, $this->directory, $root->toString());
+        return new TellRef($this->agents, $this->workspaces, $this->providers, $this->directory, $root->toString());
     }
 
     #[\Override]

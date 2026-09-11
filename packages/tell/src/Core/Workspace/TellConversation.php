@@ -13,6 +13,7 @@ use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellResult;
 use Cognesy\Tell\Core\Contract\Execution\CanRunTell;
+use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
 use Cognesy\Tell\Core\Contract\Workspace\CanOpenTellWorkspace;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
 use Cognesy\Tell\Core\Contract\Observation\CanTraceTellExecution;
@@ -36,6 +37,7 @@ final readonly class TellConversation implements CanUseTellConversation
         private CanBuildTellAgent $agents,
         private CanTraceTellExecution $tracer,
         private CanOpenTellWorkspace $workspaces,
+        private CanCatalogueTellProviders $providers,
         private string $directory,
         private ?string $name = null,
     ) {}
@@ -98,7 +100,7 @@ final readonly class TellConversation implements CanUseTellConversation
         $request = $this->inDirectory($request);
         $definition = $this->agents->definition($request);
 
-        return new TellContext((new ContextInspector())->inspect(
+        return new TellContext((new ContextInspector($this->providers->catalog($this->directory)))->inspect(
             conversation: $this->inspection(),
             definition: $definition,
             connection: $request->connection,

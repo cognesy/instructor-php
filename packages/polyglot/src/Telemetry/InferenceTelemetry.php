@@ -61,9 +61,9 @@ final readonly class InferenceTelemetry
                     // see the same Messages instance on a non-retried request.
                     input: MessagesSerializationMemo::toArray($request->messages()),
                     output: $response !== null ? array_filter([
-                        'content' => $response->content(),
+                        'content' => $response->message()->content()->toString(),
                         'finish_reason' => $response->finishReason()->value,
-                        'tool_calls' => $response->hasToolCalls() ? $response->toolCalls()->toArray() : null,
+                        'tool_calls' => $response->message()->hasToolCalls() ? $response->message()->toolCalls()->toArray() : null,
                     ], static fn(mixed $v): bool => $v !== null && $v !== '') : null,
                 ))
                 ->withTags(['llm', 'inference'])
@@ -93,9 +93,9 @@ final readonly class InferenceTelemetry
                     // see the same Messages instance on a non-retried request.
                     input: MessagesSerializationMemo::toArray($request->messages()),
                     output: $response !== null ? array_filter([
-                        'content' => $response->content(),
+                        'content' => $response->message()->content()->toString(),
                         'finish_reason' => $response->finishReason()->value,
-                        'tool_calls' => $response->hasToolCalls() ? $response->toolCalls()->toArray() : null,
+                        'tool_calls' => $response->message()->hasToolCalls() ? $response->message()->toolCalls()->toArray() : null,
                     ], static fn(mixed $v): bool => $v !== null && $v !== '') : null,
                 ))
                 ->withTags(['llm', 'attempt'])

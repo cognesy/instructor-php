@@ -10,14 +10,12 @@ use Cognesy\Http\Enums\StreamCachePolicy;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Stream\StreamCacheManager;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanDescribeCapabilities;
 use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Core\InferenceResponseEventPayload;
 use Cognesy\Polyglot\Support\Redaction\RedactsHttpPayloads;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -31,7 +29,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 use Throwable;
 
-abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest, CanDescribeCapabilities
+class BaseInferenceRequestDriver implements CanProcessInferenceRequest
 {
     use RedactsHttpPayloads;
 
@@ -80,16 +78,6 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
         $copy = clone $this;
         $copy->streamCacheManager = $streamCacheManager;
         return $copy;
-    }
-
-    /**
-     * Get driver capabilities, optionally for a specific model.
-     *
-     * Default implementation returns full capabilities.
-     * Override in subclasses for providers with restrictions.
-     */
-    public function capabilities(?string $model = null): DriverCapabilities {
-        return new DriverCapabilities();
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -232,8 +220,9 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
      */
     private function requestEventData(InferenceRequest $request): array {
         $cachedContext = $request->cachedContext();
+        $modelProfile = $request->modelProfile();
 
-        return [
+        $data = [
             'requestId' => $request->id()->toString(),
             'model' => $request->model(),
             'isStreamed' => $request->isStreamed(),
@@ -253,6 +242,17 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
             'hasCachedToolChoice' => $cachedContext !== null && !$cachedContext->toolChoice()->isEmpty(),
             'hasCachedResponseFormat' => $cachedContext !== null && !$cachedContext->responseFormat()->isEmpty(),
         ];
+
+        return match ($modelProfile) {
+            null => $data,
+            default => [
+                ...$data,
+                'modelKey' => $modelProfile->key->toString(),
+                'modelCatalogVersion' => $modelProfile->catalogVersion,
+                'modelCatalogSource' => $modelProfile->source,
+                'modelSupportStatus' => $modelProfile->status->value,
+            ],
+        };
     }
 
     private function redactedBody(HttpResponse $response): string {

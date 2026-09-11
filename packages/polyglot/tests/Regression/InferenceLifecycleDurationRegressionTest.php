@@ -58,11 +58,7 @@ it('reports non-wrapping monotonic durations for a successful attempt and comple
         )),
         driver: new FakeInferenceDriver(
             responses: [
-                new InferenceResponse(
-                    content: 'OK',
-                    finishReason: 'stop',
-                    usage: new InferenceUsage(inputTokens: 5, outputTokens: 2),
-                ),
+                new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop', usage: new InferenceUsage(inputTokens: 5, outputTokens: 2)),
             ],
         ),
         events: $events,
@@ -122,7 +118,7 @@ it('reports a non-negative sub-wrap duration for a fast real-clock call', functi
             retryPolicy: new InferenceRetryPolicy(maxAttempts: 1),
         )),
         driver: new FakeInferenceDriver(
-            responses: [new InferenceResponse(content: 'OK', finishReason: 'stop')],
+            responses: [new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('OK'), finishReason: 'stop')],
         ),
         events: $events,
     );

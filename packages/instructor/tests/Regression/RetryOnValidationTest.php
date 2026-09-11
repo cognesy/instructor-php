@@ -40,8 +40,8 @@ class StreamValidatedUser {
 it('retries sync request after validation failure and succeeds on second attempt', function () {
     $driver = new FakeInferenceDriver(
         responses: [
-            new InferenceResponse(content: 'not json'),
-            new InferenceResponse(content: '{"age":21}'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('not json')),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"age":21}')),
         ],
     );
 
@@ -83,8 +83,8 @@ it('retries streaming (transducer) request after validation failure and succeeds
     // Second attempt: deltas assemble into valid JSON
     $batch1 = [];
     $batch2 = [
-        new PartialInferenceDelta(contentDelta: '{"age":'),
-        new PartialInferenceDelta(contentDelta: '36}'),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '{"age":')),
+        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", '36}')),
     ];
 
     $driver = new FakeInferenceDriver(

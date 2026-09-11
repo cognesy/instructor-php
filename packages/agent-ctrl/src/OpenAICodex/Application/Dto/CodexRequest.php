@@ -28,7 +28,7 @@ final readonly class CodexRequest
      * @param string|null $outputSchemaFile JSON Schema file for structured output
      * @param string|null $outputLastMessageFile File to write final message
      * @param string|null $profile Configuration profile name
-     * @param bool $fullAuto Shortcut: workspace-write + on-failure approvals
+     * @param bool $approveForMe Route approval requests through automatic review
      * @param bool $dangerouslyBypass Skip all approvals and sandbox (DANGEROUS)
      * @param bool $skipGitRepoCheck Allow running outside git repository
      * @param CodexThreadId|string|null $resumeSessionId Resume specific session by ID
@@ -47,7 +47,7 @@ final readonly class CodexRequest
         private ?string $outputSchemaFile = null,
         private ?string $outputLastMessageFile = null,
         private ?string $profile = null,
-        private bool $fullAuto = false,
+        private bool $approveForMe = false,
         private bool $dangerouslyBypass = false,
         private bool $skipGitRepoCheck = false,
         CodexThreadId|string|null $resumeSessionId = null,
@@ -105,8 +105,8 @@ final readonly class CodexRequest
         return $this->profile;
     }
 
-    public function fullAuto(): bool {
-        return $this->fullAuto;
+    public function approveForMe(): bool {
+        return $this->approveForMe;
     }
 
     public function dangerouslyBypass(): bool {

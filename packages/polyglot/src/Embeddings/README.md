@@ -16,7 +16,7 @@ tool calls, no messages, no reasoning, no capability negotiation.**
 | `Config/*RetryPolicy` | **Subset, not copy.** Inference adds length-recovery (`lengthRecovery`, `lengthMaxAttempts`, `lengthContinuePrompt`, `maxTokensIncrement`, the `LengthRecovery` enum) and default retry status/exception lists. Both **already share** `RetryPolicyInvariants`. |
 | `Contracts/CanMapRequestBody` | Identical modulo the domain name. One method. |
 | `Contracts/CanMapUsage` | Identical modulo the domain name. One method. |
-| `Contracts/` overall | 10 vs 14, and mostly domain-specific. `CanHandleVectorization` and `CanCreateEmbeddings` have no Inference analogue; `CanMapMessages`, `CanTranslateInferenceResponse` and `CanDescribeCapabilities` have no Embeddings analogue. |
+| `Contracts/` overall | Mostly domain-specific. `CanHandleVectorization` and `CanCreateEmbeddings` have no Inference analogue; `CanMapMessages` and `CanTranslateInferenceResponse` have no Embeddings analogue. |
 | `Events/` | 5 vs 15. Embeddings has no streaming, so `PartialInferenceDeltaCreated`, `StreamEventParsed`, `StreamFirstChunkReceived` and friends are correctly absent. |
 
 ## The decision on the two identical interfaces

@@ -3,6 +3,7 @@ title: 'Gemini CLI - Basic'
 docname: 'gemini_basic'
 id: 'e3b7'
 tags:
+  - 'no-replay'
   - 'broken'
   - 'agent-ctrl'
   - 'gemini-cli'

@@ -87,7 +87,7 @@ it('delegates create to runtime with built request', function () {
     expect(fn () => $inference->create())->toThrow(RuntimeException::class, 'stop');
     expect($runtime->captured)->toBeInstanceOf(InferenceRequest::class);
     expect($runtime->captured?->model())->toBe('test-model');
-    expect($runtime->captured?->messages()->toArray()[0]['content'] ?? null)->toBe('Hello');
+    expect($runtime->captured?->messages()->first()?->content()->toString())->toBe('Hello');
 });
 
 it('stream shortcut implies streaming intent', function () {
@@ -103,7 +103,7 @@ it('stream shortcut implies streaming intent', function () {
                 execution: InferenceExecution::fromRequest($request),
                 driver: new FakeInferenceDriver(
                     streamBatches: [[
-                        new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop'),
+                        new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", 'Hello'), finishReason: 'stop'),
                     ]],
                 ),
                 eventDispatcher: new EventDispatcher,
@@ -116,7 +116,7 @@ it('stream shortcut implies streaming intent', function () {
 
     expect($runtime->captured)->toBeInstanceOf(InferenceRequest::class);
     expect($runtime->captured?->isStreamed())->toBeTrue();
-    expect($final?->content())->toBe('Hello');
+    expect($final?->message()->content()->toString())->toBe('Hello');
 });
 
 it('provides typed constructor sugar', function () {

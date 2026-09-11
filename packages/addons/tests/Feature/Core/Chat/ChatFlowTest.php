@@ -19,7 +19,7 @@ it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     );
 
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: 'Hi!'),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('Hi!')),
     ]);
     $inference = Inference::fromRuntime(
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
@@ -41,10 +41,10 @@ it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     $state1 = $chat->nextStep($state);
     $state2 = $chat->nextStep($state1);
 
-    $final = $state2->messages()->toArray();
+    $final = $state2->messages()->all();
     expect(count($final))->toBe(2);
-    expect($final[0]['role'])->toBe('user');
-    expect($final[0]['content'])->toBe('Hello');
-    expect($final[1]['role'])->toBe('assistant');
-    expect($final[1]['content'])->toBe('Hi!');
+    expect($final[0]->role()->value)->toBe('user');
+    expect($final[0]->content()->toString())->toBe('Hello');
+    expect($final[1]->role()->value)->toBe('assistant');
+    expect($final[1]->content()->toString())->toBe('Hi!');
 });

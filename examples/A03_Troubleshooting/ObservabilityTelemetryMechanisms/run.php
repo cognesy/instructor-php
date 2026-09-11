@@ -91,7 +91,7 @@ final class ObservabilityRecordingDriver implements CanProcessInferenceRequest
     {
         $this->responses = array_map(
             static fn(array $response): InferenceResponse => new InferenceResponse(
-                content: json_encode($response, JSON_THROW_ON_ERROR),
+                message: \Cognesy\Messages\Message::asAssistant(json_encode($response, JSON_THROW_ON_ERROR)),
                 finishReason: 'stop',
             ),
             $responses,
@@ -103,7 +103,7 @@ final class ObservabilityRecordingDriver implements CanProcessInferenceRequest
         $this->requests[] = $request->messages()->toArray();
 
         if ($this->responses === []) {
-            return new InferenceResponse(content: '{}', finishReason: 'stop');
+            return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{}'), finishReason: 'stop');
         }
 
         return array_shift($this->responses);

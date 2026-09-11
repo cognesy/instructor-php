@@ -2,12 +2,14 @@
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Core\InferenceRequestPreflight;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenBodyFormat;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
 it('Qwen: maps thinking option to enable_thinking', function () {
     $config = new LLMConfig(
@@ -19,14 +21,14 @@ it('Qwen: maps thinking option to enable_thinking', function () {
     );
 
     $body = new QwenBodyFormat($config, new OpenAIMessageFormat());
-    $request = new InferenceRequest(
+    $request = (new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'qwen3.8-max',
         options: [
             'thinking' => 'enabled',
             'reasoning_effort' => 'low',
         ],
-    );
+    ))->withModelProfile(ModelCatalog::bundled()->find('qwen', 'qwen3.8-max'));
 
     $json = $body->toRequestBody($request);
 
@@ -40,12 +42,12 @@ it('Qwen3.8-Max: preserves native JSON Schema response format', function () {
         apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
         apiKey: 'KEY',
         endpoint: '/chat/completions',
-        model: 'qwen3.8-max',
+        model: 'qwen3-max-preview',
         driver: 'qwen',
     );
 
     $body = new QwenBodyFormat($config, new OpenAIMessageFormat());
-    $request = new InferenceRequest(
+    $request = (new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Return JSON.']]),
         model: 'qwen3.8-max',
         responseFormat: ResponseFormat::jsonSchema(
@@ -53,7 +55,7 @@ it('Qwen3.8-Max: preserves native JSON Schema response format', function () {
             name: 'answer',
             strict: true,
         ),
-    );
+    ))->withModelProfile(ModelCatalog::bundled()->find('qwen', 'qwen3.8-max'));
 
     expect($body->toRequestBody($request)['response_format'])->toBe([
         'type' => 'json_schema',
@@ -73,12 +75,12 @@ it('older Qwen models: degrades JSON Schema to JSON Object', function () {
         apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
         apiKey: 'KEY',
         endpoint: '/chat/completions',
-        model: 'qwen3-max-preview',
+        model: 'qwen3.8-max',
         driver: 'qwen',
     );
 
     $body = new QwenBodyFormat($config, new OpenAIMessageFormat());
-    $request = new InferenceRequest(
+    $request = (new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Return JSON.']]),
         model: 'qwen3-max-preview',
         responseFormat: ResponseFormat::jsonSchema(
@@ -86,7 +88,8 @@ it('older Qwen models: degrades JSON Schema to JSON Object', function () {
             name: 'answer',
             strict: true,
         ),
-    );
+    ))->withModelProfile(ModelCatalog::bundled()->find('qwen', 'qwen3-max-preview'));
+    $request = (new InferenceRequestPreflight)->apply($request);
 
     expect($body->toRequestBody($request)['response_format'])->toBe(['type' => 'json_object']);
 });

@@ -43,10 +43,7 @@ final class EventAwareDriver implements CanUseTools, CanAcceptEventHandler
         return $state->withCurrentStep(new AgentStep(
             inputMessages: Messages::empty(),
             outputMessages: Messages::fromString('ok', 'assistant'),
-            inferenceResponse: new InferenceResponse(
-                toolCalls: ToolCalls::empty(),
-                usage: new InferenceUsage(0, 0),
-            ),
+            inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')->withToolCalls(ToolCalls::empty()), usage: new InferenceUsage(0, 0)),
         ));
     }
 }

@@ -93,7 +93,7 @@ final class InferenceRetryLoop
         }
 
         $messages = $request->messages()
-            ->asAssistant($response->content())
+            ->appendMessage($response->message())
             ->asUser($this->policy->lengthContinuePrompt);
 
         return $builder->withMessages($messages)->create();

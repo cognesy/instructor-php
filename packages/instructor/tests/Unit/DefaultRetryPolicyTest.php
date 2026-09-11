@@ -44,11 +44,11 @@ it('should not allow retry when max retries reached', function () {
 
     // Simulate TWO failed attempts to exceed maxRetries=1
     $execution = $execution->withFailedAttempt(
-        inferenceResponse: new InferenceResponse(content: 'bad'),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('bad')),
         errors: ['First error'],
     );
     $execution = $execution->withFailedAttempt(
-        inferenceResponse: new InferenceResponse(content: 'bad'),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('bad')),
         errors: ['Second error'],
     );
 
@@ -70,7 +70,7 @@ it('allows a single retry when maxRetries is one', function () {
         );
 
     $execution = $execution->withFailedAttempt(
-        inferenceResponse: new InferenceResponse(content: 'bad'),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('bad')),
         errors: ['First error'],
     );
 
@@ -99,7 +99,7 @@ it('records failure and dispatches event', function () {
     );
 
     $validationResult = Result::failure('Validation failed');
-    $inference = new InferenceResponse(content: '{"value": "not a number"}');
+    $inference = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('{"value": "not a number"}'));
 
     $updated = $policy->recordFailure($execution, $validationResult, $inference);
 
@@ -168,7 +168,7 @@ it('finalizeOrThrow throws exception on failure and dispatches event', function 
 
     // Record a failed attempt
     $execution = $execution->withFailedAttempt(
-        inferenceResponse: new InferenceResponse(content: 'bad'),
+        inferenceResponse: new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('bad')),
         errors: ['Validation failed'],
     );
 

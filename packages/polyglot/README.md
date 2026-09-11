@@ -16,11 +16,13 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 
-$text = Inference::using('openai')
+$message = Inference::using('openai')
     ->withModel('gpt-5.6')
     ->withMessages('Write one short sentence about PHP.')
     ->withReasoning(ReasoningSelection::effort(ReasoningEffort::Medium))
     ->get();
+
+echo $message->content()->toString();
 ```
 
 ## Documentation

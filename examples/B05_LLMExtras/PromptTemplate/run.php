@@ -31,7 +31,7 @@ $prompt = Template::twig()
     ->with(['country' => 'Germany'])
     ->toText();
 
-$answer = Inference::using('openai')->withMessages(Messages::fromString($prompt))->get();
+$answer = Inference::using('openai')->withMessages(Messages::fromString($prompt))->get()->content()->toString();
 
 echo "EXAMPLE 1: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";
@@ -46,7 +46,7 @@ $prompt = Template::text(
     variables: ['country' => 'Germany'],
 );
 
-$answer = Inference::using('openai')->withMessages(Messages::fromString($prompt))->get();
+$answer = Inference::using('openai')->withMessages(Messages::fromString($prompt))->get()->content()->toString();
 
 echo "EXAMPLE 2: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";

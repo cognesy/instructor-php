@@ -3,7 +3,6 @@ title: 'Cohere'
 docname: 'llm_cohere'
 id: '9331'
 tags:
-  - 'flaky'
   - 'llm-api-support'
   - 'cohere'
   - 'provider'
@@ -37,10 +36,10 @@ require 'examples/boot.php';
 
 $answer = Inference::using('cohere')
     ->with(
-        messages: Messages::fromString('What is the capital of France'),
-        options: ['max_tokens' => 64]
+        messages: Messages::fromString('What is the capital of France? Answer with the city name only.'),
+        options: ['max_tokens' => 128]
     )
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

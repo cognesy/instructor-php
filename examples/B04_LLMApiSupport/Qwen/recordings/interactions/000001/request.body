@@ -1,0 +1,1 @@
+{"model":"qwen3.8-max","messages":[{"role":"user","content":"What is the capital of France?"}],"enable_thinking":false,"max_completion_tokens":64}

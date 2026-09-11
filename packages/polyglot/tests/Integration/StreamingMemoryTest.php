@@ -25,9 +25,9 @@ it('streams large response (~10K tokens) with bounded memory', function () {
     $driver = new FakeInferenceDriver(
         onStream: function () use ($chunkCount, $payload): iterable {
             for ($i = 0; $i < $chunkCount - 1; $i++) {
-                yield new PartialInferenceDelta(contentDelta: $payload);
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $payload));
             }
-            yield new PartialInferenceDelta(contentDelta: $payload, finishReason: 'stop');
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $payload), finishReason: 'stop');
         },
     );
 
@@ -80,9 +80,9 @@ it('streams 1000 inference deltas with bounded memory', function () {
     $driver = new FakeInferenceDriver(
         onStream: function () use ($deltaCount, $chunkBody): iterable {
             for ($i = 0; $i < $deltaCount - 1; $i++) {
-                yield new PartialInferenceDelta(contentDelta: $chunkBody);
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunkBody));
             }
-            yield new PartialInferenceDelta(contentDelta: $chunkBody, finishReason: 'stop');
+            yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunkBody), finishReason: 'stop');
         },
     );
 
@@ -140,9 +140,9 @@ it('accumulates content proportional to payload, not to object count', function 
         $driver = new FakeInferenceDriver(
             onStream: function () use ($count, $chunkBody): iterable {
                 for ($i = 0; $i < $count - 1; $i++) {
-                    yield new PartialInferenceDelta(contentDelta: $chunkBody);
+                    yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunkBody));
                 }
-                yield new PartialInferenceDelta(contentDelta: $chunkBody, finishReason: 'stop');
+                yield new PartialInferenceDelta(messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()->withTextDelta("test:text:0", $chunkBody), finishReason: 'stop');
             },
         );
 

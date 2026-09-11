@@ -164,9 +164,9 @@ final readonly class AgentState
     public function withCurrentStep(AgentStep $step): self {
         $execution = $this->ensureExecution();
         $context = match (true) {
-            $step->outputMessages()->isEmpty() => $this->context,
+            $step->historyMessages()->isEmpty() => $this->context,
             default => $this->context->withAppendedMessages(
-                $this->tagMessages($step->outputMessages(), $step, $execution),
+                $this->tagMessages($step->historyMessages(), $step, $execution),
             ),
         };
         return $this->with(

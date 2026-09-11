@@ -3,6 +3,7 @@ title: 'Agent Control Streaming'
 docname: 'agent_ctrl_streaming'
 id: 'b0bc'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'streaming'
   - 'cli-agents'

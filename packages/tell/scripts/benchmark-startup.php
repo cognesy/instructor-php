@@ -13,6 +13,7 @@ use Cognesy\Tell\Capability\Observation\FilesystemTrace\StandardTellExecutionTra
 use Cognesy\Tell\Capability\Tool\AskUser\AskUserToolContribution;
 use Cognesy\Tell\Capability\Tool\Coding\CodingToolContribution;
 use Cognesy\Tell\Capability\Model\Polyglot\PolyglotTellModelResolver;
+use Cognesy\Tell\Capability\Discovery\Polyglot\PolyglotTellProviderCatalogue;
 use Cognesy\Tell\Capability\Secrets\Standard\StandardTellSecretResolver;
 use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemTellWorkspaceProvider;
@@ -142,6 +143,7 @@ $measureScans = static function (array $arguments) use ($project, $home): array 
             $paths,
             new StandardTellSecretResolver($paths, $project),
         ),
+        providerCatalogue: new PolyglotTellProviderCatalogue($paths),
         definitionLoader: new FilesystemTellAgentDefinitions($paths, $scans),
         contributions: [
             new ComposerTellAgentContribution($scans),

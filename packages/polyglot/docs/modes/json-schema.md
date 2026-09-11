@@ -147,13 +147,16 @@ Provider support for JSON Schema varies significantly:
 | Provider | JSON Schema Support |
 |---|---|
 | OpenAI (GPT-4 and newer) | Full native support with strict mode |
-| Groq, Fireworks, and others | Varies -- check `DriverCapabilities` |
+| Groq, Fireworks, and others | Varies -- check the exact `ModelCatalog` offering |
 | Anthropic | Not supported natively |
 
 You can query support programmatically:
 
 ```php
-// DriverCapabilities::supportsResponseFormatJsonSchema()
+$status = ModelCatalog::discover()
+    ->find($driver, $model)
+    ->capabilities
+    ->jsonSchema;
 ```
 
 For providers without native JSON Schema support, consider using [JSON object mode](/modes/json) with detailed prompts, or use the Instructor layer above Polyglot for automatic fallback strategies.

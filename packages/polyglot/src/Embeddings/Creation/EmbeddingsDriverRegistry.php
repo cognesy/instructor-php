@@ -6,11 +6,19 @@ use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Drivers\Azure\AzureOpenAIDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Cohere\CohereDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Gemini\GeminiDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Jina\JinaDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\OpenAI\OpenAIDriver;
 use InvalidArgumentException;
+use Override;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class EmbeddingsDriverRegistry implements CanProvideEmbeddingsDrivers
 {
+    private static ?self $default = null;
+
     /** @param array<string, callable(EmbeddingsConfig,CanSendHttpRequests,EventDispatcherInterface):CanHandleVectorization> $drivers */
     private function __construct(
         private array $drivers = [],
@@ -18,6 +26,18 @@ final class EmbeddingsDriverRegistry implements CanProvideEmbeddingsDrivers
 
     public static function make(): self {
         return new self();
+    }
+
+    public static function default(): self {
+        return self::$default ??= self::fromArray([
+            'azure' => AzureOpenAIDriver::class,
+            'cohere' => CohereDriver::class,
+            'gemini' => GeminiDriver::class,
+            'jina' => JinaDriver::class,
+            'mistral' => OpenAIDriver::class,
+            'openai' => OpenAIDriver::class,
+            'ollama' => OpenAIDriver::class,
+        ]);
     }
 
     /**
@@ -53,18 +73,18 @@ final class EmbeddingsDriverRegistry implements CanProvideEmbeddingsDrivers
         return $copy;
     }
 
-    #[\Override]
+    #[Override]
     public function has(string $name): bool {
         return isset($this->drivers[$name]);
     }
 
     /** @return array<string> */
-    #[\Override]
+    #[Override]
     public function driverNames(): array {
         return array_keys($this->drivers);
     }
 
-    #[\Override]
+    #[Override]
     public function makeDriver(
         string $name,
         EmbeddingsConfig $config,

@@ -63,7 +63,7 @@ final class StructuredOutputFakeRuntime implements CanCreateStructuredOutput
 
         return match (true) {
             $response instanceof InferenceResponse => $response,
-            default => new InferenceResponse(content: $this->encodeResponse($response)),
+            default => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->encodeResponse($response))),
         };
     }
 

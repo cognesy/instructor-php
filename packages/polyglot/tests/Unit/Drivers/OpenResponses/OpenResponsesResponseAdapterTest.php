@@ -5,6 +5,8 @@ namespace Cognesy\Polyglot\Tests\Unit\Drivers\OpenResponses;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Data\ReplayEnvelope;
+use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesReplay;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesUsageFormat;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
@@ -79,7 +81,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->adapter->fromResponse($httpResponse);
 
-        $this->assertEquals('Hello! How can I help you?', $result->content());
+        $this->assertEquals('Hello! How can I help you?', $result->message()->content()->toString());
         $this->assertEquals('stop', $result->finishReason()->value);
         $this->assertEquals(10, $result->usage()->inputTokens);
         $this->assertEquals(8, $result->usage()->outputTokens);
@@ -108,8 +110,8 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->adapter->fromResponse($httpResponse);
 
-        $this->assertTrue($result->hasToolCalls());
-        $toolCalls = $result->toolCalls();
+        $this->assertTrue($result->message()->hasToolCalls());
+        $toolCalls = $result->message()->toolCalls();
         $this->assertCount(1, $toolCalls->all());
 
         $toolCall = $toolCalls->first();
@@ -143,7 +145,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->adapter->fromResponse($httpResponse);
 
-        $toolCalls = $result->toolCalls();
+        $toolCalls = $result->message()->toolCalls();
         $this->assertCount(2, $toolCalls->all());
     }
 
@@ -179,8 +181,8 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->adapter->fromResponse($httpResponse);
 
-        $this->assertEquals('The answer is 42.', $result->content());
-        $this->assertEquals('Let me think about this...', $result->reasoningContent());
+        $this->assertEquals('The answer is 42.', $result->message()->content()->toString());
+        $this->assertEquals('Let me think about this...', $result->message()->reasoningContent());
     }
 
     public function test_parses_reasoning_text_part_type(): void
@@ -204,7 +206,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->adapter->fromResponse($httpResponse);
 
-        $this->assertEquals('Reasoning trace', $result->reasoningContent());
+        $this->assertEquals('Reasoning trace', $result->message()->reasoningContent());
     }
 
     public function test_maps_completed_status_to_stop(): void
@@ -298,7 +300,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->streamOne($eventBody);
 
-        $this->assertEquals('Hello', $result->contentDelta);
+        $this->assertEquals('Hello', $result->messageChunks->textDelta());
     }
 
     public function test_parses_stream_reasoning_delta(): void
@@ -310,7 +312,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->streamOne($eventBody);
 
-        $this->assertEquals('Thinking...', $result->reasoningContentDelta);
+        $this->assertEquals('Thinking...', $result->messageChunks->reasoningDelta());
     }
 
     public function test_parses_stream_function_call_added(): void
@@ -325,9 +327,10 @@ class OpenResponsesResponseAdapterTest extends TestCase
         ]);
 
         $result = $this->streamOne($eventBody);
+        $toolChunk = $result->messageChunks->all()[0];
 
-        $this->assertEquals('call_xyz', $result->toolId);
-        $this->assertEquals('get_weather', $result->toolName);
+        $this->assertEquals('call_xyz', $toolChunk->toolCallId);
+        $this->assertEquals('get_weather', $toolChunk->toolCallName);
     }
 
     public function test_parses_stream_function_call_args_delta(): void
@@ -339,8 +342,9 @@ class OpenResponsesResponseAdapterTest extends TestCase
         ]);
 
         $result = $this->streamOne($eventBody);
+        $toolChunk = $result->messageChunks->all()[0];
 
-        $this->assertEquals('{"loc', $result->toolArgs);
+        $this->assertEquals('{"loc', $toolChunk->toolCallArguments);
     }
 
     public function test_parses_stream_completed_event(): void
@@ -416,7 +420,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
         ];
 
         $result = $this->streamAll($eventBodies);
-        $toolCalls = $result->toolCalls();
+        $toolCalls = $result->message()->toolCalls();
         $this->assertTrue($toolCalls->hasAny());
         $toolCall = $toolCalls->first();
         $this->assertEquals('call_1', $toolCall->id()?->toString());
@@ -482,12 +486,126 @@ class OpenResponsesResponseAdapterTest extends TestCase
         ];
 
         $result = $this->streamAll($eventBodies);
-        $toolCall = $result->toolCalls()->first();
+        $toolCall = $result->message()->toolCalls()->first();
 
         $this->assertNotNull($toolCall);
         $this->assertEquals('search', $toolCall->name());
         // Args come from deltas only — done event was ignored
         $this->assertEquals('hello', $toolCall->value('q'));
+    }
+
+    public function test_stream_keeps_missing_id_interleaved_blocks_and_replay_aligned(): void
+    {
+        $eventBodies = array_map(
+            static fn(array $event): string => (string) json_encode($event),
+            [
+                [
+                    'type' => 'response.output_item.added',
+                    'output_index' => 0,
+                    'item' => [
+                        'type' => 'reasoning',
+                        'encrypted_content' => 'opaque-reasoning-state',
+                        'content' => [['type' => 'reasoning_text', 'text' => 'Think']],
+                    ],
+                ],
+                [
+                    'type' => 'response.reasoning_text.delta',
+                    'output_index' => 0,
+                    'delta' => 'Think',
+                ],
+                [
+                    'type' => 'response.output_text.delta',
+                    'output_index' => 1,
+                    'content_index' => 0,
+                    'delta' => 'First',
+                ],
+                [
+                    'type' => 'response.reasoning_text.done',
+                    'output_index' => 0,
+                    'text' => 'Think',
+                ],
+                [
+                    'type' => 'response.output_text.delta',
+                    'output_index' => 1,
+                    'content_index' => 1,
+                    'delta' => 'Second',
+                ],
+                [
+                    'type' => 'response.output_text.done',
+                    'output_index' => 1,
+                    'content_index' => 0,
+                    'text' => 'First',
+                ],
+                [
+                    'type' => 'response.output_text.done',
+                    'output_index' => 1,
+                    'content_index' => 1,
+                    'text' => 'Second',
+                ],
+                [
+                    'type' => 'response.completed',
+                    'response' => ['status' => 'completed'],
+                ],
+            ],
+        );
+
+        $message = $this->streamAll($eventBodies)->message();
+
+        $this->assertSame([
+            ['type' => 'reasoning', 'text' => 'Think'],
+            ['type' => 'text', 'text' => 'First'],
+            ['type' => 'text', 'text' => 'Second'],
+        ], $message->parts()->toArray());
+        $replay = ReplayEnvelope::fromMessage($message, OpenResponsesReplay::OWNER);
+        $this->assertNotNull($replay);
+        $this->assertTrue($replay->alignsWith(3));
+        $this->assertSame(
+            'opaque-reasoning-state',
+            $replay->parts()[0]['item']['encrypted_content'] ?? null,
+        );
+    }
+
+    public function test_stream_preserves_one_tool_block_when_item_and_call_ids_are_missing(): void
+    {
+        $eventBodies = array_map(
+            static fn(array $event): string => (string) json_encode($event),
+            [
+                [
+                    'type' => 'response.output_item.added',
+                    'output_index' => 2,
+                    'item' => [
+                        'type' => 'function_call',
+                        'name' => 'search',
+                    ],
+                ],
+                [
+                    'type' => 'response.function_call_arguments.delta',
+                    'output_index' => 2,
+                    'delta' => '{"q":"hel',
+                ],
+                [
+                    'type' => 'response.function_call_arguments.delta',
+                    'output_index' => 2,
+                    'delta' => 'lo"}',
+                ],
+                [
+                    'type' => 'response.function_call_arguments.done',
+                    'output_index' => 2,
+                    'arguments' => '{"q":"hello"}',
+                ],
+                [
+                    'type' => 'response.completed',
+                    'response' => ['status' => 'completed'],
+                ],
+            ],
+        );
+
+        $toolCalls = $this->streamAll($eventBodies)->message()->toolCalls();
+
+        $this->assertCount(1, $toolCalls->all());
+        $this->assertNull($toolCalls->first()->id());
+        $this->assertSame('search', $toolCalls->first()->name());
+        $this->assertSame('hello', $toolCalls->first()->value('q'));
     }
 
     public function test_parses_response_with_mixed_output_items(): void
@@ -519,7 +637,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->adapter->fromResponse($httpResponse);
 
-        $this->assertEquals('I will check the weather.', $result->content());
-        $this->assertTrue($result->hasToolCalls());
+        $this->assertEquals('I will check the weather.', $result->message()->content()->toString());
+        $this->assertTrue($result->message()->hasToolCalls());
     }
 }

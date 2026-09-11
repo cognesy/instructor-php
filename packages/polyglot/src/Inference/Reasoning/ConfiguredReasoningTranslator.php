@@ -4,35 +4,22 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Reasoning;
 
-use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateReasoning;
 use InvalidArgumentException;
 
-/** Translates a curated model capability profile into one provider wire family. */
+/** Renders approved reasoning capabilities into one provider wire family. */
 final readonly class ConfiguredReasoningTranslator implements CanTranslateReasoning
 {
-    /** @param Closure(string): ReasoningCapabilities $capabilities */
     public function __construct(
         private ReasoningWireFormat $wireFormat,
-        private Closure $capabilities,
     ) {}
 
-    public function capabilities(string $model): ReasoningCapabilities
-    {
-        return ($this->capabilities)($model);
-    }
-
-    public function translate(string $model, ReasoningSelection $selection): ReasoningTranslation
-    {
+    public function translate(
+        ReasoningCapabilities $capabilities,
+        ReasoningSelection $selection,
+    ): ReasoningTranslation {
         if ($selection->isDefault()) {
             return ReasoningTranslation::omitted($selection);
-        }
-
-        $capabilities = $this->capabilities($model);
-        if (! $capabilities->supports($selection)) {
-            throw new InvalidArgumentException(
-                "Reasoning selection {$selection->kind->value} is not supported by model {$model}.",
-            );
         }
 
         $mapping = $selection->effort === null
@@ -95,8 +82,7 @@ final readonly class ConfiguredReasoningTranslator implements CanTranslateReason
         };
     }
 
-    private function providerValue(?ReasoningEffortMapping $mapping): string
-    {
+    private function providerValue(?ReasoningEffortMapping $mapping): string {
         if ($mapping === null) {
             throw new InvalidArgumentException('Reasoning effort mapping is missing.');
         }
@@ -135,6 +121,7 @@ final readonly class ConfiguredReasoningTranslator implements CanTranslateReason
         $thinkingConfig = match ($selection->kind) {
             ReasoningSelectionKind::Disabled => ['thinkingBudget' => 0],
             ReasoningSelectionKind::Budget => ['thinkingBudget' => $selection->budgetTokens],
+            ReasoningSelectionKind::Enabled,
             ReasoningSelectionKind::Adaptive => ['thinkingBudget' => -1],
             ReasoningSelectionKind::Effort => ['thinkingLevel' => strtoupper((string) $mapping?->providerValue)],
             default => throw new InvalidArgumentException('Unsupported Gemini reasoning selection.'),
@@ -143,8 +130,7 @@ final readonly class ConfiguredReasoningTranslator implements CanTranslateReason
         return ['generationConfig' => ['thinkingConfig' => $thinkingConfig]];
     }
 
-    private function cohere(ReasoningSelection $selection): array
-    {
+    private function cohere(ReasoningSelection $selection): array {
         return match ($selection->kind) {
             ReasoningSelectionKind::Disabled => ['thinking' => ['type' => 'disabled']],
             ReasoningSelectionKind::Budget => [

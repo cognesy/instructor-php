@@ -12,6 +12,8 @@ tags:
 When using LLM APIs, tracking costs is essential for budgeting and optimization.
 Cost calculation is decoupled from usage tracking — you use a calculator to
 compute cost from usage and pricing data.
+The rates below are illustrative; applications should supply current rates
+from their chosen provider or internal pricing source.
 
 This example demonstrates how to:
 1. Define pricing rates ($/1M tokens) with `InferencePricing`

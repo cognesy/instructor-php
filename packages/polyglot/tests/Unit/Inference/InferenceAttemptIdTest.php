@@ -25,7 +25,7 @@ it('uses a unique attempt id for each retry', function () {
             if ($calls === 1) {
                 throw new TimeoutException('timeout');
             }
-            return new InferenceResponse(content: 'ok', finishReason: 'stop');
+            return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('ok'), finishReason: 'stop');
         },
     );
 

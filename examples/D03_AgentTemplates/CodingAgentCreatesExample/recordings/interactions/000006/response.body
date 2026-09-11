@@ -1,0 +1,45 @@
+{
+  "id": "chatcmpl-EMpMERo1Jg2sx8fVb9VfRt4OhwXLs",
+  "object": "chat.completion",
+  "created": 1789109342,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_xQGb6GLx5tbbffEHqyqEWR86",
+            "type": "function",
+            "function": {
+              "name": "bash",
+              "arguments": "{\"command\":\"php -l /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php && php /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\",\"timeout_ms\":120000}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3180,
+    "completion_tokens": 71,
+    "total_tokens": 3251,
+    "prompt_tokens_details": {
+      "cached_tokens": 2816,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -9,8 +9,7 @@ tags:
 ---
 ## Overview
 
-Groq is LLM providers offering a very fast inference thanks to their
-custom hardware. They provide a several models - Llama2, Mixtral and Gemma.
+Groq provides low-latency inference for hosted open-weight models.
 
 Supported modes depend on the specific model, but generally include:
  - OutputMode::MdJson - fallback mode
@@ -63,7 +62,7 @@ $user = $structuredOutput
             'input' => 'We have a meeting with John, our new admin who likes surfing. He is 19 years old - check his profile: @jx90.',
             'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => ['surfing'], 'username' => 'jx90', 'age' => 19],
         ]],
-        model: 'llama-3.3-70b-versatile', //'gemma2-9b-it',
+        model: 'openai/gpt-oss-20b',
         options: ['temperature' => 0.5],
     )->get();
 

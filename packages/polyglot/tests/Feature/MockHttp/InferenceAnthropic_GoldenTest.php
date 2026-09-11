@@ -11,11 +11,19 @@ it('Anthropic golden: streaming text + tool_use aggregation', function () {
         ->post('https://api.anthropic.com/v1/messages')
         ->withStream(true)
         ->replySSEFromJson([
-            [ 'delta' => [ 'text' => 'Hel' ] ],
-            [ 'delta' => [ 'text' => 'lo' ] ],
-            // Start of a tool block
-            [ 'content_block' => [ 'id' => 'tb1', 'name' => 'get_weather' ] ],
-            [ 'delta' => [ 'partial_json' => '{"city":"Paris"}' ] ],
+            ['type' => 'content_block_start', 'index' => 0, 'content_block' => ['type' => 'text', 'text' => '']],
+            ['type' => 'content_block_delta', 'index' => 0, 'delta' => ['type' => 'text_delta', 'text' => 'Hel']],
+            ['type' => 'content_block_delta', 'index' => 0, 'delta' => ['type' => 'text_delta', 'text' => 'lo']],
+            [
+                'type' => 'content_block_start',
+                'index' => 1,
+                'content_block' => ['type' => 'tool_use', 'id' => 'tb1', 'name' => 'get_weather', 'input' => []],
+            ],
+            [
+                'type' => 'content_block_delta',
+                'index' => 1,
+                'delta' => ['type' => 'input_json_delta', 'partial_json' => '{"city":"Paris"}'],
+            ],
             'event: message_stop',
         ], addDone: false);
 
@@ -48,9 +56,9 @@ it('Anthropic golden: streaming text + tool_use aggregation', function () {
     $final = $stream->final();
 
     expect($final)->not->toBeNull();
-    expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
-    expect($final->hasToolCalls())->toBeTrue();
-    $tool = $final->toolCalls()->first();
+    expect(str_starts_with($final->message()->content()->toString(), 'Hello'))->toBeTrue();
+    expect($final->message()->hasToolCalls())->toBeTrue();
+    $tool = $final->message()->toolCalls()->first();
     expect($tool->name())->toBe('get_weather');
     expect($tool->value('city'))->toBe('Paris');
 });

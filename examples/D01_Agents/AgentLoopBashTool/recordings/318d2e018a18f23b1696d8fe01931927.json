@@ -1,0 +1,90 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the current date and time? Also show the hostname and working directory. Be concise.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_OWF34iZIaTngEfRQrVM5Pe4j\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"date '+%Y-%m-%d %H:%M:%S %Z'; hostname; pwd\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_OWF34iZIaTngEfRQrVM5Pe4j\",\"content\":\"2026-09-11 08:47:19 CEST\\nMACSTUDIO\\n\\\/Users\\\/ddebowczyk\\\/projects\\\/_instructor\\\/instructor-php\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return bounded stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated file tools over cat, sed-based rewrites, and shell redirection.\\nIf output is truncated, narrow the command or redirect it to a file and inspect it with the dedicated read tool.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Fri, 11 Sep 2026 06:47:19 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "898"
+            ],
+            "cf-ray": [
+                "a394b8689e86f9bf-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "483"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999950"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_3f6d3b2b66bc47e2ac9ab50ba7f0b413"
+            ],
+            "set-cookie": "[REDACTED]",
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-EMpKZ4WlTDw0qw2Zjpxf7DmhUPEoh\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789109239,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"2026-09-11 08:47:19 CEST  \\nHostname: MACSTUDIO  \\nWorking directory: \/Users\/ddebowczyk\/projects\/_instructor\/instructor-php\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 346,\n    \"completion_tokens\": 42,\n    \"total_tokens\": 388,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

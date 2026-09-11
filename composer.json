@@ -67,6 +67,16 @@
         "bench": "@php ./vendor/bin/phpbench run",
         "docs": "@php ./bin/instructor-docs",
         "docs:qa": "bash ./scripts/docs/docs-qa-all.sh",
+        "models:apply": "@php packages/polyglot/bin/instructor-catalog apply",
+        "models:build": "@php packages/polyglot/bin/instructor-catalog build",
+        "models:check": "@php packages/polyglot/bin/instructor-catalog check",
+        "models:list": "@php packages/polyglot/bin/instructor-catalog list",
+        "models:refresh": "@php packages/polyglot/bin/instructor-catalog refresh",
+        "models:validate": "@php packages/polyglot/bin/instructor-catalog validate",
+        "qa:catalog": [
+            "@models:check",
+            "@models:validate"
+        ],
         "qa:phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
         "qa:psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
         "qa:pint": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/ --test",
@@ -80,6 +90,7 @@
         "qa:self-knowledge-docs": "@php packages/agents/scripts/sync-self-knowledge-docs.php --check",
         "qa:semgrep": "bash -lc 'set -euo pipefail; export HOME=\"$PWD/.qa\"; export SSL_CERT_FILE=\"${SSL_CERT_FILE:-/opt/homebrew/etc/openssl@3/cert.pem}\"; for cfg in .qa/semgrep/*.yml; do [ -f \"$cfg\" ] || continue; semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error; done; for cfg in packages/*/.qa/semgrep.yml; do [ -f \"$cfg\" ] || continue; pkg_dir=$(dirname \"$(dirname \"$cfg\")\"); semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error \"$pkg_dir\"; done'",
         "qa": [
+            "@qa:catalog",
             "@qa:phpstan",
             "@qa:psalm",
             "@qa:pint",
@@ -164,8 +175,7 @@
         },
         "files": [
             "src/polyfills.php",
-            "packages/xprompt/src/functions.php",
-            "packages/polyglot/src/deprecated_aliases.php"
+            "packages/xprompt/src/functions.php"
         ]
     },
     "autoload-dev": {

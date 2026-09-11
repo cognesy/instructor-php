@@ -3,6 +3,7 @@ title: 'Pi CLI - Streaming'
 docname: 'pi_streaming'
 id: 'pi01'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'pi-cli'
   - 'streaming'

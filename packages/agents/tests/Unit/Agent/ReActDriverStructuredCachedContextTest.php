@@ -35,7 +35,7 @@ it('builds structured cached context from typed messages', function () {
     $cached = $resolver($driver, $state);
 
     expect($cached)->not()->toBeNull()
-        ->and($cached->messages()->toArray())->toHaveCount(1)
-        ->and($cached->messages()->toArray()[0]['role'])->toBe('system')
-        ->and($cached->messages()->toArray()[0]['content'])->toBe('You are helpful.');
+        ->and($cached->messages()->all())->toHaveCount(1)
+        ->and($cached->messages()->first()?->role()->value)->toBe('system')
+        ->and($cached->messages()->first()?->content()->toString())->toBe('You are helpful.');
 });

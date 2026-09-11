@@ -43,8 +43,6 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-contextLength: 128000
-maxOutputLength: 16384
 ```
 
 The following fields are required or strongly recommended:
@@ -57,14 +55,12 @@ The following fields are required or strongly recommended:
 | `endpoint` | string | API endpoint path (e.g. `/chat/completions`, `/messages`) |
 | `model` | string | Default model identifier |
 | `maxTokens` | integer | Maximum tokens for the response |
-| `contextLength` | integer | Maximum context window size |
-| `maxOutputLength` | integer | Maximum output length in tokens |
 
-Optional fields include `metadata` (an associative array for provider-specific values like `organization` or `apiVersion`), `queryParams`, `options`, and `pricing`.
+Optional fields include `metadata` (an associative array for provider-specific values like `organization` or `apiVersion`), `queryParams`, and `options`.
 
 ## Integer Field Validation
 
-The fields `maxTokens`, `contextLength`, and `maxOutputLength` must be valid integers. If these values are provided as strings in YAML (e.g. `"1024"` instead of `1024`), Polyglot coerces them automatically. However, non-numeric strings or floats will cause an `InvalidArgumentException`.
+The `maxTokens` field must be a valid integer. If it is provided as a numeric string in YAML, Polyglot coerces it automatically. Non-numeric strings and floats cause an `InvalidArgumentException`.
 
 For embeddings presets, the same rule applies to `dimensions` and `maxInputs`.
 

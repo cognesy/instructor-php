@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
@@ -31,7 +32,7 @@ it('round-trips execution with null current attempt without synthesizing attempt
 
 it('hydrates inference response safely when responseData key is missing', function () {
     $response = InferenceResponse::fromArray([
-        'content' => 'ok',
+        'message' => Message::asAssistant('ok')->toArray(),
         'finishReason' => 'stop',
     ]);
 
@@ -42,14 +43,24 @@ it('hydrates inference response safely when responseData key is missing', functi
 it('failed attempt without response preserves durable usage metadata', function () {
     $state = new \Cognesy\Polyglot\Inference\Streaming\InferenceStreamState();
     $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
-        contentDelta: 'Hel',
-        toolName: 'search',
-        toolArgs: '{"q":"hel',
+        messageChunks: new \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks(
+            \Cognesy\Polyglot\Inference\Data\AssistantMessageChunk::textDelta('test:text:0', 'Hel'),
+            \Cognesy\Polyglot\Inference\Data\AssistantMessageChunk::toolCallDelta(
+                'test:tool:0',
+                name: 'search',
+                arguments: '{"q":"hel',
+            ),
+        ),
         usage: new InferenceUsage(inputTokens: 1, outputTokens: 1),
     ));
     $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
-        contentDelta: 'lo',
-        toolArgs: 'lo"}',
+        messageChunks: new \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks(
+            \Cognesy\Polyglot\Inference\Data\AssistantMessageChunk::textDelta('test:text:0', 'lo'),
+            \Cognesy\Polyglot\Inference\Data\AssistantMessageChunk::toolCallDelta(
+                'test:tool:0',
+                arguments: 'lo"}',
+            ),
+        ),
         usage: new InferenceUsage(inputTokens: 1, outputTokens: 1),
     ));
     $response = $state->finalResponse();
@@ -69,9 +80,9 @@ it('failed attempt without response preserves durable usage metadata', function 
     $completed = InferenceAttempt::fromResponse($response);
     $rehydratedCompleted = InferenceAttempt::fromArray($completed->toArray());
     expect($rehydratedCompleted->response())->not->toBeNull()
-        ->and($rehydratedCompleted->response()?->content())->toBe('Hello')
-        ->and($rehydratedCompleted->response()?->toolCalls()->count())->toBe(1)
-        ->and($rehydratedCompleted->response()?->toolCalls()->first()?->value('q'))->toBe('hello')
+        ->and($rehydratedCompleted->response()?->message()->content()->toString())->toBe('Hello')
+        ->and($rehydratedCompleted->response()?->message()->toolCalls()->count())->toBe(1)
+        ->and($rehydratedCompleted->response()?->message()->toolCalls()->first()?->value('q'))->toBe('hello')
         ->and($rehydratedCompleted->usage()->input())->toBe(2)
         ->and($rehydratedCompleted->usage()->output())->toBe(2);
 });

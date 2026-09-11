@@ -11,7 +11,7 @@ the object a lazy handle over a single inference operation.
 ## Retrieving Text Content
 
 The simplest way to get the model's response is the `get()` method, which returns
-the response content as a plain string:
+the assistant `Message`:
 
 ```php
 <?php
@@ -23,9 +23,9 @@ $pending = Inference::using('openai')
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->create();
 
-// Get the response as plain text
-$text = $pending->get();
-echo $text; // "The capital of France is Paris."
+// Get the assistant message
+$message = $pending->get();
+echo $message->content()->toString(); // "The capital of France is Paris."
 ```
 
 ## Retrieving JSON Data
@@ -69,10 +69,14 @@ $pending = Inference::using('openai')
     ->create();
 
 $response = $pending->response();
+$message = $response->message();
 
-// Content and reasoning
-echo "Content: " . $response->content() . "\n";
-echo "Reasoning: " . $response->reasoningContent() . "\n";
+// Ordered semantic parts and derived projections
+foreach ($message->parts() as $part) {
+    echo $part->type() . "\n";
+}
+echo "Content: " . $message->content()->toString() . "\n";
+echo "Reasoning: " . $message->reasoningContent() . "\n";
 
 // Finish reason (returns InferenceFinishReason enum)
 echo "Finish reason: " . $response->finishReason()->value . "\n";
@@ -92,16 +96,15 @@ $httpResponse = $response->responseData();
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `content()` | `string` | The model's text output |
-| `reasoningContent()` | `string` | Chain-of-thought / thinking content (if supported) |
-| `toolCalls()` | `ToolCalls` | Collection of tool calls made by the model |
+| `message()` | `Message` | The complete ordered assistant turn |
 | `usage()` | `InferenceUsage` | Token counts for the request |
 | `finishReason()` | `InferenceFinishReason` | Why the model stopped generating |
 | `responseData()` | `HttpResponse` | The underlying raw HTTP response |
-| `hasContent()` | `bool` | Whether the response contains text content |
-| `hasToolCalls()` | `bool` | Whether the model made any tool calls |
-| `hasReasoningContent()` | `bool` | Whether reasoning / thinking content is present |
 | `isPartial()` | `bool` | Whether this is a partial (streaming) response |
+
+Text, reasoning, and tool calls are projections of the message's ordered parts:
+`$message->content()->toString()`, `$message->reasoningContent()`, and
+`$message->toolCalls()`. The response envelope does not duplicate those values.
 
 ### Finish Reasons
 
@@ -186,8 +189,9 @@ $response = Inference::using('openai')
     )
     ->response();
 
-if ($response->hasToolCalls()) {
-    $toolCalls = $response->toolCalls();
+$message = $response->message();
+if ($message->hasToolCalls()) {
+    $toolCalls = $message->toolCalls();
 
     foreach ($toolCalls->all() as $call) {
         echo "Tool: " . $call->name() . "\n";
@@ -235,7 +239,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 
 // After iteration, get the finalized response
@@ -250,11 +254,7 @@ public properties:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `contentDelta` | `string` | New text content in this chunk |
-| `reasoningContentDelta` | `string` | New reasoning content in this chunk |
-| `toolId` | `ToolCallId\|string\|null` | Tool call ID |
-| `toolName` | `string` | Tool name (when streaming tool calls) |
-| `toolArgs` | `string` | Partial tool arguments JSON |
+| `messageChunks` | `AssistantMessageChunks` | Ordered assistant block changes for this event |
 | `finishReason` | `string` | Set on the final delta |
 | `usage` | `?InferenceUsage` | Token usage (typically on the final delta) |
 | `usageIsCumulative` | `bool` | Whether usage counts are cumulative |
@@ -271,19 +271,19 @@ delta stream:
 foreach ($stream->deltas() as $delta) { /* ... */ }
 
 // Transform each delta
-foreach ($stream->map(fn($d) => strtoupper($d->contentDelta)) as $text) {
+foreach ($stream->map(fn($d) => strtoupper($d->messageChunks->textDelta())) as $text) {
     echo $text;
 }
 
 // Reduce to a single value
 $fullText = $stream->reduce(
-    fn(string $carry, $delta) => $carry . $delta->contentDelta,
+    fn(string $carry, $delta) => $carry . $delta->messageChunks->textDelta(),
     ''
 );
 
 // Filter deltas
-foreach ($stream->filter(fn($d) => $d->contentDelta !== '') as $delta) {
-    echo $delta->contentDelta;
+foreach ($stream->filter(fn($d) => $d->messageChunks->textDelta() !== '') as $delta) {
+    echo $delta->messageChunks->textDelta();
 }
 
 // Collect all deltas into an array
@@ -309,7 +309,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 $stream->onDelta(function ($delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 
     // Flush output for real-time display
     if (ob_get_level() > 0) {
@@ -346,9 +346,9 @@ $pending = Inference::using('openai')
 
 if ($pending->isStreamed()) {
     foreach ($pending->stream()->deltas() as $delta) {
-        echo $delta->contentDelta;
+        echo $delta->messageChunks->textDelta();
     }
 } else {
-    echo $pending->get();
+    echo $pending->get()->content()->toString();
 }
 ```

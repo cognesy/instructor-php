@@ -1,0 +1,45 @@
+{
+  "id": "chatcmpl-EMpMDzX3cSJecUfkgisd7T4O683sc",
+  "object": "chat.completion",
+  "created": 1789109341,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_jwmSm4xgaUNolyklrgmRxELD",
+            "type": "function",
+            "function": {
+              "name": "edit",
+              "arguments": "{\"path\":\"/tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\",\"old_string\":\"const EXAMPLE_STATUS = 'draft';\",\"new_string\":\"const EXAMPLE_STATUS = 'verified';\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3070,
+    "completion_tokens": 61,
+    "total_tokens": 3131,
+    "prompt_tokens_details": {
+      "cached_tokens": 2816,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

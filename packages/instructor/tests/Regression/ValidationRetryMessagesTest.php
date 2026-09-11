@@ -8,7 +8,6 @@ use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -74,7 +73,7 @@ final class RecordingInferenceRequestDriver implements CanProcessInferenceReques
         $this->requests = $this->requests->withAppended($request->messages());
 
         return match ($this->responses->isEmpty()) {
-            true => new InferenceResponse(content: ''),
+            true => new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('')),
             false => $this->dequeueResponse(),
         };
     }
@@ -83,18 +82,6 @@ final class RecordingInferenceRequestDriver implements CanProcessInferenceReques
     public function makeStreamDeltasFor(InferenceRequest $request): iterable
     {
         return [];
-    }
-
-    public function capabilities(?string $model = null): DriverCapabilities
-    {
-        return new DriverCapabilities(
-            streaming: false,
-            toolCalling: true,
-            toolChoice: true,
-            responseFormatJsonObject: true,
-            responseFormatJsonSchema: true,
-            responseFormatWithTools: true,
-        );
     }
 
     private function dequeueResponse(): InferenceResponse
@@ -108,13 +95,8 @@ final class RecordingInferenceRequestDriver implements CanProcessInferenceReques
 
 function messageIndexOf(Messages $messages, string $needle): int
 {
-    foreach ($messages->toArray() as $index => $message) {
-        $content = $message['content'] ?? '';
-        $text = match (true) {
-            is_array($content) => json_encode($content),
-            default => (string) $content,
-        };
-        if (Str::contains($text, $needle, false)) {
+    foreach ($messages->all() as $index => $message) {
+        if (Str::contains($message->content()->toString(), $needle, false)) {
             return $index;
         }
     }
@@ -124,7 +106,7 @@ function messageIndexOf(Messages $messages, string $needle): int
 
 it('carries forward each validation error into subsequent retry message sequences', function () {
     $responses = [
-        new InferenceResponse(content: json_encode([
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'name' => 'Jason',
             'details' => [
                 'name=Jason',
@@ -133,23 +115,23 @@ it('carries forward each validation error into subsequent retry message sequence
                 'phone=+1 123 34 45',
                 'ssn=123-45-6789',
             ],
-        ])),
-        new InferenceResponse(content: json_encode([
+        ]))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'name' => 'Jason',
             'details' => [
                 'name=Jason',
                 'age=25',
                 'role=contractor',
             ],
-        ])),
-        new InferenceResponse(content: json_encode([
+        ]))),
+        new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant(json_encode([
             'name' => 'Jason',
             'details' => [
                 'name=Jason',
                 'age=25',
                 'role=engineer',
             ],
-        ])),
+        ]))),
     ];
     $driver = new RecordingInferenceRequestDriver($responses);
 

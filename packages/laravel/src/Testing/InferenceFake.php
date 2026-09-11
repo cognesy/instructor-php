@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Laravel\Testing;
 
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
@@ -202,29 +204,28 @@ class InferenceFake
     /**
      * Execute and return the fake response.
      */
-    public function get(): string
+    public function get(): Message
     {
-        return $this->resolveResponse();
+        return Message::asAssistant($this->resolveResponse());
     }
 
     public function asJson(): string
     {
-        return $this->get();
+        return $this->get()->content()->toString();
     }
 
     public function asJsonData(): array
     {
-        $response = $this->get();
+        $response = $this->get()->content()->toString();
         return json_decode($response, true) ?? [];
     }
 
-    public function response(): object
+    public function response(): InferenceResponse
     {
-        return (object) [
-            'content' => $this->get(),
-            'toolCalls' => [],
-            'finishReason' => 'stop',
-        ];
+        return new InferenceResponse(
+            message: $this->get(),
+            finishReason: 'stop',
+        );
     }
 
     public function stream(): iterable

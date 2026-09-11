@@ -412,10 +412,10 @@ class StructuredOutputFake implements CanCreateStructuredOutput
         if (is_array($response) && !empty($response) && array_is_list($response)) {
             $resolved = array_shift($this->responses[$class]);
 
-            return new InferenceResponse(content: $this->encodeResponse($resolved));
+            return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->encodeResponse($resolved)));
         }
 
-        return new InferenceResponse(content: $this->encodeResponse($response));
+        return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($this->encodeResponse($response)));
     }
 
     private function requestedSchemaKey(StructuredOutputRequest $request): string

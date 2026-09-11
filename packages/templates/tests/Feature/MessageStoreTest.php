@@ -21,21 +21,22 @@ it('creates messages from script', function () {
     $store = $store->section('section-2')->appendMessages(['role' => 'assistant', 'content' => 'content-5']);
     $store = $store->section('section-2')->appendMessages(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
-    $messages = $store->toFlatArray();
+    $messages = $store->toMessages();
+    $messageList = $messages->all();
 
-    expect(count($messages))->toBe(6);
-    expect($messages[0]['role'])->toBe('user');
-    expect($messages[0]['content'])->toBe('content-1');
-    expect($messages[1]['role'])->toBe('assistant');
-    expect($messages[1]['content'])->toBe('content-2');
-    expect($messages[2]['role'])->toBe('user');
-    expect($messages[2]['content'])->toBe('content-3 <|key-1|>');
-    expect($messages[3]['role'])->toBe('user');
-    expect($messages[3]['content'])->toBe('content-4');
-    expect($messages[4]['role'])->toBe('assistant');
-    expect($messages[4]['content'])->toBe('content-5');
-    expect($messages[5]['role'])->toBe('user');
-    expect($messages[5]['content'])->toBe('content-6 <|key-2|>');
+    expect($messages)->toHaveCount(6);
+    expect($messageList[0]->role()->value)->toBe('user');
+    expect($messageList[0]->content()->toString())->toBe('content-1');
+    expect($messageList[1]->role()->value)->toBe('assistant');
+    expect($messageList[1]->content()->toString())->toBe('content-2');
+    expect($messageList[2]->role()->value)->toBe('user');
+    expect($messageList[2]->content()->toString())->toBe('content-3 <|key-1|>');
+    expect($messageList[3]->role()->value)->toBe('user');
+    expect($messageList[3]->content()->toString())->toBe('content-4');
+    expect($messageList[4]->role()->value)->toBe('assistant');
+    expect($messageList[4]->content()->toString())->toBe('content-5');
+    expect($messageList[5]->role()->value)->toBe('user');
+    expect($messageList[5]->content()->toString())->toBe('content-6 <|key-2|>');
 });
 
 
@@ -62,21 +63,22 @@ it('selects sections from script', function () {
     $store = $store->section('section-3')->appendMessages(['role' => 'assistant', 'content' => 'content-8']);
     $store = $store->section('section-3')->appendMessages(['role' => 'user', 'content' => 'content-9 <|key-2|>']);
 
-    $messages = $store->select(['section-3', 'section-1'])->toFlatArray();
+    $messages = $store->select(['section-3', 'section-1'])->toMessages();
+    $messageList = $messages->all();
 
-    expect(count($messages))->toBe(6);
-    expect($messages[0]['role'])->toBe('user');
-    expect($messages[0]['content'])->toBe('content-7');
-    expect($messages[1]['role'])->toBe('assistant');
-    expect($messages[1]['content'])->toBe('content-8');
-    expect($messages[2]['role'])->toBe('user');
-    expect($messages[2]['content'])->toBe('content-9 <|key-2|>');
-    expect($messages[3]['role'])->toBe('user');
-    expect($messages[3]['content'])->toBe('content-1');
-    expect($messages[4]['role'])->toBe('assistant');
-    expect($messages[4]['content'])->toBe('content-2');
-    expect($messages[5]['role'])->toBe('user');
-    expect($messages[5]['content'])->toBe('content-3 <|key-1|>');
+    expect($messages)->toHaveCount(6);
+    expect($messageList[0]->role()->value)->toBe('user');
+    expect($messageList[0]->content()->toString())->toBe('content-7');
+    expect($messageList[1]->role()->value)->toBe('assistant');
+    expect($messageList[1]->content()->toString())->toBe('content-8');
+    expect($messageList[2]->role()->value)->toBe('user');
+    expect($messageList[2]->content()->toString())->toBe('content-9 <|key-2|>');
+    expect($messageList[3]->role()->value)->toBe('user');
+    expect($messageList[3]->content()->toString())->toBe('content-1');
+    expect($messageList[4]->role()->value)->toBe('assistant');
+    expect($messageList[4]->content()->toString())->toBe('content-2');
+    expect($messageList[5]->role()->value)->toBe('user');
+    expect($messageList[5]->content()->toString())->toBe('content-3 <|key-1|>');
 });
 
 

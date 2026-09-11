@@ -25,6 +25,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class TextElementModel
@@ -43,6 +44,7 @@ $sourceModel = new TextElementModel(
 
 $transformedModel = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withOutputMode(OutputMode::Json)
             ->withMaxRetries(2)
             ->withValidator(new \Cognesy\Instructor\Validation\Validators\SymfonyValidator())
     )

@@ -26,7 +26,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -70,7 +75,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -114,7 +124,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -199,7 +214,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -253,7 +273,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -297,7 +322,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -347,7 +377,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -394,7 +429,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -438,7 +478,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -523,7 +568,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -577,7 +627,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -621,7 +676,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -671,7 +731,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -718,7 +783,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -768,7 +838,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -815,7 +890,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -870,7 +950,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -914,7 +999,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -964,7 +1054,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1014,19 +1109,34 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1070,19 +1180,34 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1167,19 +1292,34 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1233,7 +1373,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1277,7 +1422,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1327,7 +1477,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1376,7 +1531,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1433,7 +1593,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1477,7 +1642,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1543,7 +1713,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1628,7 +1803,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -1682,7 +1862,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1726,7 +1911,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1776,7 +1966,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1823,7 +2018,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1878,7 +2078,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1922,7 +2127,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -1972,7 +2182,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2019,7 +2234,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2074,7 +2294,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2118,7 +2343,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2168,7 +2398,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -2218,19 +2453,34 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2280,19 +2530,34 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -2342,31 +2607,56 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2416,31 +2706,56 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -2490,31 +2805,56 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "assistant",
-                                "content": "trunc"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "trunc"
+                                    }
+                                ]
                             },
                             {
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Continue."
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Continue."
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -2572,7 +2912,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2616,7 +2961,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2682,7 +3032,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -2767,7 +3122,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": {
@@ -2821,7 +3181,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2865,7 +3230,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2915,7 +3285,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null
@@ -2962,7 +3337,12 @@
                                 "id": "<uuid>",
                                 "createdAt": "<timestamp>",
                                 "role": "user",
-                                "content": "Say hi"
+                                "parts": [
+                                    {
+                                        "type": "text",
+                                        "text": "Say hi"
+                                    }
+                                ]
                             }
                         ],
                         "output": null

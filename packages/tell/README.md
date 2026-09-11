@@ -375,8 +375,8 @@ resolves or displays credential material.
 
 ## Providers and models
 
-Tell reads connection presets and declared driver capability metadata from
-Polyglot; it does not keep a second provider table. These inspection commands
+Tell joins connection presets to Polyglot's exact-offering model catalog; it
+does not keep a second provider or model table. These inspection commands
 need neither credentials nor network access:
 
 ```bash
@@ -387,14 +387,15 @@ tell models qwen --json
 tell config effective --branch review --json
 ```
 
-`providers` lists the resolved connection precedence and its preset default
-model. `models` accepts either a provider or a connection name and lists only
-models explicitly declared by those presets. Full provider rows include known
-context and tool/structured-output metadata with source provenance. Metadata
-Polyglot does not declare—such as vision, thinking, or a full remote model
-catalogue—is returned as explicitly unknown with a reason, never inferred from
-model names. `config effective` reports the selected connection/model and their
-sources without resolving or displaying an API key.
+`providers` lists resolved connection precedence and joins each preset default
+to its exact model profile. `models` accepts either a provider or connection
+name and lists actual catalog offerings, including limits, modalities,
+capabilities, and provenance. Project `config/llm/models.json` records
+override user `$TELL_HOME/config/models.json` records, which override bundled
+records. Missing exact offerings remain explicitly unknown; Tell never infers
+facts from model names. `tell context` uses the same resolved profile for model
+capacity. `config effective` reports selection sources without resolving or
+displaying an API key.
 
 ## Coding tools and direct dispatch
 
@@ -683,9 +684,9 @@ to override it; otherwise Tell uses `~/.tell` (`%USERPROFILE%\.tell` on Windows)
 
 ```text
 ~/.tell/
+├── .env
 ├── config/
 │   ├── tell.json
-│   ├── credentials.env
 │   ├── connections/
 │   └── agents/
 ├── runtime/
@@ -707,8 +708,8 @@ platforms that support POSIX permissions.
 Provider credentials resolve in a fixed order:
 
 1. the process environment,
-2. the selected workspace's `.env`,
-3. `~/.tell/config/credentials.env`.
+2. the nearest ancestor workspace's `.tell/.env`,
+3. the user profile's `~/.tell/.env`.
 
 The Tell credential store is optional and created only by an explicit `auth
 set`. It is written atomically with mode `0600` on POSIX systems. Values are

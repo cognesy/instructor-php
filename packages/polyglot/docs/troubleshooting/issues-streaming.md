@@ -28,7 +28,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 
@@ -47,7 +47,7 @@ $pending = Inference::using('openai')
 
 $stream = $pending->stream();
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 ```
 
@@ -94,7 +94,7 @@ $stream = Inference::using('openai')
 
 // Consume deltas for real-time output
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
     flush();
 }
 
@@ -113,7 +113,7 @@ When streaming to a browser or CLI, PHP's output buffering can delay visible out
 <?php
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 
     // Flush PHP output buffer
     if (ob_get_level() > 0) {
@@ -159,7 +159,7 @@ $stream = Inference::fromRuntime($runtime)
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
     flush();
 }
 ```
@@ -184,8 +184,9 @@ $content = '';
 
 try {
     foreach ($stream->deltas() as $delta) {
-        $content .= $delta->contentDelta;
-        echo $delta->contentDelta;
+        $text = $delta->messageChunks->textDelta();
+        $content .= $text;
+        echo $text;
         flush();
     }
 } catch (\Exception $e) {
@@ -212,7 +213,7 @@ $stream = Inference::using('openai')
     ->stream();
 
 $stream->onDelta(function ($delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
     flush();
 });
 
@@ -236,7 +237,7 @@ $stream = Inference::using('openai')
 
 // Collect only non-empty content deltas
 $content = $stream->reduce(
-    fn(string $carry, $delta) => $carry . $delta->contentDelta,
+    fn(string $carry, $delta) => $carry . $delta->messageChunks->textDelta(),
     '',
 );
 
@@ -260,7 +261,7 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
         try {
             $content = '';
             foreach ($inference->stream()->deltas() as $delta) {
-                $content .= $delta->contentDelta;
+                $content .= $delta->messageChunks->textDelta();
             }
             return $content;
         } catch (\Exception $e) {

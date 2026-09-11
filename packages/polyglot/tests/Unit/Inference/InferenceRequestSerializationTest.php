@@ -96,7 +96,7 @@ it('preserves retry policy and cached context across serialization round-trip', 
         ->and($copy->cachedContext()?->toolChoice())->toEqual(ToolChoice::auto())
         ->and($copy->cachedContext()?->responseFormat()->toArray())->toBe(['type' => 'json_object'])
         ->and($copy->cachedContext()?->messages()->toArray()[0]['role'] ?? null)->toBe('assistant')
-        ->and($copy->cachedContext()?->messages()->toArray()[0]['content'] ?? null)->toBe('Cached reply');
+        ->and($copy->cachedContext()?->messages()->first()?->content()->toString())->toBe('Cached reply');
 });
 
 it('round-trips typed reasoning and omits provider default', function () {

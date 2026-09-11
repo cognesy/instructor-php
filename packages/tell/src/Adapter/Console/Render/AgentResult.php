@@ -24,10 +24,7 @@ final class AgentResult
             'answer' => self::answer($state),
             'steps' => $state->stepCount(),
             'usage' => $state->usage()->toArray(),
-            'errors' => array_map(
-                static fn (Throwable $error): string => $error->getMessage(),
-                $state->errors()->all(),
-            ),
+            'errors' => self::errors($state),
             'execution' => [
                 // Automatic is a request-side mode that always resolves to one
                 // of the three outcomes before a result exists; it never
@@ -62,6 +59,14 @@ final class AgentResult
         return $state->stopSignal()?->reason->value === 'output_limit'
             ? ''
             : trim($state->finalResponse()->toString());
+    }
+
+    /** @return list<string> */
+    public static function errors(AgentState $state): array {
+        return array_map(
+            static fn (Throwable $error): string => $error->getMessage(),
+            $state->errors()->all(),
+        );
     }
 
     private function __construct() {}

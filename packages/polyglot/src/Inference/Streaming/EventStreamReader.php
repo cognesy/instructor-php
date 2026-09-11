@@ -85,13 +85,18 @@ class EventStreamReader
      * Parses stream as SSE events (blank-line delimited) and yields parser output.
      */
     protected function eventsFromSse(iterable $stream): Generator {
+        $terminated = false;
         foreach ($this->readSseEvents($stream) as $event) {
+            if ($terminated) {
+                continue;
+            }
             if ($this->emitReceived) {
                 $this->events->dispatch(new StreamEventReceived($event));
             }
             $processedData = $this->processSseEvent($event);
             if ($processedData === false) {
-                break;
+                $terminated = true;
+                continue;
             }
             if (is_string($processedData)) {
                 if ($this->emitParsed) {

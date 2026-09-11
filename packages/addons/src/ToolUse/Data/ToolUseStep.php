@@ -125,7 +125,7 @@ final readonly class ToolUseStep implements
     ): ToolUseStepType {
         return match (true) {
             $executions->hasErrors() => ToolUseStepType::Error,
-            $response->hasToolCalls() => ToolUseStepType::ToolExecution,
+            $response->message()->hasToolCalls() => ToolUseStepType::ToolExecution,
             default => ToolUseStepType::FinalResponse,
         };
     }

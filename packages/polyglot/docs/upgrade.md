@@ -3,6 +3,54 @@ title: Upgrading Polyglot
 description: 'Migrate applications and custom drivers across Polyglot breaking changes.'
 ---
 
+## Model catalog boundary
+
+Model limits, modalities, and capabilities now belong to the exact-offering catalog, keyed by
+`(driver, wire model)`. Connection presets and `LLMConfig` contain only transport, selection,
+and request-default data.
+
+This is a breaking removal. Delete `contextLength`, `maxOutputLength`, and `pricing` from
+`LLMConfig`, DSNs, framework configuration, and preset YAML. Use
+`ModelCatalog::discover()->find($driver, $model)` when model facts are needed. Unknown exact
+offerings return an explicit profile whose facts are unknown; Polyglot does not infer support
+from a provider name or model-name regex.
+
+Catalog records do not contain pricing. Use `InferencePricing` or `EmbeddingsPricing` explicitly
+with their existing calculators when an application has sourced pricing data.
+
+Reasoning capability data now follows the same exact lookup. Replace
+`BundledInferenceDrivers::reasoningCapabilities($driver, $model)` with:
+
+```php
+$reasoning = ModelCatalog::discover()
+    ->find($driver, $model)
+    ->capabilities
+    ->reasoning;
+```
+
+Typed reasoning is checked during request preflight. A model without its own exact record does not
+inherit support from another record. Unknown ordinary feature facts still allow the request to proceed;
+an explicit typed reasoning selection requires a known compatible reasoning record.
+
+Custom drivers now implement only request execution. `CanDescribeCapabilities`,
+`DriverCapabilities`, and `SpecifiedInferenceDriver` were removed. A custom spec subclass now
+extends `BaseInferenceRequestDriver`:
+
+```php
+final class MyDriver extends BaseInferenceRequestDriver { /* override one method */ }
+```
+
+`LLMConfig::fromArray()` hydrates the fields owned by `LLMConfig` and ignores unrelated input
+keys. There is no Agents-specific migration or compatibility alias.
+
+### Default registry constructors
+
+The static `BundledInferenceDrivers`, `BundledEmbeddingsDrivers`, `BundledHttpDrivers`, and
+`BundledHttpPools` classes were removed. Use `InferenceDriverRegistry::default()`,
+`EmbeddingsDriverRegistry::default()`, `HttpDriverRegistry::default()`, and
+`HttpPoolRegistry::default()` respectively. Each memoized default is immutable; its `with*()`
+methods return an isolated derived registry. Use `make()` when an empty registry is required.
+
 ## Custom Inference Drivers in v2.7
 
 Only driver authors are affected. Preset names, `Inference`, `PendingInference`,
@@ -17,19 +65,19 @@ All 26 provider driver shells under `Cognesy\Polyglot\Inference\Drivers\` were r
 `GeminiDriver`, `GeminiOAIDriver`, `HuggingFaceDriver`, `OpenAIResponsesDriver`, and
 `OpenResponsesDriver`. Their only content was composing collaborators, so all bundled inference
 registrations — including native-protocol and bespoke-endpoint providers — are now
-`InferenceDriverSpec` rows in `BundledInferenceDrivers`, all served by one
-`SpecifiedInferenceDriver`. The embeddings driver of the same short name,
+`InferenceDriverSpec` rows in `InferenceDriverRegistry`, all served by one
+`BaseInferenceRequestDriver`. The embeddings driver of the same short name,
 `Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.
 
 ### Replacing a subclass of a bundled driver
 
-Extend `SpecifiedInferenceDriver` and name your subclass in the spec's `driverClass`. It still
+Extend `BaseInferenceRequestDriver` and name your subclass in the spec's `driverClass`. It still
 receives the five collaborators assembled for it:
 
 ```php
-final class MyDriver extends SpecifiedInferenceDriver { /* override one method */ }
+final class MyDriver extends BaseInferenceRequestDriver { /* override one method */ }
 
-$registry = BundledInferenceDrivers::registry()->withDriver(
+$registry = InferenceDriverRegistry::default()->withDriver(
     'my-provider',
     new InferenceDriverSpec(
         bodyFormat: MyBodyFormat::class,
@@ -44,16 +92,8 @@ defaults to the OpenAI implementation.
 
 ### Replacing a `capabilities()` override
 
-Per-model capability logic becomes data on the spec rather than a method override — either a
-fixed `DriverCapabilities`, or a `Closure(string $model): DriverCapabilities` when the answer
-depends on the model. Omit it for "everything supported".
-
-```php
-new InferenceDriverSpec(
-    bodyFormat: MyBodyFormat::class,
-    capabilities: new DriverCapabilities(responseFormatWithTools: false),
-);
-```
+Declare the exact `(driver, model)` offering in a model catalog and inject that catalog into
+`InferenceRuntime`. Capability inspection no longer constructs or interrogates a driver.
 
 `InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so drivers
 registered that way need no change.
@@ -74,10 +114,9 @@ Five classes that neither subsystem owns moved under `Cognesy\Polyglot\Support\`
 | `Inference\Config\RetryPolicyInvariants` | `Support\Retry\RetryPolicyInvariants` |
 | `Polyglot\Pricing\Cost` | `Support\Pricing\Cost` |
 
-All five old names keep working. The package registers a lazy `class_alias()` autoloader, so an
-old FQCN resolves to the *same* class — `instanceof` holds in both directions and
-`RetryJitter::Full === Support\Retry\RetryJitter::Full`. Migrate at your convenience; the
-aliases are removed at the next major.
+Polyglot 2.7 temporarily aliased the five old names. Polyglot 2.10 removes that
+autoloading layer completely: update every import to the new FQCN in the table.
+The old names no longer resolve.
 
 ### Removed dead classes
 

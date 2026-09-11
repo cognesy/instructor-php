@@ -19,8 +19,8 @@ it('emits retry events and throws after max retries (sync)', function () {
     // Two failing responses (no JSON)
     $driver = new FakeInferenceDriver(
         responses: [
-            new InferenceResponse(content: 'not json 1'),
-            new InferenceResponse(content: 'not json 2'),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('not json 1')),
+            new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('not json 2')),
         ],
     );
 

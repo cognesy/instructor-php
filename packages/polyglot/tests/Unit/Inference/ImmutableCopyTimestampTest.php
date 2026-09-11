@@ -33,9 +33,9 @@ it('carries the same updatedAt instance across an InferenceRequest copy', functi
 });
 
 it('carries the same updatedAt instance across an InferenceResponse copy', function () {
-    $response = new InferenceResponse(content: 'hi', finishReason: 'stop');
+    $response = new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi'), finishReason: 'stop');
 
-    $copy = $response->withContent('hi there');
+    $copy = $response->withMessage(\Cognesy\Messages\Message::asAssistant('hi there'));
 
     expect($copy->updatedAt)->toBe($response->updatedAt)
         ->and($copy->createdAt)->toBe($response->createdAt);
@@ -44,7 +44,7 @@ it('carries the same updatedAt instance across an InferenceResponse copy', funct
 it('carries the same updatedAt instance across an InferenceAttempt copy', function () {
     $attempt = new InferenceAttempt();
 
-    $copy = $attempt->withResponse(new InferenceResponse(content: 'hi', finishReason: 'stop'));
+    $copy = $attempt->withResponse(new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi'), finishReason: 'stop'));
 
     expect($copy->updatedAt)->toBe($attempt->updatedAt)
         ->and($copy->createdAt)->toBe($attempt->createdAt);
@@ -66,7 +66,7 @@ it('does not advance updatedAt over a chain of copies', function () {
     $copy = $execution
         ->startAttempt()
         ->withRequest(timestampProbeRequest())
-        ->withSuccessfulAttempt(new InferenceResponse(content: 'hi', finishReason: 'stop'));
+        ->withSuccessfulAttempt(new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant('hi'), finishReason: 'stop'));
 
     expect($copy->updatedAt)->toBe($execution->updatedAt);
 });

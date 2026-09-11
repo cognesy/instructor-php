@@ -9,19 +9,16 @@ use InvalidArgumentException;
 
 final readonly class UnsupportedReasoningTranslator implements CanTranslateReasoning
 {
-    public function capabilities(string $model): ReasoningCapabilities
-    {
-        return ReasoningCapabilities::unknown();
-    }
-
-    public function translate(string $model, ReasoningSelection $selection): ReasoningTranslation
-    {
+    public function translate(
+        ReasoningCapabilities $capabilities,
+        ReasoningSelection $selection,
+    ): ReasoningTranslation {
         if ($selection->isDefault()) {
             return ReasoningTranslation::omitted($selection);
         }
 
         throw new InvalidArgumentException(
-            "Reasoning capabilities are unknown for model {$model}; use raw options explicitly.",
+            'The selected inference driver has no typed reasoning wire format; use raw options explicitly.',
         );
     }
 }

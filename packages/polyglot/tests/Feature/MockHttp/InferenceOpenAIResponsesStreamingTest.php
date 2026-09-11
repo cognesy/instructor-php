@@ -30,7 +30,7 @@ it('streams partial responses and assembles final content (OpenAI Responses SSE)
 
     $final = $stream->final();
     expect($final)->not->toBeNull();
-    expect($final->content())->toBe('Hello!');
+    expect($final->message()->content()->toString())->toBe('Hello!');
 });
 
 it('handles streaming function call arguments', function () {
@@ -74,8 +74,8 @@ it('handles streaming function call arguments', function () {
 
     $final = $stream->final();
     expect($final)->not->toBeNull();
-    expect($final->toolCalls()->count())->toBe(1);
-    $tool = $final->toolCalls()->first();
+    expect($final->message()->toolCalls()->count())->toBe(1);
+    $tool = $final->message()->toolCalls()->first();
     expect($tool->name())->toBe('get_weather');
     expect($tool->value('city'))->toBe('Paris');
 });
@@ -105,6 +105,6 @@ it('streams reasoning content with response.reasoning_text.delta', function () {
 
     $final = $stream->final();
     expect($final)->not->toBeNull();
-    expect($final->content())->toBe('The answer is 42.');
-    expect($final->reasoningContent())->toBe('Let me think...');
+    expect($final->message()->content()->toString())->toBe('The answer is 42.');
+    expect($final->message()->reasoningContent())->toBe('Let me think...');
 });

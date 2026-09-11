@@ -16,7 +16,7 @@
         "statusCode": 200,
         "headers": {
             "date": [
-                "Mon, 06 Jul 2026 12:39:27 GMT"
+                "Fri, 11 Sep 2026 07:35:24 GMT"
             ],
             "content-type": [
                 "application\/json"
@@ -25,7 +25,7 @@
                 "1052"
             ],
             "cf-ray": [
-                "a16eac160c441102-WAW"
+                "a394fed1dc56f7eb-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -48,7 +48,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "505"
+                "1209"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -78,15 +78,13 @@
                 "2ms"
             ],
             "x-request-id": [
-                "req_033d81a5ef8b4ed8a54efbcd48392cf5"
+                "req_933f0cae233f4a2fb88728fe6240013c"
             ],
-            "set-cookie": [
-                "__cf_bm=RKYcPHaFgOqim3yv.yIV4mm2wKICzX1Le8a5akDaL3k-1783341566.4032493-1.0.1.1-1LrHHAoJxT1sCj3zFv3.LD.UJCDqc.fYk55mYociwmOSoCre_kp6iKDwVXlSmFJ_YTy6wI_UCA0gO8liDahKtxvXpo94V03KQjKRwPld.L41.zxZNR7JM4N3QNZR6gRg; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:27 GMT"
-            ],
+            "set-cookie": "[REDACTED]",
             "alt-svc": [
                 "h3=\":443\"; ma=86400"
             ]
         },
-        "body": "{\n  \"id\": \"chatcmpl-Dyctaz7PWJGCZ1ziO1TGk6mx5tZlY\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341566,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_OR2X02RyvhLxiHwDYDcEIM7h\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"hasPII\\\":true}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 315,\n    \"completion_tokens\": 20,\n    \"total_tokens\": 335,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+        "body": "{\n  \"id\": \"chatcmpl-EMq55JZamSgmacRg2gwdcmZpeFKlf\",\n  \"object\": \"chat.completion\",\n  \"created\": 1789112123,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_e8SvSFenk5Vgj4zYVeHWYcli\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"hasPII\\\":true}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 315,\n    \"completion_tokens\": 20,\n    \"total_tokens\": 335,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
     }
 }

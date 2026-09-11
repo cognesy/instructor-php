@@ -24,7 +24,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 function makeResponse(string $content): InferenceResponse
 {
-    return new InferenceResponse(content: $content);
+    return new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content));
 }
 
 describe('Extraction Events', function () {

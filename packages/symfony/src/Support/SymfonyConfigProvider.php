@@ -26,15 +26,10 @@ final class SymfonyConfigProvider implements CanProvideConfig
         'model',
         'max_tokens',
         'maxTokens',
-        'context_length',
-        'contextLength',
-        'max_output_length',
-        'maxOutputLength',
         'query_params',
         'queryParams',
         'metadata',
         'options',
-        'pricing',
         'organization',
         'project',
         'resource_name',
@@ -230,10 +225,7 @@ final class SymfonyConfigProvider implements CanProvideConfig
             'metadata' => $this->llmMetadata($config),
             'model' => $model,
             'maxTokens' => $this->intValue($config, 4096, 'maxTokens', 'max_tokens'),
-            'contextLength' => $this->intValue($config, 8000, 'contextLength', 'context_length'),
-            'maxOutputLength' => $this->intValue($config, 4096, 'maxOutputLength', 'max_output_length'),
             'options' => $this->llmOptions($config),
-            'pricing' => $this->arrayValue($config, 'pricing'),
         ];
     }
 

@@ -46,24 +46,6 @@ class BedrockConfigurationTest extends TestCase
         BedrockConfiguration::buildEndpoint('invalid-region');
     }
 
-    public function test_allows_any_model_id_string(): void
-    {
-        $this->assertTrue(BedrockConfiguration::validateModel('anthropic.claude-3-5-sonnet-20241022-v2:0'));
-        $this->assertTrue(BedrockConfiguration::validateModel('us.anthropic.claude-3-5-sonnet-20241022-v2:0'));
-        $this->assertTrue(BedrockConfiguration::validateModel('arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0'));
-        $this->assertTrue(BedrockConfiguration::validateModel('invalid'));
-        $this->assertTrue(BedrockConfiguration::validateModel(''));
-    }
-
-    public function test_extracts_model_family(): void
-    {
-        $this->assertEquals('anthropic', BedrockConfiguration::getModelFamily('anthropic.claude-3-5-sonnet-20241022-v2:0'));
-        $this->assertEquals('meta', BedrockConfiguration::getModelFamily('meta.llama3-1-405b-instruct-v1:0'));
-        $this->assertEquals('amazon', BedrockConfiguration::getModelFamily('amazon.titan-text-express-v1'));
-        $this->assertEquals('cohere', BedrockConfiguration::getModelFamily('cohere.command-r-plus-v1:0'));
-        $this->assertNull(BedrockConfiguration::getModelFamily('invalid-model'));
-    }
-
     public function test_returns_supported_regions_list(): void
     {
         $regions = BedrockConfiguration::getSupportedRegions();
@@ -74,12 +56,4 @@ class BedrockConfigurationTest extends TestCase
         $this->assertEquals('available', $regions['us-east-1']['status']);
     }
 
-    public function test_returns_common_models_list(): void
-    {
-        $models = BedrockConfiguration::getCommonModels();
-        $this->assertIsArray($models);
-        $this->assertArrayHasKey('anthropic.claude-3-5-sonnet-20241022-v2:0', $models);
-        $this->assertEquals('anthropic', $models['anthropic.claude-3-5-sonnet-20241022-v2:0']['family']);
-        $this->assertStringContainsString('Claude 3.5 Sonnet', $models['anthropic.claude-3-5-sonnet-20241022-v2:0']['description']);
-    }
 }

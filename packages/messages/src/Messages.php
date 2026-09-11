@@ -238,7 +238,16 @@ final readonly class Messages implements Countable, IteratorAggregate
             throw new RuntimeException('Collection contains composite messages and cannot be converted to string.');
         }
 
-        return self::asString($this->toArray(), $separator);
+        return $this->reduce(
+            static function (string $text, Message $message) use ($separator): string {
+                $content = $message->content();
+                return match ($content->isEmpty()) {
+                    true => $text,
+                    false => $text.$content->toString().$separator,
+                };
+            },
+            '',
+        );
     }
 
     /**

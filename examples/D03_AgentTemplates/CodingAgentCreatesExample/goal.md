@@ -17,9 +17,14 @@ example's conventions but demonstrating a different use case.
 2. Use `bash` for targeted discovery or verification such as `rg`, `php -l`,
    and running the generated example. Do not use `cat` to read files.
 3. Use `write` to create `{{WORKSPACE}}/run.php`. The workspace already exists.
-4. Make the new example materially different from the source: extract a meeting
-   action item with an owner, action, and ISO due date into a typed PHP response
-   class. Use deterministic input and assertions for the expected values.
+4. Make the new example materially different from the source: extract this exact
+   action item into a typed PHP response class: owner `Alex`, action `draft the
+   rollout checklist`, due date `2026-09-18`. The input must state the date only
+   as `2026-09-18`, without a weekday or relative-date phrase. Document the date
+   field as `ISO 8601 date only (YYYY-MM-DD)` and use temperature `0`.
+   Configure temperature only through the fluent request method
+   `->withOption('temperature', 0)`. `StructuredOutput::using()` accepts only
+   the provider name, so never pass `options` to `using()`.
 5. Require `{{PROJECT_ROOT}}/examples/boot.php` by absolute path so the temporary
    example can run outside the repository.
 6. The initially written example must contain and print this exact declaration:
@@ -31,6 +36,7 @@ example's conventions but demonstrating a different use case.
    declaration with `const EXAMPLE_STATUS = 'verified';` and execute it again.
 9. Finish only after the final execution exits successfully and prints
    `Example status: verified`.
+10. The generated example must assert the exact owner, action, and due date above.
 
 ## Safety and completion constraints
 

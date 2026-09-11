@@ -97,7 +97,7 @@ function captureExtractionEvents(string $content): array
     );
 
     try {
-        $processor->processInferenceResponse($execution, new InferenceResponse(content: $content));
+        $processor->processInferenceResponse($execution, new InferenceResponse(message: \Cognesy\Messages\Message::asAssistant($content)));
     } catch (Throwable) {
         // Extraction failure is one of the cases under test; the events are what matter.
     }
