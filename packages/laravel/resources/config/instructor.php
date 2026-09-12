@@ -37,6 +37,7 @@ return [
             'organization' => env('OPENAI_ORGANIZATION'),
             'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
             'max_tokens' => env('OPENAI_MAX_TOKENS', 4096),
+            'allow_lossy_fallback' => false,
         ],
 
         'anthropic' => [
@@ -45,6 +46,7 @@ return [
             'api_key' => env('ANTHROPIC_API_KEY'),
             'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5'),
             'max_tokens' => env('ANTHROPIC_MAX_TOKENS', 4096),
+            'allow_lossy_fallback' => false,
         ],
 
         'azure' => [
@@ -55,6 +57,7 @@ return [
             'api_version' => env('AZURE_OPENAI_API_VERSION', '2024-08-01-preview'),
             'model' => env('AZURE_OPENAI_MODEL', 'gpt-4o-mini'),
             'max_tokens' => env('AZURE_OPENAI_MAX_TOKENS', 4096),
+            'allow_lossy_fallback' => false,
         ],
 
         'gemini' => [
@@ -63,6 +66,7 @@ return [
             'api_key' => env('GEMINI_API_KEY'),
             'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
             'max_tokens' => env('GEMINI_MAX_TOKENS', 4096),
+            'allow_lossy_fallback' => false,
         ],
 
         'ollama' => [
@@ -71,6 +75,7 @@ return [
             'api_key' => env('OLLAMA_API_KEY', 'ollama'),
             'model' => env('OLLAMA_MODEL', 'llama3.2'),
             'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
+            'allow_lossy_fallback' => false,
         ],
 
     ],

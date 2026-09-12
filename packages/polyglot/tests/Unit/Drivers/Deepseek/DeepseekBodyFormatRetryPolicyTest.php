@@ -58,7 +58,7 @@ it('DeepSeek V4: forwards thinking and reasoning_effort options', function () {
         ->and($json['reasoning_effort'])->toBe('low');
 });
 
-it('DeepSeek V4: omits response_format when tools are present', function () {
+it('DeepSeek V4: preserves response format and specific tool choice when tools are present', function () {
     $config = new LLMConfig(
         apiUrl: 'https://api.deepseek.com',
         apiKey: 'KEY',
@@ -85,22 +85,31 @@ it('DeepSeek V4: omits response_format when tools are present', function () {
             ],
         ]]),
         toolChoice: ToolChoice::specific('extract_data'),
-        responseFormat: new ResponseFormat(
-            'json_schema',
-            [
-                'type' => 'object',
-                'properties' => ['name' => ['type' => 'string']],
-                'required' => ['name'],
-            ],
-            'ExtractedData',
-        ),
+        responseFormat: ResponseFormat::jsonObject(),
     );
 
     $json = $body->toRequestBody($req);
 
     expect($json)->toHaveKey('tools')
-        ->toHaveKey('tool_choice', 'auto')
-        ->not->toHaveKey('response_format');
+        ->toHaveKey('tool_choice', [
+            'type' => 'function',
+            'function' => ['name' => 'extract_data'],
+        ])
+        ->toHaveKey('response_format', ['type' => 'json_object']);
+});
+
+it('DeepSeek V4: rejects JSON Schema instead of silently weakening it', function () {
+    $body = new DeepseekBodyFormat(
+        new LLMConfig(model: 'deepseek-v4-flash', driver: 'deepseek'),
+        new OpenAIMessageFormat(),
+    );
+    $request = new InferenceRequest(
+        model: 'deepseek-v4-flash',
+        responseFormat: ResponseFormat::jsonSchema(['type' => 'object']),
+    );
+
+    expect(fn () => $body->toRequestBody($request))
+        ->toThrow(InvalidArgumentException::class, 'cannot render JSON Schema');
 });
 
 it('DeepSeek V4: preserves a specific tool choice when thinking is disabled', function () {

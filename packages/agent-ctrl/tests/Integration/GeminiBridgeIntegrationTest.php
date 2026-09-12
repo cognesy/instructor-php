@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
 use Cognesy\AgentCtrl\AgentCtrl;
-use Cognesy\AgentCtrl\Common\Execution\CliBinaryGuard;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
+use Cognesy\AgentCtrl\Tests\Support\AgentCliTestPrerequisites;
 use Cognesy\Config\Env;
 
 /**
- * Deprecated integration smoke tests for Gemini CLI bridge.
+ * Integration smoke tests for Gemini CLI bridge.
  *
  * These tests require:
  * - `gemini` binary in PATH (npm install -g @google/gemini-cli or brew install gemini-cli)
@@ -16,11 +16,6 @@ use Cognesy\Config\Env;
  *
  * Run selectively: vendor/bin/pest packages/agent-ctrl/tests/Integration/GeminiBridgeIntegrationTest.php
  */
-
-function geminiIsAvailable(): bool
-{
-    return CliBinaryGuard::isAvailable('gemini');
-}
 
 function geminiHasAuth(): bool
 {
@@ -30,14 +25,11 @@ function geminiHasAuth(): bool
 
 function skipIfGeminiUnavailable(): void
 {
-    test()->markTestSkipped('Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.');
-
-    if (!geminiIsAvailable()) {
-        test()->markTestSkipped('gemini binary not found in PATH');
-    }
-    if (!geminiHasAuth()) {
-        test()->markTestSkipped('No API key configured (GEMINI_API_KEY or GOOGLE_API_KEY)');
-    }
+    AgentCliTestPrerequisites::ensureAvailable(
+        binary: 'gemini',
+        hasAuth: geminiHasAuth(),
+        authMessage: 'No API key configured (GEMINI_API_KEY or GOOGLE_API_KEY)',
+    );
 }
 
 it('executes a basic prompt via gemini and returns response', function () {

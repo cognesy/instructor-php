@@ -23,18 +23,21 @@ final readonly class ModelProfile
 
     public static function fromArray(array $data, string $catalogVersion = ''): self
     {
+        ModelRecordFields::validate($data, [
+            'driver', 'model', 'status', 'limits', 'modalities', 'capabilities', 'source',
+        ], 'model');
         $driver = $data['driver'] ?? null;
         $model = $data['model'] ?? null;
-        if (!is_string($driver) || $driver === '' || !is_string($model) || $model === '') {
+        if (!is_string($driver) || trim($driver) === '' || !is_string($model) || trim($model) === '') {
             throw new InvalidArgumentException('Model profile requires non-empty driver and model.');
         }
 
         return new self(
             key: new ModelKey($driver, $model),
             status: SupportStatus::fromMixed($data['status'] ?? null),
-            limits: ModelLimits::fromArray(self::nested($data, 'limits')),
-            modalities: ModelModalities::fromArray(self::nested($data, 'modalities')),
-            capabilities: ModelCapabilities::fromArray(self::nested($data, 'capabilities')),
+            limits: ModelLimits::fromArray(ModelRecordFields::object($data, 'limits', 'model')),
+            modalities: ModelModalities::fromArray(ModelRecordFields::object($data, 'modalities', 'model')),
+            capabilities: ModelCapabilities::fromArray(ModelRecordFields::object($data, 'capabilities', 'model')),
             source: self::string($data['source'] ?? 'unknown', 'source'),
             catalogVersion: $catalogVersion,
         );
@@ -70,16 +73,6 @@ final readonly class ModelProfile
             [] => [],
             default => [$name => $values],
         };
-    }
-
-    private static function nested(array $data, string $key): array
-    {
-        $value = $data[$key] ?? [];
-        if (!is_array($value)) {
-            throw new InvalidArgumentException("Model profile {$key} must be an object.");
-        }
-
-        return $value;
     }
 
     private static function string(mixed $value, string $field): string

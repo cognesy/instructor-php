@@ -16,8 +16,12 @@ enum SupportStatus: string
             return $value;
         }
 
-        if (!is_string($value)) {
+        if ($value === null) {
             return self::Unknown;
+        }
+
+        if (!is_string($value)) {
+            throw new InvalidArgumentException('Invalid support status: expected a string.');
         }
 
         return self::tryFrom($value)

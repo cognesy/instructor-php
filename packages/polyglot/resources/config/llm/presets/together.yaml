@@ -2,5 +2,5 @@ driver: together
 apiUrl: 'https://api.together.xyz/v1'
 apiKey: '${TOGETHER_API_KEY}'
 endpoint: /chat/completions
-model: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+model: openai/gpt-oss-120b
 maxTokens: 1024

@@ -1,0 +1,21 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: xai
+  model: grok-4.6
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - effort
+      efforts:
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+        - requested: high
+          provider: high
+        - requested: xhigh
+          provider: xhigh
+      default: mandatory
+  source: hand-authored

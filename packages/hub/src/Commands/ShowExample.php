@@ -129,7 +129,7 @@ class ShowExample extends Command
             Cli::outln();
             Cli::outln("  Error History:", [Color::BOLD, Color::RED]);
             foreach (array_slice($status->errors, -3) as $i => $error) {
-                Cli::outln("    " . ($i + 1) . ". {$error->type}: {$error->message}", [Color::RED]);
+                Cli::outln("    " . ($i + 1) . ". {$error->typeDescription()}: {$error->message}", [Color::RED]);
                 if (!empty($error->fullOutput) && $error->fullOutput !== $error->message) {
                     Cli::outln("       " . Cli::limit($error->fullOutput, 60), [Color::DARK_GRAY]);
                 }

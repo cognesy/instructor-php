@@ -10,6 +10,7 @@ use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
  */
 final readonly class UnknownEvent extends StreamEvent
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         int $timestamp,
         OpenCodeSessionId|string|null $sessionId,
@@ -25,6 +26,7 @@ final readonly class UnknownEvent extends StreamEvent
         return $this->rawType;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

@@ -14,20 +14,20 @@ use InvalidArgumentException;
 use Override;
 
 /** Read-only join of connection presets and exact Polyglot model offerings. */
-final readonly class PolyglotTellProviderCatalogue implements CanCatalogueTellProviders
+final class PolyglotTellProviderCatalogue implements CanCatalogueTellProviders
 {
-    public function __construct(private TellPaths $paths) {}
+    /** @var array<string, ModelCatalog> */
+    private array $catalogs = [];
+
+    public function __construct(private readonly TellPaths $paths) {}
 
     #[Override]
     public function catalog(string $project): ModelCatalog {
-        $catalog = ModelCatalog::bundled();
-        foreach ([$this->paths->models, rtrim($project, '/\\') . '/config/llm/models.json'] as $path) {
-            if (is_file($path)) {
-                $catalog = $catalog->overlay(ModelCatalog::fromFile($path));
-            }
-        }
+        $project = realpath($project) ?: $project;
 
-        return $catalog;
+        return $this->catalogs[$project] ??= ModelCatalog::discover($project)
+            ->overlay(ModelCatalog::fromPaths($this->paths->models))
+            ->overlay(ModelCatalog::fromPaths(rtrim($project, '/\\') . '/config/llm/models'));
     }
 
     /** @return array{connections: list<array<string,mixed>>, errors: list<array<string,string>>} */

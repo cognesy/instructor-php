@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\Minimaxi;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+use InvalidArgumentException;
 class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 {
     // INTERNAL ///////////////////////////////////////////////
@@ -36,6 +37,10 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toToolChoice(InferenceRequest $request) : array|string {
+        if ($request->hasToolChoice()) {
+            throw new InvalidArgumentException('MiniMax cannot render an explicit tool choice.');
+        }
+
         return [];
     }
 
@@ -58,12 +63,25 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
         // First remove disallowed entries
         $schema = $this->removeDisallowedEntries($schema);
 
-        $json = json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        if ($json === false) {
-            return [];
+        if ($this->containsIntegerType($schema)) {
+            throw new InvalidArgumentException(
+                'MiniMax cannot render integer schema types without changing them to number.',
+            );
         }
-        // replace 'integer' or "integer" with 'number'
-        $json = str_replace(['"integer"', "'integer'"], '"number"', $json);
-        return json_decode($json, true) ?? [];
+
+        return $schema;
+    }
+
+    private function containsIntegerType(array $schema): bool {
+        foreach ($schema as $key => $value) {
+            if ($key === 'type' && $value === 'integer') {
+                return true;
+            }
+            if (is_array($value) && $this->containsIntegerType($value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

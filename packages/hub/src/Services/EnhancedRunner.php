@@ -47,10 +47,8 @@ class EnhancedRunner implements CanExecuteExample
 
         $this->tracker?->recordStart($example);
 
-        $script = null;
         try {
-            $script = ExampleScript::fromRunPath($example->runPath);
-            [$output, $exitCode] = $this->executeWithTimeout($script->path, $this->timeoutSeconds);
+            [$output, $exitCode] = $this->executeWithTimeout($example->runPath, $this->timeoutSeconds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -82,8 +80,6 @@ class EnhancedRunner implements CanExecuteExample
             $this->tracker?->recordResult($example, $result);
 
             return $result;
-        } finally {
-            $script?->cleanup();
         }
     }
 

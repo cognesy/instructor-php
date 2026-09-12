@@ -13,6 +13,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceRequestAdjustment;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
@@ -68,7 +69,13 @@ it('emits inference requested metadata without materializing the full request', 
             'status' => 'supported',
             'source' => 'telemetry-test',
         ]],
-    ])->find('openai', 'gpt-metadata'));
+    ])->find('openai', 'gpt-metadata'))
+        ->withAdjustment(new InferenceRequestAdjustment(
+            feature: 'response_format',
+            requested: 'json_schema',
+            effective: 'json_object',
+            reason: 'Configured test fallback.',
+        ));
 
     $driver = new class(
         new LLMConfig(),
@@ -140,6 +147,12 @@ it('emits inference requested metadata without materializing the full request', 
         'cachedToolCount' => 1,
         'hasCachedToolChoice' => true,
         'hasCachedResponseFormat' => true,
+        'adjustments' => [[
+            'feature' => 'response_format',
+            'requested' => 'json_schema',
+            'effective' => 'json_object',
+            'reason' => 'Configured test fallback.',
+        ]],
     ]);
     expect($payload)->not->toHaveKey('request');
     expect((string) json_encode($payload, JSON_THROW_ON_ERROR))

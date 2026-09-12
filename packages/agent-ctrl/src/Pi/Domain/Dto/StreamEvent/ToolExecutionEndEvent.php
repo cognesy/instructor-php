@@ -11,6 +11,7 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class ToolExecutionEndEvent extends StreamEvent
 {
+    /** @param array<array-key, mixed> $rawData */
     public function __construct(
         array $rawData,
         public string $toolCallId,
@@ -42,6 +43,7 @@ final readonly class ToolExecutionEndEvent extends StreamEvent
         return Normalize::toString($this->result);
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

@@ -102,7 +102,10 @@ class Inference extends Facade
         $model = (string) ($connection['model'] ?? '');
         $endpoint = (string) ($connection['endpoint'] ?? static::defaultLlmEndpoint($driver, $model));
 
-        $known = ['driver', 'api_url', 'api_key', 'endpoint', 'model', 'max_tokens', 'options'];
+        $known = [
+            'driver', 'api_url', 'api_key', 'endpoint', 'model', 'max_tokens',
+            'allow_lossy_fallback', 'options',
+        ];
         $extraOptions = array_diff_key($connection, array_flip($known));
         $options = match (true) {
             isset($connection['options']) && is_array($connection['options']) => array_merge($extraOptions, $connection['options']),
@@ -116,6 +119,7 @@ class Inference extends Facade
             'endpoint' => $endpoint,
             'model' => $model,
             'maxTokens' => (int) ($connection['max_tokens'] ?? 4096),
+            'allowLossyFallback' => $connection['allow_lossy_fallback'] ?? false,
             'options' => $options,
         ]);
     }

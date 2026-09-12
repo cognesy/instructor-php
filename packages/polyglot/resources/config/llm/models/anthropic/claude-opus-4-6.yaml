@@ -1,0 +1,28 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: anthropic
+  model: claude-opus-4-6
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - disabled
+        - effort
+        - budget
+        - adaptive
+      efforts:
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+        - requested: high
+          provider: high
+        - requested: max
+          provider: max
+      budget:
+        min: 1024
+      default: adaptive
+      contentVisible: true
+      tokensVisible: true
+  source: hand-authored

@@ -9,6 +9,7 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class UnknownEvent extends StreamEvent
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         array $rawData,
         public string $rawType,
@@ -22,6 +23,7 @@ final readonly class UnknownEvent extends StreamEvent
         return $this->rawType;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

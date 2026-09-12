@@ -193,6 +193,7 @@ final class ClaudeCommandBuilder
         }
     }
 
+    /** @param list<string> $dirs */
     private function validateAdditionalDirs(array $dirs) : void {
         foreach ($dirs as $dir) {
             if (is_dir($dir)) {

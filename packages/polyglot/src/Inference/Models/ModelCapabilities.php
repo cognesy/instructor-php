@@ -3,7 +3,6 @@
 namespace Cognesy\Polyglot\Inference\Models;
 
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningCapabilities;
-use InvalidArgumentException;
 
 final readonly class ModelCapabilities
 {
@@ -22,6 +21,10 @@ final readonly class ModelCapabilities
     }
 
     public static function fromArray(array $data): self {
+        ModelRecordFields::validate($data, [
+            'streaming', 'tools', 'toolChoice', 'jsonObject', 'jsonSchema',
+            'responseFormatWithTools', 'reasoning',
+        ], 'capabilities');
         return new self(
             streaming: SupportStatus::fromMixed($data['streaming'] ?? null),
             tools: SupportStatus::fromMixed($data['tools'] ?? null),
@@ -31,7 +34,7 @@ final readonly class ModelCapabilities
             responseFormatWithTools: SupportStatus::fromMixed(
                 $data['responseFormatWithTools'] ?? null,
             ),
-            reasoning: ReasoningCapabilities::fromArray(self::reasoning($data)),
+            reasoning: ReasoningCapabilities::fromArray(ModelRecordFields::object($data, 'reasoning', 'capabilities')),
         );
     }
 
@@ -56,12 +59,4 @@ final readonly class ModelCapabilities
         ];
     }
 
-    private static function reasoning(array $data): array {
-        $reasoning = $data['reasoning'] ?? [];
-        if (!is_array($reasoning)) {
-            throw new InvalidArgumentException('Model capability reasoning must be an object.');
-        }
-
-        return $reasoning;
-    }
 }

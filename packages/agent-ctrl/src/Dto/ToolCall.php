@@ -11,6 +11,7 @@ final readonly class ToolCall
 {
     private ?AgentToolCallId $callId;
 
+    /** @param array<string, mixed> $input */
     public function __construct(
         public string $tool,
         public array $input,

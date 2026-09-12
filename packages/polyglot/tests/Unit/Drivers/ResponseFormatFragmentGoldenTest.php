@@ -106,11 +106,15 @@ function rfGoldenFragment(string $driver, string $bodyFormatClass, ResponseForma
     );
     $bodyFormat = new $bodyFormatClass($config, new OpenAIMessageFormat());
 
-    $body = $bodyFormat->toRequestBody(new InferenceRequest(
-        messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
-        model: 'test-model',
-        responseFormat: $responseFormat,
-    ));
+    try {
+        $body = $bodyFormat->toRequestBody(new InferenceRequest(
+            messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
+            model: 'test-model',
+            responseFormat: $responseFormat,
+        ));
+    } catch (InvalidArgumentException $error) {
+        return ['error' => $error->getMessage()];
+    }
 
     return $body['response_format'] ?? null;
 }
@@ -124,7 +128,6 @@ it('emits the pinned response_format fragment for every body format and mode', f
             $actual["{$driver}/{$case}"] = rfGoldenFragment($driver, $class, $responseFormat);
         }
     }
-
     // Compared as one map rather than key by key: a whole-map comparison reports every drifted
     // driver in a single run, instead of stopping at the first.
     expect($actual)->toBe($golden);
@@ -166,11 +169,11 @@ it('keeps every driver in the fixture distinguishable from the base default', fu
     // handlers existed to express is really still there, independently of the fixture.
     $golden = json_decode((string) file_get_contents(RF_GOLDEN_FIXTURE), true, 512, JSON_THROW_ON_ERROR);
 
-    // Falls back to json_object where the base emits json_schema.
-    expect($golden['a21/json_schema']['type'])->toBe('json_object')
-        ->and($golden['deepseek/json_schema']['type'])->toBe('json_object')
-        ->and($golden['gemini-oai/json_schema']['type'])->toBe('json_object')
-        ->and($golden['sambanova/json_schema']['type'])->toBe('json_object');
+    // Providers without a JSON Schema representation reject rather than weaken it.
+    expect($golden['a21/json_schema'])->toHaveKey('error')
+        ->and($golden['deepseek/json_schema'])->toHaveKey('error')
+        ->and($golden['gemini-oai/json_schema'])->toHaveKey('error')
+        ->and($golden['sambanova/json_schema'])->toHaveKey('error');
 
     // Escalates json_object to json_schema where the base emits a bare json_object.
     expect($golden['meta/json_object']['type'])->toBe('json_schema')
@@ -182,11 +185,10 @@ it('keeps every driver in the fixture distinguishable from the base default', fu
     expect($golden['cohere/json_schema'])->toHaveKey('schema')
         ->and($golden['fireworks/json_schema'])->toHaveKey('schema')
         ->and($golden['huggingface/json_schema'])->toBe($golden['openai/json_schema'])
-        ->and(array_keys($golden['perplexity/json_schema']['json_schema']))->toBe(['schema'])
-        ->and(array_keys($golden['minimaxi/json_schema']['json_schema']))->toBe(['name', 'schema']);
+        ->and(array_keys($golden['perplexity/json_schema']['json_schema']))->toBe(['schema']);
 
-    // Minimaxi rewrites integer to number; nobody else does.
-    expect($golden['minimaxi/json_schema']['json_schema']['schema']['properties']['age']['type'])->toBe('number')
+    // MiniMax rejects an integer schema rather than silently widening it to number.
+    expect($golden['minimaxi/json_schema'])->toHaveKey('error')
         ->and($golden['openai/json_schema']['json_schema']['schema']['properties']['age']['type'])->toBe('integer');
 
     // Cohere strips two more keys than the base and makes every property required.

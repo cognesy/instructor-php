@@ -13,7 +13,8 @@ use Cognesy\AgentCtrl\Pi\Domain\Dto\PiMessage;
 final readonly class AgentEndEvent extends StreamEvent
 {
     /**
-     * @param list<array> $messages Raw message arrays from Pi
+     * @param array<array-key, mixed> $rawData
+     * @param list<array<array-key, mixed>> $messages Raw message arrays from Pi
      */
     public function __construct(
         array $rawData,
@@ -50,6 +51,7 @@ final readonly class AgentEndEvent extends StreamEvent
 
     /**
      * Extract usage from the last assistant message
+     * @return array<array-key, mixed>|null
      */
     public function usage(): ?array
     {
@@ -82,11 +84,17 @@ final readonly class AgentEndEvent extends StreamEvent
         return is_numeric($total) ? (float) $total : null;
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
+        $messages = array_values(array_filter(
+            Normalize::toArray($data['messages'] ?? []),
+            is_array(...),
+        ));
+
         return new self(
             rawData: $data,
-            messages: Normalize::toArray($data['messages'] ?? []),
+            messages: $messages,
         );
     }
 }

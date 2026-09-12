@@ -24,6 +24,7 @@ Polyglot resolves two configuration types -- one for inference and one for embed
 | `metadata` | `array` | `[]` | Provider-specific metadata (e.g. organization, project for OpenAI) |
 | `model` | `string` | `''` | Model identifier |
 | `maxTokens` | `int` | `1024` | Default max tokens for responses |
+| `allowLossyFallback` | `bool` | `false` | Permit known, observable semantic fallback |
 | `driver` | `string` | `'openai-compatible'` | Driver name (e.g. `openai`, `anthropic`, `gemini`) |
 | `options` | `array` | `[]` | Additional provider-specific options |
 
@@ -75,10 +76,18 @@ $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
 ```
 
+`allowLossyFallback` is deliberately separate from provider `options`. It authorizes only a
+fallback Polyglot explicitly knows how to describe, such as JSON Schema to JSON Object or a lossy
+reasoning effort mapping. It defaults to `false`, and accepted changes are recorded on the
+effective request. Laravel and Symfony connection files use the snake-case field
+`allow_lossy_fallback`; direct PHP construction, arrays, presets, and DSNs use
+`allowLossyFallback`.
+
 ### Model catalog
 
-Look up limits, modalities, and capabilities by exact driver and wire model. An absent
-offering returns an explicit unknown profile:
+Catalog use is optional. Look up limits, modalities, and capabilities by exact driver and wire
+model only when an application needs those facts. An absent offering returns an explicit unknown
+profile:
 
 ```php
 use Cognesy\Polyglot\Inference\Models\ModelCatalog;
@@ -88,10 +97,12 @@ $profile->limits->contextWindow;
 $profile->capabilities->jsonSchema;
 ```
 
-`discover()` overlays application `config/llm/models.json` on the bundled records through the
-same search paths used for presets. Use `overlay(ModelCatalog::fromFile($path))` for another
-explicit whole-record layer. Catalog construction is local and deterministic; it never performs
-network discovery.
+`discover()` resolves application `config/llm/models` and packaged model directories through
+the same locations used for presets. Exact lookup loads one `<driver>/<model>.yaml` record;
+identity path components are percent-encoded. Use `overlay(ModelCatalog::fromPaths($directory))`
+for another whole-record layer. Construction reads no records; repeated lookup reuses the hydrated
+profile. Enumeration is explicit, and runtime never performs network discovery. See
+[Model Catalog](model-catalog.md) for the versioned record format and scope lifetime.
 
 ### Type Coercion
 

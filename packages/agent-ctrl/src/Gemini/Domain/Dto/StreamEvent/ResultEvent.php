@@ -11,6 +11,11 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class ResultEvent extends StreamEvent
 {
+    /**
+     * @param array<string, mixed> $rawData
+     * @param array<string, mixed>|null $error
+     * @param array<string, mixed> $stats
+     */
     public function __construct(
         array $rawData,
         public string $status,
@@ -67,6 +72,7 @@ final readonly class ResultEvent extends StreamEvent
         return Normalize::toInt($this->stats['tool_calls'] ?? 0);
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $error = $data['error'] ?? null;

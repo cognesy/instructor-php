@@ -201,6 +201,7 @@ class InstructorTestCommand extends Command
             'endpoint' => $endpoint,
             'model' => $model,
             'maxTokens' => (int) ($config['max_tokens'] ?? 4096),
+            'allowLossyFallback' => $config['allow_lossy_fallback'] ?? false,
         ]);
     }
 

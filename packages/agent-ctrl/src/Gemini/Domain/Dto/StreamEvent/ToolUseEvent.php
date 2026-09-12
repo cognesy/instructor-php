@@ -11,6 +11,10 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class ToolUseEvent extends StreamEvent
 {
+    /**
+     * @param array<string, mixed> $rawData
+     * @param array<string, mixed> $parameters
+     */
     public function __construct(
         array $rawData,
         public string $toolName,
@@ -27,6 +31,7 @@ final readonly class ToolUseEvent extends StreamEvent
         return 'tool_use';
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

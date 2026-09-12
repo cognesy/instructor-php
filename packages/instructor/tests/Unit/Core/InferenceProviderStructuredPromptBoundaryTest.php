@@ -22,7 +22,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesMessageFormat;
 use Cognesy\Polyglot\Inference\PendingInference;
 
 it('sends structured prompt cached context through provider-native anthropic mapping', function () {
-    $config = new StructuredOutputConfig(outputMode: OutputMode::Json);
+    $config = new StructuredOutputConfig(outputMode: OutputMode::MdJson);
     $responseModel = (new ResponseModelFactory(
         new StructuredOutputSchemaRenderer($config),
         $config,

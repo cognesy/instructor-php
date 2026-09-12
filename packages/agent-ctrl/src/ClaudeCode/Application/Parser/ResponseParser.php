@@ -50,15 +50,6 @@ final class ResponseParser
         $events = [];
         $messageText = '';
         foreach ($this->normalizeToList($decoded) as $entry) {
-            if (!is_array($entry)) {
-                $this->onParseError(
-                    context: 'Failed to parse Claude JSON response: expected JSON object entries',
-                    payload: $entry,
-                    parseFailures: $parseFailures,
-                    parseFailureSamples: $parseFailureSamples,
-                );
-                continue;
-            }
             $items[] = new DecodedObject($entry);
             $event = StreamEvent::fromArray($entry);
             $events[] = $event;
@@ -148,6 +139,7 @@ final class ResponseParser
     }
 
     /**
+     * @param array<array-key, mixed> $decoded
      * @return list<array<string,mixed>>
      */
     private function normalizeToList(array $decoded) : array {
@@ -162,6 +154,7 @@ final class ResponseParser
 
     /**
      * @param list<string> $parseFailureSamples
+     * @return array<array-key, mixed>|null
      */
     private function decodeJson(
         string $payload,

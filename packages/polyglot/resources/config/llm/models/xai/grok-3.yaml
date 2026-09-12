@@ -1,0 +1,20 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: xai
+  model: grok-3
+  status: supported
+  limits:
+    contextWindow: 128000
+    maxOutput: 128000
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: supported
+  source: hand-authored

@@ -89,7 +89,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     config: $llmConfig,
     events: $events,
     httpClient: $customClient,
-)->withOutputMode(OutputMode::Tools);
+)->withOutputMode(OutputMode::Json);
 $runtime->wiretap(fn($e) => $e->print());
 
 $structuredOutput = new StructuredOutput($runtime);

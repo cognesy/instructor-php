@@ -14,7 +14,7 @@ Support for DeepSeek API which provides strong models at affordable price.
 Mode compatibility:
 - OutputMode::Tools (supported)
 - OutputMode::Json (supported)
-- OutputMode::JsonSchema (degraded to JSON Output)
+- OutputMode::JsonSchema (not supported; choose Json explicitly)
 - OutputMode::MdJson (fallback)
 
 ## Example
@@ -45,7 +45,7 @@ class User {
 
 $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromProvider(LLMProvider::using('deepseek'))
-        ->withOutputMode(OutputMode::JsonSchema)
+        ->withOutputMode(OutputMode::Json)
 );
 
 $user = $structuredOutput->with(

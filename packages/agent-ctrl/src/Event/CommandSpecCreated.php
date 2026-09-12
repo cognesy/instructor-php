@@ -13,6 +13,7 @@ final class CommandSpecCreated extends AgentEvent
 {
     public string $logLevel = LogLevel::DEBUG;
 
+    /** @param list<string> $argv */
     public function __construct(
         AgentType $agentType,
         AgentCtrlExecutionId $executionId,

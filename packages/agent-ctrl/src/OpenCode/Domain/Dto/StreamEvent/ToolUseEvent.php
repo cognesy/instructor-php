@@ -19,6 +19,7 @@ final readonly class ToolUseEvent extends StreamEvent
     private ?OpenCodePartId $partId;
     private ?OpenCodeCallId $callId;
 
+    /** @param array<string, mixed> $input */
     public function __construct(
         int $timestamp,
         OpenCodeSessionId|string|null $sessionId,
@@ -88,6 +89,7 @@ final readonly class ToolUseEvent extends StreamEvent
         return $this->callId;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $part = Normalize::toArray($data['part'] ?? []);

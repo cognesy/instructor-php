@@ -2,9 +2,9 @@
 
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Builder\PiBridgeBuilder;
-use Cognesy\AgentCtrl\Common\Execution\CliBinaryGuard;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\Tests\Support\AgentCliTestPrerequisites;
 use Cognesy\Config\Env;
 
 /**
@@ -17,11 +17,6 @@ use Cognesy\Config\Env;
  * Run selectively: vendor/bin/pest packages/agent-ctrl/tests/Integration/PiBridgeIntegrationTest.php
  */
 
-function piIsAvailable(): bool
-{
-    return CliBinaryGuard::isAvailable('pi');
-}
-
 function piOpenAiApiKey(): ?string
 {
     $apiKey = Env::get('OPENAI_API_KEY');
@@ -31,12 +26,11 @@ function piOpenAiApiKey(): ?string
 
 function skipIfPiUnavailable(): void
 {
-    if (!piIsAvailable()) {
-        test()->markTestSkipped('pi binary not found in PATH');
-    }
-    if (piOpenAiApiKey() === null) {
-        test()->markTestSkipped('No OPENAI_API_KEY configured');
-    }
+    AgentCliTestPrerequisites::ensureAvailable(
+        binary: 'pi',
+        hasAuth: piOpenAiApiKey() !== null,
+        authMessage: 'No OPENAI_API_KEY configured',
+    );
 }
 
 function piBridge(): PiBridgeBuilder

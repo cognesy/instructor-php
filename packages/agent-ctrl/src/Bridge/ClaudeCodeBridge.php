@@ -116,7 +116,7 @@ final class ClaudeCodeBridge implements AgentBridge
 
             $collectedText = '';
             $toolCalls = [];
-            /** @var array<string, array{tool:string,input:array}> */
+            /** @var array<string, array{tool:string,input:array<string,mixed>}> */
             $pendingToolUses = [];
             $sessionId = null;
             $chunkCount = 0;
@@ -124,7 +124,7 @@ final class ClaudeCodeBridge implements AgentBridge
             $jsonLinesBuffer = $handler !== null ? new JsonLinesBuffer() : null;
 
             $streamStart = $handler !== null ? microtime(true) : null;
-            if ($handler !== null && $streamStart !== null) {
+            if ($handler !== null) {
                 $this->dispatch(new StreamProcessingStarted(AgentType::ClaudeCode, $this->executionId));
             }
 
@@ -162,7 +162,7 @@ final class ClaudeCodeBridge implements AgentBridge
             }
 
             // Emit stream processing completion if streaming was used
-            if ($handler !== null && $streamStart !== null) {
+            if ($handler !== null) {
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::ClaudeCode,
@@ -275,7 +275,7 @@ final class ClaudeCodeBridge implements AgentBridge
 
     /**
      * @param list<ToolCall> $toolCalls
-     * @param array<string, array{tool:string,input:array}> $pendingToolUses
+     * @param array<string, array{tool:string,input:array<string,mixed>}> $pendingToolUses
      */
     private function handleStreamJsonLine(
         string $line,
@@ -337,6 +337,7 @@ final class ClaudeCodeBridge implements AgentBridge
         $sessionId = $sessionCandidate;
     }
 
+    /** @return array<string, mixed>|null */
     private function decodeStreamJsonLine(string $line, string $context): ?array
     {
         try {

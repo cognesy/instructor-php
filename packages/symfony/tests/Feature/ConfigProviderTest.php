@@ -13,6 +13,7 @@ it('provides normalized framework config views and typed runtime objects', funct
                 'anthropic' => [
                     'api_key' => 'anthropic-key',
                     'model' => 'claude-sonnet-4',
+                    'allow_lossy_fallback' => true,
                     'api_version' => '2023-06-01',
                     'beta' => 'tools-2024-04-04',
                 ],
@@ -75,6 +76,7 @@ it('provides normalized framework config views and typed runtime objects', funct
     expect($llm->driver)->toBe('anthropic')
         ->and($llm->apiUrl)->toBe('https://api.anthropic.com/v1')
         ->and($llm->endpoint)->toBe('/messages')
+        ->and($llm->allowLossyFallback)->toBeTrue()
         ->and($llm->metadata)->toBe([
             'apiVersion' => '2023-06-01',
             'beta' => 'tools-2024-04-04',
@@ -129,4 +131,17 @@ it('supports flat connection maps and legacy preset aliases', function (): void 
         ->and($provider->llm()->metadata)->toBe(['organization' => 'acme'])
         ->and($provider->embeddings()->dimensions)->toBe(1536)
         ->and($provider->httpClient()->driver)->toBe('symfony');
+});
+
+it('rejects a non-boolean lossy fallback setting', function (): void {
+    $provider = new SymfonyConfigProvider([
+        'connections' => [
+            'openai' => [
+                'allow_lossy_fallback' => 'yes',
+            ],
+        ],
+    ]);
+
+    expect(fn () => $provider->llm('openai'))
+        ->toThrow(InvalidArgumentException::class, 'allowLossyFallback');
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Reasoning;
 
+use Cognesy\Polyglot\Inference\Models\ModelRecordFields;
 use InvalidArgumentException;
 
 /** Model- and protocol-specific reasoning capability contract. */
@@ -28,6 +29,9 @@ final readonly class ReasoningCapabilities
     }
 
     public static function fromArray(array $data): self {
+        ModelRecordFields::validate($data, [
+            'selections', 'efforts', 'budget', 'default', 'contentVisible', 'tokensVisible',
+        ], 'reasoning');
         if ($data === []) {
             return self::unknown();
         }

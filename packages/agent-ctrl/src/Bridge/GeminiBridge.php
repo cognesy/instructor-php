@@ -42,8 +42,6 @@ use JsonException;
 
 /**
  * Bridge implementation for Gemini CLI.
- *
- * @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.
  */
 final class GeminiBridge implements AgentBridge
 {
@@ -125,14 +123,14 @@ final class GeminiBridge implements AgentBridge
 
             $collectedText = '';
             $toolCalls = [];
-            /** @var array<string, array{tool:string,input:array}> */
+            /** @var array<string, array{tool:string,input:array<string,mixed>}> */
             $pendingToolUses = [];
             $chunkCount = 0;
             $totalBytesProcessed = 0;
             $jsonLinesBuffer = $handler !== null ? new JsonLinesBuffer() : null;
 
             $streamStart = $handler !== null ? microtime(true) : null;
-            if ($handler !== null && $streamStart !== null) {
+            if ($handler !== null) {
                 $this->dispatch(new StreamProcessingStarted(AgentType::Gemini, $this->executionId));
             }
 
@@ -170,7 +168,7 @@ final class GeminiBridge implements AgentBridge
             }
 
             // Emit stream processing completion if streaming was used
-            if ($handler !== null && $streamStart !== null) {
+            if ($handler !== null) {
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::Gemini,
@@ -265,7 +263,7 @@ final class GeminiBridge implements AgentBridge
 
     /**
      * @param list<ToolCall> $toolCalls
-     * @param array<string, array{tool:string,input:array}> $pendingToolUses
+     * @param array<string, array{tool:string,input:array<string,mixed>}> $pendingToolUses
      */
     private function handleStreamJsonLine(
         string $line,
@@ -317,6 +315,7 @@ final class GeminiBridge implements AgentBridge
         }
     }
 
+    /** @return array<string, mixed>|null */
     private function decodeStreamJsonLine(string $line, string $context): ?array
     {
         try {

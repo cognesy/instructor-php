@@ -13,6 +13,11 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class TurnEndEvent extends StreamEvent
 {
+    /**
+     * @param array<array-key, mixed> $rawData
+     * @param array<array-key, mixed> $message
+     * @param array<array-key, mixed> $toolResults
+     */
     public function __construct(
         array $rawData,
         public array $message,
@@ -27,6 +32,7 @@ final readonly class TurnEndEvent extends StreamEvent
         return 'turn_end';
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

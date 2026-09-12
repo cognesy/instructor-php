@@ -11,6 +11,11 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenBodyFormat;
 use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
+function qwenPackagedModelCatalog(): ModelCatalog
+{
+    return ModelCatalog::fromPaths(dirname(__DIR__, 4) . '/resources/config/llm/models');
+}
+
 it('Qwen: maps thinking option to enable_thinking', function () {
     $config = new LLMConfig(
         apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
@@ -28,7 +33,7 @@ it('Qwen: maps thinking option to enable_thinking', function () {
             'thinking' => 'enabled',
             'reasoning_effort' => 'low',
         ],
-    ))->withModelProfile(ModelCatalog::bundled()->find('qwen', 'qwen3.8-max'));
+    ))->withModelProfile(qwenPackagedModelCatalog()->find('qwen', 'qwen3.8-max'));
 
     $json = $body->toRequestBody($request);
 
@@ -55,7 +60,7 @@ it('Qwen3.8-Max: preserves native JSON Schema response format', function () {
             name: 'answer',
             strict: true,
         ),
-    ))->withModelProfile(ModelCatalog::bundled()->find('qwen', 'qwen3.8-max'));
+    ))->withModelProfile(qwenPackagedModelCatalog()->find('qwen', 'qwen3.8-max'));
 
     expect($body->toRequestBody($request)['response_format'])->toBe([
         'type' => 'json_schema',
@@ -88,13 +93,13 @@ it('older Qwen models: degrades JSON Schema to JSON Object', function () {
             name: 'answer',
             strict: true,
         ),
-    ))->withModelProfile(ModelCatalog::bundled()->find('qwen', 'qwen3-max-preview'));
-    $request = (new InferenceRequestPreflight)->apply($request);
+    ))->withModelProfile(qwenPackagedModelCatalog()->find('qwen', 'qwen3-max-preview'));
+    $request = (new InferenceRequestPreflight(allowLossyFallback: true))->apply($request);
 
     expect($body->toRequestBody($request)['response_format'])->toBe(['type' => 'json_object']);
 });
 
-it('Qwen: downgrades unsupported required tool choice to auto', function () {
+it('Qwen: rejects unsupported required tool choice instead of downgrading it', function () {
     $config = new LLMConfig(
         apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
         apiKey: 'KEY',
@@ -118,10 +123,11 @@ it('Qwen: downgrades unsupported required tool choice to auto', function () {
         toolChoice: ToolChoice::required(),
     );
 
-    expect($body->toRequestBody($request)['tool_choice'])->toBe('auto');
+    expect(fn () => $body->toRequestBody($request))
+        ->toThrow(InvalidArgumentException::class, 'cannot render required tool choice');
 });
 
-it('Qwen: downgrades specific tool choice while thinking is enabled', function () {
+it('Qwen: rejects a specific tool choice while thinking is enabled instead of downgrading it', function () {
     $config = new LLMConfig(
         apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
         apiKey: 'KEY',
@@ -146,7 +152,46 @@ it('Qwen: downgrades specific tool choice while thinking is enabled', function (
         toolChoice: ToolChoice::specific('lookup'),
     );
 
-    expect($body->toRequestBody($request)['tool_choice'])->toBe('auto');
+    expect(fn () => $body->toRequestBody($request))
+        ->toThrow(InvalidArgumentException::class, 'specific tool choice while thinking is enabled');
+});
+
+it('Qwen: fails explicitly when local policy and protocol renderability disagree', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+        apiKey: 'KEY',
+        endpoint: '/chat/completions',
+        model: 'custom-qwen',
+        driver: 'qwen',
+    );
+    $profile = ModelCatalog::fromArray([
+        'version' => 'test-v1',
+        'models' => [[
+            'driver' => 'qwen',
+            'model' => 'custom-qwen',
+            'capabilities' => [
+                'tools' => 'supported',
+                'jsonObject' => 'supported',
+                'responseFormatWithTools' => 'supported',
+            ],
+        ]],
+    ])->find('qwen', 'custom-qwen');
+    $request = (new InferenceRequest(
+        model: 'custom-qwen',
+        tools: ToolDefinitions::fromArray([[
+            'type' => 'function',
+            'function' => [
+                'name' => 'lookup',
+                'description' => 'Look up a value',
+                'parameters' => ['type' => 'object', 'properties' => []],
+            ],
+        ]]),
+        responseFormat: ResponseFormat::jsonObject(),
+    ))->withModelProfile($profile);
+
+    expect((new InferenceRequestPreflight())->apply($request))->toBe($request)
+        ->and(fn () => (new QwenBodyFormat($config, new OpenAIMessageFormat()))->toRequestBody($request))
+        ->toThrow(InvalidArgumentException::class, 'non-text response format together with tools');
 });
 
 it('Qwen: preserves explicit enable_thinking as-is', function () {

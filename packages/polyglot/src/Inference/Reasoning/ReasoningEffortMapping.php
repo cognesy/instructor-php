@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Reasoning;
 
+use Cognesy\Polyglot\Inference\Models\ModelRecordFields;
 use InvalidArgumentException;
 
 /** One portable effort's provider representation and effective meaning. */
@@ -18,6 +19,9 @@ final readonly class ReasoningEffortMapping
     ) {}
 
     public static function fromArray(array $data): self {
+        ModelRecordFields::validate($data, [
+            'requested', 'provider', 'effective', 'quality', 'documented',
+        ], 'reasoning.efforts');
         $requested = self::requiredString($data, 'requested');
         $provider = self::requiredString($data, 'provider');
         $effective = $data['effective'] ?? $requested;

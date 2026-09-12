@@ -15,25 +15,38 @@ The release also removes Polyglot's lazy aliases for classes moved under
 
 ## Exact-offering model catalog
 
-Polyglot now owns one deterministic model catalog keyed by exact `(driver, wire model)`.
-`InferenceRuntime` resolves the profile after request-level model overrides, so body-format
-decisions, telemetry, Evals filtering, and Tell inspection all describe the model actually
-executed. Unknown custom offerings remain executable and carry explicit unknown facts.
+Polyglot now provides an optional deterministic model catalog keyed by exact
+`(driver, wire model)`. Ordinary inference does not discover or load it. Applications compose a
+catalog explicitly when they need local capability enforcement, model metadata, or facts required
+by a selected processor. Unknown custom offerings remain executable and carry explicit unknown
+facts when inspected.
+
+Offering facts are stored as individual versioned YAML files using the connection-preset loading
+pattern. Runtime construction reads no model records; exact lookup loads only the selected
+offering and reuses its immutable profile. Project records use
+`config/llm/models/<encoded-driver>/<encoded-model>.yaml`; monolithic runtime `models.json`
+discovery was removed. Strict record parsing rejects unknown keys and malformed facts.
 
 This replaces and removes `CanDescribeCapabilities`, `DriverCapabilities`, and
 `SpecifiedInferenceDriver`. Default providers now use `BaseInferenceRequestDriver` directly.
 Reasoning capability facts also live in the exact offering record; provider drivers retain only
 the constant wire format used to render an already-approved selection.
 
-Request preflight runs after effective model selection and before body rendering. It rejects
-features explicitly marked unsupported, preserves unknown ordinary capabilities for custom
-offerings, degrades JSON Schema only through an explicitly supported JSON Object fallback, and
-validates typed reasoning against the same exact profile. Model-name regexes are no longer a
-capability source.
+Request preflight is an in-process preparation step, not an LLM API request. It reads only facts
+explicitly attached to the request, rejects features and combinations marked unsupported, and
+preserves unknown facts for custom offerings. Missing model facts do not create a catalog veto.
+Reasoning translation can instead receive the narrow required facts directly. Model-name regexes
+are no longer a capability source.
 
-Catalog maintenance is explicit: `just models-refresh` stages changes from exact mappings,
-`just models-apply` accepts a reviewed stage, and `just models-list` reports offering provenance.
-Ordinary `check` and `validate` remain deterministic and offline.
+Provider adapters now render the approved intent or throw a precise protocol error; they never
+silently strip a response format or weaken tool choice. Known semantic fallback is disabled by
+default and requires `LLMConfig::$allowLossyFallback === true` (`allow_lossy_fallback` in Laravel
+and Symfony connection configuration). Every accepted fallback is recorded on the effective
+request and emitted with `InferenceRequested`.
+
+Catalog maintenance is explicit and offline: edit the reviewed source inputs, run
+`just models-build`, and use `just models-check` plus `just models-validate` as deterministic QA.
+There is no runtime refresh, staging, apply, mapping, or provenance subsystem.
 
 `LLMConfig` and connection presets no longer own `contextLength`, `maxOutputLength`, or
 `pricing`. Put limits, modalities, and capabilities in a model catalog record. Supply pricing
@@ -84,6 +97,11 @@ Anthropic thinking signatures, Gemini thought signatures, and OpenAI Responses
 reasoning replay state remain attached to their blocks so a completed assistant
 turn can be sent back on the next request.
 
+Structured output streams now retain token usage reported in a provider's terminal
+usage-only event. After `finalValue()` or `finalResponse()`, `$stream->usage()` and
+the final response expose the provider-reported input, output, cache, and reasoning
+counts.
+
 The `openai-compatible`, `ollama`, and `together` drivers now preserve reasoning
 returned in `reasoning_content`, `reasoning`, `thinking`, or `analysis` fields for
 both synchronous and streamed responses. For synchronous responses without one of
@@ -103,18 +121,20 @@ classes and reasoning capability accessors were removed without aliases:
 |---|---|
 | `BundledInferenceDrivers::registry()` | `InferenceDriverRegistry::default()` |
 | `BundledInferenceDrivers::specifications()` | private registry implementation |
-| `BundledInferenceDrivers::reasoningCapabilities()` | `ModelCatalog::discover()->find($driver, $model)->capabilities->reasoning` |
+| `BundledInferenceDrivers::reasoningCapabilities()` | explicit `ModelCatalog` lookup or request-scoped `ReasoningCapabilities` |
 | `BundledEmbeddingsDrivers::registry()` | `EmbeddingsDriverRegistry::default()` |
 | `BundledHttpDrivers::registry()` | `HttpDriverRegistry::default()` |
 | `BundledHttpPools::registry()` | `HttpPoolRegistry::default()` |
 | `BundledReasoning` | exact records in `models-overrides.json` |
 | `InferenceDriverSpec::$reasoning` | `InferenceDriverSpec::$reasoningWireFormat` |
-| `CanTranslateReasoning::capabilities()` | request preflight reads `ModelProfile` |
+| `CanTranslateReasoning::capabilities()` | explicitly supplied request or exact model facts |
 | `ModelModalities::$inputVideo`, `$outputImage`, `$outputAudio` | removed until adapters implement them |
 
-`ModelModalities::$inputFile` and `ModelCapabilities::$reasoning` are now part of the typed model
-profile. Custom driver registrations should start from `InferenceDriverRegistry::default()` when
-they want the shipped table, or `InferenceDriverRegistry::make()` when they want an empty one.
+`ModelModalities::$inputFile` was also removed because Polyglot has no maintained generic file
+message-to-wire route. `ModelCapabilities::$reasoning` remains an optional typed model fact, and
+the narrower reasoning facts can be attached directly to a request. Custom driver registrations
+should start from `InferenceDriverRegistry::default()` when they want the shipped table, or
+`InferenceDriverRegistry::make()` when they want an empty one.
 
 Replace flattened response access with the canonical message:
 
@@ -231,6 +251,11 @@ environment variables and otherwise runs against DeepSeek's OpenAI-compatible
 endpoint. Its assertions verify both the visible answer and separately
 projected reasoning content.
 
+Cerebras, Fireworks, Moonshot, OpenRouter, SambaNova, and Together presets now
+reference exact model IDs returned by each provider's live model catalog. The
+Fireworks, Moonshot, OpenRouter, and Together inference and structured-output
+examples have fresh live recordings and are enabled in the Hub replay suite.
+
 ## Agent CLI compatibility and replay isolation
 
 The AgentCtrl Codex bridge now targets the current `codex exec` interface. The
@@ -239,6 +264,19 @@ removed `--full-auto` flag and `fullAuto()` builder method are replaced by
 approval, and dangerous bypass are mutually exclusive; selecting one mode on the
 builder clears the others. Pi commands now include `--print` for explicit
 non-interactive execution.
+
+The Gemini CLI bridge is supported again after verification against the current
+Gemini CLI. Its live integration tests now run when the binary and credentials
+are available, and its basic and streaming examples assert response text,
+session and usage metadata, streamed output, and tool-call delivery.
+
+The runtime-switching example now verifies every `AgentType` factory mapping
+offline. Live mode is explicit, runs one selected backend, and uses a 30-second
+timeout instead of invoking every installed CLI serially.
+
+The AgentCtrl package PHPStan command now invokes the `analyse` command
+explicitly, and all bridge, event, response, and configuration payloads carry
+the iterable value types required by its level 6 configuration.
 
 Instructor Hub now extracts executable PHP fences from Markdown files with LF or
 CRLF line endings. AgentCtrl examples that launch external CLI processes are

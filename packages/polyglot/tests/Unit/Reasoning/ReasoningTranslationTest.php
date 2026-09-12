@@ -2,6 +2,7 @@
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Core\InferenceRequestPreflight;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiBodyFormat;
@@ -15,6 +16,11 @@ use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningWireFormat;
 use Cognesy\Polyglot\Inference\Reasoning\UnsupportedReasoningTranslator;
 
+function reasoningPackagedModelCatalog(): ModelCatalog
+{
+    return ModelCatalog::fromPaths(dirname(__DIR__, 3) . '/resources/config/llm/models');
+}
+
 it('maps evidence-backed provider wire families from exact offering records', function (
     string $driver,
     string $model,
@@ -22,9 +28,9 @@ it('maps evidence-backed provider wire families from exact offering records', fu
     ReasoningSelection $selection,
     array $expected,
 ) {
-    $capabilities = ModelCatalog::bundled()->find($driver, $model)->capabilities->reasoning;
+    $capabilities = reasoningPackagedModelCatalog()->find($driver, $model)->capabilities->reasoning;
     $request = (new InferenceRequest(model: $model, reasoning: $selection))
-        ->withModelProfile(ModelCatalog::bundled()->find($driver, $model));
+        ->withModelProfile(reasoningPackagedModelCatalog()->find($driver, $model));
     (new InferenceRequestPreflight())->apply($request);
 
     $translation = (new ConfiguredReasoningTranslator($wireFormat))
@@ -47,8 +53,8 @@ it('maps evidence-backed provider wire families from exact offering records', fu
     'OpenRouter budget' => ['openrouter', 'openai/gpt-oss-120b', ReasoningWireFormat::OpenRouter, ReasoningSelection::budget(2048), ['reasoning' => ['max_tokens' => 2048]]],
 ]);
 
-it('rejects lossy aliases, unsupported values, and near-match model names in preflight', function () {
-    $catalog = ModelCatalog::bundled();
+it('rejects known lossy aliases and unsupported values in preflight', function () {
+    $catalog = reasoningPackagedModelCatalog();
     $lossy = (new InferenceRequest(
         model: 'deepseek-v4-pro',
         reasoning: ReasoningSelection::effort(ReasoningEffort::Medium),
@@ -57,14 +63,59 @@ it('rejects lossy aliases, unsupported values, and near-match model names in pre
         model: 'grok-4.6',
         reasoning: ReasoningSelection::disabled(),
     ))->withModelProfile($catalog->find('xai', 'grok-4.6'));
-    $nearMatch = (new InferenceRequest(
-        model: 'gpt-5.6-preview',
-        reasoning: ReasoningSelection::effort(ReasoningEffort::Low),
-    ))->withModelProfile($catalog->find('openai', 'gpt-5.6-preview'));
-
     expect(fn () => (new InferenceRequestPreflight())->apply($lossy))->toThrow(InvalidArgumentException::class)
-        ->and(fn () => (new InferenceRequestPreflight())->apply($unsupported))->toThrow(InvalidArgumentException::class)
-        ->and(fn () => (new InferenceRequestPreflight())->apply($nearMatch))->toThrow(InvalidArgumentException::class);
+        ->and(fn () => (new InferenceRequestPreflight())->apply($unsupported))->toThrow(InvalidArgumentException::class);
+});
+
+it('renders directly supplied reasoning facts for an uncataloged model', function () {
+    $capabilities = ReasoningCapabilities::fromArray([
+        'selections' => ['effort'],
+        'efforts' => [[
+            'requested' => 'high',
+            'provider' => 'HIGH',
+        ]],
+    ]);
+    $request = (new InferenceRequest(
+        model: 'custom-model',
+        reasoning: ReasoningSelection::effort(ReasoningEffort::High),
+    ))->withReasoningCapabilities($capabilities);
+    $body = new ReasoningBodyFormat(
+        emptyReasoningBody(),
+        new ConfiguredReasoningTranslator(ReasoningWireFormat::Gemini),
+    );
+
+    expect($request->modelProfile())->toBeNull()
+        ->and((new InferenceRequestPreflight())->apply($request))->toBe($request)
+        ->and($body->toRequestBody($request))
+        ->toBe(['generationConfig' => ['thinkingConfig' => ['thinkingLevel' => 'HIGH']]]);
+});
+
+it('renders selections that need no model-specific mapping without a catalog', function () {
+    $request = new InferenceRequest(
+        model: 'custom-model',
+        reasoning: ReasoningSelection::budget(1024),
+    );
+    $body = new ReasoningBodyFormat(
+        emptyReasoningBody(),
+        new ConfiguredReasoningTranslator(ReasoningWireFormat::Qwen),
+    );
+
+    expect((new InferenceRequestPreflight())->apply($request))->toBe($request)
+        ->and($body->toRequestBody($request))->toBe([
+            'enable_thinking' => true,
+            'thinking_budget' => 1024,
+        ]);
+});
+
+it('reports missing translation facts separately from unsupported wire formats', function () {
+    $effort = ReasoningSelection::effort(ReasoningEffort::High);
+
+    expect(fn () => (new ConfiguredReasoningTranslator(ReasoningWireFormat::NamedEffort))
+        ->translate(ReasoningCapabilities::unknown(), $effort))
+        ->toThrow(InvalidArgumentException::class, 'Reasoning effort mapping is missing.')
+        ->and(fn () => (new UnsupportedReasoningTranslator())
+            ->translate(ReasoningCapabilities::unknown(), ReasoningSelection::enabled()))
+        ->toThrow(InvalidArgumentException::class, 'no typed reasoning wire format');
 });
 
 it('injects native Gemini controls after its formatter', function () {
@@ -73,7 +124,7 @@ it('injects native Gemini controls after its formatter', function () {
         new GeminiBodyFormat($config, new GeminiMessageFormat()),
         new ConfiguredReasoningTranslator(ReasoningWireFormat::Gemini),
     );
-    $profile = ModelCatalog::bundled()->find('gemini', 'gemini-3.1-pro-preview');
+    $profile = reasoningPackagedModelCatalog()->find('gemini', 'gemini-3.1-pro-preview');
     $request = (new InferenceRequest(
         messages: Messages::fromString('Think.'),
         reasoning: ReasoningSelection::effort(ReasoningEffort::High),
@@ -92,7 +143,7 @@ it('rejects typed and raw reasoning configuration conflicts', function () {
     $request = (new InferenceRequest(
         options: ['thinkingConfig' => ['thinkingLevel' => 'LOW']],
         reasoning: ReasoningSelection::effort(ReasoningEffort::High),
-    ))->withModelProfile(ModelCatalog::bundled()->find('gemini', 'gemini-3.1-pro-preview'));
+    ))->withModelProfile(reasoningPackagedModelCatalog()->find('gemini', 'gemini-3.1-pro-preview'));
 
     expect(fn () => $body->toRequestBody($request))->toThrow(InvalidArgumentException::class);
 });
@@ -103,3 +154,11 @@ it('allows provider default through a driver without typed reasoning wire suppor
         ReasoningSelection::providerDefault(),
     )->options->toArray())->toBe([]);
 });
+
+function emptyReasoningBody(): CanMapRequestBody {
+    return new class implements CanMapRequestBody {
+        public function toRequestBody(InferenceRequest $request): array {
+            return [];
+        }
+    };
+}

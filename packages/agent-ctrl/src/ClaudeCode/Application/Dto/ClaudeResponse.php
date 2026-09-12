@@ -11,6 +11,7 @@ final readonly class ClaudeResponse
     /** @var list<string> */
     private array $parseFailureSamples;
 
+    /** @param list<string> $parseFailureSamples */
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
@@ -20,7 +21,7 @@ final readonly class ClaudeResponse
         array $parseFailureSamples = [],
     ) {
         $this->events = $events ?? ClaudeEventCollection::empty();
-        $this->parseFailureSamples = array_values($parseFailureSamples);
+        $this->parseFailureSamples = $parseFailureSamples;
     }
 
     public function result() : ExecResult {

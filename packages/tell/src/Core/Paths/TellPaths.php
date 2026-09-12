@@ -29,7 +29,7 @@ final readonly class TellPaths
         $this->configFile = $this->join($this->configDirectory, 'tell.json');
         $this->credentials = $this->join($home, '.env');
         $this->connections = $this->join($this->configDirectory, 'connections');
-        $this->models = $this->join($this->configDirectory, 'models.json');
+        $this->models = $this->join($this->configDirectory, 'models');
         $this->userAgents = $this->join($this->configDirectory, 'agents');
         $this->runtime = $this->join($home, 'runtime');
         $this->sessions = $this->join($this->runtime, 'sessions');

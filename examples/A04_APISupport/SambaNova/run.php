@@ -56,7 +56,7 @@ $user = $structuredOutput->with(
         'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
-    model: 'Meta-Llama-3.1-8B-Instruct', // set your own value/source
+    model: 'gpt-oss-120b', // set your own value/source
 )->get();
 
 print("Completed response model:\n\n");

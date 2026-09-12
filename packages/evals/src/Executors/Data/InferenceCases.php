@@ -11,19 +11,6 @@ use Generator;
 
 class InferenceCases
 {
-    /** @var array<string, array<string, mixed>> */
-    private const DEFAULT_CONNECTION_CONFIGS = [
-        'a21' => ['driver' => 'a21', 'model' => 'jamba-mini'],
-        'anthropic' => ['driver' => 'anthropic', 'model' => 'claude-haiku-4-5'],
-        'deepseek' => ['driver' => 'deepseek', 'model' => 'deepseek-v4-flash'],
-        // Keep the connection name as a compatibility alias; it now selects the current V4 Pro.
-        'deepseek-r' => ['driver' => 'deepseek', 'model' => 'deepseek-v4-pro'],
-        'gemini-oai' => ['driver' => 'gemini-oai', 'model' => 'gemini-2.5-flash-lite'],
-        'openai' => ['driver' => 'openai', 'model' => 'gpt-5.4-mini'],
-        'perplexity' => ['driver' => 'perplexity', 'model' => 'sonar'],
-        'sambanova' => ['driver' => 'sambanova', 'model' => 'Meta-Llama-3.1-8B-Instruct'],
-    ];
-
     private array $connections = [];
     private array $modes = [];
     private array $stream = [];
@@ -157,9 +144,9 @@ class InferenceCases
         $generator = Combination::generator(
             mapping: InferenceCaseParams::class,
             sources: [
-                'isStreamed' => $this->stream ?: $this->streamingModes(),
-                'mode' => $this->modes ?: $this->modes(),
-                'connection' => $this->connections ?: $this->connections(),
+                'isStreamed' => $this->stream,
+                'mode' => $this->modes,
+                'connection' => $this->connections,
             ],
         );
 
@@ -207,7 +194,7 @@ class InferenceCases
      */
     private function normalizeConnectionConfigs(array $connectionConfigs) : array {
         $source = match (true) {
-            [] === $connectionConfigs => self::DEFAULT_CONNECTION_CONFIGS,
+            [] === $connectionConfigs => $this->defaultConnectionConfigs(),
             default => $connectionConfigs,
         };
 
@@ -220,6 +207,15 @@ class InferenceCases
             };
         }
         return $normalized;
+    }
+
+    /** @return array<string, LLMConfig> */
+    private function defaultConnectionConfigs() : array {
+        $connections = LLMConfig::presetNames();
+        return array_combine(
+            $connections,
+            array_map(LLMConfig::fromPreset(...), $connections),
+        );
     }
 
     /** @return array<bool> */

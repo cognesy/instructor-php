@@ -138,6 +138,7 @@ final class ResponseParser
 
     /**
      * @param list<string> $parseFailureSamples
+     * @return array<array-key, mixed>|null
      */
     private function decodeJsonLine(
         string $payload,

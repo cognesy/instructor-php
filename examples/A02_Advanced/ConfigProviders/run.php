@@ -76,6 +76,11 @@ $connection = match (true) {
     default => throw new RuntimeException('Set DEEPSEEK_API_KEY or OPENAI_API_KEY in your environment to run this example.'),
 };
 
+$outputMode = match ($connection) {
+    'deepseek' => OutputMode::Json,
+    'openai' => OutputMode::Tools,
+};
+
 $events = new EventDispatcher();
 $httpClient = (new HttpClientBuilder(events: $events))
     ->withConfig(new HttpClientConfig(driver: 'symfony'))
@@ -88,7 +93,7 @@ $runtime = StructuredOutputRuntime::fromProvider(
     provider: $provider,
     events: $events,
     httpClient: $httpClient,
-)->withOutputMode(OutputMode::Tools);
+)->withOutputMode($outputMode);
 
 class User {
     public int $age;

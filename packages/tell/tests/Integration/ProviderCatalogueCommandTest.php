@@ -6,8 +6,12 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Adapter\Console\Command\ModelsCommand;
 use Cognesy\Tell\Adapter\Console\Command\ProvidersCommand;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
+use Cognesy\Polyglot\Inference\Models\SupportStatus;
+use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Yaml\Yaml;
 
 it('lists Polyglot-derived provider metadata without resolving or exposing preset secrets', function (): void {
     $factory = tellTestFactory();
@@ -20,9 +24,11 @@ apiKey: ${CATALOGUE_SECRET_CANARY}
 endpoint: /chat/completions
 model: qwen3.8-max
 YAML);
-    file_put_contents($project . '/config/llm/models.json', json_encode([
+    mkdir($project . '/config/llm/models/qwen', 0700, true);
+    file_put_contents($project . '/config/llm/models/qwen/qwen3.8-max.yaml', \Symfony\Component\Yaml\Yaml::dump([
+        'schemaVersion' => 1,
         'version' => 'project-test',
-        'models' => [[
+        'profile' => [
             'driver' => 'qwen',
             'model' => 'qwen3.8-max',
             'status' => 'supported',
@@ -33,8 +39,8 @@ YAML);
                 'jsonSchema' => 'supported',
             ],
             'source' => 'project-test',
-        ]],
-    ], JSON_THROW_ON_ERROR));
+        ],
+    ], 12, 2));
 
     $tester = new CommandTester(new ProvidersCommand(tellTestProviderCatalogue($factory)));
     expect($tester->execute(['--dir' => $project, '--fields' => 'connection,provider,source,defaultModel,contextCapacity,capabilities,catalogSource,catalogVersion', '--json' => true]))->toBe(Command::SUCCESS);
@@ -71,3 +77,101 @@ it('filters models by provider or connection and rejects an unknown selector', f
     expect($tester->execute(['provider-or-connection' => 'does-not-exist', '--dir' => $project, '--json' => true]))->toBe(Command::INVALID)
         ->and($tester->getDisplay())->toContain('Unknown provider or connection');
 });
+
+it('keeps packaged vendor user and project records isolated by target project', function (): void {
+    $factory = tellTestFactory();
+    $catalogue = tellTestProviderCatalogue($factory);
+    $first = tellLastTemporaryRoot() . '/catalogue-first';
+    $second = tellLastTemporaryRoot() . '/catalogue-second';
+    mkdir($first, 0700, true);
+    mkdir($second, 0700, true);
+
+    writeTellCatalogRecord(
+        $factory->paths()->models,
+        'qwen',
+        'qwen3.8-max',
+        200,
+        'user-record',
+    );
+    writeTellCatalogRecord(
+        $first . '/config/llm/models',
+        'qwen',
+        'qwen3.8-max',
+        100,
+        'first-project',
+    );
+    writeTellCatalogRecord(
+        $second . '/vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/models',
+        'openai',
+        'gpt-4o-mini',
+        300,
+        'second-vendor',
+    );
+
+    $firstCatalog = $catalogue->catalog($first);
+    $secondCatalog = $catalogue->catalog($second);
+
+    expect($firstCatalog)->toBe($catalogue->catalog($first . '/.'))
+        ->and($secondCatalog)->not->toBe($firstCatalog)
+        ->and($firstCatalog->find('qwen', 'qwen3.8-max')->limits->contextWindow)->toBe(100)
+        ->and($firstCatalog->find('qwen', 'qwen3.8-max')->source)->toBe('first-project')
+        ->and($secondCatalog->find('qwen', 'qwen3.8-max')->limits->contextWindow)->toBe(200)
+        ->and($secondCatalog->find('qwen', 'qwen3.8-max')->source)->toBe('user-record')
+        ->and($firstCatalog->find('openai', 'gpt-4o-mini')->source)->toBe('upstream-reviewed')
+        ->and($secondCatalog->find('openai', 'gpt-4o-mini')->limits->contextWindow)->toBe(300)
+        ->and($secondCatalog->find('openai', 'gpt-4o-mini')->source)->toBe('second-vendor');
+});
+
+it('does not invent Tell metadata from a process-local custom driver registry', function (): void {
+    $factory = tellTestFactory();
+    $project = tellLastTemporaryRoot() . '/runtime-registry-project';
+    mkdir($project . '/config/llm/presets', 0700, true);
+    file_put_contents($project . '/config/llm/presets/runtime-only.yaml', <<<'YAML'
+driver: runtime-only
+apiUrl: https://example.invalid/v1
+apiKey: runtime-only-key
+endpoint: /chat/completions
+model: private-model
+YAML);
+    $runtimeRegistry = InferenceDriverRegistry::default()->withDriver(
+        'runtime-only',
+        static fn () => new FakeInferenceDriver(),
+    );
+    $catalogue = tellTestProviderCatalogue($factory);
+    $connections = $catalogue->connections($project)['connections'];
+    $runtimeOnly = array_values(array_filter(
+        $connections,
+        static fn (array $row): bool => $row['connection'] === 'runtime-only',
+    ))[0];
+
+    expect($runtimeRegistry->has('runtime-only'))->toBeTrue()
+        ->and($runtimeOnly['provider'])->toBe('runtime-only')
+        ->and($runtimeOnly['status'])->toBe('unknown')
+        ->and($runtimeOnly['capabilities']['tools'])->toBeNull()
+        ->and($catalogue->catalog($project)->find('runtime-only', 'private-model')->status)
+        ->toBe(SupportStatus::Unknown);
+});
+
+function writeTellCatalogRecord(
+    string $root,
+    string $driver,
+    string $model,
+    int $contextWindow,
+    string $source,
+): void {
+    $directory = $root . '/' . rawurlencode($driver);
+    if (!is_dir($directory)) {
+        mkdir($directory, 0700, true);
+    }
+    file_put_contents($directory . '/' . rawurlencode($model) . '.yaml', Yaml::dump([
+        'schemaVersion' => 1,
+        'version' => $source,
+        'profile' => [
+            'driver' => $driver,
+            'model' => $model,
+            'status' => 'supported',
+            'limits' => ['contextWindow' => $contextWindow],
+            'source' => $source,
+        ],
+    ], 12, 2));
+}

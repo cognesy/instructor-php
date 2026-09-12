@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ToolDefinition;
+use InvalidArgumentException;
 
 class AnthropicBodyFormat implements CanMapRequestBody
 {
@@ -23,6 +24,9 @@ class AnthropicBodyFormat implements CanMapRequestBody
     #[\Override]
     public function toRequestBody(InferenceRequest $request): array
     {
+        if ($request->hasNonTextResponseFormat()) {
+            throw new InvalidArgumentException('Anthropic cannot render a non-text response format.');
+        }
         $options = array_merge($this->config->options, $request->options());
 
         $parallelToolCalls = (bool) ($options['parallel_tool_calls'] ?? $this->defaultParallelToolCalls);
@@ -36,9 +40,6 @@ class AnthropicBodyFormat implements CanMapRequestBody
             'system' => $this->toSystemMessages($request),
             'messages' => $this->toMessages($request),
         ], static fn (mixed $value): bool => (bool) $value), $options);
-
-        // Anthropic does not support response_format or JSON/JSON Schema mode
-        unset($requestBody['response_format']);
 
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);

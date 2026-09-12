@@ -1,0 +1,42 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: deepseek
+  model: deepseek-v4-flash
+  status: supported
+  limits:
+    contextWindow: 1000000
+    maxOutput: 384000
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: unsupported
+    responseFormatWithTools: unsupported
+    reasoning:
+      selections:
+        - disabled
+        - effort
+      efforts:
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+          effective: high
+          quality: lossy
+        - requested: high
+          provider: high
+        - requested: xhigh
+          provider: xhigh
+          effective: high
+          quality: lossy
+        - requested: max
+          provider: max
+      default: enabled
+      contentVisible: true
+      tokensVisible: true
+  source: hand-authored

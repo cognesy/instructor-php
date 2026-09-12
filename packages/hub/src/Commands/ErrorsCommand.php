@@ -161,7 +161,7 @@ class ErrorsCommand extends Command
 
             $lastError = $status->lastError();
             if ($lastError) {
-                Cli::outln("  Type: {$lastError->type}", [Color::DARK_GRAY]);
+                Cli::outln("  Type: {$lastError->typeDescription()}", [Color::DARK_GRAY]);
                 Cli::outln("  Message: " . Cli::limit($lastError->message, 70), [Color::RED]);
                 Cli::outln("  When: " . ($status->lastExecuted?->format('Y-m-d H:i:s') ?? 'Unknown'), [Color::DARK_GRAY]);
             }

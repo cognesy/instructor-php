@@ -1,0 +1,20 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: meta
+  model: 'meta-llama/llama-3.3-70b-instruct:free'
+  status: supported
+  limits:
+    contextWindow: 128000
+    maxOutput: 8192
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: supported
+  source: hand-authored

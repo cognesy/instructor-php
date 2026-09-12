@@ -12,23 +12,30 @@ use RuntimeException;
 use Traversable;
 
 /** @implements IteratorAggregate<int, ModelProfile> */
-final readonly class ModelCatalog implements Countable, IteratorAggregate
+final class ModelCatalog implements Countable, IteratorAggregate
 {
     private const CONFIG_PATHS = [
-        'config/llm/models.json',
-        'packages/polyglot/resources/config/llm/models.json',
-        'vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/models.json',
-        'vendor/cognesy/instructor-polyglot/resources/config/llm/models.json',
-        __DIR__ . '/../../../resources/config/llm/models.json',
+        'config/llm/models',
+        'packages/polyglot/resources/config/llm/models',
+        'vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/models',
+        'vendor/cognesy/instructor-polyglot/resources/config/llm/models',
     ];
 
     /** @var array<string, ModelProfile> */
     private array $profiles;
+    /** @var array<string, ModelProfile|null> */
+    private array $resolved = [];
+    /** @var array<string, ModelProfile> */
+    private array $unknown = [];
+    /** @var array<string, ModelProfile>|null */
+    private ?array $enumerated = null;
 
-    /** @param iterable<ModelProfile> $profiles */
+    /** @param iterable<ModelProfile> $profiles @param list<self> $layers */
     public function __construct(
         iterable $profiles = [],
-        public string $version = '',
+        public readonly string $version = '',
+        private readonly ?ModelRecordDirectory $records = null,
+        private readonly array $layers = [],
     ) {
         $indexed = [];
         foreach ($profiles as $profile) {
@@ -38,31 +45,27 @@ final readonly class ModelCatalog implements Countable, IteratorAggregate
         $this->profiles = $indexed;
     }
 
-    public static function bundled(): self {
-        static $catalog = null;
-
-        return $catalog ??= self::fromFile(
-            __DIR__ . '/../../../resources/config/llm/models.json',
-        );
-    }
-
-    public static function discover(): self {
+    public static function discover(?string $basePath = null): self {
         /** @var array<string, self> $catalogs */
         static $catalogs = [];
 
-        $basePath = BasePath::get();
+        $basePath ??= BasePath::get();
+        $basePath = realpath($basePath) ?: $basePath;
 
-        return $catalogs[$basePath] ??= self::discoverForCurrentBasePath();
+        return $catalogs[$basePath] ??= self::discoverForBasePath($basePath);
     }
 
-    private static function discoverForCurrentBasePath(): self {
-        $catalog = new self();
-        $paths = array_reverse(BasePath::resolveExisting(...self::CONFIG_PATHS));
-        foreach ($paths as $path) {
-            $catalog = $catalog->overlay(self::fromFile($path));
-        }
+    private static function discoverForBasePath(string $basePath): self {
+        $paths = array_map(
+            static fn (string $path): string => rtrim($basePath, '/\\') . '/' . $path,
+            self::CONFIG_PATHS,
+        );
 
-        return $catalog;
+        return self::fromPaths(...[...$paths, __DIR__ . '/../../../resources/config/llm/models']);
+    }
+
+    public static function fromPaths(string ...$paths): self {
+        return new self(records: new ModelRecordDirectory(...$paths));
     }
 
     public static function fromFile(string $path): self {
@@ -88,6 +91,8 @@ final readonly class ModelCatalog implements Countable, IteratorAggregate
     }
 
     public static function fromArray(array $data): self {
+        ModelRecordFields::validate($data, ['schemaVersion', 'version', 'models'], 'catalog');
+        ModelRecordFields::schemaVersion($data['schemaVersion'] ?? 1);
         $version = $data['version'] ?? '';
         $models = $data['models'] ?? null;
         if (!is_string($version) || !is_array($models) || !array_is_list($models)) {
@@ -115,12 +120,13 @@ final readonly class ModelCatalog implements Countable, IteratorAggregate
     public function find(string $driver, string $model): ModelProfile {
         $key = new ModelKey($driver, $model);
 
-        return $this->profiles[$key->lookupKey()] ?? ModelProfile::unknown($key, $this->version);
+        return $this->resolve($key)
+            ?? $this->unknown[$key->lookupKey()] ??= ModelProfile::unknown($key, $this->version);
     }
 
     public function forDriver(string $driver): self {
         $profiles = array_filter(
-            $this->profiles,
+            $this->all(),
             static fn (ModelProfile $profile): bool => $profile->key->driver === $driver,
         );
 
@@ -129,7 +135,7 @@ final readonly class ModelCatalog implements Countable, IteratorAggregate
 
     public function overlay(self $higherPriority): self {
         return new self(
-            profiles: [...$this->profiles, ...$higherPriority->profiles],
+            layers: [$higherPriority, $this],
             version: match ($higherPriority->version) {
                 '' => $this->version,
                 default => $higherPriority->version,
@@ -138,22 +144,85 @@ final readonly class ModelCatalog implements Countable, IteratorAggregate
     }
 
     public function count(): int {
-        return count($this->profiles);
+        return count($this->all());
     }
 
     /** @return Traversable<int, ModelProfile> */
     public function getIterator(): Traversable {
-        return new ArrayIterator(array_values($this->profiles));
+        return new ArrayIterator(array_values($this->all()));
     }
 
     /** @return array{version: string, models: list<array<string, mixed>>} */
     public function toArray(): array {
+        $profiles = $this->all();
         return [
-            'version' => $this->version,
+            'version' => $this->exportVersion($profiles),
             'models' => array_map(
                 static fn (ModelProfile $profile): array => $profile->toArray(),
-                array_values($this->profiles),
+                array_values($profiles),
             ),
         ];
+    }
+
+    /** @param array<string, ModelProfile> $profiles */
+    private function exportVersion(array $profiles): string {
+        if ($this->version !== '') {
+            return $this->version;
+        }
+        $versions = array_values(array_unique(array_map(
+            static fn (ModelProfile $profile): string => $profile->catalogVersion,
+            $profiles,
+        )));
+
+        return match (count($versions)) {
+            1 => $versions[0],
+            default => '',
+        };
+    }
+
+    private function resolve(ModelKey $key): ?ModelProfile {
+        $id = $key->lookupKey();
+        if (array_key_exists($id, $this->resolved)) {
+            return $this->resolved[$id];
+        }
+
+        return $this->resolved[$id] = $this->resolveUncached($key);
+    }
+
+    private function resolveUncached(ModelKey $key): ?ModelProfile {
+        foreach ($this->layers as $layer) {
+            $profile = $layer->resolve($key);
+            if ($profile !== null) {
+                return $profile;
+            }
+        }
+
+        return $this->profiles[$key->lookupKey()] ?? $this->records?->find($key);
+    }
+
+    /** @return array<string, ModelProfile> */
+    private function all(): array {
+        if ($this->enumerated !== null) {
+            return $this->enumerated;
+        }
+        $profiles = $this->profiles;
+        foreach ($this->keys() as $key) {
+            $profiles[$key->lookupKey()] = $this->find($key->driver, $key->model);
+        }
+        ksort($profiles, SORT_STRING);
+
+        return $this->enumerated = $profiles;
+    }
+
+    /** @return iterable<ModelKey> */
+    private function keys(): iterable {
+        foreach ($this->profiles as $profile) {
+            yield $profile->key;
+        }
+        foreach ($this->layers as $layer) {
+            yield from $layer->keys();
+        }
+
+        yield from $this->records?->keys() ?? [];
     }
 }

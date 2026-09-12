@@ -26,6 +26,8 @@ final class SymfonyConfigProvider implements CanProvideConfig
         'model',
         'max_tokens',
         'maxTokens',
+        'allow_lossy_fallback',
+        'allowLossyFallback',
         'query_params',
         'queryParams',
         'metadata',
@@ -225,6 +227,9 @@ final class SymfonyConfigProvider implements CanProvideConfig
             'metadata' => $this->llmMetadata($config),
             'model' => $model,
             'maxTokens' => $this->intValue($config, 4096, 'maxTokens', 'max_tokens'),
+            'allowLossyFallback' => $config['allowLossyFallback']
+                ?? $config['allow_lossy_fallback']
+                ?? false,
             'options' => $this->llmOptions($config),
         ];
     }

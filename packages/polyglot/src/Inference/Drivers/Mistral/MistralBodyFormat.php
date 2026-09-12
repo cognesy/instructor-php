@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\Mistral;
 
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 
 /**
@@ -31,12 +30,6 @@ class MistralBodyFormat extends OpenAICompatibleBodyFormat
     protected function applyStreamOptions(array $requestBody, array $options): array
     {
         return $requestBody; // no stream_options support
-    }
-
-    #[\Override]
-    protected function supportsNonTextResponseForTools(InferenceRequest $request): bool
-    {
-        return false;
     }
 
     // Mistral API supports json_object, json_schema and text -- exactly the base shapes, so

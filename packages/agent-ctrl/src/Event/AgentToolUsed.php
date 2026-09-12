@@ -16,6 +16,7 @@ final class AgentToolUsed extends AgentEvent
     public string $logLevel = LogLevel::DEBUG;
     private ?AgentToolCallId $callId;
 
+    /** @param array<string, mixed> $input */
     public function __construct(
         AgentType $agentType,
         AgentCtrlExecutionId $executionId,

@@ -38,11 +38,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
         $requestBody = $this->normalizeTokenLimits($requestBody);
         $requestBody = $this->applyStreamOptions($requestBody, $options);
 
-        $requestBody['response_format'] = match (true) {
-            $request->hasTools() && ! $this->supportsNonTextResponseForTools($request) => [],
-            $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
-            default => [],
-        };
+        $requestBody['response_format'] = $this->toResponseFormat($request);
 
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);
@@ -103,22 +99,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
     // CAPABILITIES ///////////////////////////////////////////
 
-    protected function supportsToolSelection(InferenceRequest $request): bool
-    {
-        return true;
-    }
-
-    protected function supportsStructuredOutput(InferenceRequest $request): bool
-    {
-        return true;
-    }
-
     protected function supportsAlternatingRoles(InferenceRequest $request): bool
-    {
-        return true;
-    }
-
-    protected function supportsNonTextResponseForTools(InferenceRequest $request): bool
     {
         return true;
     }
@@ -161,10 +142,6 @@ class OpenAIBodyFormat implements CanMapRequestBody
             ],
             default => $toolChoice->mode(),
         };
-
-        if (! $this->supportsToolSelection($request)) {
-            $result = is_array($result) ? 'auto' : $result;
-        }
 
         return $result;
     }

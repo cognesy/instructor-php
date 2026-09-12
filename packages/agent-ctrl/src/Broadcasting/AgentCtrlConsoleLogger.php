@@ -438,6 +438,7 @@ final class AgentCtrlConsoleLogger
         return substr($text, 0, $maxLength - 3) . '...';
     }
 
+    /** @param array<string, mixed> $args */
     private function formatArgs(array $args): string
     {
         $parts = [];

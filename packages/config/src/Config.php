@@ -47,11 +47,23 @@ final class Config
 
     public function load(string $config): ConfigEntry
     {
+        return $this->readEntry($config, resolveEnvironment: true);
+    }
+
+    public function loadRaw(string $config): ConfigEntry
+    {
+        return $this->readEntry($config, resolveEnvironment: false);
+    }
+
+    private function readEntry(string $config, bool $resolveEnvironment): ConfigEntry
+    {
         $sourcePath = $this->resolveSourcePath($config);
         $rawData = $this->readSourceMemoized($sourcePath);
-        // Resolution runs on every load, never on the memoized value, so `${VAR}`
-        // placeholders still see the current environment.
-        $data = $this->template->resolveData($rawData);
+        // Resolve placeholders per normal load, never in the memoized raw data.
+        $data = match ($resolveEnvironment) {
+            true => $this->template->resolveData($rawData),
+            false => $rawData,
+        };
 
         return new ConfigEntry(
             key: ConfigKey::fromPath($sourcePath),

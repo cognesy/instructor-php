@@ -119,7 +119,7 @@ final class OpenCodeBridge implements AgentBridge
             $jsonLinesBuffer = $handler !== null ? new JsonLinesBuffer() : null;
 
             $streamStart = $handler !== null ? microtime(true) : null;
-            if ($handler !== null && $streamStart !== null) {
+            if ($handler !== null) {
                 $this->dispatch(new StreamProcessingStarted(AgentType::OpenCode, $this->executionId));
             }
 
@@ -157,7 +157,7 @@ final class OpenCodeBridge implements AgentBridge
             }
 
             // Emit stream processing completion if streaming was used
-            if ($handler !== null && $streamStart !== null) {
+            if ($handler !== null) {
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::OpenCode,
@@ -301,6 +301,7 @@ final class OpenCodeBridge implements AgentBridge
         $handler->onToolUse($toolCall);
     }
 
+    /** @return array<string, mixed>|null */
     private function decodeStreamJsonLine(string $line, string $context): ?array
     {
         try {

@@ -2,5 +2,5 @@ driver: openrouter
 apiUrl: 'https://openrouter.ai/api/v1'
 apiKey: '${OPENROUTER_API_KEY}'
 endpoint: /chat/completions
-model: google/gemini-2.0-flash-001
+model: openai/gpt-oss-120b
 maxTokens: 1024

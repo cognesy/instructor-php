@@ -236,6 +236,7 @@ final class LaravelConfigProvider implements CanProvideConfig
             'endpoint' => $config['endpoint'] ?? '/chat/completions',
             'model' => $config['model'] ?? '',
             'maxTokens' => $config['max_tokens'] ?? 4096,
+            'allowLossyFallback' => $config['allow_lossy_fallback'] ?? false,
             'metadata' => $this->buildMetadata($config),
         ];
     }

@@ -9,9 +9,7 @@ use Cognesy\Sandbox\Enums\SandboxDriver;
 use InvalidArgumentException;
 use Throwable;
 
-/**
- * Typed configuration for CLI-based agent builders.
- */
+/** Typed configuration for CLI-based agent builders. */
 final readonly class AgentCtrlConfig
 {
     public const CONFIG_GROUP = 'agents';
@@ -28,6 +26,7 @@ final readonly class AgentCtrlConfig
         return self::CONFIG_GROUP;
     }
 
+    /** @param array<string, mixed> $config */
     public static function fromArray(array $config): self
     {
         $normalized = self::normalizeArray($config);
@@ -49,13 +48,18 @@ final readonly class AgentCtrlConfig
         return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
+    /** @param array<string, mixed> $values */
     public function withOverrides(array $values): self
     {
-        $overrides = self::nonNullValues(self::normalizeArray($values));
+        $overrides = array_filter(
+            self::normalizeArray($values),
+            static fn(mixed $value): bool => $value !== null,
+        );
 
         return self::fromArray(array_merge($this->toArray(), $overrides));
     }
 
+    /** @return array{model:?string,timeout:?int,workingDirectory:?string,sandboxDriver:?string} */
     public function toArray(): array
     {
         return [
@@ -66,6 +70,10 @@ final readonly class AgentCtrlConfig
         ];
     }
 
+    /**
+     * @param array<string, mixed> $config
+     * @return array{model?:?string,timeout?:?int,workingDirectory?:?string,sandboxDriver?:?SandboxDriver}
+     */
     private static function normalizeArray(array $config): array
     {
         $normalized = $config;
@@ -102,14 +110,6 @@ final readonly class AgentCtrlConfig
         }
 
         return $normalized;
-    }
-
-    private static function nonNullValues(array $values): array
-    {
-        return array_filter(
-            $values,
-            static fn(mixed $value): bool => $value !== null,
-        );
     }
 
     private static function toNullableString(string $field, mixed $value): ?string

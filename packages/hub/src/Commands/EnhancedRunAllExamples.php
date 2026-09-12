@@ -6,6 +6,7 @@ use Cognesy\InstructorHub\Contracts\CanExecuteExample;
 use Cognesy\InstructorHub\Contracts\CanTrackExecution;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\ExecutionFilter;
+use Cognesy\InstructorHub\Data\ExecutionError;
 use Cognesy\InstructorHub\Data\FilterMode;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\Utils\Cli\Color;
@@ -244,7 +245,7 @@ class EnhancedRunAllExamples extends Command
                     break;
                 }
             } else {
-                Cli::out(str_pad("ERROR", 8, ' ', STR_PAD_BOTH), [Color::RED, Color::BOLD]);
+                $this->showFailureStatus($result->error);
                 $errors++;
 
                 if ($result->error) {
@@ -275,6 +276,17 @@ class EnhancedRunAllExamples extends Command
 
         // Gate on real errors only; tolerated flaky failures do not fail the run.
         return $errors > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    private function showFailureStatus(?ExecutionError $error): void
+    {
+        if ($error === null) {
+            Cli::out(str_pad('ERROR', 8, ' ', STR_PAD_BOTH), [Color::RED, Color::BOLD]);
+            return;
+        }
+
+        $color = $error->isLlmApiFailure() ? Color::DARK_YELLOW : Color::RED;
+        Cli::out(str_pad($error->statusLabel() ?? 'ERROR', 8, ' ', STR_PAD_BOTH), [$color, Color::BOLD]);
     }
 
     private function displaySummary(int $executed, int $success, int $errors, int $flaky, float $totalTime): void

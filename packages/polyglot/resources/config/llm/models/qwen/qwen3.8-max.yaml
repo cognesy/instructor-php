@@ -1,0 +1,38 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: qwen
+  model: qwen3.8-max
+  status: supported
+  limits:
+    contextWindow: 1000000
+    maxOutput: 131072
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: unsupported
+    reasoning:
+      selections:
+        - disabled
+        - enabled
+        - effort
+        - budget
+        - adaptive
+      efforts:
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+        - requested: xhigh
+          provider: xhigh
+      budget:
+        min: 1
+      default: adaptive
+      contentVisible: true
+      tokensVisible: true
+  source: hand-authored

@@ -35,13 +35,10 @@ class Runner
 
     public function runSingle(Example $example): void
     {
-        $script = ExampleScript::fromRunPath($example->runPath);
         try {
-            include $script->path;
+            include $example->runPath;
         } catch (Exception $e) {
             (new RunnerView)->executionError($example, $e);
-        } finally {
-            $script->cleanup();
         }
     }
 
@@ -84,15 +81,12 @@ class Runner
 
     private function execute(string $runPath): string
     {
-        $script = ExampleScript::fromRunPath($runPath);
         ob_start();
         try {
-            $command = 'php '.escapeshellarg($script->path).' 2>&1';
+            $command = 'php '.escapeshellarg($runPath).' 2>&1';
             $output = shell_exec($command);
         } catch (Exception $e) {
             $output = $e->getMessage();
-        } finally {
-            $script->cleanup();
         }
         $bufferedOutput = ob_get_contents();
         ob_end_clean();

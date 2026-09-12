@@ -96,11 +96,6 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
     // CAPABILITIES ///////////////////////////////////////////
 
-    protected function supportsToolSelection(InferenceRequest $request): bool
-    {
-        return true;
-    }
-
     protected function supportsAlternatingRoles(InferenceRequest $request): bool
     {
         return true;
@@ -182,10 +177,6 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
             ],
             default => $toolChoice->mode(),
         };
-
-        if (! $this->supportsToolSelection($request) && is_array($result)) {
-            $result = 'auto';
-        }
 
         return $result;
     }

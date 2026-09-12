@@ -53,17 +53,18 @@ it('builds inference from bundled openai preset without app-local config', funct
 it('discovers an application model catalog before bundled records', function () {
     $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
     $config = $consumerRoot . '/config/llm';
-    mkdir($config, 0777, true);
-    file_put_contents($config . '/models.json', json_encode([
+    mkdir($config . '/models/openai', 0777, true);
+    file_put_contents($config . '/models/openai/gpt-test.yaml', \Symfony\Component\Yaml\Yaml::dump([
+        'schemaVersion' => 1,
         'version' => 'project-v1',
-        'models' => [[
+        'profile' => [
             'driver' => 'openai',
             'model' => 'gpt-test',
             'status' => 'supported',
             'limits' => ['contextWindow' => 64000],
             'source' => 'project',
-        ]],
-    ], JSON_THROW_ON_ERROR));
+        ],
+    ], 12, 2));
     BasePath::set($consumerRoot);
 
     try {

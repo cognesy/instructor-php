@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: openai-responses
+  model: gpt-5.4-mini
+  status: supported
+  limits:
+    contextWindow: 400000
+    maxOutput: 128000
+  modalities:
+    inputText: supported
+    inputImage: supported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: supported
+  source: upstream-reviewed

@@ -1,0 +1,63 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "acc98b7e71e4cd369ce0848edffedd42e2d0e4553c42c4be256acff7437ac483",
+    "request": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 130,
+            "sha256": "3c5236a74df9986123f3b7543e6eabeab93b63cbb69cdd40214bbf4af9bfca7b"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Sat, 12 Sep 2026 05:34:06 GMT"
+            ],
+            "content-type": [
+                "application/json"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "x-generation-id": [
+                "gen-1789191246-u1McWoljuZBva3rbZflq"
+            ],
+            "access-control-expose-headers": [
+                "X-Generation-Id,X-Provider-Name,request-id,cf-ray"
+            ],
+            "set-cookie": "[REDACTED]",
+            "permissions-policy": [
+                "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")"
+            ],
+            "referrer-policy": [
+                "no-referrer, strict-origin-when-cross-origin"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "cf-ray": [
+                "a39c8a8a4ce48732-WAW"
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 1252,
+            "sha256": "6f1598c2a628b487fde1dea0228c9cf7f0040ddd8c6a5527861356357a2a6abc"
+        }
+    }
+}

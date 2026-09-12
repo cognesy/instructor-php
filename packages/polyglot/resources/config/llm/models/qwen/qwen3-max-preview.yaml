@@ -1,0 +1,11 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: qwen
+  model: qwen3-max-preview
+  status: supported
+  capabilities:
+    jsonObject: supported
+    jsonSchema: unsupported
+    responseFormatWithTools: unsupported
+  source: hand-authored

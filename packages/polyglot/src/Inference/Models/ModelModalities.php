@@ -8,16 +8,17 @@ final readonly class ModelModalities
         public SupportStatus $inputText = SupportStatus::Unknown,
         public SupportStatus $inputImage = SupportStatus::Unknown,
         public SupportStatus $inputAudio = SupportStatus::Unknown,
-        public SupportStatus $inputFile = SupportStatus::Unknown,
         public SupportStatus $outputText = SupportStatus::Unknown,
     ) {}
 
     public static function fromArray(array $data): self {
+        ModelRecordFields::validate($data, [
+            'inputText', 'inputImage', 'inputAudio', 'outputText',
+        ], 'modalities');
         return new self(
             inputText: SupportStatus::fromMixed($data['inputText'] ?? null),
             inputImage: SupportStatus::fromMixed($data['inputImage'] ?? null),
             inputAudio: SupportStatus::fromMixed($data['inputAudio'] ?? null),
-            inputFile: SupportStatus::fromMixed($data['inputFile'] ?? null),
             outputText: SupportStatus::fromMixed($data['outputText'] ?? null),
         );
     }
@@ -28,7 +29,6 @@ final readonly class ModelModalities
             'inputText' => $this->inputText->value,
             'inputImage' => $this->inputImage->value,
             'inputAudio' => $this->inputAudio->value,
-            'inputFile' => $this->inputFile->value,
             'outputText' => $this->outputText->value,
         ], static fn (string $status): bool => $status !== SupportStatus::Unknown->value);
     }

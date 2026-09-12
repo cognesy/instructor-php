@@ -1,0 +1,30 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: gemini
+  model: gemini-2.5-flash-lite
+  status: supported
+  limits:
+    contextWindow: 1000000
+    maxOutput: 8192
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: unsupported
+    reasoning:
+      selections:
+        - disabled
+        - budget
+        - adaptive
+      budget:
+        min: 1
+      default: adaptive
+      contentVisible: true
+      tokensVisible: true
+  source: hand-authored

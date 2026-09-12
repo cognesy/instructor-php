@@ -1,0 +1,19 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: together
+  model: openai/gpt-oss-120b
+  status: supported
+  limits:
+    contextWindow: 131072
+    maxOutput: 131072
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+  source: upstream-reviewed

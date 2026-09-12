@@ -21,6 +21,7 @@ final readonly class TokenUsage
         public int $totalTokens = 0,
     ) {}
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

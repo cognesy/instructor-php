@@ -3,7 +3,6 @@ title: 'Together.ai'
 docname: 'togetherai'
 id: '07b3'
 tags:
-  - 'broken'
   - 'api-support'
   - 'togetherai'
   - 'provider'

@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: perplexity
+  model: sonar
+  status: supported
+  limits:
+    contextWindow: 128000
+    maxOutput: 4096
+  modalities:
+    inputText: supported
+    inputImage: unsupported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: unsupported
+    toolChoice: unsupported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: unsupported
+  source: upstream-reviewed

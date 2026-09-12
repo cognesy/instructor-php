@@ -21,13 +21,16 @@ final readonly class ReasoningSelectionKinds
     }
 
     public static function fromArray(array $data): self {
+        if (!array_is_list($data)) {
+            throw new InvalidArgumentException('Reasoning selections must be a list.');
+        }
         $kinds = array_map(
             static fn (mixed $kind): ReasoningSelectionKind => match (true) {
                 is_string($kind) => ReasoningSelectionKind::tryFrom($kind)
                     ?? throw new InvalidArgumentException("Invalid reasoning selection kind: {$kind}"),
                 default => throw new InvalidArgumentException('Reasoning selections must be strings.'),
             },
-            array_values($data),
+            $data,
         );
 
         return new self(...$kinds);

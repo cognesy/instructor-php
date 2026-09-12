@@ -2,19 +2,8 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Polyglot\Inference\Models\ModelCatalog;
-use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
-
-const CATALOG_IMPORTS = [
-    'limits.contextWindow' => 'limit.context',
-    'limits.maxOutput' => 'limit.output',
-    'modalities.inputText' => 'modalities.input:text',
-    'modalities.inputImage' => 'modalities.input:image',
-    'modalities.inputAudio' => 'modalities.input:audio',
-    'modalities.inputFile' => 'modalities.input:file,pdf',
-    'modalities.outputText' => 'modalities.output:text',
-    'capabilities.tools' => 'tool_call',
-    'capabilities.reasoning' => 'reasoning_options',
-];
+use Cognesy\Polyglot\Inference\Models\ModelRecordDirectory;
+use Symfony\Component\Yaml\Yaml;
 
 $autoloaders = [__DIR__ . '/../../../vendor/autoload.php', __DIR__ . '/../vendor/autoload.php'];
 foreach ($autoloaders as $autoloader) {
@@ -30,15 +19,11 @@ if (!class_exists(ModelCatalog::class)) {
 
 $command = $argv[1] ?? 'check';
 try {
-    $options = parseOptions(array_slice($argv, 2));
-    $paths = catalogPaths($options);
+    $paths = catalogPaths(parseOptions(array_slice($argv, 2)));
     $status = match ($command) {
         'build' => buildCatalog($paths),
         'check' => checkCatalog($paths),
         'validate' => validateCatalog($paths),
-        'list' => listCatalog($paths, isset($options['json'])),
-        'refresh' => refreshCatalog($paths, $options),
-        'apply' => applyCatalog($paths),
         default => usage($command),
     };
 } catch (Throwable $error) {
@@ -47,539 +32,126 @@ try {
 }
 exit($status);
 
-/** @return array<string, string|true> */
+/** @return array<string, string> */
 function parseOptions(array $arguments): array {
     $options = [];
     foreach ($arguments as $argument) {
         if (!str_starts_with($argument, '--')) {
             throw new InvalidArgumentException("Unexpected argument: {$argument}");
         }
-        $parts = explode('=', substr($argument, 2), 2);
-        $name = $parts[0];
-        $value = $parts[1] ?? true;
-        if ($name === '' || isset($options[$name])) {
-            throw new InvalidArgumentException("Invalid or duplicate option: {$argument}");
+        [$name, $value] = array_pad(explode('=', substr($argument, 2), 2), 2, null);
+        if (!in_array($name, ['source', 'overrides', 'target'], true) || $value === null || $value === '') {
+            throw new InvalidArgumentException("Unknown or invalid option: {$argument}");
+        }
+        if (isset($options[$name])) {
+            throw new InvalidArgumentException("Duplicate option: --{$name}");
         }
         $options[$name] = $value;
     }
+
     return $options;
 }
 
-/** @return array<string, string> */
+/** @param array<string, string> $options @return array<string, string> */
 function catalogPaths(array $options): array {
     $catalog = __DIR__ . '/../resources/catalog';
-    return [
-        'source' => stringOption($options, 'source', $catalog . '/models-source.json'),
-        'overrides' => stringOption($options, 'overrides', $catalog . '/models-overrides.json'),
-        'target' => stringOption($options, 'target', __DIR__ . '/../resources/config/llm/models.json'),
-        'mappings' => stringOption($options, 'mappings', $catalog . '/mappings.json'),
-        'staging' => stringOption($options, 'staging', $catalog . '/staging'),
-        'provenance' => stringOption($options, 'provenance', $catalog . '/provenance.json'),
-    ];
-}
 
-function stringOption(array $options, string $name, string $default): string {
-    $value = $options[$name] ?? $default;
-    if (!is_string($value) || $value === '') {
-        throw new InvalidArgumentException("Option --{$name} requires a value.");
-    }
-    return $value;
+    return [
+        'source' => $options['source'] ?? $catalog . '/models-source.json',
+        'overrides' => $options['overrides'] ?? $catalog . '/models-overrides.json',
+        'target' => $options['target'] ?? __DIR__ . '/../resources/config/llm/models',
+    ];
 }
 
 /** @param array<string, string> $paths */
 function buildCatalog(array $paths): int {
-    writeAtomically($paths['target'], compiledCatalog($paths['source'], $paths['overrides'], $paths['mappings']));
+    writeCatalogRecords($paths['target'], compiledCatalog($paths['source'], $paths['overrides']));
     fwrite(STDOUT, "Built {$paths['target']}\n");
+
     return 0;
 }
 
 /** @param array<string, string> $paths */
 function checkCatalog(array $paths): int {
-    $compiled = compiledCatalog($paths['source'], $paths['overrides'], $paths['mappings']);
-    if (file_get_contents($paths['target']) === $compiled) {
+    $compiled = compiledCatalog($paths['source'], $paths['overrides']);
+    if (catalogRecordsMatch($paths['target'], $compiled)) {
         fwrite(STDOUT, "Catalog is current.\n");
+
         return 0;
     }
     fwrite(STDERR, "Catalog is stale. Run instructor-catalog build.\n");
+
     return 1;
 }
 
 /** @param array<string, string> $paths */
 function validateCatalog(array $paths): int {
-    $source = ModelCatalog::fromFile($paths['source']);
-    $overrides = ModelCatalog::fromFile($paths['overrides']);
-    $catalog = ModelCatalog::fromFile($paths['target']);
-    validateMappings(readJson($paths['mappings']), $source);
-    if ($catalog->toArray() !== effectiveCatalog($source, $overrides)->toArray()) {
+    $expected = compiledCatalog($paths['source'], $paths['overrides']);
+    $actual = ModelCatalog::fromPaths($paths['target']);
+    if (catalogRecordFiles($actual) !== catalogRecordFiles($expected)) {
         throw new InvalidArgumentException('Compiled catalog does not match its source and overrides.');
     }
-    fwrite(STDOUT, "Catalog {$catalog->version} contains {$catalog->count()} offerings.\n");
+    fwrite(STDOUT, "Catalog contains {$actual->count()} offerings.\n");
+
     return 0;
 }
 
-/** @param array<string, string> $paths */
-function listCatalog(array $paths, bool $json): int {
-    $source = ModelCatalog::fromFile($paths['source']);
-    $catalog = effectiveCatalog($source, ModelCatalog::fromFile($paths['overrides']));
-    $mappings = readJson($paths['mappings']);
-    validateMappings($mappings, $source);
-    $mapped = mappingIndex($mappings);
-    $provenance = is_file($paths['provenance']) ? readJson($paths['provenance']) : [];
-    $rows = [];
-    foreach ($catalog as $profile) {
-        $mapping = $mapped[$profile->key->lookupKey()] ?? null;
-        $rows[] = [
-            'driver' => $profile->key->driver,
-            'model' => $profile->key->model,
-            'status' => $profile->status->value,
-            'source' => $profile->source,
-            'upstream' => upstreamLabel($mapping),
-            'catalogVersion' => $profile->catalogVersion,
-            'refreshRevision' => stringValue($provenance['revision'] ?? ''),
-        ];
-    }
-    if ($json) {
-        fwrite(STDOUT, encodeJson(['models' => $rows]));
-        return 0;
-    }
-    fwrite(STDOUT, "DRIVER\tMODEL\tSTATUS\tSOURCE\tUPSTREAM\n");
-    foreach ($rows as $row) {
-        fwrite(STDOUT, implode("\t", [
-            $row['driver'], $row['model'], $row['status'], $row['source'], $row['upstream'] ?: 'local-only',
-        ]) . "\n");
-    }
-    return 0;
-}
-
-/** @param array<string, string> $paths @param array<string, string|true> $options */
-function refreshCatalog(array $paths, array $options): int {
-    $sourceData = readJson($paths['source']);
-    $source = ModelCatalog::fromArray($sourceData);
-    $mappings = readJson($paths['mappings']);
-    validateMappings($mappings, $source);
-    $snapshotLocation = stringOption($options, 'snapshot', stringValue(nestedValue($mappings, ['snapshot', 'url'])));
-    $snapshotBytes = readSnapshot($snapshotLocation);
-    $snapshot = decodeJson($snapshotBytes, $snapshotLocation);
-    $revision = stringOption($options, 'revision', gmdate('Y-m-d'));
-    $stagedCatalog = ModelCatalog::fromArray(refreshSource($sourceData, $mappings, $snapshot, $revision));
-    $stagedBytes = encodeSourceCatalog($stagedCatalog->toArray());
-    $changed = changedOfferings($source->toArray(), $stagedCatalog->toArray());
-    ensureDirectory($paths['staging']);
-    $stagedSource = $paths['staging'] . '/models-source.json';
-    writeAtomically($stagedSource, $stagedBytes);
-    writeAtomically($paths['staging'] . '/provenance.json', encodeJson([
-        'schemaVersion' => 1,
-        'source' => $snapshotLocation,
-        'revision' => $revision,
-        'retrievedAt' => gmdate(DATE_ATOM),
-        'snapshotSha256' => hash('sha256', $snapshotBytes),
-        'mappingsSha256' => hash_file('sha256', $paths['mappings']),
-        'baseSourceSha256' => hash_file('sha256', $paths['source']),
-        'stagedSourceSha256' => hash('sha256', $stagedBytes),
-        'changedOfferings' => $changed,
-    ]));
-    fwrite(STDOUT, 'Staged ' . count($changed) . " offering changes in {$paths['staging']}.\n");
-    fwrite(STDOUT, "Review with: diff -u {$paths['source']} {$stagedSource}\n");
-    return 0;
-}
-
-/** @param array<string, string> $paths */
-function applyCatalog(array $paths): int {
-    $stagedSource = $paths['staging'] . '/models-source.json';
-    $stagedProvenance = $paths['staging'] . '/provenance.json';
-    $provenance = readJson($stagedProvenance);
-    assertHash($paths['source'], stringValue($provenance['baseSourceSha256'] ?? ''), 'source changed after refresh');
-    assertHash($paths['mappings'], stringValue($provenance['mappingsSha256'] ?? ''), 'mappings changed after refresh');
-    assertHash($stagedSource, stringValue($provenance['stagedSourceSha256'] ?? ''), 'staged source was modified');
-    $current = readJson($paths['source']);
-    $staged = readJson($stagedSource);
-    $mappings = readJson($paths['mappings']);
-    $stagedCatalog = ModelCatalog::fromArray($staged);
-    validateMappings($mappings, $stagedCatalog);
-    assertOnlyMappedChanges($current, $staged, $mappings);
-    $compiled = compiledCatalog($stagedSource, $paths['overrides'], $paths['mappings']);
-    writeAtomically($paths['provenance'], encodeJson($provenance));
-    writeAtomically($paths['source'], encodeSourceCatalog($stagedCatalog->toArray()));
-    writeAtomically($paths['target'], $compiled);
-    fwrite(STDOUT, 'Applied staged catalog revision ' . stringValue($provenance['revision'] ?? '') . ".\n");
-    return 0;
-}
-
-function compiledCatalog(string $sourcePath, string $overridesPath, string $mappingsPath): string {
+function compiledCatalog(string $sourcePath, string $overridesPath): ModelCatalog {
     $source = ModelCatalog::fromFile($sourcePath);
-    validateMappings(readJson($mappingsPath), $source);
-    return encodeJson(effectiveCatalog($source, ModelCatalog::fromFile($overridesPath))->toArray());
-}
-
-function effectiveCatalog(ModelCatalog $source, ModelCatalog $overrides): ModelCatalog {
+    $overrides = ModelCatalog::fromFile($overridesPath);
     $data = $source->overlay($overrides)->toArray();
     $data['version'] = $source->version;
 
     return ModelCatalog::fromArray($data);
 }
 
-/** @return array<string, mixed> */
-function refreshSource(array $source, array $mappings, array $snapshot, string $revision): array {
-    $records = $source['models'] ?? [];
-    $indices = [];
-    foreach ($records as $index => $record) {
-        $indices[recordKey($record)] = $index;
-    }
-    foreach ($mappings['offerings'] as $mapping) {
-        $upstream = $mapping['upstream'];
-        if ($upstream === null) {
-            continue;
+/** @return array<string, string> */
+function catalogRecordFiles(ModelCatalog $catalog): array {
+    $files = [];
+    foreach ($catalog as $profile) {
+        if ($profile->catalogVersion === '') {
+            throw new InvalidArgumentException('Generated model records require a non-empty version.');
         }
-        $model = nestedValue($snapshot, [$upstream['provider'], 'models', $upstream['model']]);
-        if (!is_array($model)) {
-            throw new InvalidArgumentException("Mapped upstream offering is missing: {$upstream['provider']}/{$upstream['model']}");
-        }
-        $index = $indices[recordKey($mapping)];
-        foreach ($mapping['imports'] as $target => $sourceField) {
-            $records[$index] = withMappedValue($records[$index], $target, $sourceField, $model);
-        }
+        $files[ModelRecordDirectory::relativePath($profile->key)] = Yaml::dump([
+            'schemaVersion' => 1,
+            'version' => $profile->catalogVersion,
+            'profile' => $profile->toArray(),
+        ], 12, 2);
     }
-    return ['version' => $revision, 'models' => $records];
+    ksort($files, SORT_STRING);
+
+    return $files;
 }
 
-function withMappedValue(array $record, string $target, string $source, array $model): array {
-    $value = mappedValue($source, $model);
-    $cursor = &$record;
-    $parts = explode('.', $target);
-    foreach (array_slice($parts, 0, -1) as $part) {
-        $cursor[$part] ??= [];
-        if (!is_array($cursor[$part])) {
-            throw new InvalidArgumentException("Catalog target is not an object: {$target}");
-        }
-        $cursor = &$cursor[$part];
+function catalogRecordsMatch(string $directory, ModelCatalog $catalog): bool {
+    $expected = catalogRecordFiles($catalog);
+    $actual = glob(rtrim($directory, '/\\') . '/*/*.yaml') ?: [];
+    if (count($expected) !== count($actual)) {
+        return false;
     }
-    $cursor[end($parts)] = $value;
-    return $record;
-}
-
-function mappedValue(string $source, array $model): mixed {
-    if (str_starts_with($source, 'modalities.')) {
-        return mappedModality($source, $model);
-    }
-    return match ($source) {
-        'limit.context' => positiveInteger(nestedValue($model, ['limit', 'context']), $source),
-        'limit.output' => positiveInteger(nestedValue($model, ['limit', 'output']), $source),
-        'tool_call' => supportStatus(nestedValue($model, ['tool_call']), $source),
-        'reasoning_options' => mappedReasoning(nestedValue($model, ['reasoning_options'])),
-        default => throw new InvalidArgumentException("Unowned upstream field: {$source}"),
-    };
-}
-
-function mappedModality(string $source, array $model): string {
-    if (!preg_match('/^modalities\.(input|output):(.+)$/', $source, $match)) {
-        throw new InvalidArgumentException("Invalid modality mapping: {$source}");
-    }
-    $modalities = nestedValue($model, ['modalities', $match[1]]);
-    if (!is_array($modalities) || !array_is_list($modalities)) {
-        throw new InvalidArgumentException("Upstream field must be a modality list: {$source}");
-    }
-    return array_intersect(explode(',', $match[2]), $modalities) === [] ? 'unsupported' : 'supported';
-}
-
-function mappedReasoning(mixed $value): array {
-    if (!is_array($value) || !array_is_list($value)) {
-        throw new InvalidArgumentException('Upstream reasoning_options must be a list.');
-    }
-    $selections = [];
-    $efforts = [];
-    $budget = null;
-    foreach ($value as $option) {
-        if (!is_array($option) || !is_string($option['type'] ?? null)) {
-            throw new InvalidArgumentException('Malformed upstream reasoning option.');
-        }
-        match ($option['type']) {
-            'toggle' => $selections = [...$selections, 'disabled', 'enabled'],
-            'effort' => [$selections, $efforts] = mappedEfforts($option, $selections),
-            'budget_tokens' => [$selections, $budget] = mappedBudget($option, $selections),
-            default => throw new InvalidArgumentException("Unowned reasoning option: {$option['type']}"),
-        };
-    }
-    return [
-        'selections' => array_values(array_unique($selections)),
-        ...($efforts === [] ? [] : ['efforts' => $efforts]),
-        ...($budget === null ? [] : ['budget' => $budget]),
-    ];
-}
-
-/** @return array{list<string>, list<array{requested: string, provider: string}>} */
-function mappedEfforts(array $option, array $selections): array {
-    $values = $option['values'] ?? null;
-    if (!is_array($values) || !array_is_list($values)) {
-        throw new InvalidArgumentException('Reasoning effort option requires a values list.');
-    }
-    $efforts = [];
-    foreach ($values as $value) {
-        if ($value === null) {
-            continue;
-        }
-        if ($value === 'none') {
-            $selections[] = 'disabled';
-            continue;
-        }
-        if (!is_string($value)) {
-            throw new InvalidArgumentException('Reasoning effort values must be strings.');
-        }
-        $effort = ReasoningEffort::parse($value);
-        $efforts[] = ['requested' => $effort->value, 'provider' => $value];
-    }
-    if ($efforts !== []) {
-        $selections[] = 'effort';
-    }
-    return [$selections, $efforts];
-}
-
-/** @return array{list<string>, array{min: int, max?: int}} */
-function mappedBudget(array $option, array $selections): array {
-    $minimum = positiveInteger($option['min'] ?? null, 'reasoning_options.budget_tokens.min');
-    $maximum = $option['max'] ?? null;
-    if ($maximum !== null && (!is_int($maximum) || $maximum < $minimum)) {
-        throw new InvalidArgumentException('Reasoning budget max must be an integer no lower than min.');
-    }
-    return [[...$selections, 'budget'], ['min' => $minimum, ...($maximum === null ? [] : ['max' => $maximum])]];
-}
-
-function positiveInteger(mixed $value, string $field): int {
-    if (!is_int($value) || $value < 1) {
-        throw new InvalidArgumentException("Upstream field must be a positive integer: {$field}");
-    }
-    return $value;
-}
-
-function supportStatus(mixed $value, string $field): string {
-    if (!is_bool($value)) {
-        throw new InvalidArgumentException("Upstream field must be boolean: {$field}");
-    }
-    return $value ? 'supported' : 'unsupported';
-}
-
-function validateMappings(array $mappings, ModelCatalog $source): void {
-    assertKeys($mappings, ['schemaVersion', 'snapshot', 'offerings'], 'mapping root');
-    if (($mappings['schemaVersion'] ?? null) !== 1) {
-        throw new InvalidArgumentException('Mapping schemaVersion must be 1.');
-    }
-    $snapshot = $mappings['snapshot'] ?? null;
-    if (!is_array($snapshot) || !is_string($snapshot['url'] ?? null) || $snapshot['url'] === '') {
-        throw new InvalidArgumentException('Mappings require snapshot.url.');
-    }
-    assertKeys($snapshot, ['url'], 'mapping snapshot');
-    $offerings = $mappings['offerings'] ?? null;
-    if (!is_array($offerings) || !array_is_list($offerings)) {
-        throw new InvalidArgumentException('Mappings offerings must be a list.');
-    }
-    $mappedKeys = [];
-    foreach ($offerings as $mapping) {
-        validateMapping($mapping);
-        $key = recordKey($mapping);
-        if (isset($mappedKeys[$key])) {
-            throw new InvalidArgumentException("Duplicate mapping: {$mapping['driver']}/{$mapping['model']}");
-        }
-        $mappedKeys[$key] = true;
-    }
-    $sourceKeys = array_map(recordKey(...), $source->toArray()['models']);
-    sort($sourceKeys, SORT_STRING);
-    $mappingKeys = array_keys($mappedKeys);
-    sort($mappingKeys, SORT_STRING);
-    if ($sourceKeys !== $mappingKeys) {
-        throw new InvalidArgumentException('Mappings must cover every models-source offering exactly once.');
-    }
-}
-
-function validateMapping(mixed $mapping): void {
-    if (!is_array($mapping)) {
-        throw new InvalidArgumentException('Every offering mapping must be an object.');
-    }
-    assertKeys($mapping, ['driver', 'model', 'upstream', 'imports'], 'offering mapping');
-    recordKey($mapping);
-    $upstream = $mapping['upstream'] ?? null;
-    $imports = $mapping['imports'] ?? null;
-    if (!is_array($imports)) {
-        throw new InvalidArgumentException('Offering mapping imports must be an object.');
-    }
-    if ($upstream === null && $imports !== []) {
-        throw new InvalidArgumentException('Local-only mappings cannot import upstream fields.');
-    }
-    if ($upstream !== null) {
-        validateUpstream($upstream);
-    }
-    foreach ($imports as $target => $source) {
-        if (!is_string($target) || !is_string($source) || (CATALOG_IMPORTS[$target] ?? null) !== $source) {
-            throw new InvalidArgumentException("Unowned catalog import: {$target} <- " . stringValue($source));
+    foreach ($expected as $relative => $contents) {
+        $path = $directory . '/' . $relative;
+        if (!is_file($path) || file_get_contents($path) !== $contents) {
+            return false;
         }
     }
+
+    return true;
 }
 
-function validateUpstream(mixed $upstream): void {
-    if (!is_array($upstream)) {
-        throw new InvalidArgumentException('Mapping upstream must be an object or null.');
+function writeCatalogRecords(string $directory, ModelCatalog $catalog): void {
+    $files = catalogRecordFiles($catalog);
+    $existing = glob(rtrim($directory, '/\\') . '/*/*.yaml') ?: [];
+    ensureDirectory($directory);
+    foreach ($files as $relative => $contents) {
+        writeAtomically($directory . '/' . $relative, $contents);
     }
-    assertKeys($upstream, ['provider', 'model'], 'mapping upstream');
-    foreach (['provider', 'model'] as $key) {
-        if (!is_string($upstream[$key] ?? null) || $upstream[$key] === '') {
-            throw new InvalidArgumentException("Mapping upstream requires {$key}.");
+    foreach ($existing as $path) {
+        $relative = substr($path, strlen(rtrim($directory, '/\\')) + 1);
+        if (!array_key_exists($relative, $files) && !unlink($path)) {
+            throw new RuntimeException("Unable to remove obsolete generated model record: {$path}");
         }
     }
-}
-
-function assertOnlyMappedChanges(array $current, array $staged, array $mappings): void {
-    $currentRecords = recordsByKey($current);
-    $stagedRecords = recordsByKey($staged);
-    if (array_keys($currentRecords) !== array_keys($stagedRecords)) {
-        throw new InvalidArgumentException('Staged refresh added or removed an offering.');
-    }
-    foreach ($mappings['offerings'] as $mapping) {
-        $key = recordKey($mapping);
-        $paths = array_keys($mapping['imports']);
-        if (withoutPaths($currentRecords[$key], $paths) !== withoutPaths($stagedRecords[$key], $paths)) {
-            throw new InvalidArgumentException("Staged refresh changed unowned fields for {$mapping['driver']}/{$mapping['model']}.");
-        }
-    }
-}
-
-/** @return array<string, array<string, mixed>> */
-function recordsByKey(array $catalog): array {
-    $records = $catalog['models'] ?? null;
-    if (!is_array($records) || !array_is_list($records)) {
-        throw new InvalidArgumentException('Catalog models must be a list.');
-    }
-    $indexed = [];
-    foreach ($records as $record) {
-        $indexed[recordKey($record)] = $record;
-    }
-    ksort($indexed, SORT_STRING);
-    return $indexed;
-}
-
-function withoutPaths(array $record, array $paths): array {
-    foreach ($paths as $path) {
-        $record = withoutPath($record, explode('.', $path));
-    }
-    return $record;
-}
-
-function withoutPath(array $record, array $parts): array {
-    $part = array_shift($parts);
-    if ($part === null || !array_key_exists($part, $record)) {
-        return $record;
-    }
-    if ($parts === []) {
-        unset($record[$part]);
-        return $record;
-    }
-    if (!is_array($record[$part])) {
-        return $record;
-    }
-    $record[$part] = withoutPath($record[$part], $parts);
-    if ($record[$part] === []) {
-        unset($record[$part]);
-    }
-    return $record;
-}
-
-/** @return list<string> */
-function changedOfferings(array $current, array $staged): array {
-    $currentRecords = recordsByKey($current);
-    $stagedRecords = recordsByKey($staged);
-    $changed = [];
-    foreach ($stagedRecords as $key => $record) {
-        if (($currentRecords[$key] ?? null) !== $record) {
-            $changed[] = str_replace("\0", '/', $key);
-        }
-    }
-    return $changed;
-}
-
-/** @return array<string, array<string, mixed>> */
-function mappingIndex(array $mappings): array {
-    $indexed = [];
-    foreach ($mappings['offerings'] as $mapping) {
-        $indexed[recordKey($mapping)] = $mapping;
-    }
-    return $indexed;
-}
-
-function upstreamLabel(?array $mapping): string {
-    $upstream = $mapping['upstream'] ?? null;
-    return is_array($upstream) ? "{$upstream['provider']}/{$upstream['model']}" : '';
-}
-
-function recordKey(mixed $record): string {
-    if (!is_array($record)) {
-        throw new InvalidArgumentException('Catalog identity must be an object.');
-    }
-    $driver = $record['driver'] ?? null;
-    $model = $record['model'] ?? null;
-    if (!is_string($driver) || $driver === '' || !is_string($model) || $model === '') {
-        throw new InvalidArgumentException('Catalog identity requires driver and model.');
-    }
-    return $driver . "\0" . $model;
-}
-
-function nestedValue(array $data, array $path): mixed {
-    $value = $data;
-    foreach ($path as $part) {
-        if (!is_array($value) || !array_key_exists($part, $value)) {
-            return null;
-        }
-        $value = $value[$part];
-    }
-    return $value;
-}
-
-function readSnapshot(string $location): string {
-    $remote = preg_match('#^https?://#', $location) === 1;
-    $context = $remote ? stream_context_create(['http' => ['timeout' => 60]]) : null;
-    $bytes = file_get_contents($location, false, $context);
-    if ($bytes === false) {
-        throw new RuntimeException("Unable to read snapshot: {$location}");
-    }
-    return $bytes;
-}
-
-/** @return array<string, mixed> */
-function readJson(string $path): array {
-    $bytes = file_get_contents($path);
-    if ($bytes === false) {
-        throw new RuntimeException("Unable to read JSON: {$path}");
-    }
-    return decodeJson($bytes, $path);
-}
-
-/** @return array<string, mixed> */
-function decodeJson(string $bytes, string $source): array {
-    try {
-        $data = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
-    } catch (JsonException $error) {
-        throw new InvalidArgumentException("Invalid JSON: {$source}", previous: $error);
-    }
-    if (!is_array($data)) {
-        throw new InvalidArgumentException("JSON root must be an object: {$source}");
-    }
-    return $data;
-}
-
-function encodeJson(array $data): string {
-    return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
-}
-
-function encodeSourceCatalog(array $data): string {
-    $records = array_map(
-        static fn (array $record): string => '    ' . json_encode(
-            $record,
-            JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
-        ),
-        $data['models'],
-    );
-
-    return "{\n  \"version\": "
-        . json_encode($data['version'], JSON_THROW_ON_ERROR)
-        . ",\n  \"models\": [\n"
-        . implode(",\n", $records)
-        . "\n  ]\n}\n";
 }
 
 function writeAtomically(string $path, string $contents): void {
@@ -588,7 +160,12 @@ function writeAtomically(string $path, string $contents): void {
     if ($temporary === false || file_put_contents($temporary, $contents) === false) {
         throw new RuntimeException("Unable to stage catalog write: {$path}");
     }
+    if (!chmod($temporary, 0644)) {
+        unlink($temporary);
+        throw new RuntimeException("Unable to set readable catalog permissions: {$path}");
+    }
     if (!rename($temporary, $path)) {
+        unlink($temporary);
         throw new RuntimeException("Unable to atomically replace catalog: {$path}");
     }
 }
@@ -602,24 +179,8 @@ function ensureDirectory(string $path): void {
     }
 }
 
-function assertHash(string $path, string $expected, string $message): void {
-    if ($expected === '' || !hash_equals($expected, (string) hash_file('sha256', $path))) {
-        throw new InvalidArgumentException("Cannot apply: {$message}.");
-    }
-}
-
-function assertKeys(array $data, array $allowed, string $label): void {
-    $unexpected = array_diff(array_keys($data), $allowed);
-    if ($unexpected !== []) {
-        throw new InvalidArgumentException("Unexpected {$label} field: " . (string) reset($unexpected));
-    }
-}
-
-function stringValue(mixed $value): string {
-    return is_string($value) ? $value : '';
-}
-
 function usage(string $command): int {
-    fwrite(STDERR, "Unknown command '{$command}'. Use build, check, validate, list, refresh, or apply.\n");
+    fwrite(STDERR, "Unknown command '{$command}'. Use build, check, or validate.\n");
+
     return 2;
 }

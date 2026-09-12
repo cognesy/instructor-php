@@ -68,3 +68,39 @@ it('accumulates usage correctly via stream->usage() after iterating responses', 
     expect($usage->total())->toBeGreaterThan(0);
     expect($usage->outputTokens)->toBeGreaterThanOrEqual(6); // 1+2+3
 });
+
+it('retains usage reported in a terminal usage-only delta', function () {
+    $chunks = [
+        new PartialInferenceDelta(
+            messageChunks: \Cognesy\Polyglot\Inference\Data\AssistantMessageChunks::empty()
+                ->withTextDelta("test:text:0", '{"name":"Eve","age":31}'),
+            finishReason: 'stop',
+        ),
+        new PartialInferenceDelta(
+            usage: new InferenceUsage(inputTokens: 40, outputTokens: 7),
+            usageIsCumulative: true,
+        ),
+    ];
+
+    $driver = new FakeInferenceDriver(
+        responses: [],
+        streamBatches: [$chunks],
+    );
+
+    $stream = (new StructuredOutput)
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
+        ->with(
+            messages: 'Extract user',
+            responseModel: StreamUserStruct::class,
+        )
+        ->stream();
+
+    $final = $stream->finalValue();
+
+    expect($final)->toBeInstanceOf(StreamUserStruct::class);
+    expect($stream->usage()->inputTokens)->toBe(40);
+    expect($stream->usage()->outputTokens)->toBe(7);
+    $finalInference = $stream->finalInferenceResponse();
+    expect($finalInference->usage()->inputTokens)->toBe(40);
+    expect($finalInference->usage()->outputTokens)->toBe(7);
+});

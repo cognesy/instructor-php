@@ -43,6 +43,7 @@ abstract readonly class StreamEvent
     /**
      * Factory method to create appropriate event from raw data
      */
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');

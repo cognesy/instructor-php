@@ -16,6 +16,7 @@ use Cognesy\Instructor\Streaming\Pipeline\DispatchStreamingEvents;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Transformation;
 use Cognesy\Stream\TransformationStream;
@@ -26,6 +27,7 @@ final class StreamingExecutionDriver implements CanDriveExecution
 {
     private ExecutionLoop $loop;
     private ?Iterator $stream = null;
+    private ?InferenceStream $inferenceStream = null;
     private ?InferenceResponse $finalInference = null;
     private mixed $finalMaterializationInput = null;
     private readonly AttemptProcessor $attemptProcessor;
@@ -110,13 +112,12 @@ final class StreamingExecutionDriver implements CanDriveExecution
         $responseModel = $execution->responseModel();
         assert($responseModel !== null, 'Response model cannot be null');
 
-        $inferenceStream = $this->inferenceProvider
+        $this->inferenceStream = $this->inferenceProvider
             ->getInference($execution)
-            ->stream()
-            ->deltas();
+            ->stream();
 
         $aggregateStream = $this->makeStream(
-            source: $inferenceStream,
+            source: $this->inferenceStream->deltas(),
             responseModel: $responseModel,
             mode: $execution->outputMode(),
         );
@@ -131,7 +132,9 @@ final class StreamingExecutionDriver implements CanDriveExecution
 
     private function finalizeAttempt(ExecutionLoop $loop): void {
         $execution = $loop->execution();
-        $inferenceResponse = $this->finalInference ?? new InferenceResponse();
+        $inferenceResponse = $this->inferenceStream?->final()
+            ?? $this->finalInference
+            ?? new InferenceResponse();
 
         // The one place the choice is genuinely made: the aggregator may have already built
         // the value out of the deltas, in which case there is nothing left to extract.
@@ -148,6 +151,7 @@ final class StreamingExecutionDriver implements CanDriveExecution
         };
         $loop->applyAttemptResult($result);
         $this->stream = null;
+        $this->inferenceStream = null;
 
         if ($result->shouldRetry()) {
             $this->resetAttemptRuntime();

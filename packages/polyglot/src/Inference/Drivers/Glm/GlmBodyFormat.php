@@ -15,12 +15,6 @@ class GlmBodyFormat extends OpenAICompatibleBodyFormat
 
         return $requestBody;
     }
-
-    #[\Override]
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
-        return false;
-    }
-
     /**
      * @param array<string,mixed> $requestBody
      * @return array<string,mixed>

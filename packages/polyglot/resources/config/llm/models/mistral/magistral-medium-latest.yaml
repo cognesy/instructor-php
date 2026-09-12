@@ -1,0 +1,16 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: mistral
+  model: magistral-medium-latest
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - disabled
+        - effort
+      efforts:
+        - requested: high
+          provider: high
+      default: enabled
+  source: hand-authored

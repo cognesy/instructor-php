@@ -67,11 +67,8 @@
         "bench": "@php ./vendor/bin/phpbench run",
         "docs": "@php ./bin/instructor-docs",
         "docs:qa": "bash ./scripts/docs/docs-qa-all.sh",
-        "models:apply": "@php packages/polyglot/bin/instructor-catalog apply",
         "models:build": "@php packages/polyglot/bin/instructor-catalog build",
         "models:check": "@php packages/polyglot/bin/instructor-catalog check",
-        "models:list": "@php packages/polyglot/bin/instructor-catalog list",
-        "models:refresh": "@php packages/polyglot/bin/instructor-catalog refresh",
         "models:validate": "@php packages/polyglot/bin/instructor-catalog validate",
         "qa:catalog": [
             "@models:check",

@@ -54,9 +54,9 @@ final class ResponseParser
         $sessionId = null;
         $messageText = '';
         $finalUsage = null;
-        /** @var array<string, array{tool:string,input:array}> */
+        /** @var array<string, array{tool:string,input:array<string,mixed>}> */
         $pendingToolCalls = [];
-        /** @var list<array{tool:string,input:array,output:?string,isError:bool,toolId:string}> */
+        /** @var list<array{tool:string,input:array<string,mixed>,output:?string,isError:bool,toolId:string}> */
         $toolCalls = [];
 
         foreach ($lines as $lineIndex => $line) {
@@ -134,6 +134,7 @@ final class ResponseParser
 
     /**
      * @param list<string> $parseFailureSamples
+     * @return array<string, mixed>|null
      */
     private function decodeJsonLine(
         string $payload,

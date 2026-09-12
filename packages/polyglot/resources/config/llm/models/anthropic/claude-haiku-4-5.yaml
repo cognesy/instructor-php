@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: anthropic
+  model: claude-haiku-4-5
+  status: supported
+  limits:
+    contextWindow: 200000
+    maxOutput: 64000
+  modalities:
+    inputText: supported
+    inputImage: supported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: unsupported
+    jsonSchema: unsupported
+    responseFormatWithTools: unsupported
+  source: upstream-reviewed

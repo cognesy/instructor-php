@@ -21,7 +21,7 @@ $data = new StructuredOutputData(
 
 $experiment = new Experiment(
     cases: InferenceCases::only(
-        presets: ['openai', 'anthropic', 'gemini', 'cohere'],
+        connections: ['openai', 'anthropic', 'gemini', 'cohere'],
         modes: [OutputMode::Tools],
         stream: [false]
     ),

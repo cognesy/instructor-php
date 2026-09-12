@@ -16,13 +16,6 @@ class GroqBodyFormat extends OpenAICompatibleBodyFormat
         return $requestBody;
     }
 
-    // CAPABILITIES ///////////////////////////////////////////
-
-    #[\Override]
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
-        return false;
-    }
-
     // INTERNAL ///////////////////////////////////////////////
 
     // Groq API supports json_object, json_schema and text -- exactly the base shapes, so there

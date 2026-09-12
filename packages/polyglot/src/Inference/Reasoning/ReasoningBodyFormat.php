@@ -37,8 +37,7 @@ final readonly class ReasoningBodyFormat implements CanMapRequestBody
         $this->assertNoRawReasoning($request->options());
         $this->assertNoRawReasoning($body);
 
-        $capabilities = $request->modelProfile()?->capabilities->reasoning
-            ?? ReasoningCapabilities::unknown();
+        $capabilities = $request->reasoningCapabilities() ?? ReasoningCapabilities::unknown();
         $translation = $this->translator->translate($capabilities, $selection);
 
         return array_replace_recursive($body, $translation->options->toArray());

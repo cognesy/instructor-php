@@ -31,59 +31,141 @@ behavior, and whether reasoning content and token counts are visible. Omitting t
 reasoning support is unknown. A `quality` value of `lossy` says the provider value would produce a
 different effective effort; typed requests reject that mapping by default.
 
-## Request-scoped resolution
+## Optional request-scoped resolution
 
-`InferenceRuntime` resolves the profile after applying an `InferenceRequest` model override.
-The transient profile travels with the in-process request so wire-format decisions and
-telemetry describe the model actually executed. It is excluded from request serialization.
+Ordinary inference does not discover, load, or consult a model catalog. Compose the runtime once
+per service or worker and reuse it across isolated inference objects:
 
-Pass a catalog explicitly when composing a runtime:
+```php
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+
+$drivers = InferenceDriverRegistry::default();
+$runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
+
+$first = Inference::fromRuntime($runtime)->withMessages($messages)->create();
+$second = Inference::fromRuntime($runtime)->withMessages($otherMessages)->create();
+```
+
+Pass a catalog only when the application wants local capability enforcement, metadata, or facts
+needed by a selected processor:
 
 ```php
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
 $catalog = ModelCatalog::discover()->overlay(
-    ModelCatalog::fromFile('/home/app/.config/instructor/models.json'),
+    ModelCatalog::fromPaths('/home/app/.config/instructor/models'),
 );
 
 $runtime = InferenceRuntime::fromConfig($config, models: $catalog);
 ```
 
-`discover()` reads application `config/llm/models.json` through the same search paths as LLM
-presets and overlays it on the packaged catalog. The resulting immutable catalog is memoized once
-per application base path. Explicit overlays are whole-record and deterministic. Runtime performs
-no network lookup, model-family matching, database query, or hidden reload.
+With this explicit composition, `InferenceRuntime` resolves the exact profile after applying a
+request-level model override. The transient profile travels with the in-process request so local
+policy, translation, and telemetry describe the model actually executed. It is excluded from
+request serialization.
 
-Before a provider body is rendered, request preflight reads the attached profile. Explicitly
-unsupported streaming, tools, tool choice, JSON Object, and reasoning selections are rejected.
-JSON Schema degrades only when the same record explicitly supports JSON Object, and a non-text
-response format is removed when the record forbids combining it with tools. Unknown ordinary
-capability facts continue, which keeps private OpenAI-compatible models executable.
+`discover()` resolves model directories through the same application, monorepo, and vendor
+locations as LLM presets. It creates a reusable catalog without reading any model records.
+`find()` reads only the exact offering's YAML file, using the first matching directory.
+Application `config/llm/models` takes precedence over packaged records. Overlays replace whole
+records; omitted facts in a replacement become unknown rather than inheriting packaged values.
+
+Discovered catalogs are memoized by application root. `discover($projectRoot)` selects a project
+explicitly without changing the global base path; `fromPaths($projectModels, $packageModels)`
+creates an independent catalog with explicit ordered roots. Each catalog caches hydrated profiles
+and missing keys. Reusing it across hundreds of inference objects avoids repeated file reads and
+hydration. `count()`, iteration, `forDriver()`, and `toArray()` explicitly enumerate records.
+
+Profiles are immutable. A catalog instance has no automatic reload; create a new instance to
+change its configured scope. The shared config reader caches parsed source by path and mtime;
+tests or development tools rewriting files within one timestamp tick can explicitly call
+`Config::flushSourceCache()`. Deploy records with the application's immutable release directory,
+not by rebuilding a directory active requests are reading. Runtime performs no network lookup,
+model-family matching, catalog writes, database query, or background refresh.
+
+Before a provider body is rendered, an in-process preflight step reads only facts explicitly
+attached to that request. It does not make an LLM or network request. Explicitly unsupported
+streaming, tools, tool choice, JSON Object, and reasoning selections are rejected. Missing or
+unknown facts make no local support assertion, so custom models remain executable.
+
+A semantic change such as JSON Schema to JSON Object requires both an exact supported fallback
+fact and `LLMConfig::$allowLossyFallback === true`. The default is `false`. Approved changes are
+recorded on the effective request and included in the `InferenceRequested` event; adapters never
+silently remove or weaken requested behavior. An adapter can still reject an operation it cannot
+encode, which is a protocol limitation rather than a catalog capability decision.
 
 ## Catalog files
 
-A catalog is a versioned JSON object with a `models` list:
+A runtime offering is one named YAML record. For example,
+`config/llm/models/openai-compatible/acme-1.yaml`:
 
-```json
-{
-  "version": "project-1",
-  "models": [{
-    "driver": "openai-compatible",
-    "model": "acme-1",
-    "status": "supported",
-    "limits": {"contextWindow": 128000, "maxOutput": 8192},
-    "modalities": {"inputText": "supported", "outputText": "supported"},
-    "capabilities": {"streaming": "supported"},
-    "source": "project"
-  }]
-}
+```yaml
+schemaVersion: 1
+version: project-1
+profile:
+  driver: openai-compatible
+  model: acme-1
+  status: supported
+  limits:
+    contextWindow: 128000
+    maxOutput: 8192
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+  source: project
 ```
+
+The path is `<encoded-driver>/<encoded-model>.yaml`, with each component encoded using
+`rawurlencode()`; the special components `.` and `..` have their dots percent-encoded as well.
+For example, model `openai/gpt-oss-120b` under driver `openrouter` is stored as
+`openrouter/openai%2Fgpt-oss-120b.yaml`. The `profile` retains the exact unencoded identity,
+which must match its path. `ModelRecordDirectory::relativePath(new ModelKey($driver, $model))`
+provides the canonical relative path. Model facts are loaded literally, without environment or
+secret substitution.
+
+`schemaVersion` must be integer `1`; `version` is a non-empty data revision. Parsers reject
+unknown fields, invalid status types, malformed nested records, and duplicate effort mappings.
+Explicit null is permitted for numeric limits and the optional maximum reasoning budget;
+other present fields must have their declared type. Missing facts remain unknown. A malformed
+or unreadable selected record raises an error; it does not fall back to a lower-priority record.
 
 Every support field is tri-state: `supported`, `unsupported`, or `unknown`. Omitted support and
 numeric fields are unknown. Catalog serialization omits unknown and null facts.
 
-The packaged artifact is generated offline from source and override files:
+Overall `status: supported` means only that the exact `(driver, wire model)` route is intentionally
+maintained and the named driver is executable. It does not imply that every modality or feature is
+supported. Each nested fact stands on its own; a sparse supported record is valid. A partially
+supported distinction that the current schema cannot express stays `unknown`. For example, Qwen's
+model record does not claim generic tool-choice support because some choices depend on whether
+thinking is enabled, while drivers that cannot render any explicit choice use `unsupported`.
+
+Packaged `source` values describe how the checked-in record was authored:
+
+- `upstream-reviewed` means selected upstream facts were reviewed before being committed;
+- `hand-authored` means the maintainer owns the exact assertions directly;
+- project records choose their own source label, commonly `project`.
+
+These labels are evidence categories, not automatic freshness guarantees. Capability evidence is
+kept deliberately small and tied to a real consumer:
+
+| Fact | Required evidence | Consumer |
+| --- | --- | --- |
+| overall status | maintained exact driver route and reviewed model identifier | Tell metadata and application policy |
+| limits and modalities | reviewed upstream/provider facts; modalities must also have a represented message path | Tell metadata and application policy |
+| streaming and tools | reviewed model claim plus driver request/response coverage | optional preflight and Tell metadata |
+| tool choice and response formats | final wire-shape coverage for the asserted route; partial support remains unknown | optional preflight and Tell metadata |
+| reasoning | exact hand-authored or reviewed selection/mapping data plus translation coverage | reasoning translation, optional preflight, and Tell metadata |
+
+Generic file input is intentionally absent. A future document or PDF capability needs a concrete
+message abstraction, at least one provider renderer, and final wire-payload tests before it can be
+advertised.
+
+The packaged record directory is generated offline from source and override files:
 
 ```bash
 packages/polyglot/bin/instructor-catalog build
@@ -92,27 +174,29 @@ packages/polyglot/bin/instructor-catalog validate
 ```
 
 These commands do not fetch provider APIs. Updating upstream facts is an explicit source-review
-workflow, while application runtime reads only the committed deterministic artifact.
+workflow, while application runtime reads only the selected deterministic record. `--target`
+names a generated record directory. Build updates its YAML records and removes obsolete generated
+records; do not store unrelated hand-authored files in that output directory.
+
+The source and override JSON catalogs remain offline maintenance inputs. `ModelCatalog::fromArray()`
+and `fromFile()` support explicit bulk data loading for tools and callers supplying in-memory
+catalogs; runtime discovery never loads a monolithic `models.json` file. Bulk envelopes accept
+`schemaVersion: 1` (omission also selects schema 1); generated runtime records require it explicitly.
 
 ## Maintaining the packaged catalog
 
-`resources/catalog/mappings.json` names every source offering exactly once. Each mapping either
-points to one exact models.dev provider/model pair and lists the fields it owns, or declares the
-offering `local-only` with no imports. A refresh cannot discover or add a model, substitute a
-different model ID, or map broad `structured_output` data onto Polyglot capabilities.
+Edit `resources/catalog/models-source.json` for reviewed base facts or
+`resources/catalog/models-overrides.json` for hand-authored whole-record replacements. Review the
+source diff directly in Git, then rebuild the deterministic runtime records:
 
 ```bash
-just models-list --json
-just models-refresh --revision=2026-09-10
-diff -u packages/polyglot/resources/catalog/models-source.json \
-  packages/polyglot/resources/catalog/staging/models-source.json
-just models-apply
+just models-build
 just models-check
 just models-validate
 ```
 
-Only `models-refresh` accesses the network. It records the snapshot and mapping hashes, source
-revision, retrieval time, and changed exact offerings in the staging directory. `models-apply`
-refuses stale or modified staging data and rejects changes outside each mapping before replacing
-the source and compiled files atomically. `models-check` and `models-validate` are offline parts of
-ordinary Composer QA.
+All three commands are offline. Build validates both inputs before changing output, writes readable
+individual records, and removes obsolete generated records. Check reports stale output without
+changing it. Validate parses both inputs and verifies the complete generated record set. There is
+no fetch, staging, apply, mapping, or provenance subsystem; upstream research and review happen
+outside this package workflow.

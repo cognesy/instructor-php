@@ -390,10 +390,17 @@ tell config effective --branch review --json
 `providers` lists resolved connection precedence and joins each preset default
 to its exact model profile. `models` accepts either a provider or connection
 name and lists actual catalog offerings, including limits, modalities,
-capabilities, and provenance. Project `config/llm/models.json` records
-override user `$TELL_HOME/config/models.json` records, which override bundled
+capabilities, and provenance. Project `config/llm/models/<driver>/<model>.yaml` records
+override user `$TELL_HOME/config/models/<driver>/<model>.yaml` records, which override packaged
 records. Missing exact offerings remain explicitly unknown; Tell never infers
-facts from model names. `tell context` uses the same resolved profile for model
+facts from model names. Driver and model filename components are percent-encoded;
+each YAML document contains `schemaVersion: 1`, a data `version`, and a `profile`
+with the exact identity and facts. Tell reuses catalogs per target project.
+This is a connection and catalog metadata view: it does not inspect or infer
+offerings from an `InferenceDriverRegistry` customized inside another runtime.
+To expose a custom runtime route in Tell, configure its connection preset and,
+when metadata is wanted, provide its exact model record explicitly.
+`tell context` uses the same resolved profile for model
 capacity. `config effective` reports selection sources without resolving or
 displaying an API key.
 

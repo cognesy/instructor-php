@@ -50,7 +50,7 @@ interface AgentBridgeBuilder
     /**
      * Set callback for tool use events.
      *
-     * @param callable(string $tool, array $input, ?string $output): void $handler
+     * @param callable(string $tool, array<string, mixed> $input, ?string $output): void $handler
      */
     public function onToolUse(callable $handler): static;
 

@@ -3,7 +3,6 @@ title: 'OpenRouter'
 docname: 'llm_openrouter'
 id: 'e2ef'
 tags:
-  - 'broken'
   - 'llm-api-support'
   - 'openrouter'
   - 'provider'
@@ -25,22 +24,13 @@ in case of extraction issues.
 ```php
 <?php
 
-use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 
 require 'examples/boot.php';
 
-$http = (new HttpClientBuilder)->withDebugConfig(DebugConfig::fromPreset('on'))->create();
-
-$answer = Inference::fromRuntime(InferenceRuntime::fromConfig(
-    config: LLMConfig::fromPreset('openrouter'),
-    httpClient: $http,
-))
+$answer = Inference::using('openrouter')
     ->with(
         messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]

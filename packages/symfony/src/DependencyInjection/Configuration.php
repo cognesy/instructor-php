@@ -157,6 +157,7 @@ final class Configuration implements ConfigurationInterface
             ->scalarNode('endpoint')->defaultNull()->end()
             ->scalarNode('model')->defaultNull()->end()
             ->scalarNode('max_tokens')->defaultNull()->end()
+            ->booleanNode('allow_lossy_fallback')->defaultFalse()->end()
             ->scalarNode('organization')->defaultNull()->end()
             ->scalarNode('project')->defaultNull()->end()
             ->scalarNode('resource_name')->defaultNull()->end()

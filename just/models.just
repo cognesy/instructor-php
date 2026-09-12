@@ -8,18 +8,6 @@ models-build:
 models-check:
     composer models:check
 
-[group('models'), doc('Validate catalogs and exact mappings (offline)')]
+[group('models'), doc('Validate source catalogs and generated exact records (offline)')]
 models-validate:
     composer models:validate
-
-[group('models'), doc('List maintained offerings and provenance')]
-models-list *args:
-    composer models:list -- {{args}}
-
-[group('models'), doc('Fetch a snapshot and stage only explicitly mapped changes')]
-models-refresh *args:
-    composer models:refresh -- {{args}}
-
-[group('models'), doc('Apply a reviewed staged model refresh atomically')]
-models-apply:
-    composer models:apply

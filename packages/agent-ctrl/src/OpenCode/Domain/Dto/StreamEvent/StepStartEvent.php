@@ -51,6 +51,7 @@ final readonly class StepStartEvent extends StreamEvent
         return $this->partId;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $part = Normalize::toArray($data['part'] ?? []);

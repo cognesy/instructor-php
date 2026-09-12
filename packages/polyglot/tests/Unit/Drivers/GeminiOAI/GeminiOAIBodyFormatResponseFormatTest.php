@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 
-it('Gemini-OAI: response_format.type is json_object for json object and json schema response formats', function () {
+it('Gemini-OAI: renders JSON Object and rejects JSON Schema without explicit preparation', function () {
     $config = new LLMConfig(
         apiUrl: 'https://example.googleapis.com/v1beta',
         apiKey: 'KEY',
@@ -18,14 +18,17 @@ it('Gemini-OAI: response_format.type is json_object for json object and json sch
 
     $body = new GeminiOAIBodyFormat($config, new OpenAIMessageFormat());
 
-    foreach ([ResponseFormat::jsonObject(), ResponseFormat::jsonSchema(schema: ['type' => 'object'])] as $responseFormat) {
-        $req = new InferenceRequest(
-            messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
-            model: 'gemini-1.5-flash',
-            options: ['stream' => false],
-            responseFormat: $responseFormat,
-        );
-        $json = $body->toRequestBody($req);
-        expect(($json['response_format']['type'] ?? ''))->toBe('json_object');
-    }
+    $request = fn (ResponseFormat $format): InferenceRequest => new InferenceRequest(
+        messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
+        model: 'gemini-1.5-flash',
+        options: ['stream' => false],
+        responseFormat: $format,
+    );
+
+    expect($body->toRequestBody($request(ResponseFormat::jsonObject())))
+        ->toHaveKey('response_format.type', 'json_object')
+        ->and(fn () => $body->toRequestBody($request(
+            ResponseFormat::jsonSchema(schema: ['type' => 'object']),
+        )))
+        ->toThrow(InvalidArgumentException::class, 'cannot render JSON Schema');
 });

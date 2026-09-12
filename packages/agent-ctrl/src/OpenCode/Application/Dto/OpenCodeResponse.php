@@ -18,6 +18,7 @@ final readonly class OpenCodeResponse
     /** @var list<string> */
     private array $parseFailureSamples;
 
+    /** @param list<string> $parseFailureSamples */
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
@@ -39,7 +40,7 @@ final readonly class OpenCodeResponse
             is_string($messageId) && $messageId !== '' => OpenCodeMessageId::fromString($messageId),
             default => null,
         };
-        $this->parseFailureSamples = array_values($parseFailureSamples);
+        $this->parseFailureSamples = $parseFailureSamples;
     }
 
     /**

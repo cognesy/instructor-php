@@ -426,7 +426,6 @@ class InstructorServiceProvider extends ServiceProvider
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(CanSendHttpRequests::class),
-                models: $app->make(ModelCatalog::class),
             );
             $inference = new Inference($runtime);
 
@@ -495,7 +494,6 @@ class InstructorServiceProvider extends ServiceProvider
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(CanSendHttpRequests::class),
-                models: $app->make(ModelCatalog::class),
             );
         });
 
@@ -1094,7 +1092,10 @@ class InstructorServiceProvider extends ServiceProvider
         $apiUrl = (string) ($connection['api_url'] ?? '');
         $endpoint = (string) ($connection['endpoint'] ?? $this->defaultLlmEndpoint($driver, $model));
 
-        $known = ['driver', 'api_url', 'api_key', 'endpoint', 'model', 'max_tokens', 'options'];
+        $known = [
+            'driver', 'api_url', 'api_key', 'endpoint', 'model', 'max_tokens',
+            'allow_lossy_fallback', 'options',
+        ];
         $extraOptions = array_diff_key($connection, array_flip($known));
         $options = match (true) {
             isset($connection['options']) && is_array($connection['options']) => array_merge($extraOptions, $connection['options']),
@@ -1108,6 +1109,7 @@ class InstructorServiceProvider extends ServiceProvider
             'endpoint' => $endpoint,
             'model' => $model,
             'maxTokens' => (int) ($connection['max_tokens'] ?? 4096),
+            'allowLossyFallback' => $connection['allow_lossy_fallback'] ?? false,
             'options' => $options,
         ]);
     }

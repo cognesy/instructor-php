@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: openai
+  model: gpt-5.6
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - disabled
+        - effort
+      efforts:
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+        - requested: high
+          provider: high
+        - requested: xhigh
+          provider: xhigh
+      default: enabled
+  source: hand-authored

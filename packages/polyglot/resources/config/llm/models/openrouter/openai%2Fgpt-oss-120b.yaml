@@ -1,0 +1,32 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: openrouter
+  model: openai/gpt-oss-120b
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - disabled
+        - enabled
+        - effort
+        - budget
+        - adaptive
+      efforts:
+        - requested: minimal
+          provider: minimal
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+        - requested: high
+          provider: high
+        - requested: xhigh
+          provider: xhigh
+        - requested: max
+          provider: max
+      budget:
+        min: 1
+      default: enabled
+      tokensVisible: true
+  source: hand-authored

@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: cohere
+  model: command-r-plus-08-2024
+  status: supported
+  limits:
+    contextWindow: 128000
+    maxOutput: 4000
+  modalities:
+    inputText: supported
+    inputImage: unsupported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: unsupported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: unsupported
+  source: upstream-reviewed

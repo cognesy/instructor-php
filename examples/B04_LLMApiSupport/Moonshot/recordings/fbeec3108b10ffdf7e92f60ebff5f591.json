@@ -1,0 +1,61 @@
+{
+    "request": {
+        "url": "https:\/\/api.moonshot.cn\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"kimi-k2.6\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: Paris\"}],\"max_completion_tokens\":128}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Sat, 12 Sep 2026 05:32:50 GMT"
+            ],
+            "content-type": [
+                "application\/json; charset=utf-8"
+            ],
+            "content-length": [
+                "521"
+            ],
+            "set-cookie": "[REDACTED]",
+            "x-internal-adhoc-canary-disabled": [
+                "1"
+            ],
+            "msh-context-cache-token-saved": [
+                "12"
+            ],
+            "msh-gid": [
+                "free"
+            ],
+            "msh-org-id": [
+                "org-b4f7b9226eec469a8461a0c7646ec0c1"
+            ],
+            "msh-project-id": [
+                "proj-d3033d3ad7d349be82945f6b75878408"
+            ],
+            "msh-request-id": [
+                "6421ddb0-ae6b-11f1-8fc3-ae86348b3bc6"
+            ],
+            "msh-trace-mode": [
+                "on"
+            ],
+            "msh-uid": [
+                "cuair0ahra0btvgue8qg"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains"
+            ]
+        },
+        "body": "{\"id\":\"chatcmpl-6aa4e401f3948ef1dee7b9b5\",\"object\":\"chat.completion\",\"created\":1789191169,\"model\":\"kimi-k2.6\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"Paris\",\"reasoning_content\":\"The user wants me to reply with exactly the word \\\"Paris\\\". No punctuation, no extra text, just \\\"Paris\\\".\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":12,\"completion_tokens\":28,\"total_tokens\":40,\"cached_tokens\":12,\"completion_tokens_details\":{\"reasoning_tokens\":25},\"prompt_tokens_details\":{\"cached_tokens\":12}}}"
+    }
+}

@@ -16,6 +16,11 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class MessageUpdateEvent extends StreamEvent
 {
+    /**
+     * @param array<array-key, mixed> $rawData
+     * @param array<array-key, mixed> $message
+     * @param array<array-key, mixed> $assistantMessageEvent
+     */
     public function __construct(
         array $rawData,
         public string $eventType,
@@ -66,6 +71,7 @@ final readonly class MessageUpdateEvent extends StreamEvent
         return $this->eventType === 'text_end';
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         $ame = Normalize::toArray($data['assistantMessageEvent'] ?? []);

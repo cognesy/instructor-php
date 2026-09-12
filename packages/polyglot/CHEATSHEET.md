@@ -171,6 +171,14 @@ $profile->capabilities->tools;
 $profile->capabilities->reasoning;
 ```
 
+The catalog is not used by ordinary inference unless it is passed explicitly to
+`InferenceRuntime`. Reuse one discovered catalog at the application composition
+root when local capability policy or metadata is needed. Known semantic fallback
+is off by default; direct PHP config uses `allowLossyFallback: true`, while
+Laravel and Symfony connection config uses `allow_lossy_fallback: true`. Every
+accepted adjustment is observable on the effective request and
+`InferenceRequested` event.
+
 Pricing is caller-owned and is not stored in model catalog records:
 
 ```php

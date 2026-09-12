@@ -11,6 +11,7 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class ErrorEvent extends StreamEvent
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         array $rawData,
         public string $severity,
@@ -36,6 +37,7 @@ final readonly class ErrorEvent extends StreamEvent
         return $this->severity === 'error';
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

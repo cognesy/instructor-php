@@ -7,12 +7,16 @@ namespace Cognesy\Polyglot\Inference\Drivers\Perplexity;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+use InvalidArgumentException;
 
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 {
     #[\Override]
     public function toRequestBody(InferenceRequest $request): array
     {
+        if ($request->hasTools()) {
+            throw new InvalidArgumentException('Perplexity cannot render tool definitions or tool choice.');
+        }
         $request = $request->withCacheApplied();
 
         $options = array_merge($this->config->options, $request->options());
@@ -22,10 +26,6 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($request->messages()->toMergedPerRole()),
         ], static fn (mixed $value): bool => (bool) $value), $options);
-
-        // Perplexity does not support tools, so we unset them
-        unset($requestBody['tools']);
-        unset($requestBody['tool_choice']);
 
         $requestBody['response_format'] = $this->toResponseFormat($request);
 

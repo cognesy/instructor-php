@@ -4,7 +4,6 @@ docname: 'gemini_streaming'
 id: 'gm01'
 tags:
   - 'no-replay'
-  - 'broken'
   - 'agent-ctrl'
   - 'gemini-cli'
   - 'streaming'
@@ -38,6 +37,7 @@ $logger = new AgentCtrlConsoleLogger(
     showToolArgs: true,
 );
 
+$textChunks = [];
 $toolCalls = [];
 
 echo "=== Agent Execution Log ===\n\n";
@@ -47,11 +47,12 @@ $response = AgentCtrl::gemini()
     ->withModel('flash')
     ->withApprovalMode(ApprovalMode::AutoEdit)
     ->inDirectory(getcwd())
-    ->onText(function (string $text) {
+    ->onText(function (string $text) use (&$textChunks) {
+        $textChunks[] = $text;
         echo $text;
     })
     ->onToolUse(function (string $tool, array $input, ?string $output) use (&$toolCalls) {
-        $target = $input['command'] ?? $input['path'] ?? $input['pattern'] ?? '';
+        $target = $input['command'] ?? $input['file_path'] ?? $input['path'] ?? $input['pattern'] ?? '';
         if (strlen($target) > 40) {
             $target = '...' . substr($target, -37);
         }
@@ -60,18 +61,25 @@ $response = AgentCtrl::gemini()
     })
     ->executeStreaming('Read the first 5 lines of composer.json in this directory and describe what you see.');
 
-echo "\n=== Result ===\n";
-echo "Tools used: " . implode(' > ', $toolCalls) . "\n";
-echo "Total tool calls: " . count($toolCalls) . "\n";
-
-if ($response->usage()) {
-    echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
-}
-
 if (!$response->isSuccess()) {
     echo "Error: Command failed with exit code {$response->exitCode}\n";
     exit(1);
 }
+
+$streamedText = implode('', $textChunks);
+$usage = $response->usage();
+
+assert($streamedText !== '', 'Expected Gemini to stream non-empty text');
+assert($streamedText === $response->text(), 'Expected streamed text to match the final response');
+assert(in_array('read_file', $toolCalls, true), 'Expected Gemini to call read_file');
+assert($usage !== null, 'Expected Gemini to return token usage');
+assert($usage->input > 0, 'Expected positive input token usage');
+assert($usage->output > 0, 'Expected positive output token usage');
+
+echo "\n=== Result ===\n";
+echo "Tools used: " . implode(' > ', $toolCalls) . "\n";
+echo "Total tool calls: " . count($toolCalls) . "\n";
+echo "Tokens: {$usage->input} in / {$usage->output} out\n";
 ?>
 ```
 

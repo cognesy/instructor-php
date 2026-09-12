@@ -63,6 +63,10 @@ $stream = StructuredOutput::using('openai')
 
 $response = $stream->finalValue();
 echo "\nTEXT: $text\n";
-printUsage($stream->usage());
+$usage = $stream->usage();
+assert($usage->total() > 0);
+assert($usage->inputTokens > 0);
+assert($usage->outputTokens > 0);
+printUsage($usage);
 ?>
 ```

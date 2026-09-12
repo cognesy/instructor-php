@@ -2,5 +2,5 @@ driver: cerebras
 apiUrl: 'https://api.cerebras.ai/v1'
 apiKey: '${CEREBRAS_API_KEY}'
 endpoint: /chat/completions
-model: llama3.1-8b
+model: gpt-oss-120b
 maxTokens: 1024

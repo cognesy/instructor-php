@@ -16,6 +16,7 @@ final readonly class CodexResponse
     /** @var list<string> */
     private array $parseFailureSamples;
 
+    /** @param list<string> $parseFailureSamples */
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
@@ -30,7 +31,7 @@ final readonly class CodexResponse
             is_string($threadId) && $threadId !== '' => CodexThreadId::fromString($threadId),
             default => null,
         };
-        $this->parseFailureSamples = array_values($parseFailureSamples);
+        $this->parseFailureSamples = $parseFailureSamples;
     }
 
     public function result(): ExecResult {

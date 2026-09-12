@@ -104,6 +104,16 @@ $reasoning->supports(
 );
 ```
 
-A missing exact pair returns an unknown profile, so `known` is `false` and
-explicit reasoning selections fail preflight instead of inheriting facts from
-a provider or similarly named model.
+A missing exact pair returns an unknown profile, so `known` is `false`. That is
+not a local rejection: explicit reasoning can proceed when the driver can render
+it without model-specific data. A wire format that needs an exact effort mapping
+fails with a missing-translation-fact error unless the caller supplies the facts
+through an explicitly composed catalog or directly on the request with
+`withReasoningCapabilities()`. Polyglot never inherits them from a provider or a
+similarly named model.
+
+Lossy effort mappings are rejected by default. Applications that accept a known
+semantic change can set `allowLossyFallback: true` on `LLMConfig`; framework
+connection configuration exposes `allow_lossy_fallback`. The effective request
+records every accepted adjustment so it can be observed before transport or in
+the `InferenceRequested` event.

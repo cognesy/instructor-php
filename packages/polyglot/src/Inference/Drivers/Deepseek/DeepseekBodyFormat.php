@@ -9,6 +9,7 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
+use InvalidArgumentException;
 
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 {
@@ -32,11 +33,7 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             $requestBody['stream_options']['include_usage'] = true;
         }
 
-        $requestBody['response_format'] = match (true) {
-            $request->hasTools() && ! $this->supportsNonTextResponseForTools($request) => [],
-            $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
-            default => [],
-        };
+        $requestBody['response_format'] = $this->toResponseFormat($request);
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);
             $requestBody['tool_choice'] = $this->toToolChoice($request);
@@ -48,49 +45,19 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
     // CAPABILITIES ///////////////////////////////////////////
 
     #[\Override]
-    protected function supportsToolSelection(InferenceRequest $request): bool
-    {
-        return !$request->toolChoice()->isSpecific()
-            || $this->isThinkingExplicitlyDisabled($request);
-    }
-
-    private function isThinkingExplicitlyDisabled(InferenceRequest $request): bool
-    {
-        $options = array_merge($this->config->options, $request->options());
-        $thinking = $options['thinking'] ?? null;
-
-        // DeepSeek V4 enables thinking by default, while its live Chat API
-        // currently rejects a forced function choice in that mode.
-        return is_array($thinking) && ($thinking['type'] ?? null) === 'disabled';
-    }
-
-    #[\Override]
-    protected function supportsStructuredOutput(InferenceRequest $request): bool
-    {
-        // V4 supports JSON Output. JSON Schema requests are rendered as the
-        // provider's supported json_object form below.
-        return true;
-    }
-
-    #[\Override]
     protected function supportsAlternatingRoles(InferenceRequest $request): bool
     {
         return true;
     }
 
-    #[\Override]
-    protected function supportsNonTextResponseForTools(InferenceRequest $request): bool
-    {
-        return false;
-    }
-
     // INTERNAL ///////////////////////////////////////////////
 
-    // DeepSeek V4 supports json_object and text but not native JSON Schema, so
-    // schema mode degrades to plain JSON.
     #[\Override]
     protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat): array
     {
-        return $this->toJsonObjectResponseFormat($responseFormat);
+        throw new InvalidArgumentException(
+            'DeepSeek cannot render JSON Schema; request JSON Object explicitly '
+            . 'or enable an evidenced lossy fallback before rendering.',
+        );
     }
 }

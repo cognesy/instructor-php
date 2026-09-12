@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: ollama
+  model: 'gpt-oss:20b'
+  status: supported
+  limits:
+    contextWindow: 131072
+    maxOutput: 32768
+  modalities:
+    inputText: supported
+    inputImage: unsupported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: supported
+  source: upstream-reviewed

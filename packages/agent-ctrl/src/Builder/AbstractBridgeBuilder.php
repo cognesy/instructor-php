@@ -42,7 +42,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     /** @var (Closure(string): void)|null */
     protected ?Closure $onTextCallback = null;
 
-    /** @var (Closure(string, array, ?string): void)|null */
+    /** @var (Closure(string, array<string, mixed>, ?string): void)|null */
     protected ?Closure $onToolUseCallback = null;
 
     /** @var (Closure(AgentResponse): void)|null */
@@ -138,6 +138,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
         return $this;
     }
 
+    /** @param callable(string, array<string, mixed>, ?string): void $handler */
     #[\Override]
     public function onToolUse(callable $handler): static
     {

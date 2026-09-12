@@ -1,0 +1,60 @@
+{
+    "request": {
+        "url": "https:\/\/api.fireworks.ai\/inference\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"accounts\\\/fireworks\\\/models\\\/deepseek-v4-flash-0731\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Sat, 12 Sep 2026 05:32:32 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "668"
+            ],
+            "fireworks-cached-prompt-tokens": [
+                "9"
+            ],
+            "fireworks-prompt-tokens": [
+                "10"
+            ],
+            "fireworks-sampling-options": [
+                "{\"max_tokens\": 64, \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 1.0, \"min_p\": 0.0, \"typical_p\": 1.0, \"frequency_penalty\": 0.0, \"presence_penalty\": 0.0, \"repetition_penalty\": 1.0, \"mirostat_target\": null, \"mirostat_lr\": 0.1, \"cycle_multiplier\": 0.0, \"cycle_base\": 0.0, \"cycle_allowed_length\": 0, \"cycle_sequence_breakers\": []}"
+            ],
+            "fireworks-server-processing-time": [
+                "1.105"
+            ],
+            "fireworks-server-time-to-first-token": [
+                "0.823"
+            ],
+            "fireworks-speculation-prompt-matched-tokens": [
+                "0"
+            ],
+            "server": [
+                "istio-envoy"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "x-ratelimit-over-limit": [
+                "no"
+            ],
+            "x-request-id": [
+                "chatcmpl-68892b3a07684a46abb9d969ba9158ea"
+            ]
+        },
+        "body": "{\"id\":\"chatcmpl-68892b3a07684a46abb9d969ba9158ea\",\"object\":\"chat.completion\",\"created\":1789191152,\"model\":\"accounts\/fireworks\/models\/deepseek-v4-flash-0731\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"The capital of France is **Paris**.\",\"reasoning_content\":\"1.  The user is asking for the capital of France.\\n2.  This is a straightforward factual question.\\n3.  The capital of France is Paris.\",\"tools\":null},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"total_tokens\":53,\"completion_tokens\":43,\"prompt_tokens_details\":{\"cached_tokens\":9},\"completion_tokens_details\":{\"reasoning_tokens\":33},\"output_tokens_details\":{\"reasoning_tokens\":33}}}"
+    }
+}

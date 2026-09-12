@@ -23,6 +23,7 @@ final readonly class TokenUsage
      * Expected format:
      * {"input": 13998, "output": 7, "reasoning": 0, "cache": {"read": 0, "write": 0}}
      */
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $cache = Normalize::toArray($data['cache'] ?? []);

@@ -11,6 +11,7 @@ use Cognesy\Events\Event;
  */
 abstract class AgentEvent extends Event
 {
+    /** @param array<string, mixed> $data */
     public function __construct(
         public readonly AgentType $agentType,
         private readonly AgentCtrlExecutionId $executionId,

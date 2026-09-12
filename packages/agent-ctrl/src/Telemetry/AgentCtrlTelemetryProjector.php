@@ -44,7 +44,6 @@ final readonly class AgentCtrlTelemetryProjector implements CanProjectTelemetry
         };
     }
 
-    /** @param array<string, mixed> $data */
     private function openExecution(string $executionKey, AttributeBag $attributes): void
     {
         if ($this->telemetry->spanReference($executionKey) !== null) {

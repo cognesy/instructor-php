@@ -50,7 +50,7 @@ final readonly class AgentResponse
             is_string($sessionId) && $sessionId !== '' => AgentSessionId::fromString($sessionId),
             default => null,
         };
-        $this->parseFailureSamples = array_values($parseFailureSamples);
+        $this->parseFailureSamples = $parseFailureSamples;
     }
 
     public function executionId(): AgentCtrlExecutionId

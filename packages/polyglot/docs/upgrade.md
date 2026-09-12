@@ -18,6 +18,28 @@ from a provider name or model-name regex.
 Catalog records do not contain pricing. Use `InferencePricing` or `EmbeddingsPricing` explicitly
 with their existing calculators when an application has sourced pricing data.
 
+### Individual model files
+
+Runtime discovery no longer reads `config/llm/models.json`. Move each entry from its `models`
+list into `config/llm/models/<encoded-driver>/<encoded-model>.yaml`, wrapped in `schemaVersion: 1`,
+the original catalog `version`, and `profile: <entry>`. Encode driver/model filename components
+with `ModelRecordDirectory::relativePath(new ModelKey($driver, $model))` so IDs containing `/`
+remain one model filename. See [Model Catalog](internals/model-catalog.md) for a complete example.
+
+Replace explicit runtime `ModelCatalog::fromFile($jsonPath)` calls with
+`ModelCatalog::fromPaths($modelsDirectory)`. JSON bulk loading remains available for explicit
+offline maintenance; it is not a runtime fallback. Keep whole-record overrides complete enough
+for the facts you want to retain. Unknown keys and malformed values now fail instead of being
+silently discarded. Numeric limits still accept null for unknown; status fields require strings.
+
+Ordinary inference calls do not require a catalog. A runtime constructed without `models:` sends
+requests directly through its driver and does not read model records. When an application wants
+local capability enforcement or model metadata, create one catalog at the composition root and
+reuse it across runtimes or inference objects; exact lookup then reads and caches only the selected
+record.
+
+### Reasoning records
+
 Reasoning capability data now follows the same exact lookup. Replace
 `BundledInferenceDrivers::reasoningCapabilities($driver, $model)` with:
 
@@ -28,9 +50,24 @@ $reasoning = ModelCatalog::discover()
     ->reasoning;
 ```
 
-Typed reasoning is checked during request preflight. A model without its own exact record does not
-inherit support from another record. Unknown ordinary feature facts still allow the request to proceed;
-an explicit typed reasoning selection requires a known compatible reasoning record.
+Typed reasoning does not require a catalog merely to be requested. Missing or unknown facts make no
+local support assertion, and no model inherits facts from a provider or family pattern. A wire format
+that needs an exact effort mapping still requires that mapping, supplied either by an explicitly
+composed catalog or directly with `InferenceRequest::withReasoningCapabilities()`. A missing mapping
+is reported as missing translation data, not as proven model incompatibility.
+
+Semantic fallback is disabled by default. Set `allowLossyFallback: true` on `LLMConfig` only when the
+application accepts an observable change such as JSON Schema to JSON Object or a lossy reasoning
+effort mapping. Laravel and Symfony connection configuration expose the same setting as
+`llm.connections.<name>.allow_lossy_fallback`. Every approved change is recorded on the effective
+request and emitted with `InferenceRequested`; provider adapters never silently degrade a request.
+
+Failures now distinguish four cases:
+
+- an adapter cannot encode the requested protocol operation;
+- a processor needs a translation fact that was not supplied;
+- an exact supplied fact explicitly marks the operation unsupported;
+- a known fallback exists but the caller has not enabled lossy fallback.
 
 Custom drivers now implement only request execution. `CanDescribeCapabilities`,
 `DriverCapabilities`, and `SpecifiedInferenceDriver` were removed. A custom spec subclass now
@@ -92,8 +129,10 @@ defaults to the OpenAI implementation.
 
 ### Replacing a `capabilities()` override
 
-Declare the exact `(driver, model)` offering in a model catalog and inject that catalog into
-`InferenceRuntime`. Capability inspection no longer constructs or interrogates a driver.
+If the application needs capability inspection or local enforcement, declare the exact
+`(driver, model)` offering in a model catalog and inject that catalog into `InferenceRuntime`.
+Ordinary custom-driver execution needs no catalog. Capability inspection no longer constructs or
+interrogates a driver.
 
 `InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so drivers
 registered that way need no change.

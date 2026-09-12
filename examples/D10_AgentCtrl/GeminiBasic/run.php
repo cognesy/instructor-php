@@ -4,7 +4,6 @@ docname: 'gemini_basic'
 id: 'e3b7'
 tags:
   - 'no-replay'
-  - 'broken'
   - 'agent-ctrl'
   - 'gemini-cli'
   - 'cli-agent'
@@ -45,19 +44,25 @@ $response = AgentCtrl::gemini()
     ->execute('What is the capital of France? Answer briefly.');
 
 echo "\n=== Result ===\n";
-if ($response->isSuccess()) {
-    echo "Answer: " . $response->text() . "\n";
-
-    if ($response->sessionId()) {
-        echo "Session: {$response->sessionId()}\n";
-    }
-    if ($response->usage()) {
-        echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
-    }
-} else {
+if (!$response->isSuccess()) {
     echo "Error: Command failed with exit code {$response->exitCode}\n";
     exit(1);
 }
+
+$answer = trim($response->text());
+$sessionId = $response->sessionId();
+$usage = $response->usage();
+
+assert($answer !== '', 'Expected Gemini to return a non-empty answer');
+assert(str_contains(strtolower($answer), 'paris'), 'Expected the answer to identify Paris');
+assert($sessionId !== null, 'Expected Gemini to return a session ID');
+assert($usage !== null, 'Expected Gemini to return token usage');
+assert($usage->input > 0, 'Expected positive input token usage');
+assert($usage->output > 0, 'Expected positive output token usage');
+
+echo "Answer: {$answer}\n";
+echo "Session: {$sessionId}\n";
+echo "Tokens: {$usage->input} in / {$usage->output} out\n";
 ?>
 ```
 

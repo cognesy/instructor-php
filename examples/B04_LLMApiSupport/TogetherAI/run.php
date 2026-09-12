@@ -3,7 +3,6 @@ title: 'Together.ai'
 docname: 'llm_togetherai'
 id: '84d0'
 tags:
-  - 'broken'
   - 'llm-api-support'
   - 'togetherai'
   - 'provider'

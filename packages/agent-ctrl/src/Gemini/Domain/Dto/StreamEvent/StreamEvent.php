@@ -17,12 +17,14 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 abstract readonly class StreamEvent
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         public array $rawData,
     ) {}
 
     abstract public function type(): string;
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');

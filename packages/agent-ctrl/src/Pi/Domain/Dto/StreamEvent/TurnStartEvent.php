@@ -15,6 +15,7 @@ final readonly class TurnStartEvent extends StreamEvent
         return 'turn_start';
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(rawData: $data);

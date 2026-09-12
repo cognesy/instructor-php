@@ -8,7 +8,6 @@ use Cognesy\InstructorHub\Contracts\CanExecuteExample;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
-use Cognesy\InstructorHub\Services\ExampleScript;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -106,9 +105,8 @@ class RunOneExample extends Command
 
         $timeStart = microtime(true);
 
-        $script = ExampleScript::fromRunPath($example->runPath);
         // Execute as separate PHP process for real-time output
-        $command = 'php '.escapeshellarg($script->path);
+        $command = 'php '.escapeshellarg($example->runPath);
         $exitCode = 0;
 
         // Preserve terminal environment for colors, TTY detection, and PATH for CLI tools
@@ -126,13 +124,9 @@ class RunOneExample extends Command
             2 => STDERR,
         ];
 
-        try {
-            $process = proc_open($command, $descriptorSpec, $pipes, null, $env);
-            if (is_resource($process)) {
-                $exitCode = proc_close($process);
-            }
-        } finally {
-            $script->cleanup();
+        $process = proc_open($command, $descriptorSpec, $pipes, null, $env);
+        if (is_resource($process)) {
+            $exitCode = proc_close($process);
         }
 
         $timeEnd = microtime(true);

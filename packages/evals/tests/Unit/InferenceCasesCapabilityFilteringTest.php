@@ -100,21 +100,25 @@ describe('InferenceCases capability filtering', function () {
         expect($modes)->toContain(OutputMode::Text);
     });
 
-    it('includes Tools mode for the deepseek-r V4 Pro compatibility connection', function () {
-        // 'deepseek-r' remains a compatibility connection name, now backed by V4 Pro.
+    it('resolves connection configuration from the canonical Polyglot preset', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            connections: ['deepseek-r'],
-            modes: [OutputMode::Tools, OutputMode::Text],
+            connections: ['cerebras'],
+            modes: [OutputMode::Text],
+            stream: [false],
+            filterByCapabilities: false,
         ), false);
 
-        $modes = array_map(fn($case) => $case->mode, $cases);
+        expect($cases)->toHaveCount(1);
+        $config = $cases[0]->llmConfig;
+        $expected = LLMConfig::fromPreset('cerebras');
 
-        expect($modes)->toContain(OutputMode::Tools);
-        expect($modes)->toContain(OutputMode::Text);
+        expect($config?->driver)->toBe($expected->driver)
+            ->and($config?->model)->toBe($expected->model)
+            ->and($config?->apiUrl)->toBe($expected->apiUrl)
+            ->and($config?->endpoint)->toBe($expected->endpoint);
     });
 
     it('includes Tools mode for the deepseek V4 Flash connection', function () {
-        // 'deepseek' selects V4 Flash in the default set.
         $cases = iterator_to_array(InferenceCases::only(
             connections: ['deepseek'],
             modes: [OutputMode::Tools, OutputMode::Text],
@@ -217,6 +221,16 @@ describe('InferenceCases static methods', function () {
         expect($count)->toBeGreaterThanOrEqual(1);
     });
 
+    it('all() discovers every canonical Polyglot preset', function () {
+        $cases = iterator_to_array(InferenceCases::all(filterByCapabilities: false), false);
+        $connections = array_values(array_unique(array_map(
+            static fn (InferenceCaseParams $case): string => $case->connection,
+            $cases,
+        )));
+
+        expect($connections)->toBe(LLMConfig::presetNames());
+    });
+
     it('except() excludes specified connections', function () {
         $cases = iterator_to_array(InferenceCases::except(
             connections: ['anthropic', 'perplexity', 'deepseek', 'deepseek-r'],
@@ -240,6 +254,17 @@ describe('InferenceCases static methods', function () {
         $connections = array_map(fn($case) => $case->connection, $cases);
         expect($connections)->toHaveCount(1);
         expect($connections[0])->toBe('openai');
+    });
+
+    it('only() does not fall back to every connection when none match', function () {
+        $cases = iterator_to_array(InferenceCases::only(
+            connections: ['missing'],
+            modes: [OutputMode::Text],
+            stream: [false],
+            filterByCapabilities: false,
+        ), false);
+
+        expect($cases)->toBe([]);
     });
 
 });

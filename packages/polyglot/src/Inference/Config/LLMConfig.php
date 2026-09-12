@@ -28,6 +28,7 @@ final class LLMConfig
         'metadata',
         'model',
         'maxTokens',
+        'allowLossyFallback',
         'driver',
         'options',
     ];
@@ -52,6 +53,7 @@ final class LLMConfig
         public string $driver = 'openai-compatible',
         #[\SensitiveParameter]
         public array $options = [],
+        public bool $allowLossyFallback = false,
     ) {
         $this->assertNoRetryPolicyInOptions($this->options);
     }
@@ -148,6 +150,7 @@ final class LLMConfig
             'maxTokens' => $this->maxTokens,
             'driver' => $this->driver,
             'options' => $this->options,
+            'allowLossyFallback' => $this->allowLossyFallback,
         ];
     }
 

@@ -13,6 +13,10 @@ final readonly class ReasoningEffortMappings
     private array $mappings;
 
     public function __construct(ReasoningEffortMapping ...$mappings) {
+        $requested = array_map(static fn (ReasoningEffortMapping $mapping): string => $mapping->requested->value, $mappings);
+        if (count($requested) !== count(array_unique($requested))) {
+            throw new InvalidArgumentException('Duplicate reasoning effort mapping.');
+        }
         $this->mappings = array_values($mappings);
     }
 
@@ -32,12 +36,15 @@ final readonly class ReasoningEffortMappings
     }
 
     public static function fromArray(array $data): self {
+        if (!array_is_list($data)) {
+            throw new InvalidArgumentException('Reasoning effort mappings must be a list.');
+        }
         return new self(...array_map(
             static fn (mixed $mapping): ReasoningEffortMapping => match (true) {
                 is_array($mapping) => ReasoningEffortMapping::fromArray($mapping),
                 default => throw new InvalidArgumentException('Reasoning effort mappings must be objects.'),
             },
-            array_values($data),
+            $data,
         ));
     }
 

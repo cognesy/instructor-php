@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace Cognesy\Polyglot\Inference\Core;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceRequestAdjustment;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Models\SupportStatus;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningMappingQuality;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelectionKind;
 use InvalidArgumentException;
 
 /** Applies exact offering capabilities before provider request rendering. */
 final readonly class InferenceRequestPreflight
 {
+    public function __construct(private bool $allowLossyFallback = false) {}
+
     public function apply(InferenceRequest $request): InferenceRequest {
+        $request = $this->applyReasoning($request);
         $capabilities = $request->modelProfile()?->capabilities;
         if ($capabilities === null) {
             return $request;
@@ -21,22 +28,20 @@ final readonly class InferenceRequestPreflight
         $this->assertAvailable($request->isStreamed(), $capabilities->streaming, 'streaming', $request);
         $this->assertAvailable($request->hasTools(), $capabilities->tools, 'tools', $request);
         $this->assertAvailable($request->hasToolChoice(), $capabilities->toolChoice, 'tool choice', $request);
-        $this->assertReasoning($request);
-
-        $request = $this->applyResponseFormatWithTools($request);
+        $this->assertResponseFormatWithTools($request);
 
         return $this->applyResponseFormat($request);
     }
 
-    private function applyResponseFormatWithTools(InferenceRequest $request): InferenceRequest {
+    private function assertResponseFormatWithTools(InferenceRequest $request): void {
         $status = $request->modelProfile()?->capabilities->responseFormatWithTools;
         if (!$request->hasTools() || !$request->hasNonTextResponseFormat()
             || $status !== SupportStatus::Unsupported
         ) {
-            return $request;
+            return;
         }
 
-        return $this->withEffectiveResponseFormat($request, ResponseFormat::empty());
+        throw new InvalidArgumentException($this->message('response format with tools', $request));
     }
 
     private function applyResponseFormat(InferenceRequest $request): InferenceRequest {
@@ -72,24 +77,60 @@ final readonly class InferenceRequestPreflight
             return $request;
         }
 
-        if ($jsonObject === SupportStatus::Supported) {
-            return $this->withEffectiveResponseFormat($request, ResponseFormat::jsonObject());
+        if ($jsonObject !== SupportStatus::Supported) {
+            throw new InvalidArgumentException($this->message('JSON Schema', $request));
+        }
+        if (!$this->allowLossyFallback) {
+            throw new InvalidArgumentException(
+                'JSON Schema requires lossy fallback to JSON Object, but '
+                . 'llm.allow_lossy_fallback is false.',
+            );
         }
 
-        throw new InvalidArgumentException($this->message('JSON Schema', $request));
+        return $this->withEffectiveResponseFormat($request, ResponseFormat::jsonObject())
+            ->withAdjustment(new InferenceRequestAdjustment(
+                feature: 'response_format',
+                requested: 'json_schema',
+                effective: 'json_object',
+                reason: 'The exact offering does not support JSON Schema.',
+            ));
     }
 
-    private function assertReasoning(InferenceRequest $request): void {
-        if (!$request->hasReasoning()) {
-            return;
+    private function applyReasoning(InferenceRequest $request): InferenceRequest {
+        $selection = $request->reasoning();
+        $reasoning = $request->reasoningCapabilities();
+        if ($selection->isDefault() || $reasoning === null || !$reasoning->known) {
+            return $request;
         }
 
-        $reasoning = $request->modelProfile()?->capabilities->reasoning;
-        if ($reasoning?->supports($request->reasoning()) === true) {
-            return;
+        $mapping = $selection->effort === null
+            ? null
+            : $reasoning->effortMappings->find($selection->effort);
+        if ($mapping?->quality !== ReasoningMappingQuality::Lossy) {
+            if ($reasoning->supports($selection)) {
+                return $request;
+            }
+
+            throw new InvalidArgumentException($this->message('reasoning selection', $request));
+        }
+        if (!$this->allowLossyFallback) {
+            throw new InvalidArgumentException(
+                'Reasoning selection requires a lossy mapping, but '
+                . 'llm.allow_lossy_fallback is false.',
+            );
         }
 
-        throw new InvalidArgumentException($this->message('reasoning selection', $request));
+        $effective = match ($selection->kind) {
+            ReasoningSelectionKind::Adaptive => ReasoningSelection::adaptive($mapping->effective),
+            default => ReasoningSelection::effort($mapping->effective),
+        };
+
+        return $request->withAdjustment(new InferenceRequestAdjustment(
+            feature: 'reasoning',
+            requested: $this->reasoningLabel($selection),
+            effective: $this->reasoningLabel($effective),
+            reason: 'The supplied reasoning effort mapping is lossy.',
+        ));
     }
 
     private function assertAvailable(
@@ -134,5 +175,14 @@ final readonly class InferenceRequestPreflight
         $offering = $key === null ? $request->model() : "{$key->driver}/{$key->model}";
 
         return "{$feature} is not supported by model offering {$offering}.";
+    }
+
+    private function reasoningLabel(ReasoningSelection $selection): string {
+        return match ($selection->kind) {
+            ReasoningSelectionKind::Effort,
+            ReasoningSelectionKind::Adaptive => "{$selection->kind->value}:{$selection->effort?->value}",
+            ReasoningSelectionKind::Budget => "budget:{$selection->budgetTokens}",
+            default => $selection->kind->value,
+        };
     }
 }

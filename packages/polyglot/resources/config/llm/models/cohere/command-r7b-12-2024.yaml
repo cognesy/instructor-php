@@ -1,0 +1,19 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: cohere
+  model: command-r7b-12-2024
+  status: supported
+  limits:
+    contextWindow: 128000
+    maxOutput: 4000
+  modalities:
+    inputText: supported
+    inputImage: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    jsonObject: supported
+    jsonSchema: supported
+  source: upstream-reviewed

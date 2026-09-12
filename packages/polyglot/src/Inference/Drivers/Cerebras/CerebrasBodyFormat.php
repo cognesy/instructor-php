@@ -16,9 +16,4 @@ class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
 
         return $requestBody;
     }
-
-    #[\Override]
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
-        return false;
-    }
 }

@@ -1,0 +1,18 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: cohere
+  model: command-a-reasoning-08-2025
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - disabled
+        - enabled
+        - budget
+        - adaptive
+      budget:
+        min: 1
+      default: enabled
+      tokensVisible: true
+  source: hand-authored

@@ -58,6 +58,28 @@ function requestModelCatalog(): ModelCatalog
     ]);
 }
 
+it('keeps ordinary inference independent of model knowledge', function () {
+    $requests = [];
+    $runtime = new InferenceRuntime(
+        driver: profileCapturingDriver($requests),
+        events: new EventDispatcher,
+        driverName: 'custom',
+        defaultModel: 'configured-model',
+    );
+
+    $runtime->create(new InferenceRequest(messages: Messages::fromString('configured')))->response();
+    $runtime->create(new InferenceRequest(
+        messages: Messages::fromString('override'),
+        model: 'uncataloged-model',
+    ))->response();
+
+    expect($requests)->toHaveCount(2)
+        ->and($requests[0]->model())->toBe('configured-model')
+        ->and($requests[0]->modelProfile())->toBeNull()
+        ->and($requests[1]->model())->toBe('uncataloged-model')
+        ->and($requests[1]->modelProfile())->toBeNull();
+});
+
 it('resolves the configured model when a request has no override', function () {
     $requests = [];
     $runtime = new InferenceRuntime(
@@ -118,6 +140,7 @@ it('runs capability preflight after resolving the effective model profile', func
         models: requestModelCatalog(),
         driverName: 'openai',
         defaultModel: 'config-model',
+        allowLossyFallback: true,
     );
 
     $runtime->create(new InferenceRequest(

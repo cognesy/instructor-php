@@ -2,5 +2,5 @@ driver: sambanova
 apiUrl: 'https://api.sambanova.ai/v1'
 apiKey: '${SAMBANOVA_API_KEY}'
 endpoint: /chat/completions
-model: Meta-Llama-3.1-8B-Instruct
+model: gpt-oss-120b
 maxTokens: 1024

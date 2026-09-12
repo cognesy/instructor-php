@@ -2,108 +2,160 @@
 
 declare(strict_types=1);
 
+use Cognesy\Config\Config;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 use Symfony\Component\Process\Process;
+
+it('rejects malformed source facts without replacing valid output', function (array $facts) {
+    $directory = catalogCommandFixture();
+    try {
+        expect(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue();
+        $before = catalogCommandArtifact($directory);
+        $source = catalogCommandSource($directory);
+        $source['models'][0] = [...$source['models'][0], ...$facts];
+        writeCatalogCommandSource($directory, $source);
+
+        $build = runCatalogCommand($directory, 'build');
+        $validation = runCatalogCommand($directory, 'validate');
+
+        expect($build->isSuccessful())->toBeFalse()
+            ->and($build->getErrorOutput())->not->toBe('')
+            ->and($validation->isSuccessful())->toBeFalse()
+            ->and($validation->getErrorOutput())->not->toBe('')
+            ->and(catalogCommandArtifact($directory))->toBe($before);
+    } finally {
+        deleteCatalogCommandFixture($directory);
+    }
+})->with([
+    'invalid status type' => [['status' => 42]],
+    'misspelled capability' => [['capabilities' => ['jsonShema' => 'unsupported']]],
+    'boolean capability' => [['capabilities' => ['tools' => false]]],
+    'unknown section' => [['capabilites' => []]],
+    'invalid reasoning field' => [['capabilities' => ['reasoning' => ['effort' => 'high']]]],
+]);
+
+it('builds deterministic readable records and removes obsolete output', function () {
+    $directory = catalogCommandFixture();
+    try {
+        expect(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue();
+        $record = $directory . '/target/test/mapped.yaml';
+        $firstBuild = catalogCommandArtifact($directory);
+
+        expect(fileperms($record) & 0777)->toBe(0644)
+            ->and(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue()
+            ->and(catalogCommandArtifact($directory))->toBe($firstBuild)
+            ->and(runCatalogCommand($directory, 'check')->isSuccessful())->toBeTrue()
+            ->and(runCatalogCommand($directory, 'validate')->isSuccessful())->toBeTrue();
+
+        writeCatalogCommandSource($directory, ['version' => 'v1', 'models' => []]);
+
+        expect(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue()
+            ->and(file_exists($record))->toBeFalse()
+            ->and(runCatalogCommand($directory, 'check')->isSuccessful())->toBeTrue()
+            ->and(runCatalogCommand($directory, 'validate')->isSuccessful())->toBeTrue();
+    } finally {
+        deleteCatalogCommandFixture($directory);
+    }
+});
+
+it('detects stale generated records until they are rebuilt', function () {
+    $directory = catalogCommandFixture();
+    try {
+        expect(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue();
+        $source = catalogCommandSource($directory);
+        $source['version'] = 'v2';
+        $source['models'][0]['limits']['contextWindow'] = 200;
+        writeCatalogCommandSource($directory, $source);
+
+        expect(runCatalogCommand($directory, 'check')->isSuccessful())->toBeFalse()
+            ->and(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue()
+            ->and(runCatalogCommand($directory, 'check')->isSuccessful())->toBeTrue()
+            ->and(catalogCommandArtifact($directory)['version'])->toBe('v2');
+    } finally {
+        deleteCatalogCommandFixture($directory);
+    }
+});
+
+it('rejects removed catalog commands without compatibility behavior', function (string $command) {
+    $directory = catalogCommandFixture();
+    try {
+        $process = runCatalogCommand($directory, $command);
+
+        expect($process->getExitCode())->toBe(2)
+            ->and($process->getErrorOutput())->toContain("Unknown command '{$command}'")
+            ->and($process->getErrorOutput())->toContain('Use build, check, or validate');
+    } finally {
+        deleteCatalogCommandFixture($directory);
+    }
+})->with(['list', 'refresh', 'apply']);
 
 function catalogCommandFixture(): string
 {
-    $directory = sys_get_temp_dir().'/instructor-catalog-'.bin2hex(random_bytes(6));
-    mkdir($directory.'/staging', 0777, true);
-    file_put_contents($directory.'/source.json', json_encode([
+    $directory = sys_get_temp_dir() . '/instructor-catalog-' . bin2hex(random_bytes(6));
+    mkdir($directory, 0777, true);
+    writeCatalogCommandSource($directory, [
         'version' => 'v1',
-        'models' => [
-            [
-                'driver' => 'test',
-                'model' => 'mapped',
-                'status' => 'supported',
-                'limits' => ['contextWindow' => 100, 'maxOutput' => 10],
-                'modalities' => ['inputText' => 'supported', 'outputText' => 'supported'],
-                'capabilities' => ['tools' => 'supported'],
-                'source' => 'fixture',
-            ],
-            [
-                'driver' => 'test',
-                'model' => 'local',
-                'status' => 'supported',
-                'limits' => ['contextWindow' => 50],
-                'source' => 'fixture',
-            ],
-        ],
-    ], JSON_THROW_ON_ERROR));
-    file_put_contents($directory.'/overrides.json', json_encode([
-        'version' => 'old-overrides',
+        'models' => [[
+            'driver' => 'test',
+            'model' => 'mapped',
+            'status' => 'supported',
+            'limits' => ['contextWindow' => 100, 'maxOutput' => 10],
+            'modalities' => ['inputText' => 'supported', 'outputText' => 'supported'],
+            'capabilities' => ['tools' => 'supported'],
+            'source' => 'fixture',
+        ]],
+    ]);
+    file_put_contents($directory . '/overrides.json', json_encode([
+        'version' => 'v1',
         'models' => [],
-    ], JSON_THROW_ON_ERROR));
-    file_put_contents($directory.'/mappings.json', json_encode([
-        'schemaVersion' => 1,
-        'snapshot' => ['url' => $directory.'/snapshot.json'],
-        'offerings' => [
-            [
-                'driver' => 'test',
-                'model' => 'mapped',
-                'upstream' => ['provider' => 'upstream', 'model' => 'mapped-v1'],
-                'imports' => [
-                    'limits.contextWindow' => 'limit.context',
-                    'limits.maxOutput' => 'limit.output',
-                    'modalities.inputText' => 'modalities.input:text',
-                    'modalities.inputImage' => 'modalities.input:image',
-                    'modalities.inputAudio' => 'modalities.input:audio',
-                    'modalities.inputFile' => 'modalities.input:file,pdf',
-                    'modalities.outputText' => 'modalities.output:text',
-                    'capabilities.tools' => 'tool_call',
-                    'capabilities.reasoning' => 'reasoning_options',
-                ],
-            ],
-            [
-                'driver' => 'test',
-                'model' => 'local',
-                'upstream' => null,
-                'imports' => [],
-            ],
-        ],
-    ], JSON_THROW_ON_ERROR));
-    file_put_contents($directory.'/snapshot.json', json_encode([
-        'upstream' => [
-            'models' => [
-                'mapped-v1' => [
-                    'limit' => ['context' => 200, 'output' => 20],
-                    'modalities' => ['input' => ['text', 'image', 'pdf'], 'output' => ['text']],
-                    'tool_call' => false,
-                    'reasoning_options' => [
-                        ['type' => 'toggle'],
-                        ['type' => 'effort', 'values' => ['low', 'high']],
-                        ['type' => 'budget_tokens', 'min' => 16, 'max' => 32],
-                    ],
-                ],
-            ],
-        ],
     ], JSON_THROW_ON_ERROR));
 
     return $directory;
 }
 
-function runCatalogCommand(string $directory, string $command, string ...$arguments): Process
+function runCatalogCommand(string $directory, string $command): Process
 {
-    $script = dirname(__DIR__, 3).'/bin/instructor-catalog';
+    $script = dirname(__DIR__, 3) . '/bin/instructor-catalog';
     $process = new Process([
         PHP_BINARY,
         $script,
         $command,
         "--source={$directory}/source.json",
         "--overrides={$directory}/overrides.json",
-        "--target={$directory}/target.json",
-        "--mappings={$directory}/mappings.json",
-        "--staging={$directory}/staging",
-        "--provenance={$directory}/provenance.json",
-        ...$arguments,
+        "--target={$directory}/target",
     ]);
     $process->run();
 
     return $process;
 }
 
+/** @return array<string, mixed> */
+function catalogCommandSource(string $directory): array
+{
+    return json_decode(
+        (string) file_get_contents($directory . '/source.json'),
+        true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+}
+
+/** @param array<string, mixed> $source */
+function writeCatalogCommandSource(string $directory, array $source): void
+{
+    file_put_contents($directory . '/source.json', json_encode($source, JSON_THROW_ON_ERROR));
+}
+
+/** @return array<string, mixed> */
+function catalogCommandArtifact(string $directory): array
+{
+    Config::flushSourceCache();
+
+    return ModelCatalog::fromPaths($directory . '/target')->toArray();
+}
+
 function deleteCatalogCommandFixture(string $directory): void
 {
-    if (! is_dir($directory)) {
+    if (!is_dir($directory)) {
         return;
     }
     $items = new RecursiveIteratorIterator(
@@ -120,90 +172,3 @@ function deleteCatalogCommandFixture(string $directory): void
     }
     rmdir($directory);
 }
-
-it('stages, reviews, and atomically applies only exact mapped offering fields', function () {
-    $directory = catalogCommandFixture();
-    try {
-        $build = runCatalogCommand($directory, 'build');
-        expect($build->isSuccessful())->toBeTrue();
-        $firstBuild = file_get_contents($directory.'/target.json');
-        expect(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue()
-            ->and(file_get_contents($directory.'/target.json'))->toBe($firstBuild);
-
-        $refresh = runCatalogCommand($directory, 'refresh', '--revision=v2');
-        $sourceBeforeApply = json_decode((string) file_get_contents($directory.'/source.json'), true, 512, JSON_THROW_ON_ERROR);
-        $staged = json_decode((string) file_get_contents($directory.'/staging/models-source.json'), true, 512, JSON_THROW_ON_ERROR);
-        $sourceByModel = array_column($sourceBeforeApply['models'], null, 'model');
-        $stagedByModel = array_column($staged['models'], null, 'model');
-        expect($refresh->isSuccessful())->toBeTrue()
-            ->and($sourceBeforeApply['version'])->toBe('v1')
-            ->and($staged['version'])->toBe('v2')
-            ->and($stagedByModel['mapped']['limits'])->toBe(['contextWindow' => 200, 'maxOutput' => 20])
-            ->and($stagedByModel['mapped']['modalities']['inputFile'])->toBe('supported')
-            ->and($stagedByModel['mapped']['capabilities']['tools'])->toBe('unsupported')
-            ->and($stagedByModel['mapped']['capabilities']['reasoning'])->toBe([
-                'selections' => ['disabled', 'enabled', 'effort', 'budget'],
-                'efforts' => [
-                    ['requested' => 'low', 'provider' => 'low'],
-                    ['requested' => 'high', 'provider' => 'high'],
-                ],
-                'budget' => ['min' => 16, 'max' => 32],
-            ])
-            ->and($stagedByModel['local'])->toBe($sourceByModel['local']);
-
-        $apply = runCatalogCommand($directory, 'apply');
-        $applied = json_decode((string) file_get_contents($directory.'/source.json'), true, 512, JSON_THROW_ON_ERROR);
-        $compiled = json_decode((string) file_get_contents($directory.'/target.json'), true, 512, JSON_THROW_ON_ERROR);
-        expect($apply->isSuccessful())->toBeTrue()
-            ->and($applied)->toBe($staged)
-            ->and($compiled['version'])->toBe('v2')
-            ->and(runCatalogCommand($directory, 'check')->isSuccessful())->toBeTrue()
-            ->and(runCatalogCommand($directory, 'validate')->isSuccessful())->toBeTrue();
-
-        $listed = runCatalogCommand($directory, 'list', '--json');
-        $list = json_decode($listed->getOutput(), true, 512, JSON_THROW_ON_ERROR);
-        expect($list['models'][0]['upstream'])->toBe('')
-            ->and($list['models'][1]['upstream'])->toBe('upstream/mapped-v1')
-            ->and($list['models'][1]['refreshRevision'])->toBe('v2');
-    } finally {
-        deleteCatalogCommandFixture($directory);
-    }
-});
-
-it('rejects staged edits outside each offering mapping', function () {
-    $directory = catalogCommandFixture();
-    try {
-        expect(runCatalogCommand($directory, 'refresh', '--revision=v2')->isSuccessful())->toBeTrue();
-        $stagePath = $directory.'/staging/models-source.json';
-        $provenancePath = $directory.'/staging/provenance.json';
-        $staged = json_decode((string) file_get_contents($stagePath), true, 512, JSON_THROW_ON_ERROR);
-        $staged['models'][0]['status'] = 'unknown';
-        file_put_contents($stagePath, json_encode($staged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n");
-        $provenance = json_decode((string) file_get_contents($provenancePath), true, 512, JSON_THROW_ON_ERROR);
-        $provenance['stagedSourceSha256'] = hash_file('sha256', $stagePath);
-        file_put_contents($provenancePath, json_encode($provenance, JSON_THROW_ON_ERROR));
-
-        $apply = runCatalogCommand($directory, 'apply');
-        expect($apply->isSuccessful())->toBeFalse()
-            ->and($apply->getErrorOutput())->toContain('changed unowned fields');
-    } finally {
-        deleteCatalogCommandFixture($directory);
-    }
-});
-
-it('rejects malformed and incomplete exact mappings during offline validation', function () {
-    $directory = catalogCommandFixture();
-    try {
-        expect(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue();
-        $mappings = json_decode((string) file_get_contents($directory.'/mappings.json'), true, 512, JSON_THROW_ON_ERROR);
-        array_pop($mappings['offerings']);
-        $mappings['offerings'][0]['imports']['capabilities.jsonSchema'] = 'structured_output';
-        file_put_contents($directory.'/mappings.json', json_encode($mappings, JSON_THROW_ON_ERROR));
-
-        $validate = runCatalogCommand($directory, 'validate');
-        expect($validate->isSuccessful())->toBeFalse()
-            ->and($validate->getErrorOutput())->toContain('Unowned catalog import');
-    } finally {
-        deleteCatalogCommandFixture($directory);
-    }
-});

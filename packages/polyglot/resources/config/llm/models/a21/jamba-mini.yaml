@@ -1,0 +1,20 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: a21
+  model: jamba-mini
+  status: supported
+  limits:
+    contextWindow: 256000
+    maxOutput: 4096
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: unsupported
+    responseFormatWithTools: supported
+  source: hand-authored

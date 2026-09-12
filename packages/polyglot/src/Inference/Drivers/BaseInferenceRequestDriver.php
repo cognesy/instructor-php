@@ -243,6 +243,10 @@ class BaseInferenceRequestDriver implements CanProcessInferenceRequest
             'hasCachedResponseFormat' => $cachedContext !== null && !$cachedContext->responseFormat()->isEmpty(),
         ];
 
+        if (!$request->adjustments()->isEmpty()) {
+            $data['adjustments'] = $request->adjustments()->toArray();
+        }
+
         return match ($modelProfile) {
             null => $data,
             default => [

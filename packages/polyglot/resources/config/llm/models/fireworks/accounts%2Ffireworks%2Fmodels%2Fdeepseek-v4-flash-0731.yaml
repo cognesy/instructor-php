@@ -1,0 +1,19 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: fireworks
+  model: accounts/fireworks/models/deepseek-v4-flash-0731
+  status: supported
+  limits:
+    contextWindow: 1000000
+    maxOutput: 384000
+  modalities:
+    inputText: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+  source: upstream-reviewed

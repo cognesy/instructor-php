@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: gemini-oai
+  model: gemini-2.5-flash-lite
+  status: supported
+  limits:
+    contextWindow: 1048576
+    maxOutput: 65536
+  modalities:
+    inputText: supported
+    inputImage: supported
+    inputAudio: supported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: unsupported
+    responseFormatWithTools: unsupported
+  source: upstream-reviewed

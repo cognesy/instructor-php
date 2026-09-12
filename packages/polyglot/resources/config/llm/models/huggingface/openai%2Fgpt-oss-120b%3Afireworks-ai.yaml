@@ -1,0 +1,22 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: huggingface
+  model: 'openai/gpt-oss-120b:fireworks-ai'
+  status: supported
+  limits:
+    contextWindow: 131072
+    maxOutput: 32768
+  modalities:
+    inputText: supported
+    inputImage: unsupported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    streaming: supported
+    tools: supported
+    toolChoice: supported
+    jsonObject: supported
+    jsonSchema: supported
+    responseFormatWithTools: unsupported
+  source: upstream-reviewed

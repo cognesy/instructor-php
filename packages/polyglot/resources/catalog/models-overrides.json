@@ -56,7 +56,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "deepseek",
@@ -113,7 +113,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "deepseek",
@@ -156,7 +156,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "openai",
@@ -189,7 +189,7 @@
           "default": "enabled"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "openai-responses",
@@ -226,7 +226,7 @@
           "default": "enabled"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "anthropic",
@@ -266,7 +266,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "anthropic",
@@ -306,7 +306,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "gemini",
@@ -341,7 +341,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "gemini",
@@ -367,7 +367,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "gemini-oai",
@@ -391,7 +391,7 @@
           "default": "mandatory"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "glm",
@@ -407,7 +407,7 @@
           "default": "enabled"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "qwen",
@@ -424,7 +424,6 @@
       "capabilities": {
         "streaming": "supported",
         "tools": "supported",
-        "toolChoice": "supported",
         "jsonObject": "supported",
         "jsonSchema": "supported",
         "responseFormatWithTools": "unsupported",
@@ -458,7 +457,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "qwen",
@@ -469,7 +468,7 @@
         "jsonSchema": "unsupported",
         "responseFormatWithTools": "unsupported"
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "cohere",
@@ -490,7 +489,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "mistral",
@@ -511,7 +510,7 @@
           "default": "enabled"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "moonshot",
@@ -527,7 +526,7 @@
           "default": "enabled"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "moonshot",
@@ -543,7 +542,7 @@
           "default": "enabled"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "xai",
@@ -575,7 +574,7 @@
           "default": "mandatory"
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     },
     {
       "driver": "openrouter",
@@ -623,7 +622,7 @@
           "tokensVisible": true
         }
       },
-      "source": "bundled-override"
+      "source": "hand-authored"
     }
   ]
 }

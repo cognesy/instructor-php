@@ -27,7 +27,7 @@ use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
  *
  * The fixture is the evidence that provider wire rendering stays stable. Capability decisions
  * run in `InferenceRequestPreflight`; this direct driver test therefore pins rendering after a
- * request has already been accepted or degraded.
+ * request has already been approved, including any explicitly authorized adjustment.
  *
  * The request is captured through MockHttpDriver rather than by reaching into the protected
  * toHttpRequest(), so what is pinned is what the driver would actually have sent.
@@ -151,9 +151,8 @@ function driverGoldenConversation(): Messages {
  */
 function driverGoldenRequests(): array {
     return [
-        // Tools AND a schema. Most drivers refuse both at once
-        // (supportsNonTextResponseForTools), so this variant pins the DROPPING of the
-        // response format as much as the tools themselves.
+        // Tools AND a schema. This variant proves each driver either preserves both requested
+        // operations or reports that its protocol cannot encode the combination.
         'tools_and_schema' => new InferenceRequest(
             messages: driverGoldenPlainMessages(),
             model: 'test-model',
@@ -174,9 +173,8 @@ function driverGoldenRequests(): array {
             options: ['temperature' => 0.0, 'stream' => true],
         ),
 
-        // A schema with NO tools -- the only way to reach toJsonSchemaResponseFormat() on the
-        // six drivers that drop the response format whenever tools are present. Their schema
-        // rendering was entirely unpinned before this variant existed.
+        // A schema with NO tools reaches each driver's native schema renderer independently of
+        // protocol restrictions on combining schema output with tools.
         'schema_only' => new InferenceRequest(
             messages: driverGoldenPlainMessages(),
             model: 'test-model',
@@ -266,6 +264,7 @@ function driverGoldenCapture(string $providerName, InferenceRequest $request, bo
         $events,
     );
 
+    $error = null;
     try {
         if ($streamed) {
             // Consume enough to force the request out; the mock body is not a valid stream.
@@ -276,14 +275,13 @@ function driverGoldenCapture(string $providerName, InferenceRequest $request, bo
             $driver->makeResponseFor($request);
         }
     } catch (\Throwable $e) {
-        // Response parsing is not what this pins -- the request was already captured, and a
-        // provider whose adapter rejects the stub body must still have produced a request.
+        $error = $e->getMessage();
     }
 
     $sent = $mock->getLastRequest();
     if ($sent === null) {
         return ['url' => 'NO REQUEST SENT', 'headers' => [], 'body' => null,
-                'method' => null, 'options' => [], 'telemetry' => null];
+                'method' => null, 'options' => [], 'telemetry' => null, 'error' => $error];
     }
 
     $body = $sent->body()->toString();
@@ -305,6 +303,7 @@ function driverGoldenCapture(string $providerName, InferenceRequest $request, bo
         'method' => $sent->method(),
         'options' => $sent->options(),
         'telemetry' => $sent->metadata->get(HttpRequestTelemetry::CORRELATION_METADATA_KEY),
+        'error' => null,
     ];
 }
 
@@ -446,16 +445,16 @@ it('keeps the wire-equivalence classes of the providers exactly as they are', fu
         ['deepseek'],
         ['fireworks'],
         ['gemini'],
-        ['gemini-oai', 'sambanova'],
+        ['gemini-oai'],
         ['glm'],
-        ['groq', 'huggingface', 'openrouter'],
-        ['inception', 'moonshot', 'ollama', 'openai', 'openai-compatible', 'together'],
+        ['groq', 'huggingface', 'inception', 'moonshot', 'ollama', 'openai', 'openai-compatible', 'openrouter', 'together'],
         ['meta'],
         ['minimaxi'],
         ['mistral'],
         ['openai-responses', 'openresponses'],
         ['perplexity'],
         ['qwen'],
+        ['sambanova'],
         ['xai'],
     ];
     foreach ($pinned as &$group) {

@@ -13,6 +13,10 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class MessageEndEvent extends StreamEvent
 {
+    /**
+     * @param array<array-key, mixed> $rawData
+     * @param array<array-key, mixed> $message
+     */
     public function __construct(
         array $rawData,
         public string $role,
@@ -49,12 +53,14 @@ final readonly class MessageEndEvent extends StreamEvent
     /**
      * Extract usage data from the message
      */
+    /** @return array<array-key, mixed>|null */
     public function usage(): ?array
     {
         $usage = $this->message['usage'] ?? null;
         return is_array($usage) ? $usage : null;
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         $message = Normalize::toArray($data['message'] ?? []);

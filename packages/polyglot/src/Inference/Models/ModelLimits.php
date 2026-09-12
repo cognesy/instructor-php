@@ -16,6 +16,7 @@ final readonly class ModelLimits
 
     public static function fromArray(array $data): self
     {
+        ModelRecordFields::validate($data, ['contextWindow', 'maxOutput'], 'limits', ['contextWindow', 'maxOutput']);
         return new self(
             contextWindow: self::nullableInt($data['contextWindow'] ?? null),
             maxOutput: self::nullableInt($data['maxOutput'] ?? null),

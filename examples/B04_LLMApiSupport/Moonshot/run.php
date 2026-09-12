@@ -3,7 +3,6 @@ title: 'MoonshotAI'
 docname: 'llm_moonshotai'
 id: '83d1'
 tags:
-  - 'broken'
   - 'llm-api-support'
   - 'moonshot'
   - 'provider'
@@ -31,8 +30,8 @@ require 'examples/boot.php';
 
 $answer = Inference::using('moonshot-kimi')
     ->with(
-        messages: Messages::fromString('What is the capital of France'),
-        options: ['max_tokens' => 64]
+        messages: Messages::fromString('Reply with exactly: Paris'),
+        options: ['max_tokens' => 128]
     )
     ->get()->content()->toString();
 

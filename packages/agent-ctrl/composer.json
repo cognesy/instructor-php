@@ -39,7 +39,7 @@
   },
   "scripts": {
     "tests": "@php vendor/bin/pest",
-    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon"
+    "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=1G"
   },
   "config": {
     "allow-plugins": {

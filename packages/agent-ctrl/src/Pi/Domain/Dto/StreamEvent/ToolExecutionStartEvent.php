@@ -11,6 +11,10 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class ToolExecutionStartEvent extends StreamEvent
 {
+    /**
+     * @param array<array-key, mixed> $rawData
+     * @param array<array-key, mixed> $args
+     */
     public function __construct(
         array $rawData,
         public string $toolCallId,
@@ -26,6 +30,7 @@ final readonly class ToolExecutionStartEvent extends StreamEvent
         return 'tool_execution_start';
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         $args = $data['args'] ?? [];

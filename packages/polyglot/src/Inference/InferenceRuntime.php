@@ -27,7 +27,7 @@ use Override;
 
 final class InferenceRuntime implements CanCreateInference
 {
-    private readonly ModelCatalog $models;
+    private readonly ?ModelCatalog $models;
     private readonly InferenceRequestPreflight $preflight;
 
     public function __construct(
@@ -36,9 +36,10 @@ final class InferenceRuntime implements CanCreateInference
         ?ModelCatalog $models = null,
         private readonly string $driverName = '',
         private readonly string $defaultModel = '',
+        bool $allowLossyFallback = false,
     ) {
-        $this->models = $models ?? ModelCatalog::discover();
-        $this->preflight = new InferenceRequestPreflight();
+        $this->models = $models;
+        $this->preflight = new InferenceRequestPreflight($allowLossyFallback);
     }
 
     #[Override]
@@ -47,9 +48,10 @@ final class InferenceRuntime implements CanCreateInference
             '' => $this->defaultModel,
             default => $request->model(),
         };
-        $request = $request
-            ->withModel($model)
-            ->withModelProfile($this->models->find($this->driverName, $model));
+        $request = $request->withModel($model);
+        if ($this->models !== null) {
+            $request = $request->withModelProfile($this->models->find($this->driverName, $model));
+        }
         $request = $this->preflight->apply($request);
 
         return new PendingInference(
@@ -82,6 +84,7 @@ final class InferenceRuntime implements CanCreateInference
             models: $models,
             driverName: $config->driver,
             defaultModel: $config->model,
+            allowLossyFallback: $config->allowLossyFallback,
         );
     }
 
@@ -114,6 +117,7 @@ final class InferenceRuntime implements CanCreateInference
             models: $models,
             driverName: $config->driver,
             defaultModel: $config->model,
+            allowLossyFallback: $config->allowLossyFallback,
         );
     }
 

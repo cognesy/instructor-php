@@ -3,7 +3,6 @@ title: 'Fireworks.ai'
 docname: 'fireworks'
 id: '9592'
 tags:
-  - 'broken'
   - 'api-support'
   - 'fireworks'
   - 'provider'
@@ -64,7 +63,7 @@ $user = $structuredOutput
             'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
             'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums']],
         ]],
-        model: 'accounts/fireworks/models/deepseek-v3p1',
+        model: 'accounts/fireworks/models/deepseek-v4-flash-0731',
     )->get();
 
 echo "Completed response model:\n\n";

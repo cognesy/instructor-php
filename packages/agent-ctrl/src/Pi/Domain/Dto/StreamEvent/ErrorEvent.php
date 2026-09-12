@@ -9,6 +9,7 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class ErrorEvent extends StreamEvent
 {
+    /** @param array<array-key, mixed> $rawData */
     public function __construct(
         array $rawData,
         public string $message,
@@ -23,6 +24,7 @@ final readonly class ErrorEvent extends StreamEvent
         return 'error';
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         $error = $data['error'] ?? [];

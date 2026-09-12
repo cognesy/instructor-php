@@ -1,0 +1,14 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: moonshot
+  model: kimi-k2.6
+  status: supported
+  capabilities:
+    reasoning:
+      selections:
+        - disabled
+        - enabled
+        - adaptive
+      default: enabled
+  source: hand-authored

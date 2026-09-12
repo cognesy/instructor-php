@@ -13,7 +13,7 @@ final readonly class ClaudeEventCollection
      * @param list<StreamEvent> $items
      */
     private function __construct(array $items) {
-        $this->items = array_values($items);
+        $this->items = $items;
     }
 
     public static function empty() : self {

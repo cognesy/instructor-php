@@ -6,11 +6,17 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Utils\Arrays;
+use InvalidArgumentException;
 
 class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 {
     #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
+        if ($request->hasToolChoice()) {
+            throw new InvalidArgumentException(
+                'Cohere V2 cannot render an explicit tool choice.',
+            );
+        }
         $requestBody = parent::toRequestBody($request);
 
         if (array_key_exists('max_completion_tokens', $requestBody)
@@ -25,13 +31,6 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
         unset($requestBody['stream_options']);
 
         return $requestBody;
-    }
-
-    // CAPABILITIES /////////////////////////////////////////
-
-    #[\Override]
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
-        return false;
     }
 
     // INTERNAL //////////////////////////////////////////////

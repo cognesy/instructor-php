@@ -21,6 +21,7 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 abstract readonly class StreamEvent
 {
+    /** @param array<array-key, mixed> $rawData */
     public function __construct(
         public array $rawData,
     ) {}
@@ -33,6 +34,7 @@ abstract readonly class StreamEvent
     /**
      * Factory method to create appropriate event from raw data
      */
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');

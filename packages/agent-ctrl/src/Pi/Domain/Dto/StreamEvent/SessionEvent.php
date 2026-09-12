@@ -14,6 +14,7 @@ final readonly class SessionEvent extends StreamEvent
 {
     private ?PiSessionId $sessionId;
 
+    /** @param array<array-key, mixed> $rawData */
     public function __construct(
         array $rawData,
         PiSessionId|string|null $sessionId,
@@ -40,6 +41,7 @@ final readonly class SessionEvent extends StreamEvent
         return $this->sessionId;
     }
 
+    /** @param array<array-key, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(

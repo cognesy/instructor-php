@@ -17,7 +17,8 @@ final readonly class GeminiResponse
     private array $parseFailureSamples;
 
     /**
-     * @param list<array{tool:string,input:array,output:?string,isError:bool,toolId:string}> $toolCalls
+     * @param list<array{tool:string,input:array<string,mixed>,output:?string,isError:bool,toolId:string}> $toolCalls
+     * @param list<string> $parseFailureSamples
      */
     public function __construct(
         private ExecResult $result,
@@ -34,7 +35,7 @@ final readonly class GeminiResponse
             is_string($sessionId) && $sessionId !== '' => GeminiSessionId::fromString($sessionId),
             default => null,
         };
-        $this->parseFailureSamples = array_values($parseFailureSamples);
+        $this->parseFailureSamples = $parseFailureSamples;
     }
 
     public function exitCode(): int
@@ -78,7 +79,7 @@ final readonly class GeminiResponse
     }
 
     /**
-     * @return list<array{tool:string,input:array,output:?string,isError:bool,toolId:string}>
+     * @return list<array{tool:string,input:array<string,mixed>,output:?string,isError:bool,toolId:string}>
      */
     public function toolCalls(): array
     {

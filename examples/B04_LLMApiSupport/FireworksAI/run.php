@@ -3,7 +3,6 @@ title: 'Fireworks.ai'
 docname: 'llm_fireworks'
 id: 'dc10'
 tags:
-  - 'broken'
   - 'llm-api-support'
   - 'fireworks'
   - 'provider'

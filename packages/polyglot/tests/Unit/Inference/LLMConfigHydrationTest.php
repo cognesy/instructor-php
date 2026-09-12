@@ -7,6 +7,7 @@ it('hydrates known LLM configuration fields and ignores unknown input', function
         'driver' => 'openai',
         'model' => 'gpt-test',
         'maxTokens' => '2048',
+        'allowLossyFallback' => true,
         'futureField' => 'ignored',
         'extensionData' => ['ignored' => true],
     ]);
@@ -14,5 +15,12 @@ it('hydrates known LLM configuration fields and ignores unknown input', function
     expect($config->driver)->toBe('openai')
         ->and($config->model)->toBe('gpt-test')
         ->and($config->maxTokens)->toBe(2048)
+        ->and($config->allowLossyFallback)->toBeTrue()
         ->and($config->toArray())->not->toHaveKeys(['futureField', 'extensionData']);
+});
+
+it('defaults lossy fallback to false and rejects non-boolean values', function () {
+    expect((new LLMConfig)->allowLossyFallback)->toBeFalse()
+        ->and(fn () => LLMConfig::fromArray(['allowLossyFallback' => 'true']))
+        ->toThrow(InvalidArgumentException::class, 'allowLossyFallback');
 });

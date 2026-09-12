@@ -11,7 +11,7 @@ final readonly class PathList
      * @param list<string> $paths
      */
     private function __construct(array $paths) {
-        $this->paths = array_values($paths);
+        $this->paths = $paths;
     }
 
     public static function none() : self {

@@ -14,6 +14,7 @@ use Cognesy\AgentCtrl\Common\Value\Normalize;
  */
 final readonly class MessageEvent extends StreamEvent
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         array $rawData,
         public string $role,
@@ -56,6 +57,7 @@ final readonly class MessageEvent extends StreamEvent
         return null;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(
