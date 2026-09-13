@@ -25,7 +25,7 @@ If none of these directories exist, Polyglot throws an `InvalidArgumentException
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('my-custom-preset', basePath: '/app/config/llm');
-// @doctest id="01dd"
+// @doctest id="e84c"
 ```
 
 ## Required Preset Fields
@@ -39,7 +39,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-# @doctest id="1cae"
+# @doctest id="eec5"
 ```
 
 The following fields are required or strongly recommended:
@@ -84,7 +84,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="3461"
+// @doctest id="32a9"
 ```
 
 You can also create a config from an associative array:
@@ -102,7 +102,7 @@ $config = LLMConfig::fromArray([
     'model' => 'claude-haiku-4-5-20251001',
     'maxTokens' => 1024,
 ]);
-// @doctest id="6c9c"
+// @doctest id="1215"
 ```
 
 ## Overriding Preset Values
@@ -122,7 +122,7 @@ $config = LLMConfig::fromPreset('openai')
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="5243"
+// @doctest id="8d47"
 ```
 
 ## Verify a Configuration
@@ -143,7 +143,7 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo "Configuration error: " . $e->getMessage() . "\n";
 }
-// @doctest id="32af"
+// @doctest id="9695"
 ```
 
 ## Common Pitfalls

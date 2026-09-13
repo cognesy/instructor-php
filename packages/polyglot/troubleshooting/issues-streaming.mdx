@@ -25,7 +25,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->messageChunks->textDelta();
 }
-// @doctest id="a70e"
+// @doctest id="107c"
 ```
 
 Alternatively, use the `withStreaming()` method followed by `create()->stream()`:
@@ -45,7 +45,7 @@ $stream = $pending->stream();
 foreach ($stream->deltas() as $delta) {
     echo $delta->messageChunks->textDelta();
 }
-// @doctest id="c48c"
+// @doctest id="05fb"
 ```
 
 ## Do Not Consume a Stream Twice
@@ -58,7 +58,7 @@ The most common streaming mistake is attempting to iterate over `deltas()` more 
 // This will throw LogicException on the second loop
 foreach ($stream->deltas() as $delta) { /* first pass */ }
 foreach ($stream->deltas() as $delta) { /* throws! */ }
-// @doctest id="b933"
+// @doctest id="2fc0"
 ```
 
 If you need to replay the stream content, enable the memory cache policy before creating the request:
@@ -74,7 +74,7 @@ $inference = Inference::using('openai')
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->withMessages(Messages::fromString('Write a haiku.'))
     ->withStreaming(true);
-// @doctest id="5b14"
+// @doctest id="700d"
 ```
 
 ## Collect the Full Response After Streaming
@@ -100,7 +100,7 @@ foreach ($stream->deltas() as $delta) {
 // Get the finalized response (assembled from all deltas)
 $response = $stream->final();
 echo "\n\nTotal tokens: " . $response->usage()->total() . "\n";
-// @doctest id="f4e6"
+// @doctest id="fb27"
 ```
 
 If you only need the final response and do not need to process deltas, call `final()` directly -- it will drain the stream internally.
@@ -121,7 +121,7 @@ foreach ($stream->deltas() as $delta) {
     }
     flush();
 }
-// @doctest id="4d4c"
+// @doctest id="aeb4"
 ```
 
 For web applications, also ensure that your web server is not buffering the response. Common server-side buffering sources:
@@ -163,7 +163,7 @@ foreach ($stream->deltas() as $delta) {
     echo $delta->messageChunks->textDelta();
     flush();
 }
-// @doctest id="3d8f"
+// @doctest id="1994"
 ```
 
 The `idleTimeout` is particularly important for streaming. It controls how long the client waits for the next chunk before giving up. If a model pauses while generating (for example, during complex reasoning), a short idle timeout will cause the stream to terminate prematurely.
@@ -198,7 +198,7 @@ try {
         echo "Partial content received: " . strlen($content) . " characters\n";
     }
 }
-// @doctest id="330f"
+// @doctest id="3994"
 ```
 
 ## Use the onDelta Callback
@@ -222,7 +222,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $stream->all();
-// @doctest id="ac22"
+// @doctest id="ccb5"
 ```
 
 ## Use Functional Stream Operations
@@ -246,7 +246,7 @@ $content = $stream->reduce(
 );
 
 echo $content;
-// @doctest id="4789"
+// @doctest id="97b1"
 ```
 
 ## Fallback to Non-Streaming
@@ -276,7 +276,7 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
 
     return $inference->get();
 }
-// @doctest id="cce4"
+// @doctest id="7d5e"
 ```
 
 ## Verify Model Supports Streaming

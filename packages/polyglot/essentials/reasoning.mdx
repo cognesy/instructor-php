@@ -18,7 +18,7 @@ $message = Inference::using('openai')
         ReasoningSelection::effort(ReasoningEffort::High),
     )
     ->get();
-// @doctest id="edeb"
+// @doctest id="6116"
 ```
 
 The portable effort vocabulary is `minimal`, `low`, `medium`, `high`,
@@ -40,7 +40,7 @@ ReasoningSelection::effort(ReasoningEffort::Medium);
 ReasoningSelection::budget(4096);
 ReasoningSelection::adaptive();
 ReasoningSelection::adaptive(ReasoningEffort::High);
-// @doctest id="cb68"
+// @doctest id="818b"
 ```
 
 `providerDefault()` is non-invasive: Polyglot emits no reasoning field, so
@@ -99,7 +99,7 @@ $reasoning->reasoningTokensVisible;
 $reasoning->supports(
     ReasoningSelection::effort(ReasoningEffort::Medium),
 );
-// @doctest id="94d9"
+// @doctest id="5eec"
 ```
 
 A missing exact pair returns an unknown profile, so `known` is `false`. That is

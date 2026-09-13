@@ -96,7 +96,7 @@ The retry and redaction classes previously lived under `Inference\`, which force
 +------------------------------------------------+
 |             HTTP Client (shared)               |     Transport
 +------------------------------------------------+
-// @doctest id="ebab"
+// @doctest id="fb32"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.
