@@ -150,8 +150,7 @@ final readonly class JournalBackedTellRuns implements CanInspectTellRuns
                 $run['status'] = 'abandoned';
             }
             if ($record->kind === 'tell.outcome') {
-                $run = [
-                    ...$run,
+                $run = array_replace($run, [
                     'agent' => $record->facts['agent'] ?? $run['agent'],
                     'session' => $record->facts['session'] ?? null,
                     'branch' => $record->facts['branch'] ?? null,
@@ -167,7 +166,7 @@ final readonly class JournalBackedTellRuns implements CanInspectTellRuns
                     'path' => $record->facts['tracePath'] ?? null,
                     'traceStatus' => $record->facts['traceStatus'] ?? 'unknown',
                     'resolved' => true,
-                ];
+                ]);
             }
             $runs[$record->executionId] = $run;
         }

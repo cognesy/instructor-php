@@ -11,6 +11,10 @@ it('isolates model facts across eight workers and one thousand executions', func
         foreach (range(1, 1000) as $index) {
             file_put_contents($root . '/shared/custom/unrelated-' . $index . '.yaml', 'invalid: [');
         }
+        $autoload = match (true) {
+            is_file(dirname(__DIR__, 3) . '/vendor/autoload.php') => dirname(__DIR__, 3) . '/vendor/autoload.php',
+            default => dirname(__DIR__, 5) . '/vendor/autoload.php',
+        };
         $workers = [];
         $started = hrtime(true);
         foreach (range(1, 8) as $index) {
@@ -22,7 +26,7 @@ it('isolates model facts across eight workers and one thousand executions', func
             ]));
             $worker = new Process([
                 PHP_BINARY, dirname(__DIR__, 2) . '/Fixtures/model-record-worker.php',
-                dirname(__DIR__, 5) . '/vendor/autoload.php',
+                $autoload,
                 $root . '/worker-' . $index, $root . '/shared',
                 $scopeMode,
             ]);

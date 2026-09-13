@@ -9,6 +9,7 @@ use Cognesy\Tell\Core\Workspace\WorkspaceException;
 use Cognesy\Tell\Data\TellPublication;
 use Cognesy\Tell\Data\TellTermination;
 use Cognesy\Tell\Data\TellTraceReference;
+use Override;
 use Throwable;
 
 final class TurnException extends WorkspaceException implements CanExplainTellInfrastructureFailure
@@ -24,18 +25,22 @@ final class TurnException extends WorkspaceException implements CanExplainTellIn
         parent::__construct($message, previous: $previous);
     }
 
+    #[Override]
     public function failureCode(): string {
         return $this->failureCode;
     }
 
+    #[Override]
     public function termination(): ?TellTermination {
         return $this->termination;
     }
 
+    #[Override]
     public function publication(): ?TellPublication {
         return $this->publication;
     }
 
+    #[Override]
     public function trace(): ?TellTraceReference {
         return $this->trace;
     }

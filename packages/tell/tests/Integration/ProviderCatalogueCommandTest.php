@@ -6,9 +6,11 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Adapter\Console\Command\ModelsCommand;
 use Cognesy\Tell\Adapter\Console\Command\ProvidersCommand;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Models\SupportStatus;
-use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Yaml\Yaml;
@@ -135,7 +137,15 @@ model: private-model
 YAML);
     $runtimeRegistry = InferenceDriverRegistry::default()->withDriver(
         'runtime-only',
-        static fn () => new FakeInferenceDriver(),
+        static fn () => new class implements CanProcessInferenceRequest {
+            public function makeResponseFor(InferenceRequest $request): InferenceResponse {
+                return InferenceResponse::empty();
+            }
+
+            public function makeStreamDeltasFor(InferenceRequest $request): iterable {
+                return [];
+            }
+        },
     );
     $catalogue = tellTestProviderCatalogue($factory);
     $connections = $catalogue->connections($project)['connections'];
