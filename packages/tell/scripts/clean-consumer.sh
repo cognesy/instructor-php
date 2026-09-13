@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="$(cd "$PACKAGE_DIR/../.." && pwd)"
 PROOF_ROOT="$(mktemp -d)"
-PROOF_VERSION="2.10.0"
+PROOF_VERSION="2.10.1"
 
 cleanup() {
     rm -rf "$PROOF_ROOT"
