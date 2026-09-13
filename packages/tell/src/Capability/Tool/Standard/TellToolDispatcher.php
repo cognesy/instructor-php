@@ -7,9 +7,9 @@ namespace Cognesy\Tell\Capability\Tool\Standard;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
-use Cognesy\Tell\Data\TellExecutionPolicy;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
-use Cognesy\Tell\Core\Contract\Execution\CanExecuteTellRuntime;
+use Cognesy\Tell\Core\Contract\Configuration\CanResolveTellConfiguration;
+use Cognesy\Tell\Data\TellExecutionPolicy;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Data\TellToolResult;
@@ -21,7 +21,7 @@ final readonly class TellToolDispatcher
 {
     public function __construct(
         private CanBuildTellAgent $agents,
-        private CanExecuteTellRuntime $runtime,
+        private CanResolveTellConfiguration $configuration,
         private ?CanProvideCancellationSignal $cancellation = null,
     ) {}
 
@@ -34,7 +34,7 @@ final readonly class TellToolDispatcher
         if ($this->isCancelled()) {
             return $this->failure($name, 'cancelled', 'Tool invocation was cancelled before execution.');
         }
-        $request = $this->runtime->resolveDirectRequest($invocation->asRequest());
+        $request = $this->configuration->resolve($invocation->asRequest())->request;
         $policy = $request->policy ?? TellExecutionPolicy::defaults();
         if ($policy->maxToolCalls === 0) {
             return $this->failure($name, 'policy_rejected', 'Tool calls are disabled by the effective execution policy.');

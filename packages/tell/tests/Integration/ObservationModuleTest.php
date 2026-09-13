@@ -5,9 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\Standalone\Profile\StandardTellProfile;
-use Cognesy\Tell\Composition\Standalone\Host\TellHostBuilder;
-use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Capability\Observation\Null\NullTellObserver;
 use Cognesy\Tell\Core\Contract\Observation\CanObserveTellExecution;
 use Cognesy\Tell\Data\TellEventEnvelope;
@@ -24,8 +22,8 @@ dataset('observation providers', [
 
 it('keeps every observation provider conformant to the immutable envelope boundary', function (callable $provider): void {
     $event = new TellEventEnvelope(
-        schema: 'tell.event.v1',
-        kind: 'execution.completed',
+        schema: 'tell.event.v2',
+        kind: 'execution.settled',
         sequence: 1,
         executionId: 'exec-conformance',
         branch: 'main',
@@ -54,18 +52,12 @@ it('replaces observation pre-boot through the public normalized contract', funct
             $this->received->append($event->toArray());
         }
     };
-    $module = new TellModuleDefinition(
-        id: 'observation.external',
-        provides: [CanObserveTellExecution::class],
-        factory: static fn (): object => $observer,
-    );
-    $host = TellHostBuilder::fromProfile(StandardTellProfile::runtime(
-        $project,
-        $paths,
-        static fn () => FakeAgentDriver::fromResponses('safe answer'),
-    ))->replace('observation.standard', $module)->boot();
+    $tell = StandaloneTellBuilder::in($project, $paths)
+        ->withDriverFactory(static fn () => FakeAgentDriver::fromResponses('safe answer'))
+        ->withObserver($observer)
+        ->build();
 
-    $host->runner()->run(TellRequest::prompt('secret prompt canary')->withDirectory($project));
+    $tell->run(TellRequest::prompt('secret prompt canary'));
 
     $events = $received->getArrayCopy();
     expect($events)->not->toBeEmpty()
@@ -86,8 +78,8 @@ it('adapts normalized envelopes to PSR logging without exposing a source event',
     };
     $observer = new PsrTellObserver($logger);
     $observer->observe(new TellEventEnvelope(
-        schema: 'tell.event.v1',
-        kind: 'execution.completed',
+        schema: 'tell.event.v2',
+        kind: 'execution.settled',
         sequence: 1,
         executionId: 'exec-1',
         branch: 'main',
@@ -100,7 +92,7 @@ it('adapts normalized envelopes to PSR logging without exposing a source event',
     ));
 
     expect($records[0]['level'])->toBe('info')
-        ->and($records[0]['message'])->toBe('execution.completed')
+        ->and($records[0]['message'])->toBe('execution.settled')
         ->and($records[0]['context'])->not->toHaveKey('source')
-        ->and($records[0]['context']['schema'])->toBe('tell.event.v1');
+        ->and($records[0]['context']['schema'])->toBe('tell.event.v2');
 });

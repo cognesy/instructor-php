@@ -4,68 +4,82 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Render;
 
-use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\Data\TellExecutionMode;
-use Throwable;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Tell\Data\TellDiagnostic;
+use Cognesy\Tell\Data\TellExecutionError;
+use Cognesy\Tell\Data\TellResult;
 
 final class AgentResult
 {
     /** @return array<string, mixed> */
-    /** @param array{name: string, source: 'current'|'invocation'}|null $branch */
-    /** @param list<array{code: string, source: string, severity: string, message: string}> $diagnostics */
-    public static function fromState(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): array {
-        $status = $state->status();
-
+    public static function fromResult(TellResult $tell): array {
+        $termination = $tell->termination();
+        $publication = $tell->publication();
         $result = [
-            'status' => match ($status) {
-                null => 'unknown',
-                default => $status->value,
-            },
-            'answer' => self::answer($state),
-            'steps' => $state->stepCount(),
-            'usage' => $state->usage()->toArray(),
-            'errors' => self::errors($state),
             'execution' => [
-                // Automatic is a request-side mode that always resolves to one
-                // of the three outcomes before a result exists; it never
-                // describes what a finished turn persisted.
-                'mode' => $mode === TellExecutionMode::Automatic
-                    ? TellExecutionMode::Stateless->value
-                    : $mode->value,
-                'durable' => $mode === TellExecutionMode::Durable,
+                'id' => $termination->executionId,
+                'status' => $termination->status->value,
+                'requestedMode' => $tell->requestedMode()->value,
+                'mode' => $tell->mode()->value,
+                'steps' => $termination->stepCount,
+                'usage' => $termination->usage->toArray(),
             ],
+            'termination' => [
+                'reason' => $termination->stopSignal?->reason->value,
+                'source' => $termination->stopSignal?->source,
+                'context' => $termination->toArray()['context'],
+                'lastStepType' => $termination->lastStepType?->value,
+                'finishReason' => $termination->finishReason?->value,
+            ],
+            'publication' => [
+                ...$publication->toArray(),
+                'headChanged' => $publication->isPublished(),
+            ],
+            'trace' => $tell->trace()->toArray(),
+            'answer' => self::answer($tell),
+            'errors' => $termination->errors->toArray(),
         ];
-        if ($warnings !== []) {
-            $result['warnings'] = $warnings;
+        if ($tell->warnings() !== []) {
+            $result['warnings'] = $tell->warnings();
         }
-        if ($branch !== null) {
-            $result['branch'] = $branch;
-        }
-        if ($diagnostics !== []) {
-            $result['diagnostics'] = $diagnostics;
-        }
-        $signal = $state->stopSignal();
-        if ($signal !== null) {
-            $result['termination'] = [
-                'reason' => $signal->reason->value,
-                'message' => $signal->message,
-            ];
+        if ($tell->diagnostics() !== []) {
+            $result['diagnostics'] = array_map(
+                static fn (TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
+                $tell->diagnostics(),
+            );
         }
 
         return $result;
     }
 
-    public static function answer(AgentState $state): string {
-        return $state->stopSignal()?->reason->value === 'output_limit'
+    public static function answer(TellResult $result): string {
+        return $result->termination()->stopSignal?->reason === StopReason::OutputLimitReached
             ? ''
-            : trim($state->finalResponse()->toString());
+            : trim($result->text());
     }
 
     /** @return list<string> */
-    public static function errors(AgentState $state): array {
+    public static function errorMessages(TellResult $result): array {
         return array_map(
-            static fn (Throwable $error): string => $error->getMessage(),
-            $state->errors()->all(),
+            static fn (TellExecutionError $error): string => $error->message,
+            $result->termination()->errors->all(),
+        );
+    }
+
+    public static function terminalSummary(TellResult $result): ?string {
+        $termination = $result->termination();
+        if ($termination->status === ExecutionStatus::Completed) {
+            return null;
+        }
+        $reason = $termination->stopSignal?->reason->value ?? 'none';
+
+        return sprintf(
+            '[tell] execution %s: id=%s reason=%s publication=%s',
+            $termination->status->value,
+            $termination->executionId,
+            $reason,
+            $result->publication()->status->value,
         );
     }
 

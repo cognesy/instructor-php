@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Contract\Workspace\CanMaintainTellConversation;
@@ -21,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Explicitly moves one canonical conversation selector to its empty state.
  */
-final class ClearCommand extends Command implements CanDescribeOperationalPlane
+final class ClearCommand extends Command
 {
     public function __construct(private readonly CanAccessTellConversations $conversations) {
         parent::__construct('clear');
@@ -84,19 +81,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'clear',
-            responsibility: 'Atomically move one verified canonical conversation selector to empty state.',
-            ownedState: 'The selected project-local arena ref only; immutable source objects remain untouched.',
-            input: 'Optional workspace directory and named-session selector.',
-            output: 'Previous and resulting head identities plus a deterministic changed/empty result.',
-            authority: 'Validate canonical lineage and mutate only the selected ref; no inference, tools, deletions, or user-home writes.',
-            degradedBehavior: 'Reports invalid selectors, corrupt lineage, stale heads, and storage failures without partial mutation.',
-        );
-    }
 
     private function directory(InputInterface $input): string {
         $directory = (string) $input->getOption('dir');

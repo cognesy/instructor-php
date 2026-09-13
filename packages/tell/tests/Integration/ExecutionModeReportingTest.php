@@ -13,9 +13,9 @@ use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * execution.mode and execution.durable report what the turn actually persisted.
- * A stateless turn writes no conversation state anywhere, so it must not claim
- * durability just because it is not transient.
+ * execution.mode and publication.status report what the turn actually did. A
+ * stateless turn writes no conversation state anywhere, so requested mode must
+ * not be mistaken for achieved publication.
  */
 it('reports a stateless mode for a turn run outside any workspace', function (): void {
     $factory = tellExecutionModeFactory();
@@ -30,7 +30,12 @@ it('reports a stateless mode for a turn run outside any workspace', function ():
 
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($payload['execution'])->toBe(['mode' => 'stateless', 'durable' => false])
+    expect($payload['execution']['requestedMode'])->toBe('automatic')
+        ->and($payload['execution']['mode'])->toBe('stateless')
+        ->and($payload['execution']['status'])->toBe('completed')
+        ->and($payload['publication']['requested'])->toBeFalse()
+        ->and($payload['publication']['status'])->toBe('not_applicable')
+        ->and($payload['publication']['headChanged'])->toBeFalse()
         ->and(tellTestWorkspaces()->discover($project))->toBeNull();
 });
 
@@ -49,7 +54,12 @@ it('reports a durable mode only when the turn published an arena turn', function
 
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($payload['execution'])->toBe(['mode' => 'durable', 'durable' => true])
+    expect($payload['execution']['requestedMode'])->toBe('automatic')
+        ->and($payload['execution']['mode'])->toBe('durable')
+        ->and($payload['execution']['status'])->toBe('completed')
+        ->and($payload['publication']['requested'])->toBeTrue()
+        ->and($payload['publication']['status'])->toBe('published')
+        ->and($payload['publication']['headChanged'])->toBeTrue()
         ->and((new FilesystemArena($workspace))->readRef('main')->head)->not->toBeNull();
 });
 
@@ -67,7 +77,12 @@ it('reports a transient mode for an explicitly transient turn outside any worksp
 
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($payload['execution'])->toBe(['mode' => 'transient', 'durable' => false]);
+    expect($payload['execution']['requestedMode'])->toBe('transient')
+        ->and($payload['execution']['mode'])->toBe('transient')
+        ->and($payload['execution']['status'])->toBe('completed')
+        ->and($payload['publication']['requested'])->toBeFalse()
+        ->and($payload['publication']['status'])->toBe('not_applicable')
+        ->and($payload['publication']['headChanged'])->toBeFalse();
 });
 
 function tellExecutionModeFactory(): TellAgentFactory {

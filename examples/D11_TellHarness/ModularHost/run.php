@@ -1,5 +1,5 @@
 ---
-title: 'Tell Harness: Embed and Replace Host Capabilities'
+title: 'Tell Harness: Configure an Embedded Tell Instance'
 docname: 'tell_harness_modular_host'
 order: 13
 id: 'd1113'
@@ -10,10 +10,9 @@ tags:
 ---
 ## Overview
 
-Boot Tell as an explicit application host, replace one capability before boot,
-run through the stable SDK contract, inspect the admitted graph, and dispose the
-host deterministically. This is the programmable path for applications that
-need more control than `StandaloneTellHost::open()`.
+Build one isolated Tell object graph, replace a typed capability before
+resolution, and run through the stable SDK contract. This is the programmable
+path for applications that need more control than the standard defaults.
 
 ## Example
 
@@ -23,8 +22,7 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Core\Contract\Observation\CanObserveTellExecution;
 use Cognesy\Tell\Core\Paths\TellPaths;
 use Cognesy\Tell\Data\TellEventEnvelope;
@@ -40,37 +38,26 @@ $observer = new class($events) implements CanObserveTellExecution {
         $this->events->append($event->toArray());
     }
 };
-$observation = new TellModuleDefinition(
-    id: 'observation.example',
-    provides: [CanObserveTellExecution::class],
-    factory: static fn (): object => $observer,
-);
 $paths = new TellPaths(
     packageAgents: dirname(__DIR__, 3).'/packages/tell/resources/agents',
     home: $project.'/.tell-host-example',
 );
-$host = StandaloneTellHost::builder(
-    directory: $project,
-    paths: $paths,
-    driverFactory: static fn () => FakeAgentDriver::fromResponses(
-        'host-controlled answer',
-    ),
-)->replace('observation.standard', $observation)->boot();
+$tell = StandaloneTellBuilder::in($project, $paths)
+    ->withObserver($observer)
+    ->withDriverFactory(static fn () => FakeAgentDriver::fromResponses(
+        'application-controlled answer',
+    ))
+    ->build();
 
 try {
-    $result = $host->runner()->run(
-        TellRequest::prompt('Run through the host.')->withDirectory($project),
-    );
-    $description = $host->describe();
+    $result = $tell->run(TellRequest::prompt('Run configured Tell.'));
 
     echo trim($result->text())."\n";
-    echo 'Modules: '.count($description->modules)."\n";
     echo 'Observed events: '.count($events)."\n";
 
-    assert(trim($result->text()) === 'host-controlled answer');
+    assert(trim($result->text()) === 'application-controlled answer');
     assert(count($events) > 0);
 } finally {
-    $host->dispose();
     TellHarnessExample::remove($project);
 }
 ?>
@@ -78,11 +65,11 @@ try {
 
 ## Key Points
 
-- `StandaloneTellHost::builder()` returns an immutable pre-boot builder with
-  `with()`, `replace()`, and `without()` operations.
-- Replacement is static: the graph validates once during `boot()` and cannot
-  be mutated while a run is active.
-- Host descriptions expose module identities and contracts, never secrets or
-  model output.
-- The application that boots a host owns `dispose()`; `finally` is the normal
-  lifecycle boundary.
+- `StandaloneTellBuilder` owns one private container and returns `Tell`, never
+  the container or a generic service host.
+- Typed replacements and factories are registered before `build()`; the
+  builder rejects mutation or a second build after resolution.
+- Create a fresh builder for each Tell instance. Their drivers, observers,
+  cancellation sources, and mutable state are not shared.
+- Standard Tell owns no disposable resources. The `finally` block here only
+  removes the example's temporary project.

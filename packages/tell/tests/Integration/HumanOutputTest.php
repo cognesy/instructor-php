@@ -105,7 +105,8 @@ it('renders first-inference failures in human and text output', function (string
     ], ['capture_stderr_separately' => true]);
 
     expect($status)->toBe(1)
-        ->and($tester->getErrorOutput())->toContain('[tell] execution failed: Provider credits are exhausted.');
+        ->and($tester->getErrorOutput())->toContain('[tell] execution failed: The execution failed.')
+        ->and($tester->getErrorOutput())->not->toContain('Provider credits are exhausted.');
 })->with(['human', 'text']);
 
 it('accepts human alongside the other output modes and rejects unknown ones', function (): void {

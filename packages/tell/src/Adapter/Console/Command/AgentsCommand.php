@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\FieldSelection;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
@@ -16,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class AgentsCommand extends Command implements CanDescribeOperationalPlane
+final class AgentsCommand extends Command
 {
     public function __construct(private readonly CanBuildTellAgent $agents) {
         parent::__construct('agents');
@@ -89,17 +86,4 @@ HELP)
         return Command::SUCCESS;
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'agents',
-            responsibility: 'Inspect configured agent-definition inventory and discovery diagnostics.',
-            ownedState: 'Definition files remain owned by package, user, and project stores; Tell is read-only.',
-            input: 'Package, user, and project definition locations.',
-            output: 'AgentDefinition inventory and bounded discovery errors.',
-            authority: 'Read agent configuration; no create, update, or delete authority.',
-            degradedBehavior: 'Reports source-specific discovery errors; execution fails explicitly if the selected definition is unavailable.',
-        );
-    }
 }

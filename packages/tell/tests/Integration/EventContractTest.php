@@ -5,14 +5,64 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
+use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellPublicationStatus;
 use Cognesy\Tell\Core\Observation\TellEventNormalizer;
 use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 use Cognesy\Tell\Tests\Support\TestAutoload;
 use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
-use Cognesy\Tell\Core\Workspace\Execution\TurnException;
+
+it('preserves default, empty, and exact Tell tool selections', function (): void {
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(
+        FakeAgentDriver::fromResponses('done'),
+    ));
+    $project = tellLastTemporaryRoot() . '/tool-selection';
+    mkdir($project, 0700, true);
+
+    $defaults = $factory->build(TellRequest::prompt('defaults')->withDirectory($project));
+    $none = $factory->build(TellRequest::prompt('none')->withDirectory($project)->tools([]));
+    $configuredNone = $factory->build(
+        TellRequest::prompt('configured none')->withDirectory($project)->withBranchConfig(['tools' => []]),
+    );
+    $readOnly = $factory->build(TellRequest::prompt('read')->withDirectory($project)->tools(['read_file']));
+
+    expect($defaults->tools()->names())->not->toBeEmpty()
+        ->and($none->tools()->names())->toBe([])
+        ->and($configuredNone->tools()->names())->toBe([])
+        ->and($readOnly->tools()->names())->toBe(['read_file']);
+
+    expect(fn () => $factory->build(
+        TellRequest::prompt('unknown')->withDirectory($project)->tools(['missing_tool']),
+    ))->toThrow(InvalidArgumentException::class, 'Unknown Tell tool(s): missing_tool.');
+});
+
+it('reports the active post-filter tool count when a step starts', function (): void {
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(
+        FakeAgentDriver::fromResponses('done'),
+    ));
+    $project = tellLastTemporaryRoot() . '/tool-event';
+    mkdir($project, 0700, true);
+    $events = [];
+    $normalizer = new TellEventNormalizer();
+    $loop = $factory->build(
+        TellRequest::prompt('read')->withDirectory($project)->tools(['read_file']),
+    );
+    $loop->wiretap(static function (object $event) use (&$events, $normalizer): void {
+        $events[] = $normalizer->normalize($event);
+    });
+    $loop->execute(AgentState::empty()->withUserMessage('read'));
+
+    $started = array_values(array_filter(
+        $events,
+        static fn (array $event): bool => $event['kind'] === 'step.started',
+    ));
+    expect($started)->toHaveCount(1)
+        ->and($started[0]['metadata']['tools'])->toBe(1);
+});
 
 it('cooperatively cancels a durable execution before inference and does not publish', function (): void {
     $source = new InMemoryCancellationSource();
@@ -32,12 +82,14 @@ it('cooperatively cancels a durable execution before inference and does not publ
     });
     $loop->execute(AgentState::empty()->withUserMessage('Do not infer'));
 
-    expect(fn () => tellTestOpen($project, $factory, $source)->run(
+    $result = tellTestOpen($project, $factory, $source)->run(
         TellRequest::prompt('Do not infer')->durable(),
-    ))->toThrow(TurnException::class);
+    );
 
     $terminal = array_values(array_filter($events, static fn (array $event): bool => $event['terminal'] !== null));
-    expect($terminal)->toHaveCount(1)
+    expect($result->termination()->stopSignal?->reason)->toBe(StopReason::UserRequested)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and($terminal)->toHaveCount(1)
         ->and($terminal[0]['terminal'])->toBe('stopped')
         ->and((new FilesystemArena($workspace))->readRef('main')->head)->toBeNull()
         ->and(json_encode($events, JSON_THROW_ON_ERROR))->not->toContain('secret cancellation canary');

@@ -11,7 +11,6 @@ $project = $arguments[2] ?? throw new RuntimeException('Missing Tell project pat
 require $autoload;
 
 $tell = TellTestFactory::responses('deterministic')->open($project);
-$tell->dispose();
 
 echo class_exists('CordisPhp\\Runtime\\Runtime', false)
     ? 'cordis=loaded'

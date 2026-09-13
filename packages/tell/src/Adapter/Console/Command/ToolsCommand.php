@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Command;
 
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\FieldSelection;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
@@ -18,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ToolsCommand extends Command implements CanDescribeOperationalPlane
+final class ToolsCommand extends Command
 {
     public function __construct(private readonly CanBuildTellAgent $agents) {
         parent::__construct('tools');
@@ -82,17 +79,4 @@ HELP)
         return Command::SUCCESS;
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Control,
-            command: 'tools',
-            responsibility: 'Resolve and inspect the tool policy active for a built agent.',
-            ownedState: 'Immutable ToolProfileList inside the invocation AgentProfile.',
-            input: 'Selected AgentDefinition, discovered capabilities, and optional tool allow-list.',
-            output: 'Resolved tool-policy snapshot consumed by data-plane execution.',
-            authority: 'Read and narrow the invocation tool set; no tool execution.',
-            degradedBehavior: 'Fails before data execution if capability or definition resolution cannot produce a valid profile.',
-        );
-    }
 }

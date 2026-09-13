@@ -5,32 +5,30 @@ declare(strict_types=1);
 namespace Cognesy\Tell;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
-use Cognesy\Tell\Core\Contract\Tool\CanDispatchTellTool;
-use Cognesy\Tell\Core\Contract\Execution\CanDisposeTellResources;
-use Cognesy\Tell\Core\Contract\Workspace\CanManageTellWorkspace;
-use Cognesy\Tell\Core\Contract\Execution\CanObserveTellRun;
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
-use Cognesy\Tell\Core\Contract\Execution\CanRunTell;
+use Cognesy\Tell\Core\Contract\Execution\CanObserveTellRun;
+use Cognesy\Tell\Core\Contract\Tool\CanDispatchTellTool;
+use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
+use Cognesy\Tell\Core\Contract\Workspace\CanManageTellWorkspace;
 use Cognesy\Tell\Core\Contract\Workspace\CanUseTellConversation;
+use Cognesy\Tell\Core\Discovery\TellCatalogue;
+use Cognesy\Tell\Core\Execution\TellRuntimeFactory;
+use Cognesy\Tell\Core\Tool\TellTools;
+use Cognesy\Tell\Core\Workspace\TellWorkspace;
 use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellResult;
-use Cognesy\Tell\Core\Discovery\TellCatalogue;
-use Cognesy\Tell\Core\Tool\TellTools;
-use Cognesy\Tell\Core\Workspace\TellWorkspace;
 use Generator;
 
 final readonly class Tell
 {
     public function __construct(
         private string $directory,
-        private CanRunTell $runner,
+        private TellRuntimeFactory $runtimeFactory,
         private CanManageTellWorkspace $workspaces,
         private CanAccessTellConversations $conversations,
         private CanCatalogueTellProviders $providerCatalogue,
         private CanDispatchTellTool $toolDispatcher,
-        private CanDisposeTellResources $resources,
         private ?CanProvideCancellationSignal $cancellation,
     ) {}
 
@@ -40,7 +38,7 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->runner->run($request);
+        return $this->runtimeFactory->create()->run($request);
     }
 
     /**
@@ -52,13 +50,13 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->runner->stream($request);
+        return $this->runtimeFactory->create()->stream($request);
     }
 
     /**
      * Starts a run and hands back a handle. Prefer this over runStream() when
      * you may stop consuming checkpoints early: the handle still carries the
-     * result, and a run torn down before it committed is reported.
+     * result, and a run torn down before settlement is reported.
      */
     public function start(TellRequest $request): CanObserveTellRun {
         $request = match ($request->directory) {
@@ -66,7 +64,7 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->runner->start($request);
+        return $this->runtimeFactory->create()->start($request);
     }
 
     public function workspace(): TellWorkspace {
@@ -90,10 +88,5 @@ final readonly class Tell
 
     public function tools(): TellTools {
         return new TellTools($this->toolDispatcher, $this->cancellation);
-    }
-
-    /** Release host-owned resources. Safe to call more than once. */
-    public function dispose(): void {
-        $this->resources->dispose();
     }
 }

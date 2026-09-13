@@ -25,24 +25,24 @@ from which it is run. It needs a normal Tell connection and credential.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $result = StandaloneTellHost::open($project)->run(
+    $result = StandaloneTellBuilder::in($project)->build()->run(
         TellRequest::prompt('In one sentence, explain why stateless jobs are useful.'),
     );
 
     echo "=== Tell Result ===\n";
     echo 'Completed: '.($result->isCompleted() ? 'yes' : 'no')."\n";
-    echo 'Durable: '.($result->isDurable() ? 'yes' : 'no')."\n";
+    echo 'Published: '.($result->isPublished() ? 'yes' : 'no')."\n";
     echo 'Response: '.$result->text()."\n";
 
     assert($result->isCompleted(), 'Expected a completed Tell result.');
     assert(
-        ! $result->isDurable(),
+        ! $result->isPublished(),
         'Stateless Tell execution must not publish history.',
     );
     assert(
@@ -57,7 +57,8 @@ try {
 
 ## Key Points
 
-- `StandaloneTellHost::open()` binds a reusable harness to a working directory.
+- `StandaloneTellBuilder::in()->build()` binds a reusable Tell instance to a
+  working directory.
 - `TellRequest::prompt()` is immutable; add model, connection, tools, or a
   step budget only when the caller needs them.
 - A `TellResult` exposes final text, execution status, usage, warnings, and

@@ -12,7 +12,7 @@ use Cognesy\Tell\Data\TellConversationView;
 use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellResult;
-use Cognesy\Tell\Core\Contract\Execution\CanRunTell;
+use Cognesy\Tell\Core\Execution\TellRuntimeFactory;
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
 use Cognesy\Tell\Core\Contract\Workspace\CanOpenTellWorkspace;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
@@ -33,7 +33,7 @@ final readonly class TellConversation implements CanUseTellConversation
     private const int MAX_HINT_CHARACTERS = 500;
 
     public function __construct(
-        private CanRunTell $runner,
+        private TellRuntimeFactory $runtimeFactory,
         private CanBuildTellAgent $agents,
         private CanTraceTellExecution $tracer,
         private CanOpenTellWorkspace $workspaces,
@@ -44,13 +44,13 @@ final readonly class TellConversation implements CanUseTellConversation
 
     #[\Override]
     public function send(TellRequest $request): TellResult {
-        return $this->runner->run($this->inDirectory($request)->conversation($this->name)->durable());
+        return $this->runtimeFactory->create()->run($this->inDirectory($request)->conversation($this->name)->durable());
     }
 
     /** @return Generator<int, TellProgress, mixed, TellResult> */
     #[\Override]
     public function sendStream(TellRequest $request): Generator {
-        return $this->runner->stream($this->inDirectory($request)->conversation($this->name)->durable());
+        return $this->runtimeFactory->create()->stream($this->inDirectory($request)->conversation($this->name)->durable());
     }
 
     #[\Override]

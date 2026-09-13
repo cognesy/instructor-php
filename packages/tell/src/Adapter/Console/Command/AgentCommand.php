@@ -6,9 +6,6 @@ namespace Cognesy\Tell\Adapter\Console\Command;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Adapter\Protocol\OneRun\Contract\CanRunTellProtocol;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Protocol\OneRun\TellAgentProtocolException;
 use Cognesy\Tell\Adapter\Protocol\OneRun\TellAgentProtocolDecoder;
 use Cognesy\Tell\Adapter\Protocol\OneRun\TellAgentProtocolWriter;
@@ -22,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 /** A bounded one-request/one-run JSONL process boundary for non-PHP controllers. */
-final class AgentCommand extends Command implements CanDescribeOperationalPlane
+final class AgentCommand extends Command
 {
     private CanProvideCancellationSignal $cancellation;
 
@@ -82,17 +79,4 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Data,
-            command: 'agent --rpc',
-            responsibility: 'Execute one bounded, versioned request for an external controller.',
-            ownedState: 'No protocol daemon state; only the execution mode requested by the caller.',
-            input: 'One tell.agent.request.v1 JSON object on stdin.',
-            output: 'Ordered tell.agent.frame.v1 JSONL progress plus exactly one terminal frame.',
-            authority: 'Run one Tell invocation with public request controls and cooperative cancellation.',
-            degradedBehavior: 'Return one bounded error or cancellation frame with a distinct exit status.',
-        );
-    }
 }

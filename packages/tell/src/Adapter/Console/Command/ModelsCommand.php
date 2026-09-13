@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Command;
 
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\FieldSelection;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use InvalidArgumentException;
@@ -18,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ModelsCommand extends Command implements CanDescribeOperationalPlane
+final class ModelsCommand extends Command
 {
     public function __construct(private readonly CanCatalogueTellProviders $providers) {
         parent::__construct('models');
@@ -56,17 +53,4 @@ final class ModelsCommand extends Command implements CanDescribeOperationalPlane
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'models',
-            responsibility: 'Inspect exact model offerings from the resolved Polyglot catalog.',
-            ownedState: 'No Tell state; model facts remain in Polyglot catalog files.',
-            input: 'Optional provider or connection selector, project directory, and field selection.',
-            output: 'Sorted exact offering rows with limits, capabilities, and provenance.',
-            authority: 'Read-only local catalog inspection; never resolves credentials or opens a network connection.',
-            degradedBehavior: 'Rejects unknown selectors without falling back to another provider.',
-        );
-    }
 }

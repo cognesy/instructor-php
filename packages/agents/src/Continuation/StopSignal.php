@@ -6,7 +6,7 @@ final readonly class StopSignal
 {
     /**
      * @param array<string, mixed> $context
-     * @param class-string|null $source
+     * @param non-empty-string|null $source
      */
     public function __construct(
         public StopReason $reason,

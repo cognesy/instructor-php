@@ -47,7 +47,7 @@ it('emits the normalized envelope keys in a fixed order', function (): void {
     ));
 
     expect(array_keys($envelope))->toBe(TELL_ENVELOPE_KEYS)
-        ->and($envelope['schema'])->toBe('tell.event.v1')
+        ->and($envelope['schema'])->toBe('tell.event.v2')
         ->and($envelope['kind'])->toBe('tool.completed')
         ->and($envelope['sequence'])->toBe(1)
         ->and($envelope['terminal'])->toBeNull();

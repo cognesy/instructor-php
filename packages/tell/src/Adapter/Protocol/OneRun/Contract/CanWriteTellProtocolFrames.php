@@ -6,6 +6,9 @@ namespace Cognesy\Tell\Adapter\Protocol\OneRun\Contract;
 
 use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellResult;
+use Cognesy\Tell\Data\TellPublication;
+use Cognesy\Tell\Data\TellTermination;
+use Cognesy\Tell\Data\TellTraceReference;
 
 /** Per-run protocol output boundary; implementations own framing and size limits. */
 interface CanWriteTellProtocolFrames
@@ -24,6 +27,14 @@ interface CanWriteTellProtocolFrames
     ): void;
 
     public function cancelled(TellResult $result): void;
+
+    public function infrastructureFailure(
+        string $code,
+        string $message,
+        TellTermination $termination,
+        TellPublication $publication,
+        ?TellTraceReference $trace = null,
+    ): void;
 
     public function hasTerminalFrame(): bool;
 }

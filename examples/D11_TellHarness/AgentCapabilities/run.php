@@ -23,7 +23,7 @@ conversation head.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellAnswers;
 use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Data\TellToolRequest;
@@ -32,7 +32,7 @@ $project = TellHarnessExample::project();
 file_put_contents($project.'/evidence.txt', "release evidence\n");
 
 try {
-    $tell = StandaloneTellHost::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $catalogue = $tell->catalogue()->connections();
     $direct = $tell->tools()->dispatch(
         TellToolRequest::invoke('read_file', ['path' => 'evidence.txt']),

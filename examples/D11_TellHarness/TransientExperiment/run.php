@@ -24,22 +24,25 @@ contaminating the conversation it may later resume.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = StandaloneTellHost::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $tell->workspace()->initialize();
     $review = $tell->conversation('release-review');
 
-    $review->send(TellRequest::prompt('Record the current release decision.'));
+    $review->send(
+        TellRequest::prompt('Record the current release decision.')->tools([]),
+    );
     $before = $review->history()->head;
 
     $prompt = 'Challenge that decision and describe the strongest alternative.';
     $experiment = $tell->run(
         TellRequest::prompt($prompt)
+            ->tools([])
             ->conversation('release-review')
             ->transient(),
     );

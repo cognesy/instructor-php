@@ -125,7 +125,7 @@ final class TellExecutionBudgetHook implements HookInterface
             reason: $reason,
             message: $message,
             context: $details,
-            source: self::class,
+            source: 'tell:execution_budget',
         )));
     }
 

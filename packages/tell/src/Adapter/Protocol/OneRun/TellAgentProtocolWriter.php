@@ -8,13 +8,16 @@ use Cognesy\Tell\Adapter\Protocol\OneRun\Contract\CanWriteTellProtocolFrames;
 use Cognesy\Tell\Data\TellDiagnostic;
 use Cognesy\Tell\Data\TellProgress;
 use Cognesy\Tell\Data\TellResult;
+use Cognesy\Tell\Data\TellPublication;
+use Cognesy\Tell\Data\TellTermination;
+use Cognesy\Tell\Data\TellTraceReference;
 use JsonException;
 use LogicException;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
 {
-    public const string SCHEMA = 'tell.agent.frame.v1';
+    public const string SCHEMA = 'tell.agent.frame.v2';
     public const int MAX_FRAME_BYTES = 1_048_576;
     private const int MAX_ANSWER_BYTES = 200_000;
 
@@ -46,19 +49,27 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
     #[\Override]
     public function success(TellResult $result): void {
         $answer = self::boundedAnswer($result->text());
+        $termination = $result->termination();
         $this->write('result', [
             'result' => [
                 'outcome' => 'completed',
-                'status' => $result->status()?->value,
+                'executionId' => $termination->executionId,
+                'status' => $termination->status->value,
                 'answer' => $answer,
                 'answerTruncated' => strlen($answer) < strlen($result->text()),
                 'answerBytes' => strlen($answer),
-                'steps' => $result->state()->steps()->count(),
-                'usage' => $result->usage()->toTokenCounts(),
-                'durable' => $result->isDurable(),
-                'transient' => $result->isTransient(),
+                'steps' => $termination->stepCount,
+                'usage' => $termination->usage->toTokenCounts(),
+                'requestedMode' => $result->requestedMode()->value,
+                'mode' => $result->mode()->value,
+                'publication' => $result->publication()->status->value,
+                'trace' => [
+                    'executionId' => $result->trace()->executionId,
+                    'status' => $result->trace()->status->value,
+                ],
                 'session' => $result->session(),
                 'branch' => $result->branch(),
+                'errors' => $termination->errors->toArray(),
                 'diagnostics' => $this->externalDiagnostics($result),
             ],
         ], terminal: true);
@@ -76,9 +87,17 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
             'message' => $message,
         ];
         if ($result !== null) {
-            $payload['status'] = $result->status()?->value;
-            $payload['steps'] = $result->state()->steps()->count();
-            $payload['usage'] = $result->usage()->toTokenCounts();
+            $termination = $result->termination();
+            $payload['executionId'] = $termination->executionId;
+            $payload['status'] = $termination->status->value;
+            $payload['steps'] = $termination->stepCount;
+            $payload['usage'] = $termination->usage->toTokenCounts();
+            $payload['publication'] = $result->publication()->status->value;
+            $payload['trace'] = [
+                'executionId' => $result->trace()->executionId,
+                'status' => $result->trace()->status->value,
+            ];
+            $payload['errors'] = $termination->errors->toArray();
             $payload['diagnostics'] = $this->externalDiagnostics($result);
         }
         if ($reason !== null) {
@@ -89,14 +108,46 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
 
     #[\Override]
     public function cancelled(TellResult $result): void {
+        $termination = $result->termination();
         $this->write('cancelled', [
             'cancellation' => [
                 'code' => 'cancelled',
                 'message' => 'The run was cancelled.',
-                'status' => $result->status()?->value,
-                'steps' => $result->state()->steps()->count(),
-                'usage' => $result->usage()->toTokenCounts(),
+                'executionId' => $termination->executionId,
+                'status' => $termination->status->value,
+                'reason' => $termination->stopSignal?->reason->value,
+                'steps' => $termination->stepCount,
+                'usage' => $termination->usage->toTokenCounts(),
+                'publication' => $result->publication()->status->value,
+                'trace' => [
+                    'executionId' => $result->trace()->executionId,
+                    'status' => $result->trace()->status->value,
+                ],
                 'diagnostics' => $this->externalDiagnostics($result),
+            ],
+        ], terminal: true);
+    }
+
+    #[\Override]
+    public function infrastructureFailure(
+        string $code,
+        string $message,
+        TellTermination $termination,
+        TellPublication $publication,
+        ?TellTraceReference $trace = null,
+    ): void {
+        $this->write('error', [
+            'error' => [
+                'code' => $code,
+                'message' => $message,
+                'executionId' => $termination->executionId,
+                'status' => $termination->status->value,
+                'reason' => $termination->stopSignal?->reason->value,
+                'publication' => $publication->status->value,
+                'trace' => match ($trace) {
+                    null => ['status' => 'unknown', 'executionId' => $termination->executionId],
+                    default => ['status' => $trace->status->value, 'executionId' => $trace->executionId],
+                },
             ],
         ], terminal: true);
     }

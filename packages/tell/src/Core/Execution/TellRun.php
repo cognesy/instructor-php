@@ -16,7 +16,7 @@ use Throwable;
  * A handle over one Tell run. The outcome lives here rather than behind the
  * stream's `return`, so a caller that stops iterating early still gets its
  * result instead of "Cannot get return value of a generator that hasn't
- * returned", and a run torn down before it commits says so.
+ * returned", and a run torn down before settlement says so.
  */
 final class TellRun implements CanObserveTellRun
 {
@@ -50,15 +50,21 @@ final class TellRun implements CanObserveTellRun
         }
     }
 
-    /** True once the run reached its terminal outcome and applied its effects. */
+    /** True once the run reached a terminal execution outcome. */
     #[\Override]
-    public function isCommitted(): bool {
-        return $this->outcome->isCommitted();
+    public function isSettled(): bool {
+        return $this->outcome->isSettled();
+    }
+
+    /** True only after requested durable publication has succeeded. */
+    #[\Override]
+    public function isPublished(): bool {
+        return $this->outcome->isPublished();
     }
 
     /**
-     * The run's result. Available as soon as the run commits, whether or not the
-     * caller drained the checkpoints.
+     * The run's result. Available as soon as execution settles, whether or not
+     * the caller drained the checkpoints.
      */
     #[\Override]
     public function result(): TellResult {
@@ -67,7 +73,7 @@ final class TellRun implements CanObserveTellRun
             return $result;
         }
         throw new RuntimeException(
-            'Tell run has no result yet: it was never started, or it was abandoned before it committed.',
+            'Tell run has no result yet: it was never started, or it was abandoned before it settled.',
         );
     }
 
@@ -95,7 +101,7 @@ final class TellRun implements CanObserveTellRun
      * the last reference.
      */
     private function noteIfAbandoned(): void {
-        if (!$this->started || $this->outcome->isCommitted()) {
+        if (!$this->started || $this->outcome->isSettled()) {
             return;
         }
         try {

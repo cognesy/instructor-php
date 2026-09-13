@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Workspace\WorkspaceException;
@@ -18,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ResetCommand extends Command implements CanDescribeOperationalPlane
+final class ResetCommand extends Command
 {
     public function __construct(private readonly CanAccessTellConversations $conversations) {
         parent::__construct('reset');
@@ -83,18 +80,5 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'reset',
-            responsibility: 'Move one selected branch ref to a verified prior ancestor.',
-            ownedState: 'The selected branch ref; immutable canonical objects are retained.',
-            input: 'Exactly one bounded step count or canonical ancestor hash.',
-            output: 'Selected branch and before/after head identities.',
-            authority: 'Validates ancestry then performs one compare-and-swap.',
-            degradedBehavior: 'Rejects invalid ancestry and stale updates without moving the ref.',
-        );
-    }
 
 }

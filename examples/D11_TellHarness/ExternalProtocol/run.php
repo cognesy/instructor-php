@@ -43,7 +43,7 @@ $nextSequence = 1;
 $terminal = null;
 while (($line = fgets($pipes[1])) !== false) {
     $frame = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
-    assert($frame['schema'] === 'tell.agent.frame.v1');
+    assert($frame['schema'] === 'tell.agent.frame.v2');
     assert($frame['sequence'] === $nextSequence);
     $nextSequence++;
     if (in_array($frame['type'], ['result', 'error', 'cancelled'], true)) {
@@ -76,7 +76,7 @@ assert(str_contains(strtolower($terminal['result']['answer']), 'protocol ready')
 
 - `controller.sh` is the actual non-PHP controller; this cookbook wrapper only
   makes it runnable through Instructor Hub.
-- Stdout contains only `tell.agent.frame.v1` JSONL. Human diagnostics go to
+- Stdout contains only `tell.agent.frame.v2` JSONL. Human diagnostics go to
   stderr, so a controller never has to separate prose from protocol data.
 - One invocation consumes one request, produces zero or more progress frames,
   then exactly one `result`, `error`, or `cancelled` terminal frame.

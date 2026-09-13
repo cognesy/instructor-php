@@ -37,7 +37,7 @@ final class TellDiagnostics implements CanRecordTellAgentDiagnostics
     }
 
     /**
-     * Records that a run was torn down before it committed. A run that is
+     * Records that a run was torn down before it settled. A run that is
      * abandoned mid-flight is a legitimate thing for a caller to do, but it must
      * not be indistinguishable from one that never happened.
      */
@@ -46,9 +46,19 @@ final class TellDiagnostics implements CanRecordTellAgentDiagnostics
             code: 'run_abandoned',
             source: 'runtime',
             severity: 'warning',
-            message: 'Tell run was abandoned before it committed; no durable state was published for it.',
+            message: 'Tell run was abandoned before it settled; no durable state was published for it.',
         );
         $this->diagnostics[$diagnostic->code . "\0" . $diagnostic->message] = $diagnostic;
+    }
+
+    public function recordTraceWriteFailure(): void {
+        $diagnostic = new TellDiagnostic(
+            code: 'trace_write_failed',
+            source: 'trace',
+            severity: 'warning',
+            message: 'Tell could not write the local execution trace; execution and publication were not changed.',
+        );
+        $this->diagnostics[$diagnostic->code] = $diagnostic;
     }
 
     /** @return list<TellDiagnostic> */

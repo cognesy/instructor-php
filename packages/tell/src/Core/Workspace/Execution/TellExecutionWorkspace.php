@@ -18,6 +18,7 @@ use Cognesy\Tell\Core\Workspace\Branch\ResolvedBranch;
 use Cognesy\Tell\Core\Workspace\Execution\TransientRunner;
 use Cognesy\Tell\Core\Workspace\Execution\TurnRunner;
 use Cognesy\Tell\Core\Workspace\Session\SessionRunner;
+use Cognesy\Tell\Core\Execution\TellRunOutcome;
 use Cognesy\Tell\Core\Workspace\TellWorkspaceContext;
 use Generator;
 
@@ -59,11 +60,12 @@ final readonly class TellExecutionWorkspace implements CanUseTellExecutionWorksp
         AgentLoop $loop,
         AgentDefinition $definition,
         string $prompt,
+        ?TellRunOutcome $outcome = null,
     ): Generator {
         return (new TurnRunner(
             $this->workspace->arena,
             ref: $this->ref($branch->name),
-        ))->iterate($loop, $definition, $prompt);
+        ))->iterate($loop, $definition, $prompt, $outcome);
     }
 
     #[\Override]
@@ -72,9 +74,10 @@ final readonly class TellExecutionWorkspace implements CanUseTellExecutionWorksp
         AgentLoop $loop,
         AgentDefinition $definition,
         string $prompt,
+        ?TellRunOutcome $outcome = null,
     ): Generator {
         return (new SessionRunner($this->workspace->arena))
-            ->iterate($session, $loop, $definition, $prompt);
+            ->iterate($session, $loop, $definition, $prompt, $outcome);
     }
 
     #[\Override]

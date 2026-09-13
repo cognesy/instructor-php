@@ -114,6 +114,35 @@ text to guess whether a provider leaked tool arguments.
 
 ## Migration
 
+### Tell runtime and composition
+
+Tell now has one direct execution path: `Tell` creates a fresh concrete
+`TellRuntime` through the final `Core\Execution\TellRuntimeFactory`. The shallow
+runner and runtime-factory interface chain was removed. CLI, conversations, and
+the one-run protocol use the same factory; request-scoped cancellation still
+overrides the host cancellation source.
+
+Direct tool dispatch now resolves `TellRequest` configuration through
+`CanResolveTellConfiguration`. It no longer receives the complete runtime merely
+to obtain effective configuration, and it still does not execute an agent turn.
+
+`StandaloneTellBuilder` exposes only named, typed replacement points. Migrate
+custom integrations as follows:
+
+| Before 2.10.0 | 2.10.0 |
+| --- | --- |
+| `CanRunTell` | Use the public `Tell` facade; use `TellRuntimeFactory` only when composing delivery adapters |
+| `CanCreateTellRuntime` | `Core\Execution\TellRuntimeFactory` |
+| `CanExecuteTellRuntime` | concrete `Core\Execution\TellRuntime` |
+| `DefaultTellRunner` | removed; `Tell` creates a runtime through `TellRuntimeFactory` |
+| `Composition\Standalone\Profile\StandardTellRuntimeFactory` | `Core\Execution\TellRuntimeFactory` |
+| `withInstance(CanObserveTellExecution::class, $observer)` | `withObserver($observer)` |
+| `withInstance(CanResolveTellModel::class, $resolver)` | `withModelResolver($resolver)` |
+| `withSingleton($contract, $factory)` | construct the supported replacement explicitly, then call its named builder method |
+
+There are no aliases, deprecated interfaces, dual registrations, or generic
+container-binding fallback in 2.10.
+
 The four default driver tables now have one entry point on their registry. The old static wrapper
 classes and reasoning capability accessors were removed without aliases:
 
@@ -257,6 +286,14 @@ Fireworks, Moonshot, OpenRouter, and Together inference and structured-output
 examples have fresh live recordings and are enabled in the Hub replay suite.
 
 ## Agent CLI compatibility and replay isolation
+
+Tell no longer exposes the `tell planes` command or the associated
+`CanDescribeOperationalPlane`, `OperationalPlane`, `PlaneOperation`, and
+`PlaneMap` metadata API. This removes duplicated architectural descriptions
+from every command. Use each command's own help for its supported inputs and
+behavior; Tell's composition and ownership boundaries remain documented in the
+package README. There is no deprecated command alias or metadata compatibility
+layer.
 
 The AgentCtrl Codex bridge now targets the current `codex exec` interface. The
 removed `--full-auto` flag and `fullAuto()` builder method are replaced by

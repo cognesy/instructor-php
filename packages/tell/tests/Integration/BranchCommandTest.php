@@ -185,12 +185,12 @@ it('reports current or invocation-local branch selection in terminal output and 
 
     $invocation = new CommandTester(tellTestCommand($factory));
     expect($invocation->execute(['prompt' => 'on review', '--branch' => 'review', '--dir' => $project, '--output' => 'json']))->toBe(0, $invocation->getDisplay())
-        ->and(json_decode($invocation->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['branch'])->toBe(['name' => 'review', 'source' => 'invocation']);
+        ->and(json_decode($invocation->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['publication'])->toMatchArray(['branch' => 'review', 'branchSource' => 'invocation']);
 
     expect((new CommandTester(new CheckoutCommand(tellTestConversations($factory))))->execute(['name' => 'review', '--dir' => $project]))->toBe(0);
     $current = new CommandTester(tellTestCommand($factory));
     expect($current->execute(['prompt' => 'on current', '--dir' => $project, '--output' => 'json']))->toBe(0)
-        ->and(json_decode($current->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['branch'])->toBe(['name' => 'review', 'source' => 'current']);
+        ->and(json_decode($current->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['publication'])->toMatchArray(['branch' => 'review', 'branchSource' => 'current']);
 
     $noInference = tellTestFactory(static function (): never {
         throw new RuntimeException('Invalid selection must fail before agent construction.');

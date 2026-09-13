@@ -204,7 +204,9 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function onStop(AgentState $state): AgentState {
         $state = $this->interceptor->intercept(HookContext::onStop($state))->state();
-        $this->emitExecutionStopped($state);
+        if ($state->withExecutionCompleted()->status() === ExecutionStatus::Stopped) {
+            $this->emitExecutionStopped($state);
+        }
         return $state;
     }
 
@@ -438,7 +440,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount() + 1,
             messageCount: $state->messages()->count(),
-            availableTools: 0,
+            availableTools: $this->tools->count(),
             messages: $state->messages()->toArray(),
         );
 

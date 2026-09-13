@@ -26,7 +26,7 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellEventEnvelope;
 use Cognesy\Tell\Data\TellRequest;
 
@@ -34,7 +34,9 @@ $project = TellHarnessExample::project();
 $cancellation = new InMemoryCancellationSource();
 
 try {
-    $tell = StandaloneTellHost::open($project, cancellation: $cancellation);
+    $tell = StandaloneTellBuilder::in($project)
+        ->withCancellation($cancellation)
+        ->build();
     $tell->workspace()->initialize();
     $stream = $tell->runStream(
         TellRequest::prompt('Inspect the project and report only actionable findings.')
@@ -57,10 +59,11 @@ try {
     $result = $stream->getReturn();
 
     // A supervisor can call this while the loop is running. A cancelled
-    // durable run throws and leaves its selected workspace head unpublished.
+    // durable run returns a stopped result and leaves its workspace unpublished.
     // $cancellation->cancel('Job deadline reached');
 
     assert($result->isCompleted(), 'Expected a bounded Tell run to complete.');
+    assert($result->isPublished(), 'Expected the completed durable run to publish.');
 } finally {
     TellHarnessExample::remove($project);
 }

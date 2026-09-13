@@ -6,6 +6,9 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Adapter\Console\Symfony\TellCommand;
+use Cognesy\Tell\Capability\Observation\FilesystemTrace\StandardTellExecutionTracer;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellTraceStatus;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -20,11 +23,19 @@ it('writes one private jsonl trace from the real execution event stream', functi
     expect($status)->toBe(0)
         ->and(trim($tester->getDisplay()))->toBe('traced answer')
         ->and($files)->toHaveCount(1)
-        ->and($records[0]['schema'])->toBe('tell.event.v1')
+        ->and($records[0]['schema'])->toBe('tell.event.v2')
         ->and($records[0]['kind'])->toBe('execution.started')
         ->and($records[0]['session'])->toBeNull()
-        ->and($records[array_key_last($records)]['kind'])->toBe('execution.completed');
+        ->and($records[array_key_last($records)]['kind'])->toBe('execution.settled');
     expect(array_unique(array_column($records, 'executionId')))->toHaveCount(1);
+    $terminal = array_values(array_filter(
+        $records,
+        static fn (array $record): bool => ($record['kind'] ?? null) === 'execution.settled',
+    ));
+    expect($terminal)->toHaveCount(1)
+        ->and($terminal[0]['metadata']['publication'])->toBe('not_applicable')
+        ->and(json_encode($records, JSON_THROW_ON_ERROR))->not->toContain('private prompt')
+        ->not->toContain('traced answer');
     if (DIRECTORY_SEPARATOR !== '\\') {
         expect(fileperms($files[0]) & 0777)->toBe(0600);
     }
@@ -51,10 +62,24 @@ it('allows execution traces to be disabled in local config', function (): void {
         'observability' => ['executionTraces' => false],
     ], JSON_THROW_ON_ERROR));
 
-    $status = (new CommandTester(tellTestCommand($factory)))->execute(['prompt' => 'not traced']);
+    $result = tellTestRuntime($factory)->run(
+        TellRequest::prompt('not traced')->withDirectory(tellLastTemporaryRoot()),
+    );
 
-    expect($status)->toBe(0)
+    expect($result->isCompleted())->toBeTrue()
+        ->and($result->trace()->status)->toBe(TellTraceStatus::Disabled)
         ->and(is_dir($factory->paths()->executionTraces))->toBeFalse();
+});
+
+it('reports a pending trace handle before execution starts', function (): void {
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
+    $request = TellRequest::prompt('pending')->withDirectory(tellLastTemporaryRoot());
+    $loop = $factory->build($request);
+    $trace = (new StandardTellExecutionTracer($factory->paths()))->attach($loop, $request);
+
+    expect($trace->reference()->status)->toBe(TellTraceStatus::Pending)
+        ->and($trace->reference()->executionId)->toBeNull()
+        ->and($trace->reference()->path)->toBeNull();
 });
 
 it('marks transient traces without widening the existing redaction policy', function (): void {
@@ -122,12 +147,19 @@ it('appends later turns to the same named session trace', function (): void {
 it('does not fail an agent turn when trace storage is unavailable', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('still works')));
     file_put_contents($factory->paths()->logs, 'blocks the logs directory');
-    $tester = new CommandTester(tellTestCommand($factory));
+    $result = tellTestRuntime($factory)->run(
+        TellRequest::prompt('trace failure')->withDirectory(tellLastTemporaryRoot()),
+    );
+    $diagnostics = array_values(array_filter(
+        $result->diagnostics(),
+        static fn (object $diagnostic): bool => $diagnostic->code === 'trace_write_failed',
+    ));
 
-    $status = $tester->execute(['prompt' => 'trace failure']);
-
-    expect($status)->toBe(0)
-        ->and(trim($tester->getDisplay()))->toBe('still works');
+    expect($result->isCompleted())->toBeTrue()
+        ->and(trim($result->text()))->toBe('still works')
+        ->and($result->trace()->status)->toBe(TellTraceStatus::Failed)
+        ->and($diagnostics)->toHaveCount(1)
+        ->and($diagnostics[0]->message)->toContain('execution and publication were not changed');
 });
 
 /** @return list<string> */

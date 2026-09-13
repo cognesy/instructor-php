@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\FieldSelection;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
@@ -18,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class SessionsCommand extends Command implements CanDescribeOperationalPlane
+final class SessionsCommand extends Command
 {
     public function __construct(private readonly CanAccessTellConversations $conversations) {
         parent::__construct('sessions');
@@ -70,19 +67,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'sessions',
-            responsibility: 'Observe and clear Arena-backed named workspace sessions.',
-            ownedState: 'Named session refs and immutable canonical records in the selected workspace Arena.',
-            input: 'Operator list, show, or remove command targeting an initialized workspace.',
-            output: 'Bounded session inventory/detail or an idempotent named-session clear result.',
-            authority: 'Read canonical named sessions and atomically clear one explicitly named session ref.',
-            degradedBehavior: 'Stateless data-plane turns continue without a workspace; named-session operations fail explicitly.',
-        );
-    }
 
     private function list(InputInterface $input, OutputInterface $output): int {
         $sessionsById = [];

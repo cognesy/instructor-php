@@ -319,7 +319,7 @@ Exceptions:
 Agent events include:
 
 - `AgentExecutionStarted`, `AgentStepStarted`, `AgentStepCompleted`
-- `AgentExecutionStopped`, `AgentExecutionCompleted`, `AgentExecutionFailed`
+- `AgentExecutionStopped`, `AgentExecutionCompleted`, `AgentExecutionFailed`, `AgentExecutionAbandoned`
 - `AgentStateUpdated`
 - `ContinuationEvaluated`, `StopSignalReceived`, `TokenUsageReported`
 - `ToolCallStarted`, `ToolCallCompleted`, `ToolCallBlocked`
@@ -332,6 +332,17 @@ Event support:
 
 - `Events\Support\AgentEventConsoleFormatter`
 - `Events\Support\AgentEventConsoleObserver`
+
+Semantic execution journal:
+
+- `Capability\ExecutionJournal\ExecutionJournal`
+  - append-only contract for payload-free semantic transitions
+- `Capability\ExecutionJournal\ExecutionJournalRecord`
+  - versioned execution, status, step, reason, usage, and bounded scalar facts
+- `Capability\ExecutionJournal\ExecutionJournalObserver`
+  - projects typed loop events into started, step-completed, stop/failure-observed,
+    settled, and abandoned records
+- journal records support run discovery and recovery; diagnostic event traces do not
 
 Session events include:
 

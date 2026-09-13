@@ -6,6 +6,8 @@ require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Adapter\Console\Command\ToolCommand;
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
+use Cognesy\Tell\Capability\Configuration\Standard\StandardTellConfigurationResolver;
+use Cognesy\Tell\Capability\Paths\Installed\StandardTellPathResolver;
 use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
@@ -93,7 +95,7 @@ it('honours direct policy rejection and emits normalized payload-free events', f
     expect($blocked)->toBe(1)
         ->and($blockedPayload['error']['code'])->toBe('policy_rejected')
         ->and($events)->toBe(0)
-        ->and($event['schema'])->toBe('tell.event.v1')
+        ->and($event['schema'])->toBe('tell.event.v2')
         ->and($event['kind'])->toBe('tool.started')
         ->and($event['metadata'])->toHaveKeys(['tool', 'effect'])
         ->and($terminal['terminal'])->toBe('completed');
@@ -147,7 +149,9 @@ it('reports bounded timeouts and pre-cancelled direct work without inference', f
     $agents = tellTestAgents($factory);
     $cancelled = (new TellToolDispatcher(
         $agents,
-        tellTestRuntime($factory),
+        new StandardTellConfigurationResolver(
+            new StandardTellPathResolver($factory->paths()),
+        ),
         $cancellation,
     ))->dispatch(TellToolRequest::fromRequest(
         (new TellOptions(prompt: 'direct', directory: $directory))->request(),

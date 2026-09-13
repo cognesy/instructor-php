@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Command;
 
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\FieldSelection;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Override;
@@ -16,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ProvidersCommand extends Command implements CanDescribeOperationalPlane
+final class ProvidersCommand extends Command
 {
     public function __construct(private readonly CanCatalogueTellProviders $providers) {
         parent::__construct('providers');
@@ -51,17 +48,4 @@ final class ProvidersCommand extends Command implements CanDescribeOperationalPl
         return Command::SUCCESS;
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'providers',
-            responsibility: 'Inspect Polyglot-owned connections joined to exact model offerings.',
-            ownedState: 'No Tell state; presets and model catalogs remain Polyglot-owned.',
-            input: 'Optional project directory and field selection.',
-            output: 'Sorted, redacted connections with exact catalog limits, capabilities, and provenance.',
-            authority: 'Read-only local preset and catalog inspection; never resolves credentials or opens a network connection.',
-            degradedBehavior: 'Reports malformed preset diagnostics while preserving other catalogue rows.',
-        );
-    }
 }

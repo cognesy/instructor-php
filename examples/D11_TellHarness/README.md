@@ -19,7 +19,7 @@ normal run cannot create `.tell` state in this repository.
 | `DeterministicTesting` | deterministic SDK integration without provider I/O | `TellTestFactory` |
 | `ReasoningConfiguration` | typed request and branch reasoning intent | Polyglot `ReasoningEffort` and effective provenance |
 | `ExternalProtocol` | one run from a shell or non-PHP supervisor | `tell agent --rpc` and versioned JSONL frames |
-| `ModularHost` | embedded composition and focused replacement | `StandaloneTellHost::builder()`, `replace()`, `boot()`, `dispose()` |
+| `ModularHost` | embedded composition and focused replacement | `StandaloneTellBuilder`, typed replacements, `build()` |
 | `PersistentShellJobs` | bounded background processes with explicit ownership | `StandardTellShellJobProfile`, approval, snapshots, cursored output, `dispose()` |
 <!-- markdownlint-enable MD013 -->
 

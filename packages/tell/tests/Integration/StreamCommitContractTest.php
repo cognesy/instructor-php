@@ -5,12 +5,15 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
+use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellPublicationStatus;
 use Cognesy\Tell\Core\Agent\TellAgentFactory;
 use Cognesy\Tell\Core\Execution\TellRuntime;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
@@ -92,7 +95,7 @@ it('still publishes exactly once when the stream is fully drained', function ():
     }
 
     expect($checkpoints)->toBeGreaterThan(0);
-    expect($run->result()->isDurable())->toBeTrue();
+    expect($run->result()->isPublished())->toBeTrue();
     expect(trim($run->result()->text()))->toBe('drained answer');
     expect(commitArenaHead($factory, $project))->not->toBeNull();
 });
@@ -111,7 +114,8 @@ it('hands an early-break consumer a result instead of an exception', function ()
         }
     }
 
-    expect($run->isCommitted())->toBeTrue();
+    expect($run->isSettled())->toBeTrue();
+    expect($run->isPublished())->toBeTrue();
     expect(trim($run->result()->text()))->toBe('early answer');
     expect(commitArenaHead($factory, $project))->not->toBeNull();
 });
@@ -124,16 +128,40 @@ it('reports a run torn down before it commits', function (): void {
     $checkpoints = $run->checkpoints();
     $checkpoints->current();
 
-    expect($run->isCommitted())->toBeFalse();
+    expect($run->isSettled())->toBeFalse();
+    expect($run->isPublished())->toBeFalse();
 
     unset($checkpoints);
 
-    expect($run->isCommitted())->toBeFalse();
+    expect($run->isSettled())->toBeFalse();
+    expect($run->isPublished())->toBeFalse();
     expect(commitArenaHead($factory, $project))->toBeNull();
     expect(array_map(
         static fn (object $diagnostic): string => $diagnostic->code,
         $run->diagnostics(),
     ))->toContain('run_abandoned');
+});
+
+it('settles a stopped durable checkpoint without publishing it', function (): void {
+    $cancellation = new InMemoryCancellationSource();
+    $cancellation->cancel('caller deadline');
+    $factory = tellTestFactory();
+    $project = commitProject($factory);
+    $run = tellTestRuntime($factory, $cancellation)->start(
+        commitDurableRequest('stopped turn', $project),
+    );
+
+    foreach ($run->checkpoints() as $progress) {
+        if ($progress->status()?->value === 'stopped') {
+            break;
+        }
+    }
+
+    expect($run->isSettled())->toBeTrue()
+        ->and($run->isPublished())->toBeFalse()
+        ->and($run->result()->termination()->stopSignal?->reason)->toBe(StopReason::UserRequested)
+        ->and($run->result()->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and(commitArenaHead($factory, $project))->toBeNull();
 });
 
 it('does not let a teardown failure escape the abandoning statement', function (): void {

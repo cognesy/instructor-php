@@ -21,6 +21,9 @@ use Cognesy\Tell\Core\Workspace\Arena\RecordCodec;
 use Cognesy\Tell\Core\Workspace\Arena\RecordException;
 use Cognesy\Tell\Core\Workspace\Arena\Ref;
 use Cognesy\Tell\Core\Workspace\Arena\TurnCapture;
+use Cognesy\Tell\Core\Workspace\Arena\Exception\RefConflict;
+use Cognesy\Tell\Data\TellPublication;
+use Cognesy\Tell\Data\TellTermination;
 use Generator;
 use Throwable;
 
@@ -71,18 +74,22 @@ final class TurnRunner
         foreach ($loop->iterate($seed) as $checkpoint) {
             $state = $checkpoint;
             if (!$published && $this->isPublishable($checkpoint)) {
-                $this->publish($checkpoint, $history);
+                $publication = $this->publish($checkpoint, $history, $outcome);
                 $published = true;
-                $outcome?->recordCommitted($checkpoint);
+                $outcome?->recordPublished($checkpoint, $publication);
+            } elseif ($this->isTerminalWithoutPublication($checkpoint)) {
+                $outcome?->recordSettled($checkpoint);
             }
             yield $checkpoint;
         }
 
         if (!$published) {
-            // No checkpoint was publishable: report the same refusal as before.
-            $this->assertPublishable($state);
-            $this->publish($state, $history);
-            $outcome?->recordCommitted($state);
+            if ($this->isTerminalWithoutPublication($state)) {
+                $outcome?->recordSettled($state);
+
+                return $state;
+            }
+            $this->assertValidCompletedState($state, $outcome?->publication());
         }
 
         return $state;
@@ -104,9 +111,18 @@ final class TurnRunner
             && !$lastStep->outputMessages()->isEmpty();
     }
 
-    private function assertPublishable(AgentState $state): void {
+    private function isTerminalWithoutPublication(AgentState $state): bool {
+        return in_array($state->status(), [ExecutionStatus::Stopped, ExecutionStatus::Failed], true);
+    }
+
+    private function assertValidCompletedState(AgentState $state, ?TellPublication $publication): void {
+        $termination = TellTermination::fromState($state);
         if ($state->status() !== ExecutionStatus::Completed) {
-            throw new TurnException('Tell workspace turn was not completed; arena head was left unchanged.');
+            throw new TurnException(
+                'Tell workspace turn ended in an invalid non-terminal state; arena head was left unchanged.',
+                termination: $termination,
+                publication: $publication,
+            );
         }
         $lastStep = $state->lastStep();
         if (
@@ -114,11 +130,21 @@ final class TurnRunner
             || $lastStep->stepType() !== AgentStepType::FinalResponse
             || $lastStep->outputMessages()->isEmpty()
         ) {
-            throw new TurnException('Tell workspace turn has no final response; arena head was left unchanged.');
+            throw new TurnException(
+                'Tell workspace turn has no final response; arena head was left unchanged.',
+                termination: $termination,
+                publication: $publication,
+            );
         }
     }
 
-    private function publish(AgentState $state, History $history): void {
+    private function publish(
+        AgentState $state,
+        History $history,
+        ?TellRunOutcome $outcome,
+    ): TellPublication {
+        $publication = $outcome?->publication() ?? TellPublication::notAttempted(branch: $this->ref);
+        $baseHead = $history->referenceHead?->toString();
         $root = null;
         $rootHash = $history->root;
         try {
@@ -135,24 +161,87 @@ final class TurnRunner
             // Validate complete canonical bytes before writing any new object.
             $this->serializer->encode($turn);
         } catch (TurnException $exception) {
-            throw $exception;
+            throw $this->publicationFailure(
+                $state,
+                $publication,
+                $outcome,
+                'turn_record_invalid',
+                $exception->getMessage(),
+                $exception,
+                $baseHead,
+            );
         } catch (RecordException $exception) {
-            throw new TurnException(
+            throw $this->publicationFailure(
+                $state,
+                $publication,
+                $outcome,
+                'turn_record_invalid',
                 'Tell workspace turn could not be canonically recorded; arena head was left unchanged.',
-                previous: $exception,
+                $exception,
+                $baseHead,
             );
         } catch (Throwable $exception) {
-            throw new TurnException(
+            throw $this->publicationFailure(
+                $state,
+                $publication,
+                $outcome,
+                'turn_publication_failed',
                 'Tell workspace turn could not be prepared for publication; arena head was left unchanged.',
-                previous: $exception,
+                $exception,
+                $baseHead,
             );
         }
 
-        if ($root instanceof ConversationRoot) {
-            $this->arena->put($root);
+        try {
+            if ($root instanceof ConversationRoot) {
+                $this->arena->put($root);
+            }
+            $turnHash = $this->arena->put($turn);
+            $this->arena->compareAndSwap($this->ref, $history->referenceHead, $turnHash);
+        } catch (RefConflict $exception) {
+            throw $this->publicationFailure(
+                $state,
+                $publication,
+                $outcome,
+                'turn_publication_conflict',
+                'Tell workspace changed before the turn could be published; arena head was left unchanged.',
+                $exception,
+                $baseHead,
+            );
+        } catch (Throwable $exception) {
+            throw $this->publicationFailure(
+                $state,
+                $publication,
+                $outcome,
+                'turn_publication_failed',
+                'Tell workspace turn could not be published; arena head was left unchanged.',
+                $exception,
+                $baseHead,
+            );
         }
-        $turnHash = $this->arena->put($turn);
-        $this->arena->compareAndSwap($this->ref, $history->referenceHead, $turnHash);
+
+        return $publication->published($baseHead, $turnHash->toString());
+    }
+
+    private function publicationFailure(
+        AgentState $state,
+        TellPublication $publication,
+        ?TellRunOutcome $outcome,
+        string $code,
+        string $message,
+        Throwable $previous,
+        ?string $baseHead,
+    ): TurnException {
+        $failed = $publication->failed($code, $baseHead);
+        $outcome?->recordPublicationFailed($state, $failed);
+
+        return new TurnException(
+            $message,
+            failureCode: $code,
+            termination: TellTermination::fromState($state),
+            publication: $failed,
+            previous: $previous,
+        );
     }
 
     private function identifier(string $prefix): string {

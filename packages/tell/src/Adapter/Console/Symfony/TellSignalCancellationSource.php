@@ -31,7 +31,7 @@ final class TellSignalCancellationSource implements CanProvideCancellationSignal
     }
 
     public function cancel(string $message = 'Cancellation requested'): void {
-        $this->signal ??= StopSignal::userRequested($message, source: self::class);
+        $this->signal ??= StopSignal::userRequested($message, source: 'tell:sigint');
     }
 
     public function isCancelled(): bool {

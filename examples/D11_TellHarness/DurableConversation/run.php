@@ -24,13 +24,13 @@ or canonical storage records.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = StandaloneTellHost::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $workspace = $tell->workspace()->initialize();
     $review = $tell->conversation('release-review');
 
@@ -50,7 +50,7 @@ try {
     $messageCount = $context->details['compiled']['messageCount'] ?? 'unknown';
     echo 'Compiled messages: '.$messageCount."\n";
 
-    assert($result->isDurable(), 'Conversation sends must be durable.');
+    assert($result->isPublished(), 'Conversation sends must be published.');
     assert(
         $result->session() === 'release-review',
         'Expected the selected conversation name.',

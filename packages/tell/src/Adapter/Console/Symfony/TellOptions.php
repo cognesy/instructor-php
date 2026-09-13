@@ -140,7 +140,8 @@ final readonly class TellOptions
         $reasoningEffort = !$this->reasoningEffortExplicit && isset($values['reasoningEffort']) && is_string($values['reasoningEffort'])
             ? ReasoningEffort::parse($values['reasoningEffort'])
             : $this->reasoningEffort;
-        $tools = !$this->toolsExplicit && isset($values['tools']) && is_array($values['tools'])
+        $toolsConfigured = !$this->toolsExplicit && isset($values['tools']) && is_array($values['tools']);
+        $tools = $toolsConfigured
             ? array_values(array_filter($values['tools'], static fn (mixed $tool): bool => is_string($tool)))
             : $this->tools;
         $output = !$this->outputExplicit && isset($values['output']) && is_string($values['output'])
@@ -170,7 +171,7 @@ final readonly class TellOptions
             connectionExplicit: $this->connectionExplicit,
             modelExplicit: $this->modelExplicit,
             reasoningEffortExplicit: $this->reasoningEffortExplicit,
-            toolsExplicit: $this->toolsExplicit,
+            toolsExplicit: $this->toolsExplicit || $toolsConfigured,
             policyOverrides: $this->policyOverrides,
             policy: TellExecutionPolicy::resolve($values, $this->policyOverrides),
         );

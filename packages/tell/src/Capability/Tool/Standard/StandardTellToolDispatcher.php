@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Capability\Tool\Standard;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Core\Contract\Tool\CanDispatchTellTool;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
-use Cognesy\Tell\Core\Contract\Execution\CanExecuteTellRuntime;
+use Cognesy\Tell\Core\Contract\Configuration\CanResolveTellConfiguration;
+use Cognesy\Tell\Core\Contract\Tool\CanDispatchTellTool;
 use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Data\TellToolResult;
 
@@ -16,7 +16,7 @@ final readonly class StandardTellToolDispatcher implements CanDispatchTellTool
 {
     public function __construct(
         private CanBuildTellAgent $agents,
-        private CanExecuteTellRuntime $runtime,
+        private CanResolveTellConfiguration $configuration,
         private string $directory,
         private ?CanProvideCancellationSignal $hostCancellation = null,
     ) {}
@@ -28,7 +28,7 @@ final readonly class StandardTellToolDispatcher implements CanDispatchTellTool
     ): TellToolResult {
         return (new TellToolDispatcher(
             $this->agents,
-            $this->runtime,
+            $this->configuration,
             $cancellation ?? $this->hostCancellation,
         ))->dispatch(TellToolRequest::fromRequest(
             $request->asRequest($this->directory),

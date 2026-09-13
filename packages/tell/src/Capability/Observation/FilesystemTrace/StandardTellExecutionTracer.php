@@ -8,6 +8,8 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Tell\Core\Configuration\TellConfig;
 use Cognesy\Tell\Core\Paths\TellPaths;
 use Cognesy\Tell\Core\Contract\Observation\CanTraceTellExecution;
+use Cognesy\Tell\Core\Contract\Observation\CanRecordTellTrace;
+use Cognesy\Tell\Core\Observation\NullTellTrace;
 use Cognesy\Tell\Data\TellRequest;
 
 final readonly class StandardTellExecutionTracer implements CanTraceTellExecution
@@ -15,11 +17,18 @@ final readonly class StandardTellExecutionTracer implements CanTraceTellExecutio
     public function __construct(private TellPaths $paths) {}
 
     #[\Override]
-    public function attach(AgentLoop $loop, TellRequest $request): void {
-        (new ExecutionTraceWriter(
+    public function attach(AgentLoop $loop, TellRequest $request): CanRecordTellTrace {
+        $config = TellConfig::fromFile($this->paths->configFile);
+        if (!$config->executionTraces) {
+            return new NullTellTrace();
+        }
+        $writer = new ExecutionTraceWriter(
             $this->paths,
-            TellConfig::fromFile($this->paths->configFile),
+            $config,
             $request,
-        ))->attach($loop);
+        );
+        $writer->attach($loop);
+
+        return $writer;
     }
 }

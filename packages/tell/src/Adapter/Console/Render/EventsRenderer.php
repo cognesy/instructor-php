@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Render;
 
 use Cognesy\Agents\AgentLoop;
-use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Tell\Core\Observation\TellEventNormalizer;
+use Cognesy\Tell\Data\TellResult;
 use JsonException;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,6 +23,9 @@ final class EventsRenderer implements OutputRenderer
     public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {
         $this->events = $events ?? new TellEventNormalizer();
         $loop->wiretap(function (object $event): void {
+            if ($event instanceof AgentExecutionCompleted) {
+                return;
+            }
             $envelope = $this->normalizer()->normalize($event);
             if ($envelope['terminal'] !== null && $this->terminal) {
                 return;
@@ -33,11 +36,16 @@ final class EventsRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void {
+    public function finish(TellResult $result): void {
         if (!$this->terminal) {
             $this->stdout->writeln($this->encode($this->normalizer()->terminal(
-                $state->status()->value,
-                ['steps' => $state->stepCount()],
+                $result->termination()->status->value,
+                [
+                    'steps' => $result->termination()->stepCount,
+                    'reason' => $result->termination()->stopSignal?->reason->value,
+                    'source' => $result->termination()->stopSignal?->source,
+                    'publication' => $result->publication()->status->value,
+                ],
             )));
             $this->terminal = true;
         }

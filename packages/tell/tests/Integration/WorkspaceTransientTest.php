@@ -46,10 +46,11 @@ it('runs transient and durable turns with the same compiled workspace context wh
     ]))->toBe(0);
     $transientPayload = json_decode($transient->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($transientPayload)->toMatchArray([
-        'answer' => 'answer',
-        'execution' => ['mode' => 'transient', 'durable' => false],
-    ])
+    expect($transientPayload['answer'])->toBe('answer')
+        ->and($transientPayload['execution']['mode'])->toBe('transient')
+        ->and($transientPayload['execution']['status'])->toBe('completed')
+        ->and($transientPayload['publication']['status'])->toBe('not_applicable')
+        ->and($transientPayload['publication']['headChanged'])->toBeFalse()
         ->and(tellTransientSnapshot($workspace->paths->arena))->toBe($beforeArena)
         ->and(tellTransientSnapshot($factory->paths()->sessions))->toBe($beforeSessions);
 
@@ -128,8 +129,8 @@ it('keeps transient text and events explicitly non-durable while leaving tool-en
 
     expect(array_filter(
         $lines,
-        static fn (array $event): bool => $event['schema'] === 'tell.event.v1'
-            && $event['kind'] === 'execution.completed'
+        static fn (array $event): bool => $event['schema'] === 'tell.event.v2'
+            && $event['kind'] === 'execution.settled'
             && $event['terminal'] === 'completed',
     ))->not->toBeEmpty()
         ->and(tellTransientSnapshot($workspace->paths->arena))->toBe($before);
@@ -153,7 +154,9 @@ it('marks transient failures and cancellation without publishing state', functio
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
     expect($status)->toBe($expectedStatus)
-        ->and($payload['execution'])->toBe(['mode' => 'transient', 'durable' => false])
+        ->and($payload['execution']['mode'])->toBe('transient')
+        ->and($payload['publication']['status'])->toBe('not_applicable')
+        ->and($payload['publication']['headChanged'])->toBeFalse()
         ->and(tellTransientSnapshot($workspace->paths->arena))->toBe($beforeArena)
         ->and(tellTransientSnapshot($factory->paths()->sessions))->toBe($beforeSessions);
 })->with([
@@ -183,12 +186,14 @@ it('keeps a no-workspace transient invocation stateless and records only redacte
     $sessionFiles = glob($factory->paths()->sessionTraces . '/*.jsonl') ?: [];
     $records = tellTransientTraceRecords($sessionFiles[0] ?? '');
 
-    expect($payload['execution'])->toBe(['mode' => 'transient', 'durable' => false])
+    expect($payload['execution']['mode'])->toBe('transient')
+        ->and($payload['publication']['status'])->toBe('not_applicable')
+        ->and($payload['publication']['headChanged'])->toBeFalse()
         ->and(is_dir($project . '/.tell'))->toBeFalse()
         ->and(is_dir($factory->paths()->sessions))->toBeFalse()
         ->and($files)->toBe([])
         ->and($sessionFiles)->toHaveCount(1)
-        ->and($records[0]['schema'])->toBe('tell.event.v1')
+        ->and($records[0]['schema'])->toBe('tell.event.v2')
         ->and($records[0]['kind'])->toBe('execution.started')
         ->and($records[0]['metadata'])->not->toHaveKey('messagePayload')
         ->and(json_encode($records, JSON_THROW_ON_ERROR))->not->toContain('transient private prompt');

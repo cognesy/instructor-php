@@ -39,7 +39,8 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
     ]);
     expect($status)->toBe(0)
         ->and($firstTurn['answer'])->toBe('verified semantic response')
-        ->and($firstTurn['execution'])->toBe(['mode' => 'durable', 'durable' => true]);
+        ->and($firstTurn['execution']['mode'])->toBe('durable')
+        ->and($firstTurn['publication']['status'])->toBe('published');
 
     [$status, $history] = tellP0Run(tellP0Application($factory->paths(), $recorder), [
         'history',
@@ -78,7 +79,8 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
         '--output=json',
     ]);
     expect($status)->toBe(0)
-        ->and($transient['execution'])->toBe(['mode' => 'transient', 'durable' => false])
+        ->and($transient['execution']['mode'])->toBe('transient')
+        ->and($transient['publication']['status'])->toBe('not_applicable')
         ->and(tellP0Snapshot($workspace->paths->arena))->toBe($arenaBeforeTransient)
         ->and(tellP0Snapshot($factory->paths()->sessions))->toBe($sessionsBeforeTransient);
 

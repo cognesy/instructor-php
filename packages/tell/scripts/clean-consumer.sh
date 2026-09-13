@@ -8,7 +8,7 @@ CONFIG_DIR="$(cd "$PACKAGE_DIR/../config" && pwd)"
 POLYGLOT_DIR="$(cd "$PACKAGE_DIR/../polyglot" && pwd)"
 UTILS_DIR="$(cd "$PACKAGE_DIR/../utils" && pwd)"
 PROOF_ROOT="$(mktemp -d)"
-PROOF_VERSION="2.9.0"
+PROOF_VERSION="2.10.0"
 
 cleanup() {
     rm -rf "$PROOF_ROOT"
@@ -70,13 +70,9 @@ if (!class_exists(CliMarkdown::class)) {
 $project = sys_get_temp_dir().'/tell-clean-consumer-'.bin2hex(random_bytes(6));
 mkdir($project, 0755, true);
 $tell = TellTestFactory::responses('clean consumer answer')->open($project);
-try {
-    $result = $tell->run(TellRequest::prompt('local deterministic smoke'));
-    if (trim($result->text()) !== 'clean consumer answer') {
-        throw new RuntimeException('Unexpected clean-consumer result.');
-    }
-} finally {
-    $tell->dispose();
+$result = $tell->run(TellRequest::prompt('local deterministic smoke'));
+if (trim($result->text()) !== 'clean consumer answer') {
+    throw new RuntimeException('Unexpected clean-consumer result.');
 }
 
 $host = StandardTellShellJobProfile::builder(

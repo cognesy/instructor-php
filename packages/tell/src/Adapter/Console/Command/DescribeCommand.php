@@ -9,9 +9,6 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
 use Cognesy\Tell\Data\TellRequest;
@@ -21,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class DescribeCommand extends Command implements CanDescribeOperationalPlane
+final class DescribeCommand extends Command
 {
     public function __construct(private readonly CanBuildTellAgent $agents) {
         parent::__construct('describe');
@@ -64,19 +61,6 @@ HELP)
         return Command::SUCCESS;
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Control,
-            command: 'describe',
-            responsibility: 'Compile and inspect the effective execution profile for one agent.',
-            ownedState: 'Immutable AgentProfile and optionally composed system prompt for one invocation.',
-            input: 'Selected AgentDefinition plus current capability, tool, hook, and LLM configuration.',
-            output: 'Version-local execution-policy snapshot consumed by the data plane.',
-            authority: 'Resolve and inspect active policy; no inference, tool execution, or persistent mutation.',
-            degradedBehavior: 'Returns no partial profile when resolution fails; existing persisted sessions remain untouched.',
-        );
-    }
 
     private function options(InputInterface $input): TellOptions {
         $directory = (string) $input->getOption('dir');

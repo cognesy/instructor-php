@@ -44,7 +44,7 @@ it('keeps Core limited to Data and Core without framework containers', function 
         ->and(TellArchitectureRules::frameworkViolations($files))->toBe([]);
 });
 
-it('keeps adapters on public Data Core and contract boundaries', function (): void {
+it('keeps adapters on public Data, contracts, and named stable Core services', function (): void {
     expect(TellArchitectureRules::dependencyViolations(
         TellArchitectureRules::phpFiles(tellArchitectureSource('Adapter')),
         [
@@ -52,6 +52,7 @@ it('keeps adapters on public Data Core and contract boundaries', function (): vo
             'Cognesy\\Tell\\Data\\',
             'Cognesy\\Tell\\Core\\Contract\\',
             'Cognesy\\Tell\\Core\\Configuration\\TellConfig',
+            'Cognesy\\Tell\\Core\\Execution\\TellRuntimeFactory',
             'Cognesy\\Tell\\Core\\Observation\\TellEventNormalizer',
             'Cognesy\\Tell\\Core\\Paths\\TellPaths',
             'Cognesy\\Tell\\Core\\Secrets\\TellCredentialNames',

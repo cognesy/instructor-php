@@ -10,6 +10,7 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Tell\Core\Contract\Agent\CanDescribeTellDelegation;
+use Cognesy\Tell\Core\Execution\TellRunOutcome;
 use Cognesy\Tell\Data\TellBranchSelection;
 use Generator;
 
@@ -31,6 +32,7 @@ interface CanUseTellExecutionWorkspace
         AgentLoop $loop,
         AgentDefinition $definition,
         string $prompt,
+        ?TellRunOutcome $outcome = null,
     ): Generator;
 
     /** @return Generator<int, AgentState, mixed, AgentState> */
@@ -39,6 +41,7 @@ interface CanUseTellExecutionWorkspace
         AgentLoop $loop,
         AgentDefinition $definition,
         string $prompt,
+        ?TellRunOutcome $outcome = null,
     ): Generator;
 
     /** @return Generator<int, AgentState, mixed, AgentState> */

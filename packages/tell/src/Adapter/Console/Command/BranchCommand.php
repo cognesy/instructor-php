@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Workspace\Branch\BranchName;
@@ -20,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class BranchCommand extends Command implements CanDescribeOperationalPlane
+final class BranchCommand extends Command
 {
     public function __construct(private readonly CanAccessTellConversations $conversations) {
         parent::__construct('branch');
@@ -77,19 +74,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'branch',
-            responsibility: 'Inspect and atomically create user branch refs over immutable canonical history.',
-            ownedState: 'Tell-owned branch refs and the project-local current-branch selector.',
-            input: 'Explicit branch action, validated branch name, optional source branch, and workspace directory.',
-            output: 'Deterministic branch metadata and verified history counts in TOON or JSON.',
-            authority: 'Read refs and canonical objects; create one new branch ref only when explicitly requested.',
-            degradedBehavior: 'Reports invalid names, missing branches, conflicts, and corrupt lineage without partial output.',
-        );
-    }
 
     private function list(InputInterface $input, OutputInterface $output): int {
         $branches = $this->conversations->branches($this->directory($input));

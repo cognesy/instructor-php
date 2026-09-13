@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * The machine-shaped progress channel: one bracketed key=value line per event.
  *
- * Kinds and metadata keys are the ones from the normalized `tell.event.v1`
+ * Kinds and metadata keys are the ones from the normalized `tell.event.v2`
  * contract, so a line can be read against the same vocabulary as the event
  * stream. Arguments and results are read from the raw event and added locally;
  * they are never put into the envelope, which stays payload-free.
@@ -101,8 +101,9 @@ final class EventProgress
             'stop.requested' => $this->detailed ? $this->emit('stop', [
                 'reason' => $metadata['reason'] ?? null,
             ]) : null,
-            'execution.completed' => $this->detailed ? $this->emit('execution.complete', [
+            'execution.settled' => $this->detailed ? $this->emit('execution.settled', [
                 'status' => $metadata['status'] ?? null,
+                'reason' => $metadata['reason'] ?? null,
                 'steps' => $metadata['steps'] ?? null,
                 'in' => $metadata['inputTokens'] ?? null,
                 'out' => $metadata['outputTokens'] ?? null,

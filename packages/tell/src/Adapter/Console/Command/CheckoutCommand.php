@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Workspace\WorkspaceException;
@@ -18,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class CheckoutCommand extends Command implements CanDescribeOperationalPlane
+final class CheckoutCommand extends Command
 {
     public function __construct(private readonly CanAccessTellConversations $conversations) {
         parent::__construct('checkout');
@@ -63,17 +60,4 @@ final class CheckoutCommand extends Command implements CanDescribeOperationalPla
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'checkout NAME',
-            responsibility: 'Atomically persist the selected Tell branch.',
-            ownedState: 'The project-local symbolic current-branch selector only.',
-            input: 'main or an existing validated user branch.',
-            output: 'Previous and selected branch metadata.',
-            authority: 'Verify a destination ref and head, then atomically replace the selector.',
-            degradedBehavior: 'Reports invalid or corrupt branch state without changing the selector.',
-        );
-    }
 }

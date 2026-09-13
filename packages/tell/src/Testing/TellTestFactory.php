@@ -7,8 +7,8 @@ namespace Cognesy\Tell\Testing;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Core\Paths\TellPaths;
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
 use Cognesy\Tell\Tell;
 use InvalidArgumentException;
 
@@ -47,11 +47,12 @@ final readonly class TellTestFactory
             packageAgents: dirname(__DIR__, 2) . '/resources/agents',
             home: $directory . '/.tell-testing',
         );
-        return StandaloneTellHost::open(
-            directory: $directory,
-            paths: $paths,
-            driverFactory: fn () => $this->driver,
-            cancellation: $cancellation,
-        );
+        $builder = StandaloneTellBuilder::in($directory, $paths)
+            ->withDriverFactory(fn () => $this->driver);
+        if ($cancellation !== null) {
+            $builder->withCancellation($cancellation);
+        }
+
+        return $builder->build();
     }
 }

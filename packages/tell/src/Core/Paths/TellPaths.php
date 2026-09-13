@@ -15,6 +15,7 @@ final readonly class TellPaths
     public string $models;
     public string $userAgents;
     public string $runtime;
+    public string $executionJournal;
     public string $sessions;
     public string $logs;
     public string $executionTraces;
@@ -32,6 +33,7 @@ final readonly class TellPaths
         $this->models = $this->join($this->configDirectory, 'models');
         $this->userAgents = $this->join($this->configDirectory, 'agents');
         $this->runtime = $this->join($home, 'runtime');
+        $this->executionJournal = $this->join($this->runtime, 'execution-journal.jsonl');
         $this->sessions = $this->join($this->runtime, 'sessions');
         $this->logs = $this->join($home, 'logs');
         $this->executionTraces = $this->join($this->logs, 'executions');
@@ -69,6 +71,7 @@ final readonly class TellPaths
             'models' => $this->models,
             'agents' => $this->userAgents,
             'runtime' => $this->runtime,
+            'executionJournal' => $this->executionJournal,
             'sessions' => $this->sessions,
             'logs' => $this->logs,
             'executionTraces' => $this->executionTraces,

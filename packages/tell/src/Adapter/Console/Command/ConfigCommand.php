@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Contract\Workspace\CanConfigureTellBranch;
@@ -21,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ConfigCommand extends Command implements CanDescribeOperationalPlane
+final class ConfigCommand extends Command
 {
     public function __construct(
         private readonly CanAccessTellConversations $conversations,
@@ -85,19 +82,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'config',
-            responsibility: 'Read or atomically update typed secret-free branch intent.',
-            ownedState: 'One branch-local config record.',
-            input: 'Explicit action, selected branch, allowed key, JSON value, and expected version.',
-            output: 'Versioned intent with field-level provenance.',
-            authority: 'Read and atomically replace only selected config.',
-            degradedBehavior: 'Rejects secrets, unknown keys, invalid values, and stale versions without partial writes.',
-        );
-    }
 
     /** @param array{name: string, source: string} $branch @return array<string, mixed> */
     private function show(array $branch, CanConfigureTellBranch $configuration, TellBranchConfig $config): array {

@@ -3,7 +3,7 @@
 namespace Cognesy\Tell\Adapter\Console;
 
 use Cognesy\Tell\Core\{
-    Contract\Execution\CanRunTell,
+    Contract\Execution\CanObserveTellRun,
     Workspace\Branch\BranchResolver,
     Workspace\Branch\Storage\BranchStore,
     Workspace\Compaction\CompactionRunner,
@@ -13,7 +13,7 @@ use Cognesy\Tell\Core\{
 final class InvalidGroupedImport
 {
     public function __construct(
-        public CanRunTell $runner,
+        public CanObserveTellRun $run,
         public BranchResolver $branches,
     ) {}
 }

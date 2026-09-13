@@ -24,12 +24,11 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
-use Cognesy\Tell\Core\Contract\Agent\CanContributeTellAgent;
 use Cognesy\Tell\Core\Contract\Agent\CanDescribeTellDelegation;
 use Cognesy\Tell\Core\Contract\Agent\CanLoadTellAgentDefinitions;
 use Cognesy\Tell\Core\Contract\Agent\CanRecordTellAgentDiagnostics;
-use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
+use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
 use Cognesy\Tell\Core\Contract\Model\CanResolveTellModel;
 use Cognesy\Tell\Core\Contract\Observation\CanTraceTellExecution;
 use Cognesy\Tell\Core\Paths\TellPaths;
@@ -47,7 +46,6 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
     private ?Closure $decorateLoop;
 
     /**
-     * @param list<CanContributeTellAgent> $contributions
      * @param callable(AgentLoop): AgentLoop|null $decorateLoop
      */
     public function __construct(
@@ -57,7 +55,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         private CanResolveTellModel $modelResolver,
         private CanCatalogueTellProviders $providerCatalogue,
         private CanLoadTellAgentDefinitions $definitionLoader,
-        private array $contributions,
+        private TellAgentContributions $contributions,
         ?callable $decorateLoop = null,
         private ?CanUseTools $driver = null,
     ) {
@@ -144,7 +142,7 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         $policy = $request->policy ?? TellExecutionPolicy::defaults();
         $blobs = $policy->spillsToolOutput() ? $this->paths->blobsFor($request->directory) : null;
         $loop = $this->withReasoningSelection($loop, $request);
-        $loop = $this->filterTools($loop, $request->tools);
+        $loop = $this->filterTools($loop, $request);
         $loop = $this->withExecutionPolicy($loop, $policy, $blobs);
         $loop = $this->withCooperativeCancellation($loop, $cancellation);
 
@@ -235,14 +233,21 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         );
     }
 
-    /** @param list<string> $allowed */
-    private function filterTools(AgentLoop $loop, array $allowed): AgentLoop {
-        if ($allowed === []) {
+    private function filterTools(AgentLoop $loop, TellRequest $request): AgentLoop {
+        if (!$request->toolsExplicit) {
             return $loop;
+        }
+        $available = $loop->tools()->names();
+        $unknown = array_values(array_diff($request->tools, $available));
+        if ($unknown !== []) {
+            throw new InvalidArgumentException(
+                'Unknown Tell tool(s): ' . implode(', ', $unknown) . '. '
+                . 'Available tools: ' . implode(', ', $available) . '.',
+            );
         }
         $selected = [];
         foreach ($loop->tools()->all() as $name => $tool) {
-            if (in_array($name, $allowed, true)) {
+            if (in_array($name, $request->tools, true)) {
                 $selected[] = $tool;
             }
         }

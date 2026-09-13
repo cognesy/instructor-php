@@ -10,29 +10,30 @@ use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 final readonly class TellResult
 {
+    private TellTermination $termination;
+
     /**
      * @param  list<string>  $warnings
      * @param  list<TellDiagnostic>  $diagnostics
-     * @param  'current'|'invocation'|null  $branchSource
      */
     public function __construct(
         private AgentState $state,
+        private TellExecutionMode $requestedMode,
+        private TellExecutionMode $mode,
+        private TellPublication $publication,
+        private TellTraceReference $trace,
         private array $warnings = [],
-        private bool $transient = false,
-        private bool $durable = false,
-        private ?string $session = null,
-        private ?string $workspace = null,
-        private ?string $branch = null,
-        private ?string $branchSource = null,
         private array $diagnostics = [],
-    ) {}
+    ) {
+        $this->termination = TellTermination::fromState($state);
+    }
 
     public function state(): AgentState {
         return $this->state;
     }
 
-    public function status(): ?ExecutionStatus {
-        return $this->state->status();
+    public function status(): ExecutionStatus {
+        return $this->termination->status;
     }
 
     public function text(): string {
@@ -40,7 +41,7 @@ final readonly class TellResult
     }
 
     public function usage(): InferenceUsage {
-        return $this->state->usage();
+        return $this->termination->usage;
     }
 
     /** @return list<string> */
@@ -54,44 +55,51 @@ final readonly class TellResult
     }
 
     public function isCompleted(): bool {
-        return $this->state->status() === ExecutionStatus::Completed;
+        return $this->termination->isCompleted();
     }
 
     public function isTransient(): bool {
-        return $this->transient;
+        return $this->requestedMode === TellExecutionMode::Transient;
     }
 
-    public function isDurable(): bool {
-        return $this->durable;
+    public function isPublished(): bool {
+        return $this->publication->isPublished();
     }
 
-    /**
-     * The persistence actually reached by this turn. Transient and durable are
-     * independent facts, so a turn that is neither published nothing anywhere
-     * and is reported as stateless rather than inferred to be durable.
-     */
-    public function executionMode(): TellExecutionMode {
-        return match (true) {
-            $this->transient => TellExecutionMode::Transient,
-            $this->durable => TellExecutionMode::Durable,
-            default => TellExecutionMode::Stateless,
-        };
+    public function requestedMode(): TellExecutionMode {
+        return $this->requestedMode;
+    }
+
+    public function mode(): TellExecutionMode {
+        return $this->mode;
+    }
+
+    public function termination(): TellTermination {
+        return $this->termination;
+    }
+
+    public function publication(): TellPublication {
+        return $this->publication;
+    }
+
+    public function trace(): TellTraceReference {
+        return $this->trace;
     }
 
     public function session(): ?string {
-        return $this->session;
+        return $this->publication->session;
     }
 
     public function workspace(): ?string {
-        return $this->workspace;
+        return $this->publication->workspace;
     }
 
     public function branch(): ?string {
-        return $this->branch;
+        return $this->publication->branch;
     }
 
     /** @return 'current'|'invocation'|null */
     public function branchSource(): ?string {
-        return $this->branchSource;
+        return $this->publication->branchSource;
     }
 }

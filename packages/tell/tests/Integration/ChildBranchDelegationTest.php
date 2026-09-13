@@ -7,16 +7,17 @@ require_once dirname(__DIR__) . '/Pest.php';
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\Hooks\CallableHook;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Tell\Adapter\Console\Command\WorkspaceInspectionCommand;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellPublicationStatus;
 use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
 use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchSelectionStore;
 use Cognesy\Tell\Core\Workspace\Branch\Storage\BranchStore;
-use Cognesy\Tell\Core\Workspace\Execution\TurnException;
 use Cognesy\Tell\Capability\Workspace\Filesystem\WorkspaceState;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -209,11 +210,12 @@ it('rejects a stale child-head publication without moving the parent ref', funct
     $arena = new FilesystemArena($workspace);
     $before = $arena->readRef()->head;
 
-    expect(fn () => $tell->run(TellRequest::prompt('Delegate with a stale child head')->durable()))
-        ->toThrow(TurnException::class);
+    $result = $tell->run(TellRequest::prompt('Delegate with a stale child head')->durable());
 
     $child = (new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names()[0];
-    expect($before)->not->toBeNull()
+    expect($result->status())->toBe(ExecutionStatus::Failed)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and($before)->not->toBeNull()
         ->and($arena->readRef()->head?->toString())->toBe($before->toString())
         ->and($arena->readRef('branches/' . $child->toString())->head)->toBeNull();
 });
@@ -228,12 +230,14 @@ it('does not reserve a child ref for an invalid delegated definition', function 
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
-    expect(fn () => tellTestOpen($project, $factory)->run(
+    $result = tellTestOpen($project, $factory)->run(
         TellRequest::prompt('Reject invalid child')->durable(),
-    ))->toThrow(TurnException::class);
+    );
     $arena = new FilesystemArena($workspace);
 
-    expect((new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names())->toBe([])
+    expect($result->status())->toBe(ExecutionStatus::Failed)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and((new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names())->toBe([])
         ->and($arena->readRef()->head)->toBeNull();
 });
 
@@ -251,13 +255,15 @@ it('leaves a failed child at its initial head without publishing parent or child
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
-    expect(fn () => tellTestOpen($project, $factory)->run(
+    $result = tellTestOpen($project, $factory)->run(
         TellRequest::prompt('Delegate failing child')->durable(),
-    ))->toThrow(TurnException::class);
+    );
     $arena = new FilesystemArena($workspace);
     $childRef = $arena->readRef('branches/' . (new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names()[0]->toString());
 
-    expect($childRef->head)->toBeNull()
+    expect($result->status())->toBe(ExecutionStatus::Failed)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and($childRef->head)->toBeNull()
         ->and($arena->readRef()->head)->toBeNull();
 });
 
@@ -280,13 +286,15 @@ it('propagates cancellation into a child and leaves both refs unpublished', func
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
-    expect(fn () => tellTestOpen($project, $factory, $cancellation)->run(
+    $result = tellTestOpen($project, $factory, $cancellation)->run(
         TellRequest::prompt('Delegate cancelled child')->durable(),
-    ))->toThrow(TurnException::class);
+    );
     $arena = new FilesystemArena($workspace);
     $childRef = $arena->readRef('branches/' . (new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names()[0]->toString());
 
-    expect($childRef->head)->toBeNull()
+    expect($result->status())->toBe(ExecutionStatus::Stopped)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and($childRef->head)->toBeNull()
         ->and($arena->readRef()->head)->toBeNull();
 });
 
@@ -306,13 +314,15 @@ it('rejects delegation from a child without reserving a grandchild branch', func
     mkdir($project, 0755, true);
     $workspace = tellTestWorkspaces()->initialize($project)->workspace;
 
-    expect(fn () => tellTestOpen($project, $factory)->run(
+    $result = tellTestOpen($project, $factory)->run(
         TellRequest::prompt('Reject recursive delegation')->durable(),
-    ))->toThrow(TurnException::class);
+    );
     $arena = new FilesystemArena($workspace);
     $childRef = $arena->readRef('branches/' . (new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names()[0]->toString());
 
-    expect((new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names())->toHaveCount(1)
+    expect($result->status())->toBe(ExecutionStatus::Failed)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and((new BranchStore($arena, new FilesystemBranchSelectionStore($workspace)))->names())->toHaveCount(1)
         ->and($childRef->head)->toBeNull()
         ->and($arena->readRef()->head)->toBeNull();
 });

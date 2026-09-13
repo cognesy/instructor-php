@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Render;
 
 use Cognesy\Agents\AgentLoop;
-use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Core\Observation\TellEventNormalizer;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Data\TellResult;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,32 +27,34 @@ final readonly class TextRenderer implements OutputRenderer
     public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void {
+    public function finish(TellResult $result): void {
         $verbosity = match ($this->quiet) {
             true => OutputInterface::VERBOSITY_QUIET,
             false => OutputInterface::VERBOSITY_NORMAL,
         };
-        $answer = AgentResult::answer($state);
+        $answer = AgentResult::answer($result);
         if ($answer !== '') {
             $this->stdout->writeln($answer, $verbosity);
         }
-        foreach (AgentResult::errors($state) as $error) {
+        foreach (AgentResult::errorMessages($result) as $error) {
             $this->stderr->writeln('[tell] execution failed: ' . $error, $verbosity);
         }
-        if ($state->stopSignal() !== null) {
-            $this->stderr->writeln('[tell] execution stopped: ' . $state->stopSignal()->toString(), $verbosity);
+        $terminal = AgentResult::terminalSummary($result);
+        if ($terminal !== null) {
+            $this->stderr->writeln($terminal, $verbosity);
         }
-        if ($mode === TellExecutionMode::Transient) {
+        if ($result->mode() === TellExecutionMode::Transient) {
             $this->stderr->writeln('[tell] transient: no conversation or session state was persisted.', $verbosity);
         }
-        if ($branch !== null) {
-            $this->stderr->writeln("[tell] branch: {$branch['name']} ({$branch['source']}).", $verbosity);
+        if ($result->branch() !== null) {
+            $source = $result->branchSource() ?? 'current';
+            $this->stderr->writeln("[tell] branch: {$result->branch()} ({$source}).", $verbosity);
         }
-        foreach ($warnings as $warning) {
+        foreach ($result->warnings() as $warning) {
             $this->stderr->writeln('[tell] ' . $warning, $verbosity);
         }
-        foreach ($diagnostics as $diagnostic) {
-            $this->stderr->writeln("[tell] {$diagnostic['severity']} {$diagnostic['code']}: {$diagnostic['message']}", $verbosity);
+        foreach ($result->diagnostics() as $diagnostic) {
+            $this->stderr->writeln("[tell] {$diagnostic->severity} {$diagnostic->code}: {$diagnostic->message}", $verbosity);
         }
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Symfony;
 
-use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Composer\InstalledVersions;
 use InvalidArgumentException;
@@ -24,23 +23,13 @@ final class TellConsoleApplication extends Application
 
     private readonly InputDefinition $routingDefinition;
 
-    public function __construct(TellCommandDescriptors $descriptors) {
+    public function __construct(TellCommands $commands) {
         parent::__construct('Instructor Tell', self::packageVersion());
         $this->setDefaultCommand('tell');
 
-        $commands = array_map(static function ($descriptor): Command {
-            $command = $descriptor->create();
-            if (!$command instanceof Command) {
-                throw new InvalidArgumentException("Tell command {$descriptor->name} factory must return a Symfony command.");
-            }
-            if ($command->getName() !== $descriptor->name) {
-                throw new InvalidArgumentException("Tell command descriptor {$descriptor->name} created {$command->getName()}.");
-            }
-
-            return $command;
-        }, $descriptors->all());
-        $this->routingDefinition = $this->routingDefinition(...$commands);
-        $this->addCommands($commands);
+        $resolved = $commands->all();
+        $this->routingDefinition = $this->routingDefinition(...$resolved);
+        $this->addCommands($resolved);
     }
 
     /** @param list<string>|null $argv */

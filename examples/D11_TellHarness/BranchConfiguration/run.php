@@ -23,12 +23,12 @@ the previous read, so concurrent callers must re-read rather than overwrite.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = StandaloneTellHost::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $workspace = $tell->workspace();
     $workspace->initialize();
     $workspace->branches()->create('review', empty: true);

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Contract\Workspace\CanInspectTellConversation;
@@ -23,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Read-only public views of one verified canonical Tell conversation.
  */
-final class WorkspaceInspectionCommand extends Command implements CanDescribeOperationalPlane
+final class WorkspaceInspectionCommand extends Command
 {
     private const int DEFAULT_HISTORY_LIMIT = 20;
     private const int MAX_HISTORY_LIMIT = 100;
@@ -86,23 +83,6 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: $this->view,
-            responsibility: $this->view === 'history'
-                ? 'Inspect bounded canonical turn metadata without executing inference.'
-                : 'Inspect the ordered semantic canonical transcript without executing inference.',
-            ownedState: 'Read-only projection of one validated project-local arena ref.',
-            input: 'Optional workspace directory and named-session selector.',
-            output: $this->view === 'history'
-                ? 'Stable canonical turn identifiers, provenance, and bounded content previews.'
-                : 'Ordered semantic messages and bounded tool call/result projections.',
-            authority: 'Read verified canonical objects only; no inference, tool execution, or persistence writes.',
-            degradedBehavior: 'Reports missing workspace, invalid selectors, and corrupt lineage without returning a partial view.',
-        );
-    }
 
     private function description(): string {
         return match ($this->view) {

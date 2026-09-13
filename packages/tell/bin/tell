@@ -1,8 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
-use Cognesy\Tell\Data\TellCommandDescriptors;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 
 $findAutoload = static function (): string {
@@ -29,17 +28,8 @@ $findAutoload = static function (): string {
 require $findAutoload();
 
 $cwd = getcwd();
-$host = StandaloneTellHost::cli(
-    directory: is_string($cwd) ? $cwd : '.',
-    cancellation: new TellSignalCancellationSource,
-);
-try {
-    $commands = TellCommandDescriptors::merge(
-        ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
-    );
-    $application = $host->application()->build($commands);
-    $argv = array_values($_SERVER['argv'] ?? []);
-    exit($application->run($argv));
-} finally {
-    $host->dispose();
-}
+$application = StandaloneTellBuilder::in(is_string($cwd) ? $cwd : '.')
+    ->withCancellation(new TellSignalCancellationSource)
+    ->buildCli();
+$argv = array_values($_SERVER['argv'] ?? []);
+exit($application->runArgv($argv));

@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Symfony;
 
 use Cognesy\Agents\AgentLoop;
-use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Core\Configuration\TellConfig;
 use Cognesy\Tell\Core\Paths\TellPaths;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
-use Cognesy\Tell\Core\Contract\Execution\CanCreateTellRuntime;
-use Cognesy\Tell\Data\TellDiagnostic;
+use Cognesy\Tell\Core\Contract\Execution\CanExplainTellInfrastructureFailure;
+use Cognesy\Tell\Core\Execution\TellRuntimeFactory;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellResult;
 use Cognesy\Tell\Core\Observation\TellEventNormalizer;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\BusyIndicator;
 use Cognesy\Tell\Adapter\Console\Render\EventProgress;
 use Cognesy\Tell\Adapter\Console\Render\EventsRenderer;
@@ -41,10 +38,10 @@ use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-final class TellCommand extends Command implements CanDescribeOperationalPlane
+final class TellCommand extends Command
 {
     public function __construct(
-        private readonly CanCreateTellRuntime $runtime,
+        private readonly TellRuntimeFactory $runtime,
         private readonly CanBuildTellAgent $agents,
         private readonly CanManageTellWorkspace $workspaces,
         private readonly CanReadTellBranchConfiguration $branchConfiguration,
@@ -131,31 +128,26 @@ HELP)
                 // terminal its line back before anything else is written.
                 $busy?->stop();
             }
-            $branch = match ($result->branch()) {
-                null => null,
-                default => ['name' => $result->branch(), 'source' => $result->branchSource() ?? 'current'],
-            };
-            $warnings = $result->warnings();
-            $diagnostics = array_map(
-                static fn (TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
-                $result->diagnostics(),
-            );
             // One blank line so the answer does not run straight into the last
             // progress line. It goes on stderr because that is the stream the
             // noise came from: a redirected stdout stays exactly as parseable.
             if ($trace?->wrote() === true || $progress->wrote()) {
                 $stderr->write("\n", false, OutputInterface::OUTPUT_RAW);
             }
-            $renderer->finish($result->state(), $warnings, $result->executionMode(), $branch, $diagnostics);
+            $renderer->finish($result);
             if (!$signalsEnabled && $output->isVerbose()) {
                 $stderr->writeln('[tell] SIGINT cancellation is unavailable: pcntl signal support was not detected.');
             }
 
-            return $this->exitCode($result->state());
+            return $this->exitCode($result);
         } catch (InvalidArgumentException $error) {
             $this->writeError($input, $output, $error->getMessage(), true);
 
             return Command::INVALID;
+        } catch (CanExplainTellInfrastructureFailure $error) {
+            $this->writeTurnError($input, $output, $error);
+
+            return Command::FAILURE;
         } catch (Throwable $error) {
             $this->writeError($input, $output, $error->getMessage(), false);
 
@@ -163,19 +155,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Data,
-            command: 'tell "<prompt>"',
-            responsibility: 'Execute one already-selected agent turn and emit bounded result evidence.',
-            ownedState: 'AgentState plus one append-only trace; initialized workspaces publish immutable arena turns unless --transient, and AgentSession is used only when --session is explicit and durable.',
-            input: 'Prompt plus an immutable resolved AgentDefinition and AgentProfile.',
-            output: 'Terminal AgentState projection or typed events, explicit durable/transient/stateless mode, an execution trace, and optional updated AgentSession.',
-            authority: 'Inference, resolved tools, its trace target, and optional write access to one named session; --transient is read-only for conversation/session state.',
-            degradedBehavior: 'Fails before inference when control resolution fails; trace-write failure does not fail the turn; stateless turns need no session storage.',
-        );
-    }
 
     /**
      * Branch configuration can decide the output format, so it has to be read
@@ -237,12 +216,10 @@ HELP)
         };
     }
 
-    private function exitCode(AgentState $state): int {
+    private function exitCode(TellResult $result): int {
         return match (true) {
-            $state->status() === ExecutionStatus::Failed => Command::FAILURE,
-            !$state->hasFinalResponse() => Command::FAILURE,
-            $state->status() === ExecutionStatus::Completed => Command::SUCCESS,
-            default => Command::SUCCESS,
+            $result->status() === ExecutionStatus::Completed => Command::SUCCESS,
+            default => Command::FAILURE,
         };
     }
 
@@ -291,8 +268,8 @@ HELP)
                 'Run `tell "<prompt>"` to start a stateless turn.',
                 'Run `tell agents` to inspect all definitions.',
                 'Run `tell auth status` to inspect credential availability and provenance.',
-                'Run `tell planes` to inspect operational ownership and authority.',
                 'Run `tell sessions` to inspect persisted sessions.',
+                'Run `tell runs list` to inspect durable execution outcomes.',
                 'Run `tell init` to initialize durable project state.',
                 'Trace roots are reported as storage.executionTraces and storage.sessionTraces.',
                 'Run `tell --help` for all turn options.',
@@ -333,6 +310,30 @@ HELP)
                 'Run `tell --help` for all options and examples.',
             ];
         }
+        $mode = (string) $input->getOption('output');
+        (new StructuredOutput($output))->write(
+            $payload,
+            json: in_array($mode, ['json', 'events'], true),
+        );
+    }
+
+    private function writeTurnError(
+        InputInterface $input,
+        OutputInterface $output,
+        CanExplainTellInfrastructureFailure $error,
+    ): void {
+        $termination = $error->termination();
+        $publication = $error->publication();
+        $payload = [
+            'error' => [
+                'code' => $error->failureCode(),
+                'message' => $error->getMessage(),
+                'executionId' => $termination?->executionId,
+                'status' => $termination?->status->value,
+                'publication' => $publication?->status->value,
+                'trace' => $error->trace()?->toArray(),
+            ],
+        ];
         $mode = (string) $input->getOption('output');
         (new StructuredOutput($output))->write(
             $payload,

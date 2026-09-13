@@ -32,10 +32,14 @@ use DateTimeImmutable;
  */
 final class TellEventNormalizer
 {
-    public const string SCHEMA = 'tell.event.v1';
+    public const string SCHEMA = 'tell.event.v2';
 
     private int $sequence = 0;
     private ?string $executionId = null;
+    private ?string $stopReason = null;
+    private ?string $stopSource = null;
+    /** @var array<string, int|float|string|bool|null> */
+    private array $stopContext = [];
 
     public function __construct(
         private readonly ?string $branch = null,
@@ -65,7 +69,7 @@ final class TellEventNormalizer
     public function terminal(string $status, array $metadata = []): array {
         return [
             'schema' => self::SCHEMA,
-            'kind' => 'execution.completed',
+            'kind' => 'execution.settled',
             'sequence' => ++$this->sequence,
             'executionId' => $this->executionId ?? 'unknown',
             'branch' => $this->branch,
@@ -155,23 +159,52 @@ final class TellEventNormalizer
                 'status' => $event->status->value,
                 'steps' => $event->stepCount,
             ], null],
-            $event instanceof AgentExecutionStopped => ['execution.stopped', [
-                'reason' => $event->stopReason->value,
-                'steps' => $event->totalSteps,
-            ], null],
-            $event instanceof AgentExecutionFailed => ['execution.failed', [
+            $event instanceof AgentExecutionStopped => $this->stopping($event),
+            $event instanceof AgentExecutionFailed => ['execution.failure_observed', [
                 'steps' => $event->stepsCompleted,
                 'inputTokens' => $event->totalUsage->inputTokens,
                 'outputTokens' => $event->totalUsage->outputTokens,
             ], null],
-            $event instanceof AgentExecutionCompleted => ['execution.completed', [
+            $event instanceof AgentExecutionCompleted => ['execution.settled', [
                 'status' => $event->status->value,
+                'reason' => $this->stopReason,
+                'source' => $this->stopSource,
                 'steps' => $event->totalSteps,
                 'inputTokens' => $event->totalUsage->inputTokens,
                 'outputTokens' => $event->totalUsage->outputTokens,
+                ...$this->stopContext,
             ], $event->status->value],
             default => ['unknown', [], null],
         };
+    }
+
+    /** @return array{0: string, 1: array<string, int|float|string|bool|null>, 2: null} */
+    private function stopping(AgentExecutionStopped $event): array {
+        $this->stopReason = $event->stopReason->value;
+        $this->stopSource = $event->source;
+        $this->stopContext = $this->safeContext($event->stopContext);
+
+        return ['execution.stop_observed', [
+            'reason' => $event->stopReason->value,
+            'source' => $event->source,
+            'steps' => $event->totalSteps,
+            ...$this->stopContext,
+        ], null];
+    }
+
+    /** @param array<string, mixed> $context
+     * @return array<string, int|float|string|bool|null>
+     */
+    private function safeContext(array $context): array {
+        $safe = [];
+        foreach ($context as $key => $value) {
+            if (!is_string($key) || !is_int($value) && !is_float($value) && !is_bool($value) && !is_null($value)) {
+                continue;
+            }
+            $safe[$key] = $value;
+        }
+
+        return $safe;
     }
 
     private function executionId(object $event): string {

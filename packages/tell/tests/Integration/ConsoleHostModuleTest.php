@@ -5,25 +5,15 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
-use Cognesy\Tell\Composition\Standalone\Host\TellHostGraphException;
-use Cognesy\Tell\Composition\Standalone\Host\TellModuleDefinition;
-use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
-use Cognesy\Tell\Adapter\Console\Symfony\Contract\CanContributeTellCommands;
-use Cognesy\Tell\Data\TellCommandDescriptor;
-use Cognesy\Tell\Data\TellCommandDescriptors;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-it('assembles the complete CLI surface from the standalone host', function (): void {
+it('assembles the complete CLI surface from the standalone builder', function (): void {
     $project = tellTestProject();
-    $host = StandaloneTellHost::cliBuilder(
-        $project,
-        standardHostPaths($project),
-        static fn () => FakeAgentDriver::fromResponses('unused'),
-    )->boot();
-    $application = new TellConsoleApplication(TellCommandDescriptors::merge(
-        ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
-    ));
+    $application = StandaloneTellBuilder::in($project, standardHostPaths($project))
+        ->withDriverFactory(static fn () => FakeAgentDriver::fromResponses('unused'))
+        ->buildCli();
     $application->setAutoExit(false);
     $output = new BufferedOutput();
 
@@ -47,7 +37,7 @@ it('assembles the complete CLI surface from the standalone host', function (): v
             'models',
             'providers',
             'reset',
-            'planes',
+            'runs',
             'sessions',
             'tools',
             'tool',
@@ -55,25 +45,13 @@ it('assembles the complete CLI surface from the standalone host', function (): v
             'transcript',
         )
         ->and(json_decode($rendered, true, 512, JSON_THROW_ON_ERROR)['agents'])->toBeArray();
-
-    $host->dispose();
 });
 
-it('rejects duplicate contributed command names before returning a booted host', function (): void {
+it('rejects duplicate custom command names while resolving the CLI root', function (): void {
     $project = tellTestProject();
-    $duplicate = new TellModuleDefinition(
-        id: 'commands.duplicate-test',
-        provides: [CanContributeTellCommands::class],
-        factory: static fn (): object => new class implements CanContributeTellCommands {
-            public function commands(): TellCommandDescriptors {
-                return new TellCommandDescriptors(new TellCommandDescriptor('tell', static fn (): object => new stdClass()));
-            }
-        },
-    );
 
-    expect(fn () => StandaloneTellHost::cliBuilder(
-        $project,
-        standardHostPaths($project),
-        static fn () => FakeAgentDriver::fromResponses('unused'),
-    )->with($duplicate)->boot())->toThrow(TellHostGraphException::class, 'duplicate command name tell');
-});
+    StandaloneTellBuilder::in($project, standardHostPaths($project))
+        ->withDriverFactory(static fn () => FakeAgentDriver::fromResponses('unused'))
+        ->withCommand(new Command('tell'))
+        ->buildCli();
+})->throws(InvalidArgumentException::class, 'Duplicate Tell command name: tell.');

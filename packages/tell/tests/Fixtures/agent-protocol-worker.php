@@ -10,11 +10,10 @@ require file_exists($monorepoAutoload) ? $monorepoAutoload : $packageAutoload;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Core\Paths\TellPaths;
-use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
-use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Core\Agent\TellAgentFactory;
+use Cognesy\Tell\Core\Agent\TellAgentContributions;
 use Cognesy\Tell\Capability\Execution\System\SystemTellClock;
 use Cognesy\Tell\Capability\Model\Polyglot\PolyglotTellModelResolver;
 use Cognesy\Tell\Capability\Discovery\Polyglot\PolyglotTellProviderCatalogue;
@@ -63,7 +62,7 @@ $factory = new TellAgentFactory(
     modelResolver: new PolyglotTellModelResolver($paths, new StandardTellSecretResolver($paths, $project)),
     providerCatalogue: new PolyglotTellProviderCatalogue($paths),
     definitionLoader: new FilesystemTellAgentDefinitions($paths),
-    contributions: [
+    contributions: new TellAgentContributions(
         new ComposerTellAgentContribution(
             vendorDirectory: is_string($composerVendorDir) && $composerVendorDir !== '' ? $composerVendorDir : null,
         ),
@@ -71,23 +70,13 @@ $factory = new TellAgentFactory(
         new AskUserToolContribution(),
         new TellSubagentContribution(),
         new StandardTellAgentContribution(),
-    ],
+    ),
     driver: $driver,
 );
 
-$host = StandaloneTellHost::cliBuilder(
-    directory: $project,
-    paths: $factory->paths(),
-    agentBuilder: $factory,
-    cancellation: $cancellation,
-)->boot();
-$application = new TellConsoleApplication(TellCommandDescriptors::merge(
-    ...array_map(static fn ($contributor) => $contributor->commands(), $host->commandContributors()),
-));
+$application = StandaloneTellBuilder::in($project, $factory->paths())
+    ->withAgentBuilder($factory)
+    ->withCancellation($cancellation)
+    ->buildCli();
 $application->setAutoExit(false);
-try {
-    $exitCode = $application->runArgv();
-} finally {
-    $host->dispose();
-}
-exit($exitCode);
+exit($application->runArgv());

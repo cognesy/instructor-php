@@ -8,7 +8,7 @@ use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Contract\Workspace\CanOpenTellWorkspace;
 use Cognesy\Tell\Core\Contract\Agent\CanBuildTellAgent;
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
-use Cognesy\Tell\Core\Contract\Execution\CanRunTell;
+use Cognesy\Tell\Core\Execution\TellRuntimeFactory;
 use Cognesy\Tell\Core\Contract\Observation\CanTraceTellExecution;
 use Cognesy\Tell\Core\Paths\TellPaths;
 use Cognesy\Tell\Core\Workspace\Branch\TellBranch;
@@ -21,7 +21,7 @@ final readonly class TellConversations implements CanAccessTellConversations
 {
     public function __construct(
         private CanBuildTellAgent $agents,
-        private CanRunTell $runner,
+        private TellRuntimeFactory $runtimeFactory,
         private CanTraceTellExecution $tracer,
         private CanOpenTellWorkspace $workspaces,
         private TellPaths $paths,
@@ -30,12 +30,12 @@ final readonly class TellConversations implements CanAccessTellConversations
 
     #[\Override]
     public function main(string $directory): TellConversation {
-        return new TellConversation($this->runner, $this->agents, $this->tracer, $this->workspaces, $this->providers, $directory);
+        return new TellConversation($this->runtimeFactory, $this->agents, $this->tracer, $this->workspaces, $this->providers, $directory);
     }
 
     #[\Override]
     public function conversation(string $directory, string $name): TellConversation {
-        return new TellConversation($this->runner, $this->agents, $this->tracer, $this->workspaces, $this->providers, $directory, $name);
+        return new TellConversation($this->runtimeFactory, $this->agents, $this->tracer, $this->workspaces, $this->providers, $directory, $name);
     }
 
     #[\Override]

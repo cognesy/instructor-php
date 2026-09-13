@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Command;
 
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Contract\Workspace\CanMaintainTellConversation;
@@ -24,7 +21,7 @@ use Throwable;
 /**
  * Explicitly summarizes one canonical conversation into a provenance-linked head.
  */
-final class CompactCommand extends Command implements CanDescribeOperationalPlane
+final class CompactCommand extends Command
 {
     private const int MAX_HINT_CHARACTERS = 500;
 
@@ -100,19 +97,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Data,
-            command: 'compact [hint]',
-            responsibility: 'Explicitly infer and publish one provenance-linked canonical summary for a selected conversation.',
-            ownedState: 'The selected project-local arena ref plus immutable canonical summary and trace records.',
-            input: 'Optional bounded focus hint, workspace/session selector, and normal Tell agent and inference configuration.',
-            output: 'Source and resulting head identities with before/after context counts; source transcript is omitted.',
-            authority: 'Configured inference and tools, one execution trace, immutable arena object writes, and a conditional selected-ref update.',
-            degradedBehavior: 'Reports unavailable configuration, invalid lineage, invalid summaries, or stale heads without moving the selected ref.',
-        );
-    }
 
     private function hint(InputInterface $input): string {
         $hint = $input->getArgument('hint');

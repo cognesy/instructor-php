@@ -7,9 +7,6 @@ namespace Cognesy\Tell\Adapter\Console\Command;
 use Closure;
 use Cognesy\Tell\Core\Secrets\TellCredentialNames;
 use Cognesy\Tell\Core\Contract\Secrets\CanManageTellCredentials;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use InvalidArgumentException;
 use Override;
@@ -20,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class AuthCommand extends Command implements CanDescribeOperationalPlane
+final class AuthCommand extends Command
 {
     /** @var Closure(): string */
     private readonly Closure $readInput;
@@ -84,19 +81,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'auth',
-            responsibility: 'Inspect credential provenance and explicitly manage Tell-owned credential persistence.',
-            ownedState: 'Only ~/.tell/.env; process environment and workspace .tell/.env remain externally owned.',
-            input: 'Provider identity plus an explicit status, stdin set, or remove operation.',
-            output: 'Configured state and source provenance without secret values.',
-            authority: 'Read credential availability and mutate only the named Tell-owned credential.',
-            degradedBehavior: 'Data-plane execution may use higher-priority ambient sources; missing credentials fail before inference.',
-        );
-    }
 
     private function status(InputInterface $input, OutputInterface $output): int {
         if ((bool) $input->getOption('stdin')) {

@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-use Cognesy\Tell\Composition\Standalone\Host\TellHost;
-use Cognesy\Tell\Composition\Standalone\Host\TellHostBuilder;
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
-use Cognesy\Tell\Adapter\Console\Symfony\SymfonyConsoleApplicationBuilder;
-use Cognesy\Tell\Adapter\Console\Symfony\SymfonyConsoleApplicationRunner;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
+use Cognesy\Tell\Adapter\Console\Symfony\CoreTellCommands;
+use Cognesy\Tell\Adapter\Console\Symfony\TellCommands;
 use Cognesy\Tell\Adapter\Console\Symfony\TellConsoleApplication;
 use Cognesy\Tell\Data\TellShellJobApproval;
 use Cognesy\Tell\Data\TellShellJobEvent;
@@ -105,12 +103,10 @@ it('aligns cohesive public class families with their PSR-4 namespaces', function
         TellBranchSelection::class,
         TellBranches::class,
         TellRef::class,
-        StandaloneTellHost::class,
-        TellHost::class,
-        TellHostBuilder::class,
+        StandaloneTellBuilder::class,
+        CoreTellCommands::class,
+        TellCommands::class,
         TellConsoleApplication::class,
-        SymfonyConsoleApplicationBuilder::class,
-        SymfonyConsoleApplicationRunner::class,
         TellCatalogue::class,
         TellShellJobEvent::class,
         TellShellJobHealth::class,

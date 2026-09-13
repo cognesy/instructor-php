@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
@@ -13,11 +14,11 @@ use Cognesy\Messages\ToolCall;
 use Cognesy\Tell\Adapter\Console\Command\ConfigCommand;
 use Cognesy\Tell\Data\TellExecutionPolicy;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellPublicationStatus;
 use Cognesy\Tell\Core\Contract\Execution\CanReadTellClock;
 use Cognesy\Tell\Core\Agent\TellExecutionBudgetHook;
 use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemArena;
 use Cognesy\Tell\Capability\Workspace\Filesystem\FilesystemBranchConfigurationStore;
-use Cognesy\Tell\Core\Workspace\Execution\TurnException;
 use Cognesy\Utils\Result\Result;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -169,10 +170,13 @@ it('does not publish a durable turn when the total model-output budget is exceed
     mkdir($project, 0700, true);
     tellTestWorkspaces()->initialize($project);
 
-    expect(fn () => tellTestOpen($project, $factory)->run(
+    $result = tellTestOpen($project, $factory)->run(
         TellRequest::prompt('Answer briefly')->durable()->maxOutputChars(8),
-    ))->toThrow(TurnException::class);
+    );
     $workspace = tellTestWorkspaces()->discover($project);
 
-    expect((new FilesystemArena($workspace ?? throw new RuntimeException('workspace missing')))->readRef('main')->head)->toBeNull();
+    expect($result->status())->toBe(ExecutionStatus::Stopped)
+        ->and($result->termination()->stopSignal?->reason)->toBe(StopReason::OutputLimitReached)
+        ->and($result->publication()->status)->toBe(TellPublicationStatus::NotAttempted)
+        ->and((new FilesystemArena($workspace ?? throw new RuntimeException('workspace missing')))->readRef('main')->head)->toBeNull();
 });

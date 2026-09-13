@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Adapter\Console\Command;
 
 use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Contract\Workspace\CanAccessTellConversations;
 use Cognesy\Tell\Core\Contract\Workspace\CanMaintainTellConversation;
@@ -22,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Inspects the pre-prompt AgentState assembled from one canonical conversation.
  */
-final class ContextCommand extends Command implements CanDescribeOperationalPlane
+final class ContextCommand extends Command
 {
     public function __construct(
         private readonly CanAccessTellConversations $conversations,
@@ -91,19 +88,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'context',
-            responsibility: 'Compile and inspect the selected canonical pre-prompt AgentState without execution.',
-            ownedState: 'Read-only projection of verified arena lineage plus selected invocation configuration.',
-            input: 'Optional workspace/session selector and agent, connection, model, or DSN selection.',
-            output: 'Deterministic counts, token estimate provenance, exact model capacity, and compaction provenance.',
-            authority: 'Read canonical state and configuration only; no inference, loop construction, tool execution, or persistence writes.',
-            degradedBehavior: 'Reports missing workspaces, invalid selectors, configuration errors, and corrupt lineage without a partial context.',
-        );
-    }
 
     private function options(InputInterface $input): TellOptions {
         $directory = (string) $input->getOption('dir');

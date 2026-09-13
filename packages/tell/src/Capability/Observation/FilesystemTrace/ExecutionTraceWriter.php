@@ -6,18 +6,27 @@ namespace Cognesy\Tell\Capability\Observation\FilesystemTrace;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Events\AgentExecutionStarted;
+use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Events\Event;
 use Cognesy\Tell\Core\Configuration\TellConfig;
 use Cognesy\Tell\Core\Paths\TellPaths;
 use Cognesy\Tell\Core\Observation\TellEventNormalizer;
+use Cognesy\Tell\Core\Contract\Observation\CanRecordTellTrace;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Data\TellPublication;
 use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellTermination;
+use Cognesy\Tell\Data\TellTraceReference;
+use Cognesy\Tell\Data\TellTraceStatus;
 use DateTimeZone;
 use Throwable;
 
-final class ExecutionTraceWriter
+final class ExecutionTraceWriter implements CanRecordTellTrace
 {
     private ?string $path = null;
+    private ?string $executionId = null;
     private bool $failed = false;
+    private bool $outcomeRecorded = false;
     private readonly TellEventNormalizer $events;
 
     public function __construct(
@@ -32,16 +41,66 @@ final class ExecutionTraceWriter
     }
 
     public function attach(AgentLoop $loop): void {
-        if (!$this->config->executionTraces) {
-            return;
-        }
         $loop->wiretap(function (object $event): void {
             $this->record($event);
         });
     }
 
+    #[\Override]
+    public function recordOutcome(
+        TellTermination $termination,
+        TellPublication $publication,
+        TellExecutionMode $requestedMode,
+    ): void {
+        if ($this->outcomeRecorded || $this->failed) {
+            return;
+        }
+        $this->outcomeRecorded = true;
+        $this->executionId = $termination->executionId;
+        if ($this->path === null) {
+            $this->failed = true;
+
+            return;
+        }
+        $context = $termination->toArray()['context'];
+        $error = $termination->errors->all()[0] ?? null;
+        $event = $this->events()->terminal($termination->status->value, [
+            'steps' => $termination->stepCount,
+            'reason' => $termination->stopSignal?->reason->value,
+            'source' => $termination->stopSignal?->source,
+            'inputTokens' => $termination->usage->inputTokens,
+            'outputTokens' => $termination->usage->outputTokens,
+            'errorCount' => $termination->errors->count(),
+            'errorCode' => $error?->code,
+            'errorCategory' => $error?->category,
+            'errorPhase' => $error?->phase,
+            'requestedMode' => $requestedMode->value,
+            'publication' => $publication->status->value,
+            'baseHead' => $publication->baseHead,
+            'publishedHead' => $publication->publishedHead,
+            ...$context,
+        ]);
+        if (!$this->write($this->path, $event)) {
+            return;
+        }
+    }
+
+    #[\Override]
+    public function reference(): TellTraceReference {
+        return new TellTraceReference(
+            executionId: $this->executionId,
+            status: match (true) {
+                $this->failed => TellTraceStatus::Failed,
+                $this->path === null => TellTraceStatus::Pending,
+                default => TellTraceStatus::Written,
+            },
+            storageKind: $this->options->session === null ? 'execution' : 'session',
+            path: $this->path,
+        );
+    }
+
     private function record(object $event): void {
-        if ($this->failed || !$event instanceof Event) {
+        if ($this->failed || !$event instanceof Event || $event instanceof AgentExecutionCompleted) {
             return;
         }
         try {
@@ -49,19 +108,7 @@ final class ExecutionTraceWriter
             if ($this->path === null) {
                 return;
             }
-            $line = json_encode(
-                $this->eventPayload($event),
-                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE,
-            ) . "\n";
-            $created = !is_file($this->path);
-            if (@file_put_contents($this->path, $line, FILE_APPEND | LOCK_EX) === false) {
-                $this->failed = true;
-
-                return;
-            }
-            if ($created) {
-                @chmod($this->path, 0600);
-            }
+            $this->write($this->path, $this->eventPayload($event));
         } catch (Throwable) {
             $this->failed = true;
         }
@@ -71,6 +118,7 @@ final class ExecutionTraceWriter
         if ($this->path !== null || !$event instanceof AgentExecutionStarted) {
             return;
         }
+        $this->executionId = $event->executionId;
         if ($this->options->session !== null) {
             $this->path = $this->sessionTracePath($this->options->session);
 
@@ -93,6 +141,31 @@ final class ExecutionTraceWriter
 
     private function events(): TellEventNormalizer {
         return $this->events;
+    }
+
+    /** @param array<string, mixed> $record */
+    private function write(string $path, array $record): bool {
+        try {
+            $line = json_encode(
+                $record,
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE,
+            ) . "\n";
+            $created = !is_file($path);
+            if (@file_put_contents($path, $line, FILE_APPEND | LOCK_EX) === false) {
+                $this->failed = true;
+
+                return false;
+            }
+            if ($created) {
+                @chmod($path, 0600);
+            }
+
+            return true;
+        } catch (Throwable) {
+            $this->failed = true;
+
+            return false;
+        }
     }
 
     /** @return array<string, mixed> */

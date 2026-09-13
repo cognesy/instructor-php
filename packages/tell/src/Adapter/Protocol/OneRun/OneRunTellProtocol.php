@@ -7,7 +7,8 @@ namespace Cognesy\Tell\Adapter\Protocol\OneRun;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Tell\Core\Contract\Execution\CanCreateTellRuntime;
+use Cognesy\Tell\Core\Contract\Execution\CanExplainTellInfrastructureFailure;
+use Cognesy\Tell\Core\Execution\TellRuntimeFactory;
 use Cognesy\Tell\Adapter\Protocol\OneRun\Contract\CanRunTellProtocol;
 use Cognesy\Tell\Adapter\Protocol\OneRun\Contract\CanWriteTellProtocolFrames;
 use Cognesy\Tell\Data\TellProtocolRequest;
@@ -15,7 +16,7 @@ use Cognesy\Tell\Data\TellProtocolRequest;
 /** One decoded request, one bounded run, and exactly one terminal frame. */
 final readonly class OneRunTellProtocol implements CanRunTellProtocol
 {
-    public function __construct(private CanCreateTellRuntime $runtime) {}
+    public function __construct(private TellRuntimeFactory $runtime) {}
 
     #[\Override]
     public function run(
@@ -24,24 +25,42 @@ final readonly class OneRunTellProtocol implements CanRunTellProtocol
         ?CanProvideCancellationSignal $cancellation = null,
     ): int {
         $frames->identify($request->id);
-        $stream = $this->runtime->create($cancellation)->stream($request->request);
-        foreach ($stream as $progress) {
-            $frames->progress($progress);
-        }
-        $result = $stream->getReturn();
+        try {
+            $stream = $this->runtime->create($cancellation)->stream($request->request);
+            foreach ($stream as $progress) {
+                $frames->progress($progress);
+            }
+            $result = $stream->getReturn();
+        } catch (CanExplainTellInfrastructureFailure $exception) {
+            $termination = $exception->termination();
+            $publication = $exception->publication();
+            if ($termination === null || $publication === null) {
+                throw $exception;
+            }
+            $frames->infrastructureFailure(
+                $exception->failureCode(),
+                'The Tell run could not publish its durable outcome.',
+                $termination,
+                $publication,
+                $exception->trace(),
+            );
 
-        if ($result->status() === ExecutionStatus::Completed) {
+            return 1;
+        }
+
+        $termination = $result->termination();
+        if ($termination->status === ExecutionStatus::Completed) {
             $frames->success($result);
 
             return 0;
         }
-        $reason = $result->state()->stopReason();
-        if ($result->status() === ExecutionStatus::Stopped && $reason === StopReason::UserRequested) {
+        $reason = $termination->stopSignal?->reason;
+        if ($termination->status === ExecutionStatus::Stopped && $reason === StopReason::UserRequested) {
             $frames->cancelled($result);
 
             return 130;
         }
-        if ($result->status() === ExecutionStatus::Stopped) {
+        if ($termination->status === ExecutionStatus::Stopped) {
             $frames->error('run_stopped', 'The Tell run stopped before completion.', $result, $reason?->value);
 
             return 1;

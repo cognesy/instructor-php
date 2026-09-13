@@ -124,7 +124,7 @@ it('writes only semantic canonical data and excludes provider observations', fun
         ->not->toContain('"responseData"');
 });
 
-it('leaves an empty workspace arena unchanged when inference cannot publish', function (CanUseTools $driver, string $expectedError): void {
+it('leaves an empty workspace arena unchanged when inference cannot publish', function (CanUseTools $driver, ?string $terminal, ?string $expectedError, ?string $expectedCode): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($driver));
     $project = tellWorkspaceProject($factory);
     $workspace = tellWorkspace($factory, $project);
@@ -139,14 +139,34 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
     expect($status)->toBe(1)
-        ->and($payload)->toHaveKey('error')
-        ->and($payload['error'])->toContain($expectedError)
         ->and(tellWorkspaceArenaSnapshot($workspace))->toBe($before)
         ->and((new FilesystemArena($workspace))->readRef()->head)->toBeNull();
+    if ($terminal !== null) {
+        expect($payload['execution']['status'])->toBe($terminal)
+            ->and($payload['publication']['status'])->toBe('not_attempted')
+            ->and($payload)->not->toHaveKey('error');
+
+        return;
+    }
+    expect($payload)->toHaveKey('error');
+    $error = $payload['error'];
+    $message = match (true) {
+        is_array($error) => $error['message'] ?? '',
+        is_string($error) => $error,
+        default => '',
+    };
+    expect($message)->toContain($expectedError);
+    if (is_array($error)) {
+        expect($error['code'] ?? null)->toBe($expectedCode)
+            ->and($error['executionId'] ?? null)->toBeString()
+            ->and($error['trace']['executionId'] ?? null)->toBe($error['executionId'] ?? null);
+    }
 })->with([
     'driver failure' => [
         new FakeAgentDriver([ScenarioStep::error('failed')]),
-        'was not completed; arena head was left unchanged',
+        'failed',
+        null,
+        null,
     ],
     'cancellation' => [
         new class implements CanUseTools {
@@ -154,11 +174,15 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
                 throw new AgentStopException(StopSignal::userRequested('cancelled'));
             }
         },
-        'was not completed; arena head was left unchanged',
+        'stopped',
+        null,
+        null,
     ],
     'missing final response' => [
         new FakeAgentDriver([ScenarioStep::tool('')]),
-        'has no final response; arena head was left unchanged',
+        null,
+        'Tell execution completed without a final response.',
+        'turn_invariant_violation',
     ],
     'unsupported canonical message' => [
         new class implements CanUseTools {
@@ -176,7 +200,9 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
                 ));
             }
         },
+        null,
         'Collection contains composite messages and cannot be converted to string.',
+        'turn_record_invalid',
     ],
 ]);
 
@@ -222,7 +248,10 @@ it('keeps the competing canonical head when a compare-and-swap race loses', func
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
     expect($status)->toBe(1)
-        ->and($payload['error'])->toContain("Tell ref 'main' changed before it could be published.")
+        ->and($payload['error']['code'])->toBe('turn_publication_conflict')
+        ->and($payload['error']['message'])->toContain('Tell workspace changed before the turn could be published; arena head was left unchanged.')
+        ->and($payload['error']['publication'])->toBe('failed')
+        ->and($payload['error']['trace']['status'])->toBe('written')
         ->and($store->readRef()->head?->equals($winningHead))->toBeTrue();
 });
 
@@ -244,8 +273,8 @@ it('keeps successful workspace output contracts intact', function (string $mode)
                 static fn (string $line): array => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
                 $lines,
             ),
-            static fn (array $event): bool => $event['schema'] === 'tell.event.v1'
-                && $event['kind'] === 'execution.completed'
+            static fn (array $event): bool => $event['schema'] === 'tell.event.v2'
+                && $event['kind'] === 'execution.settled'
                 && $event['terminal'] === 'completed',
         ))->not->toBeEmpty(),
         'text' => expect(trim($tester->getDisplay()))->toBe('workspace answer')

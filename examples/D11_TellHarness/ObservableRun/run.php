@@ -27,7 +27,7 @@ the point at which Tell is allowed to publish the new conversation head.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Composition\Standalone\Profile\StandaloneTellHost;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellEventEnvelope;
 use Cognesy\Tell\Data\TellRequest;
 
@@ -35,7 +35,7 @@ $project = TellHarnessExample::project();
 $eventTypes = [];
 
 try {
-    $tell = StandaloneTellHost::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $stream = $tell->runStream(
         TellRequest::prompt(
             'Inspect the available context, use a tool if one is useful, then '

@@ -15,7 +15,9 @@ interface CanObserveTellRun
     /** @return Generator<int, TellProgress, mixed, TellResult> */
     public function checkpoints(): Generator;
 
-    public function isCommitted(): bool;
+    public function isSettled(): bool;
+
+    public function isPublished(): bool;
 
     public function result(): TellResult;
 

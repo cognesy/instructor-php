@@ -83,7 +83,7 @@ PHP;
 ## Key Points
 
 - `StandardTellShellJobProfile::builder(...)->boot()` is deliberately separate
-  from `StandaloneTellHost::open()` and `StandaloneTellHost::cliBuilder()`.
+  from `StandaloneTellBuilder::in(...)->build()` and `buildCli()`.
 - Denial is the default. An embedding application must supply an approval
   policy before the host creates a job identity or starts a process.
 - The host enforces project-directory containment, concurrency, lifetime,

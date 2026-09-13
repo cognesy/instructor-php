@@ -17,15 +17,15 @@
   ],
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-metrics": "^2.9",
-    "cognesy/instructor-config": "^2.9",
-    "cognesy/instructor-events": "^2.9",
-    "cognesy/instructor-http-client": "^2.9",
+    "cognesy/instructor-metrics": "^2.10",
+    "cognesy/instructor-config": "^2.10",
+    "cognesy/instructor-events": "^2.10",
+    "cognesy/instructor-http-client": "^2.10",
     "cognesy/logging": "^2.3",
-    "cognesy/instructor-messages": "^2.9",
-    "cognesy/instructor-setup": "^2.9",
-    "cognesy/instructor-telemetry": "^2.9",
-    "cognesy/instructor-utils": "^2.9"
+    "cognesy/instructor-messages": "^2.10",
+    "cognesy/instructor-setup": "^2.10",
+    "cognesy/instructor-telemetry": "^2.10",
+    "cognesy/instructor-utils": "^2.10"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

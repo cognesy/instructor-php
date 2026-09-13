@@ -37,9 +37,9 @@ it('exposes the canonical command routes', function (): void {
         'history',
         'init',
         'models',
-        'planes',
         'providers',
         'reset',
+        'runs',
         'sessions',
         'tell',
         'tool',
@@ -389,55 +389,4 @@ it('preserves explicit json for application-level errors', function (): void {
     expect($status)->toBe(2)
         ->and($payload['error'])->toContain('The "--bogus" option does not exist');
     expect($payload['help'] === [])->toBeFalse();
-});
-
-it('exposes an honest typed map of tell operational planes', function (): void {
-    $application = tellTestApplication(tellTestFactory());
-    $application->setAutoExit(false);
-    $output = new BufferedOutput();
-
-    $status = $application->runArgv(['tell', 'planes', '--full'], $output);
-    $payload = Toon::decode($output->fetch());
-    $byCommand = [];
-    foreach ($payload['operations'] as $operation) {
-        $byCommand[$operation['command']] = $operation;
-    }
-
-    expect($status)->toBe(0)
-        ->and($payload['systemBoundary'])->toContain('local Tell agent runtime')
-        ->and($payload['separationLevel'])->toContain('one collocated process')
-        ->and($payload['lastKnownGood'])->toContain('no persisted control snapshot')
-        ->and($payload['planeCounts'])->toBe(['data' => 4, 'control' => 2, 'management' => 14])
-        ->and($byCommand['tell "<prompt>"']['plane'])->toBe('data')
-        ->and($byCommand['agent --rpc']['plane'])->toBe('data')
-        ->and($byCommand['tool NAME JSON']['plane'])->toBe('data')
-        ->and($byCommand['describe']['plane'])->toBe('control')
-        ->and($byCommand['tools']['plane'])->toBe('control')
-        ->and($byCommand['agents']['plane'])->toBe('management')
-        ->and($byCommand['providers']['plane'])->toBe('management')
-        ->and($byCommand['models']['plane'])->toBe('management')
-        ->and($byCommand['auth']['plane'])->toBe('management')
-        ->and($byCommand['branch']['plane'])->toBe('management')
-        ->and($byCommand['clear']['authority'])->toContain('mutate only the selected ref')
-        ->and($byCommand['compact [hint]']['authority'])->toContain('conditional selected-ref update')
-        ->and($byCommand['init [path]']['plane'])->toBe('management')
-        ->and($byCommand['sessions']['plane'])->toBe('management')
-        ->and($byCommand['sessions']['authority'])->toContain('explicitly named session')
-        ->and($byCommand['context']['authority'])->toContain('Read canonical state and configuration only')
-        ->and($byCommand['history']['authority'])->toContain('Read verified canonical objects only')
-        ->and($byCommand['transcript']['authority'])->toContain('Read verified canonical objects only')
-        ->and($byCommand['tell "<prompt>"']['degradedBehavior'])->toContain('stateless turns');
-});
-
-it('keeps the default plane map compact', function (): void {
-    $application = tellTestApplication(tellTestFactory());
-    $application->setAutoExit(false);
-    $output = new BufferedOutput();
-
-    $status = $application->runArgv(['tell', 'planes'], $output);
-    $payload = Toon::decode($output->fetch());
-
-    expect($status)->toBe(0)
-        ->and($payload['operations'][0])->toHaveKeys(['plane', 'command', 'responsibility']);
-    expect(array_key_exists('ownedState', $payload['operations'][0]))->toBeFalse();
 });

@@ -42,7 +42,7 @@ it('reports the parameters a tool was called with and the result it returned', f
         ->and($progress)->toContain('[tool.start] name=shell step=1 args={"command":"echo traced","description":"prove it runs"}')
         ->and($progress)->toContain('[tool.complete] name=shell status=ok')
         ->and($progress)->toContain('"text":"traced\n"')
-        ->and($progress)->toContain('[execution.complete] status=completed');
+        ->and($progress)->toContain('[execution.settled] status=completed');
 });
 
 it('calls a tool failed when the tool returned its own failure envelope', function (): void {

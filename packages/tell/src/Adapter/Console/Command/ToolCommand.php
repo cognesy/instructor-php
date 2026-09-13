@@ -8,9 +8,6 @@ use Cognesy\Tell\Adapter\Console\Symfony\TellOptions;
 use Cognesy\Tell\Core\Contract\Tool\CanDispatchTellTool;
 use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Core\Observation\TellEventNormalizer;
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Adapter\Console\Symfony\TellSignalCancellationSource;
 use InvalidArgumentException;
@@ -24,7 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 /** Execute one registered tool directly, without starting an agent turn. */
-final class ToolCommand extends Command implements CanDescribeOperationalPlane
+final class ToolCommand extends Command
 {
     private const int MAX_INPUT_BYTES = 1_048_576;
 
@@ -92,19 +89,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Data,
-            command: 'tool NAME JSON',
-            responsibility: 'Execute one resolved tool operation directly and return its bounded structured result.',
-            ownedState: 'One ephemeral tool invocation; no AgentState, session, trace, or workspace ref.',
-            input: 'Tool name, a strict JSON argument object, resolved tool policy, and optional branch-local configuration.',
-            output: 'Stable direct invocation result or payload-free normalized events.',
-            authority: 'Exactly one enabled tool under its existing path, sandbox, network, timeout, and output policy; never inference or conversation publication.',
-            degradedBehavior: 'Invalid arguments are usage errors; unavailable, policy-rejected, cancelled, and runtime failures return a bounded non-zero result.',
-        );
-    }
 
     private function options(InputInterface $input): TellOptions {
         $directory = (string) $input->getOption('dir');

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Adapter\Console\Command;
 
-use Cognesy\Tell\Adapter\Console\Operational\CanDescribeOperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\OperationalPlane;
-use Cognesy\Tell\Adapter\Console\Operational\PlaneOperation;
 use Cognesy\Tell\Adapter\Console\Render\StructuredOutput;
 use Cognesy\Tell\Core\Workspace\WorkspaceException;
 use Cognesy\Tell\Core\Contract\Workspace\CanManageTellWorkspace;
@@ -18,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class InitCommand extends Command implements CanDescribeOperationalPlane
+final class InitCommand extends Command
 {
     public function __construct(private readonly CanManageTellWorkspace $workspaces) {
         parent::__construct('init');
@@ -74,19 +71,6 @@ HELP)
         }
     }
 
-    #[Override]
-    public function planeOperation(): PlaneOperation {
-        return new PlaneOperation(
-            plane: OperationalPlane::Management,
-            command: 'init [path]',
-            responsibility: 'Create the project-local Tell workspace after validating the target layout.',
-            ownedState: 'A private versioned .tell/arena marker, immutable-object directories, locks, and empty main ref.',
-            input: 'An explicit existing project directory or the current working directory.',
-            output: 'An initialized workspace path and stable schema version.',
-            authority: 'Create Tell-owned project state only; no inference, tools, credentials, or user-home writes.',
-            degradedBehavior: 'Refuses malformed, incompatible, file, and symlink layouts without mutation.',
-        );
-    }
 
     private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void {
         $payload = ['error' => $message];
