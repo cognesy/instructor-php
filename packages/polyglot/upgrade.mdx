@@ -1,3 +1,90 @@
+## Model catalog boundary
+
+Model limits, modalities, and capabilities now belong to the exact-offering catalog, keyed by
+`(driver, wire model)`. Connection presets and `LLMConfig` contain only transport, selection,
+and request-default data.
+
+This is a breaking removal. Delete `contextLength`, `maxOutputLength`, and `pricing` from
+`LLMConfig`, DSNs, framework configuration, and preset YAML. Use
+`ModelCatalog::discover()->find($driver, $model)` when model facts are needed. Unknown exact
+offerings return an explicit profile whose facts are unknown; Polyglot does not infer support
+from a provider name or model-name regex.
+
+Catalog records do not contain pricing. Use `InferencePricing` or `EmbeddingsPricing` explicitly
+with their existing calculators when an application has sourced pricing data.
+
+### Individual model files
+
+Runtime discovery no longer reads `config/llm/models.json`. Move each entry from its `models`
+list into `config/llm/models/<encoded-driver>/<encoded-model>.yaml`, wrapped in `schemaVersion: 1`,
+the original catalog `version`, and `profile: <entry>`. Encode driver/model filename components
+with `ModelRecordDirectory::relativePath(new ModelKey($driver, $model))` so IDs containing `/`
+remain one model filename. See [Model Catalog](internals/model-catalog) for a complete example.
+
+Replace explicit runtime `ModelCatalog::fromFile($jsonPath)` calls with
+`ModelCatalog::fromPaths($modelsDirectory)`. JSON bulk loading remains available for explicit
+offline maintenance; it is not a runtime fallback. Keep whole-record overrides complete enough
+for the facts you want to retain. Unknown keys and malformed values now fail instead of being
+silently discarded. Numeric limits still accept null for unknown; status fields require strings.
+
+Ordinary inference calls do not require a catalog. A runtime constructed without `models:` sends
+requests directly through its driver and does not read model records. When an application wants
+local capability enforcement or model metadata, create one catalog at the composition root and
+reuse it across runtimes or inference objects; exact lookup then reads and caches only the selected
+record.
+
+### Reasoning records
+
+Reasoning capability data now follows the same exact lookup. Replace
+`BundledInferenceDrivers::reasoningCapabilities($driver, $model)` with:
+
+```php
+$reasoning = ModelCatalog::discover()
+    ->find($driver, $model)
+    ->capabilities
+    ->reasoning;
+// @doctest id="c492"
+```
+
+Typed reasoning does not require a catalog merely to be requested. Missing or unknown facts make no
+local support assertion, and no model inherits facts from a provider or family pattern. A wire format
+that needs an exact effort mapping still requires that mapping, supplied either by an explicitly
+composed catalog or directly with `InferenceRequest::withReasoningCapabilities()`. A missing mapping
+is reported as missing translation data, not as proven model incompatibility.
+
+Semantic fallback is disabled by default. Set `allowLossyFallback: true` on `LLMConfig` only when the
+application accepts an observable change such as JSON Schema to JSON Object or a lossy reasoning
+effort mapping. Laravel and Symfony connection configuration expose the same setting as
+`llm.connections.<name>.allow_lossy_fallback`. Every approved change is recorded on the effective
+request and emitted with `InferenceRequested`; provider adapters never silently degrade a request.
+
+Failures now distinguish four cases:
+
+- an adapter cannot encode the requested protocol operation;
+- a processor needs a translation fact that was not supplied;
+- an exact supplied fact explicitly marks the operation unsupported;
+- a known fallback exists but the caller has not enabled lossy fallback.
+
+Custom drivers now implement only request execution. `CanDescribeCapabilities`,
+`DriverCapabilities`, and `SpecifiedInferenceDriver` were removed. A custom spec subclass now
+extends `BaseInferenceRequestDriver`:
+
+```php
+final class MyDriver extends BaseInferenceRequestDriver { /* override one method */ }
+// @doctest id="03c0"
+```
+
+`LLMConfig::fromArray()` hydrates the fields owned by `LLMConfig` and ignores unrelated input
+keys. There is no Agents-specific migration or compatibility alias.
+
+### Default registry constructors
+
+The static `BundledInferenceDrivers`, `BundledEmbeddingsDrivers`, `BundledHttpDrivers`, and
+`BundledHttpPools` classes were removed. Use `InferenceDriverRegistry::default()`,
+`EmbeddingsDriverRegistry::default()`, `HttpDriverRegistry::default()`, and
+`HttpPoolRegistry::default()` respectively. Each memoized default is immutable; its `with*()`
+methods return an isolated derived registry. Use `make()` when an empty registry is required.
+
 ## Custom Inference Drivers in v2.7
 
 Only driver authors are affected. Preset names, `Inference`, `PendingInference`,
@@ -12,26 +99,26 @@ All 26 provider driver shells under `Cognesy\Polyglot\Inference\Drivers\` were r
 `GeminiDriver`, `GeminiOAIDriver`, `HuggingFaceDriver`, `OpenAIResponsesDriver`, and
 `OpenResponsesDriver`. Their only content was composing collaborators, so all bundled inference
 registrations — including native-protocol and bespoke-endpoint providers — are now
-`InferenceDriverSpec` rows in `BundledInferenceDrivers`, all served by one
-`SpecifiedInferenceDriver`. The embeddings driver of the same short name,
+`InferenceDriverSpec` rows in `InferenceDriverRegistry`, all served by one
+`BaseInferenceRequestDriver`. The embeddings driver of the same short name,
 `Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.
 
 ### Replacing a subclass of a bundled driver
 
-Extend `SpecifiedInferenceDriver` and name your subclass in the spec's `driverClass`. It still
+Extend `BaseInferenceRequestDriver` and name your subclass in the spec's `driverClass`. It still
 receives the five collaborators assembled for it:
 
 ```php
-final class MyDriver extends SpecifiedInferenceDriver { /* override one method */ }
+final class MyDriver extends BaseInferenceRequestDriver { /* override one method */ }
 
-$registry = BundledInferenceDrivers::registry()->withDriver(
+$registry = InferenceDriverRegistry::default()->withDriver(
     'my-provider',
     new InferenceDriverSpec(
         bodyFormat: MyBodyFormat::class,
         driverClass: MyDriver::class,
     ),
 );
-// @doctest id="e088"
+// @doctest id="0cee"
 ```
 
 If you only changed the wire format, no subclass is needed — pass your own `bodyFormat`,
@@ -40,17 +127,10 @@ defaults to the OpenAI implementation.
 
 ### Replacing a `capabilities()` override
 
-Per-model capability logic becomes data on the spec rather than a method override — either a
-fixed `DriverCapabilities`, or a `Closure(string $model): DriverCapabilities` when the answer
-depends on the model. Omit it for "everything supported".
-
-```php
-new InferenceDriverSpec(
-    bodyFormat: MyBodyFormat::class,
-    capabilities: new DriverCapabilities(responseFormatWithTools: false),
-);
-// @doctest id="267d"
-```
+If the application needs capability inspection or local enforcement, declare the exact
+`(driver, model)` offering in a model catalog and inject that catalog into `InferenceRuntime`.
+Ordinary custom-driver execution needs no catalog. Capability inspection no longer constructs or
+interrogates a driver.
 
 `InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so drivers
 registered that way need no change.
@@ -71,10 +151,9 @@ Five classes that neither subsystem owns moved under `Cognesy\Polyglot\Support\`
 | `Inference\Config\RetryPolicyInvariants` | `Support\Retry\RetryPolicyInvariants` |
 | `Polyglot\Pricing\Cost` | `Support\Pricing\Cost` |
 
-All five old names keep working. The package registers a lazy `class_alias()` autoloader, so an
-old FQCN resolves to the *same* class — `instanceof` holds in both directions and
-`RetryJitter::Full === Support\Retry\RetryJitter::Full`. Migrate at your convenience; the
-aliases are removed at the next major.
+Polyglot 2.7 temporarily aliased the five old names. Polyglot 2.10 removes that
+autoloading layer completely: update every import to the new FQCN in the table.
+The old names no longer resolve.
 
 ### Removed dead classes
 
@@ -91,7 +170,7 @@ updated together with the v2.7 package upgrade.
 - public function handle(EmbeddingsRequest $request): HttpResponse;
 - public function fromData(array $data): ?EmbeddingsResponse;
 + public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
-// @doctest id="d579"
+// @doctest id="a533"
 ```
 
 Move HTTP response decoding and adaptation into `handle()`. The separate `fromData()` method
@@ -130,7 +209,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="38d6"
+// @doctest id="5bd0"
 ```
 
 ## After
@@ -146,7 +225,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('Return JSON.'))
     ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="756a"
+// @doctest id="0886"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.

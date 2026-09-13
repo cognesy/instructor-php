@@ -4,6 +4,8 @@ Calculate the cost of an LLM inference call using `FlatRateCostCalculator`.
 Pricing is decoupled from usage — you define rates with `InferencePricing`,
 get token counts from the response's `InferenceUsage`, and the calculator
 produces a `Cost` value object with total and per-category breakdown.
+The rates below are illustrative; applications should supply current rates
+from their chosen provider or internal pricing source.
 
 ## Example
 
@@ -26,7 +28,7 @@ $response = Inference::using('openai')
 $usage = $response->usage();
 
 echo "Prompt: {$prompt}\n";
-echo "Response: {$response->content()}\n\n";
+echo "Response: {$response->message()->content()->toString()}\n\n";
 echo "Tokens — input: {$usage->inputTokens}, output: {$usage->outputTokens}\n\n";
 
 // 2. Define pricing rates ($/1M tokens) and calculate cost

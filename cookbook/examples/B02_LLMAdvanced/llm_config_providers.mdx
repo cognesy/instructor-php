@@ -95,7 +95,7 @@ $answer = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is the capital of France'))
     ->withMaxTokens(256)
     ->withStreaming()
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

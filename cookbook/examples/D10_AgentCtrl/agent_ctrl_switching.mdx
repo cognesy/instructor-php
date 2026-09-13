@@ -1,15 +1,15 @@
 ## Overview
 
 AgentCtrl provides a unified API that works across multiple CLI-based code agents. This
-enables runtime switching between different backends (Claude Code, OpenCode, Codex, Pi)
-without changing your application code. Useful for comparing agent performance, failover
-scenarios, or A/B testing.
+enables typed runtime selection between Claude Code, OpenCode, Codex, Pi, and Gemini
+without changing the calling code. The default example verifies factory selection offline;
+set `AGENT_CTRL_LIVE=1` to execute one selected backend with a bounded timeout.
 
 Key concepts:
 - `AgentType` enum: Specify which agent backend to use
 - Unified API: Same methods work across all agent types
 - Runtime selection: Choose agent dynamically based on configuration or logic
-- `AgentCtrlConsoleLogger`: Shared logger works across all agent types
+- Optional live execution: Explicitly opt in to one CLI call
 
 ## Example
 
@@ -19,6 +19,11 @@ require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
+use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\GeminiBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\PiBridgeBuilder;
 use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
@@ -28,120 +33,59 @@ $logger = new AgentCtrlConsoleLogger(
     showTimestamps: true,
 );
 
-$prompt = 'What design pattern does a class with a static make() method implement? Answer in one sentence.';
+$configuredAgent = getenv('AGENT_CTRL_DRIVER') ?: AgentType::Gemini->value;
+$agentType = AgentType::tryFrom($configuredAgent);
 
-// Test the same prompt with multiple agents
-$agents = [
-    'opencode' => 'OpenCode',
-    'claude-code' => 'Claude Code',
-    'codex' => 'Codex',
-    'pi' => 'Pi',
-    'gemini' => 'Gemini',
-];
-
-foreach ($agents as $agentId => $agentName) {
-    echo "=== Testing: {$agentName} ===\n\n";
-
-    $startTime = microtime(true);
-
-    try {
-        $builder = AgentCtrl::make(AgentType::from($agentId))
-            ->wiretap($logger->wiretap())
-            ->withConfig(new AgentCtrlConfig(
-                timeout: 120,
-                workingDirectory: getcwd() ?: null,
-            ));
-
-        // Apply agent-specific configuration
-        if ($agentId === 'claude-code') {
-            $builder->withMaxTurns(1);
-        }
-        if ($agentId === 'pi') {
-            $builder->ephemeral();
-        }
-
-        $response = $builder->execute($prompt);
-        $elapsed = round((microtime(true) - $startTime) * 1000);
-
-        echo "\n=== Result ({$elapsed}ms) ===\n";
-        if ($response->isSuccess()) {
-            echo "Answer: " . $response->text() . "\n";
-
-            if ($response->usage()) {
-                echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
-            }
-            if ($response->cost()) {
-                echo "Cost: $" . number_format($response->cost(), 4) . "\n";
-            }
-        } else {
-            echo "Failed (exit code: {$response->exitCode})\n";
-            exit(1);
-        }
-    } catch (Throwable $e) {
-        echo "Error: {$e->getMessage()}\n";
-        exit(1);
-    }
-
-    echo "\n";
+if ($agentType === null) {
+    throw new InvalidArgumentException("Unknown AgentCtrl driver: {$configuredAgent}");
 }
+
+$builder = AgentCtrl::make($agentType);
+$expectedBuilder = match ($agentType) {
+    AgentType::ClaudeCode => ClaudeCodeBridgeBuilder::class,
+    AgentType::Codex => CodexBridgeBuilder::class,
+    AgentType::OpenCode => OpenCodeBridgeBuilder::class,
+    AgentType::Pi => PiBridgeBuilder::class,
+    AgentType::Gemini => GeminiBridgeBuilder::class,
+};
+
+assert($builder instanceof $expectedBuilder, 'Factory must return the builder for the selected agent type');
+
+echo "Selected: {$agentType->value}\n";
+echo 'Builder: ' . $builder::class . "\n";
+
+if (getenv('AGENT_CTRL_LIVE') !== '1') {
+    echo "Live execution disabled. Set AGENT_CTRL_LIVE=1 to run the selected backend.\n";
+    exit(0);
+}
+
+$response = $builder
+    ->wiretap($logger->wiretap())
+    ->withConfig(new AgentCtrlConfig(
+        timeout: 30,
+        workingDirectory: getcwd() ?: null,
+    ))
+    ->execute('What design pattern does a class with a static make() method implement? Answer in one sentence.');
+
+assert($response->isSuccess(), "Selected backend failed with exit code {$response->exitCode}");
+assert(trim($response->text()) !== '', 'Selected backend must return a non-empty answer');
+
+echo "Answer: {$response->text()}\n";
 ?>
 ```
 
 ## Expected Output
 
 ```
-=== Testing: OpenCode ===
-
-14:32:15.123 [opencode] [EXEC] Execution started [prompt=What design pattern does a class...]
-14:32:16.357 [opencode] [DONE] Execution completed [exit=0, tools=0, tokens=62]
-
-=== Result (1234ms) ===
-Answer: The Factory Method pattern, which uses a static method to create
-and return instances of different subclasses based on parameters.
-Tokens: 38 in / 24 out
-Cost: $0.0008
-
-=== Testing: Claude Code ===
-
-14:32:17.123 [claude-code] [EXEC] Execution started [prompt=What design pattern does a class...]
-14:32:19.279 [claude-code] [DONE] Execution completed [exit=0, tools=0, cost=$0.0015, tokens=64]
-
-=== Result (2156ms) ===
-Answer: This is the Factory Method pattern, where a static factory method
-determines which concrete class to instantiate based on input.
-Tokens: 38 in / 26 out
-Cost: $0.0015
-
-=== Testing: Codex ===
-
-14:32:20.123 [codex] [EXEC] Execution started [prompt=What design pattern does a class...]
-14:32:21.110 [codex] [DONE] Execution completed [exit=0, tools=0, tokens=60]
-
-=== Result (987ms) ===
-Answer: A class using static make() for conditional instantiation typically
-implements the Factory Method or Static Factory pattern.
-Tokens: 38 in / 22 out
-Cost: $0.0012
-
-=== Testing: Pi ===
-
-14:32:22.123 [pi] [EXEC] Execution started [prompt=What design pattern does a class...]
-14:32:23.456 [pi] [DONE] Execution completed [exit=0, tools=0, cost=$0.0003, tokens=56]
-
-=== Result (1333ms) ===
-Answer: A class with a static make() method implements the Static Factory
-Method pattern for object creation.
-Tokens: 34 in / 22 out
-Cost: $0.0003
+Selected: gemini
+Builder: Cognesy\AgentCtrl\Builder\GeminiBridgeBuilder
+Live execution disabled. Set AGENT_CTRL_LIVE=1 to run the selected backend.
 ```
 
 ## Key Points
 
-- **Unified API**: Same interface across all agent backends
-- **Shared logger**: One `AgentCtrlConsoleLogger` works across all agent types, prefixing output with `[opencode]`, `[claude-code]`, etc.
-- **Runtime selection**: Choose agent dynamically based on requirements
-- **Agent comparison**: Run the same prompt across multiple agents to compare
-- **Failover capability**: Try alternative agents if primary fails
-- **Agent-specific tuning**: Apply configuration based on agent characteristics
-- **Performance comparison**: Measure response time and cost across agents
-- **Use cases**: A/B testing, load balancing, fallback strategies, feature parity testing
+- **Unified API**: Every backend is selected through `AgentCtrl::make()`
+- **Typed selection**: `AgentType::tryFrom()` rejects unknown configured values
+- **Deterministic default**: Factory selection is verified without launching external processes
+- **Explicit live mode**: `AGENT_CTRL_LIVE=1` launches only the selected backend
+- **Bounded execution**: Live mode has a 30-second timeout

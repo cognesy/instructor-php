@@ -1,7 +1,7 @@
 ## Overview
 
 A transient request compiles the selected durable conversation as context but
-cannot publish objects, refs, or legacy-session updates. This lets an
+cannot publish objects, refs, or named-session updates. This lets an
 application test an alternative prompt or implementation plan without
 contaminating the conversation it may later resume.
 
@@ -12,22 +12,25 @@ contaminating the conversation it may later resume.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = Tell::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $tell->workspace()->initialize();
     $review = $tell->conversation('release-review');
 
-    $review->send(TellRequest::prompt('Record the current release decision.'));
+    $review->send(
+        TellRequest::prompt('Record the current release decision.')->tools([]),
+    );
     $before = $review->history()->head;
 
     $prompt = 'Challenge that decision and describe the strongest alternative.';
     $experiment = $tell->run(
         TellRequest::prompt($prompt)
+            ->tools([])
             ->conversation('release-review')
             ->transient(),
     );
@@ -47,6 +50,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points

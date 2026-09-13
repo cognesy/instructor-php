@@ -12,13 +12,13 @@ immutable records.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
-use Cognesy\Tell\Tell;
+use Cognesy\Tell\Composition\Standalone\StandaloneTellBuilder;
 use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
 try {
-    $tell = Tell::open($project);
+    $tell = StandaloneTellBuilder::in($project)->build();
     $tell->workspace()->initialize();
     $review = $tell->conversation('release-review');
 
@@ -45,6 +45,7 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points

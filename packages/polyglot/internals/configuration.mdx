@@ -3,7 +3,8 @@ Polyglot resolves two configuration types -- one for inference and one for embed
 
 ## LLMConfig
 
-`LLMConfig` holds all the settings needed to connect to an inference provider and select a model.
+`LLMConfig` holds connection, model selection, and request-default settings. Model facts live in
+`ModelCatalog`, not in connection configuration.
 
 **Namespace:** `Cognesy\Polyglot\Inference\Config\LLMConfig`
 
@@ -18,11 +19,9 @@ Polyglot resolves two configuration types -- one for inference and one for embed
 | `metadata` | `array` | `[]` | Provider-specific metadata (e.g. organization, project for OpenAI) |
 | `model` | `string` | `''` | Model identifier |
 | `maxTokens` | `int` | `1024` | Default max tokens for responses |
-| `contextLength` | `int` | `8000` | Model context window size |
-| `maxOutputLength` | `int` | `4096` | Maximum output length |
+| `allowLossyFallback` | `bool` | `false` | Permit known, observable semantic fallback |
 | `driver` | `string` | `'openai-compatible'` | Driver name (e.g. `openai`, `anthropic`, `gemini`) |
 | `options` | `array` | `[]` | Additional provider-specific options |
-| `pricing` | `array` | `[]` | Token pricing per 1M tokens (input, output, etc.) |
 
 ### Creating a Config
 
@@ -46,7 +45,7 @@ $config = LLMConfig::fromArray([
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
-// @doctest id="08f6"
+// @doctest id="7989"
 ```
 
 ### Presets
@@ -62,7 +61,7 @@ You may also pass a custom base path:
 
 ```php
 $config = LLMConfig::fromPreset('my-preset', basePath: '/path/to/presets');
-// @doctest id="6063"
+// @doctest id="1390"
 ```
 
 ### Overriding Values
@@ -72,42 +71,41 @@ Use `withOverrides()` to create a modified copy of an existing config:
 ```php
 $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
-// @doctest id="1c8a"
+// @doctest id="b100"
 ```
 
-### Pricing
+`allowLossyFallback` is deliberately separate from provider `options`. It authorizes only a
+fallback Polyglot explicitly knows how to describe, such as JSON Schema to JSON Object or a lossy
+reasoning effort mapping. It defaults to `false`, and accepted changes are recorded on the
+effective request. Laravel and Symfony connection files use the snake-case field
+`allow_lossy_fallback`; direct PHP construction, arrays, presets, and DSNs use
+`allowLossyFallback`.
 
-When pricing data is included in the config, it can be used with a cost calculator to compute costs externally. Pricing values are specified in USD per 1 million tokens:
+### Model catalog
+
+Catalog use is optional. Look up limits, modalities, and capabilities by exact driver and wire
+model only when an application needs those facts. An absent offering returns an explicit unknown
+profile:
 
 ```php
-use Cognesy\Polyglot\Inference\Data\InferencePricing;
-use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 
-$config = LLMConfig::fromArray([
-    'driver' => 'openai',
-    'apiUrl' => 'https://api.openai.com/v1',
-    'apiKey' => getenv('OPENAI_API_KEY'),
-    'endpoint' => '/chat/completions',
-    'model' => 'gpt-4.1-nano',
-    'pricing' => [
-        'inputPerMToken' => 0.10,
-        'outputPerMToken' => 0.40,
-        'cacheReadPerMToken' => 0.0,
-        'cacheWritePerMToken' => 0.0,
-        'reasoningPerMToken' => 0.0,
-    ],
-]);
-
-// Cost is calculated externally using a calculator
-$pricing = InferencePricing::fromArray($config->pricing);
-$calculator = new FlatRateCostCalculator();
-$cost = $calculator->calculate($usage, $pricing);
-// @doctest id="148b"
+$profile = ModelCatalog::discover()->find('openai', 'gpt-5.6');
+$profile->limits->contextWindow;
+$profile->capabilities->jsonSchema;
+// @doctest id="1bcc"
 ```
+
+`discover()` resolves application `config/llm/models` and packaged model directories through
+the same locations used for presets. Exact lookup loads one `<driver>/<model>.yaml` record;
+identity path components are percent-encoded. Use `overlay(ModelCatalog::fromPaths($directory))`
+for another whole-record layer. Construction reads no records; repeated lookup reuses the hydrated
+profile. Enumeration is explicit, and runtime never performs network discovery. See
+[Model Catalog](model-catalog) for the versioned record format and scope lifetime.
 
 ### Type Coercion
 
-Both config classes automatically coerce numeric string values to integers for fields that expect `int` types. This is useful when loading values from YAML files or environment variables where values may arrive as strings. For `LLMConfig`, the coerced fields are `maxTokens`, `contextLength`, and `maxOutputLength`.
+Both config classes automatically coerce numeric string values to integers for fields that expect `int` types. This is useful when loading values from YAML files or environment variables where values may arrive as strings. For `LLMConfig`, the coerced field is `maxTokens`.
 
 
 ## EmbeddingsConfig
@@ -149,7 +147,7 @@ $config = EmbeddingsConfig::fromArray([
 
 // From a DSN string
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-small');
-// @doctest id="90d2"
+// @doctest id="50cc"
 ```
 
 Presets for embeddings are resolved from similar paths, under the `embed` config group:
@@ -166,7 +164,7 @@ $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
     'dimensions' => 1024,
 ]);
-// @doctest id="7098"
+// @doctest id="f353"
 ```
 
 For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs` fields.
@@ -198,7 +196,7 @@ $policy = new InferenceRetryPolicy(
 );
 
 $inference->withRetryPolicy($policy);
-// @doctest id="f2b0"
+// @doctest id="5d40"
 ```
 
 The retry delay uses exponential backoff: `baseDelayMs * 2^(attempt-1)`, capped at `maxDelayMs`. The `jitter` strategy adds randomness to avoid thundering herd problems:
@@ -221,5 +219,5 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
-// @doctest id="c3a2"
+// @doctest id="d8f9"
 ```

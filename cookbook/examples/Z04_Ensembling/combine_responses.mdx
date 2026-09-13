@@ -16,15 +16,15 @@ class SelectedResponse { public int $most_consistent_response_id; }
 class CombineResponses {
     public function __invoke(string $query, int $k = 3) : ResponseItem {
         $responses = [];
-        for ($i = 0; $i < $k; $i++) { $responses[] = $this->generate($query); }
+        for ($i = 0; $i < $k; $i++) { $responses[] = $this->generate($query, $i); }
         $sel = $this->select($responses, $query);
         $idx = max(0, min($sel->most_consistent_response_id, count($responses)-1));
         return $responses[$idx];
     }
 
-    private function generate(string $query) : ResponseItem {
+    private function generate(string $query, int $sample): ResponseItem {
         return StructuredOutput::using('openai')->with(
-            messages: [ ['role'=>'user', 'content'=>$query] ],
+            messages: [ ['role'=>'user', 'content'=>"Candidate {$sample}: {$query}"] ],
             responseModel: ResponseItem::class,
         )->get();
     }

@@ -6,6 +6,9 @@ This will help LLM to understand the context and the expected structure of the o
 It is typically useful in the `OutputMode::Json` and `OutputMode::MdJson` modes, where the output
 is expected to be a JSON object.
 
+This run prints the demonstrations, the new input, and the result so you can see the pattern being
+provided to the model. It does not print HTTP transport events; use a wiretap when you need to inspect
+the rendered request.
 
 ## Example
 
@@ -13,7 +16,6 @@ is expected to be a JSON object.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -25,28 +27,37 @@ class User {
     public string $name;
 }
 
-echo "\nREQUEST:\n";
+$examples = [
+    new Example(
+        input: "John is 50 and works as a teacher.",
+        output: ['name' => 'John', 'age' => 50]
+    ),
+    new Example(
+        input: "We have recently hired Ian, who is 27 years old.",
+        output: ['name' => 'Ian', 'age' => 27],
+        template: "example input:\n<|input|>\noutput:\n```json\n<|output|>\n```\n",
+    ),
+];
+
+$input = 'Our user Jason is 25 years old.';
+
+echo "\nFEW-SHOT EXAMPLES PROVIDED TO THE MODEL:\n";
+foreach ($examples as $number => $example) {
+    $output = json_encode($example->output(), JSON_UNESCAPED_SLASHES);
+    echo sprintf("  %d. %s\n     => %s\n", $number + 1, $example->inputString(), $output);
+}
+echo "\nNEW INPUT:\n  {$input}\n";
+
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
-    ->withOutputMode(OutputMode::Json)
-    ->onEvent(HttpRequestSent::class, fn($event) => dump($event));
+    ->withOutputMode(OutputMode::Json);
 
 $user = (new StructuredOutput($runtime))
-    ->withMessages("Our user Jason is 25 years old.")
+    ->withMessages($input)
     ->withResponseClass(User::class)
-    ->withExamples([
-        new Example(
-            input: "John is 50 and works as a teacher.",
-            output: ['name' => 'John', 'age' => 50]
-        ),
-        new Example(
-            input: "We have recently hired Ian, who is 27 years old.",
-            output: ['name' => 'Ian', 'age' => 27],
-            template: "example input:\n<|input|>\noutput:\n```json\n<|output|>\n```\n",
-        ),
-    ])
+    ->withExamples($examples)
     ->get();
 
-echo "\nOUTPUT:\n";
+echo "\nSTRUCTURED RESULT FOR THE NEW INPUT:\n";
 dump($user);
 assert($user->name === 'Jason');
 assert($user->age === 25);

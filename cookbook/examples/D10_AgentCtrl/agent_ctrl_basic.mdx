@@ -33,8 +33,9 @@ echo "=== Agent Execution Log ===\n\n";
 
 $response = AgentCtrl::make(AgentType::OpenCode)
     ->wiretap($logger->wiretap())
+    ->withModel('opencode/ling-3.0-flash-fin-free')
     ->withConfig(new AgentCtrlConfig(
-        timeout: 300,
+        timeout: 60,
         workingDirectory: getcwd() ?: null,
     ))
     ->execute('Explain the SOLID principles in software design. List each principle with a one-line explanation.');
@@ -50,9 +51,19 @@ if ($response->isSuccess()) {
     if ($response->usage()) {
         echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
     }
-    if ($response->cost()) {
+    if ($response->cost() !== null) {
         echo "Cost: $" . number_format($response->cost(), 4) . "\n";
     }
+
+    $answer = strtolower($response->text());
+    assert(str_contains($answer, 'single responsibility'));
+    assert((bool) preg_match('/open[\s\/-]*closed/', $answer));
+    assert(str_contains($answer, 'liskov'));
+    assert(str_contains($answer, 'interface segregation'));
+    assert(str_contains($answer, 'dependency inversion'));
+    assert($response->sessionId() !== null);
+    assert($response->usage() !== null);
+    assert($response->cost() !== null);
 } else {
     echo "ERROR: Request failed with exit code {$response->exitCode}\n";
     exit(1);

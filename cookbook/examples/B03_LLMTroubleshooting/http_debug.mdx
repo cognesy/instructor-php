@@ -31,7 +31,7 @@ $response = Inference::fromRuntime(InferenceRuntime::fromConfig(
         messages: Messages::fromString('What is the capital of Brasil?'),
         options: ['max_tokens' => 128]
     )
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of Brasil\n";
 echo "ASSISTANT: $response\n";

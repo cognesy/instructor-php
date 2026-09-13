@@ -13,10 +13,11 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString('What is the single responsibility principle?'))
     ->get();
-// @doctest id="ca04"
+// @doctest id="ed8b"
 ```
 
-The `get()` method returns the raw string content from the model's response. There is no JSON parsing, no schema validation -- just the text the model produced.
+The `get()` method returns the assistant `Message`. Use
+`$message->content()->toString()` when only its text projection is needed.
 
 ## When to Use Text Mode
 
@@ -47,7 +48,7 @@ $response = Inference::using('openai')
 $response = Inference::using('anthropic')
     ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
-// @doctest id="f3f7"
+// @doctest id="d0c0"
 ```
 
 ## Using the `with()` Method
@@ -66,7 +67,7 @@ $response = Inference::using('openai')
         options: ['temperature' => 0.3],
     )
     ->get();
-// @doctest id="42f9"
+// @doctest id="20f3"
 ```
 
 ## Streaming Text Responses
@@ -84,12 +85,13 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
-// @doctest id="1d1c"
+// @doctest id="a843"
 ```
 
-Each delta contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
+Each delta contains ordered `messageChunks`; `textDelta()` projects the next text
+fragment. Streaming works with all providers that support it.
 
 ## Accessing the Full Response
 
@@ -105,8 +107,9 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is photosynthesis?'))
     ->response();
 
-$text = $response->content();
+$message = $response->message();
+$text = $message->content()->toString();
 $usage = $response->usage();
 $reason = $response->finishReason();
-// @doctest id="dd4d"
+// @doctest id="4ca3"
 ```

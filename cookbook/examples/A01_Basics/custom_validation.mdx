@@ -12,6 +12,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -32,8 +33,12 @@ class UserDetails
     }
 }
 
+$validationFailureCount = 0;
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
     ->withMaxRetries(2)
+    ->onEvent(ResponseValidationFailed::class, function($event) use (&$validationFailureCount) {
+        $validationFailureCount++;
+    })
     ->wiretap(fn($e) => $e->print());
 
 $user = (new StructuredOutput($runtime))
@@ -45,6 +50,8 @@ $user = (new StructuredOutput($runtime))
 
 dump($user);
 
-assert($user->name === "JASON");
+assert($validationFailureCount >= 1);
+assert($user->name === 'JASON');
+assert($user->age === 25);
 ?>
 ```

@@ -113,7 +113,7 @@ All 26 provider driver shells under `Cognesy\Polyglot\Inference\Drivers\` are go
 `OpenResponsesDriver`. (The embeddings driver of the same short name,
 `Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.) Each was a class whose only content
 was composing provider-specific collaborators. All 29 bundled registry names — including aliases
-— are now rows of an `InferenceDriverSpec` table in `BundledInferenceDrivers`, and one
+— are now rows of an `InferenceDriverSpec` table in `InferenceDriverRegistry`, and one
 `SpecifiedInferenceDriver` serves them all. OpenAI-compatible providers use the shared defaults;
 native protocols and provider-specific endpoints name their own body, request, response, usage, or
 message adapters in the same declarative row.
@@ -149,10 +149,9 @@ single usage anywhere in the repository.
 Four classes that were never inference concepts moved to a neutral namespace —
 `Inference\Core\SensitiveDataRedactor`, `Inference\Config\RetryBackoff`,
 `Inference\Config\RetryJitter`, `Inference\Config\RetryPolicyInvariants` — as did
-`Polyglot\Pricing\Cost`, joining them under `Polyglot\Support\`. All five old names keep
-working: the package registers a lazy `class_alias()` autoloader, so an old FQCN resolves to the
-same class, `instanceof` holds in both directions, and `RetryJitter` enum case identity is
-preserved. Migrate at your convenience; the aliases go at the next major.
+`Polyglot\Pricing\Cost`, joining them under `Polyglot\Support\`. In v2.7, all five old names
+kept working through a lazy `class_alias()` autoloader. That transitional layer was removed in
+v2.10.0; current applications must use the canonical `Polyglot\Support\...` FQCNs.
 
 ### Response Generation and Validation Contracts Carry Telemetry Context
 
@@ -467,3 +466,33 @@ resolve the gate once and skip both.
 Fail-open is contractual: a dispatcher that cannot report its listeners is assumed to be
 listening and receives every event, so a plain PSR-14 dispatcher never loses an event to this
 optimization.
+
+## Provider and Live-Example Reliability
+
+The bundled Groq preset and both Groq examples now use
+`openai/gpt-oss-20b`; the previous Llama 3.3 and Llama 4 model ids were
+removed from Groq's active model inventory. The exact Groq offering
+record now carries its current context and output limits. The long Cohere
+extraction example uses the latency-oriented `command-r7b-12-2024` model
+and checks the material extracted events, while the Anthropic
+context-caching example requires provider-reported cache writes and reads
+rather than checking for incidental words in the prose response.
+The custom-client example gives reasoning models enough output space to finish
+their tool arguments and verifies that its injected HTTP client handled the
+request.
+
+OpenCode responses now preserve a reported zero-dollar cost as `0.0`;
+`null` is reserved for responses where OpenCode did not report cost. The
+OpenCode AgentCtrl examples pin an active model, bound execution time, and
+assert the response, streaming, event, usage, session, tool, and cost
+contracts they demonstrate. The external Tell protocol example uses a
+bounded one-step request and validates frame schema, ordering, terminal
+outcome, and content.
+The coding-agent example now prescribes the exact fluent option API, reserves
+bounded headroom for a repair cycle, and verifies that the agent used every
+advertised coding tool.
+
+Provider streams stop emitting deltas at an explicit terminal sentinel but
+now drain the underlying transport to completion. This lets response cleanup
+and streamed recording callbacks finish without exposing any post-terminal
+payload to callers.

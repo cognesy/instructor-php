@@ -22,14 +22,19 @@ enum CitizenshipGroup : string {
 }
 
 $text = "His name is Jason, he is 28 years old American who lives in Germany.";
+$question = "What is user's citizenship?";
+
+echo "\nSOURCE TEXT:\n  {$text}\n";
+echo "\nQUESTION:\n  {$question}\n";
+echo "\nTARGET SCALAR:\n  CitizenshipGroup enum\n";
+
 $value = StructuredOutput::using('openai')->with(
     messages: $text,
-    prompt: 'What is user\'s citizenship?',
+    prompt: $question,
     responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
 )->get();
 
-
-dump($value);
+echo "\nRETURNED SCALAR:\n  CitizenshipGroup::{$value->name} ({$value->value})\n";
 
 assert($value instanceof CitizenshipGroup);
 assert($value == CitizenshipGroup::US);

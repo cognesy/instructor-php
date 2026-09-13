@@ -30,8 +30,8 @@ Each runtime can be constructed from a config object, a provider, or injected di
 Requests and responses are normalized into package data objects that are provider-agnostic:
 
 - **`InferenceRequest`** -- messages, model, tools, tool choice, response format, options, cached context, retry policy, response cache policy
-- **`InferenceResponse`** -- content, reasoning content, tool calls, usage, finish reason, raw HTTP response data
-- **`PartialInferenceDelta`** -- a single streaming event delta with content, reasoning content, tool call fragments, finish reason, and usage
+- **`InferenceResponse`** -- one ordered assistant `Message`, usage, finish reason, and raw HTTP response data
+- **`PartialInferenceDelta`** -- ordered assistant-message chunks plus finish reason, usage, and provider replay data
 - **`EmbeddingsRequest`** -- input texts, model, options, retry policy
 - **`EmbeddingsResponse`** -- vectors and usage
 
@@ -56,7 +56,7 @@ Drivers translate Polyglot requests into provider-native HTTP payloads and norma
 - **Body formatters** (`CanMapRequestBody`) -- assemble the full request body with mode-specific adjustments
 - **Usage formatters** (`CanMapUsage`) -- extract token usage from provider responses
 
-All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Every bundled provider is declared as an `InferenceDriverSpec` -- a row naming its adapters and formatters -- and built by the single `SpecifiedInferenceDriver`. Providers that assemble their own URL or headers select bespoke request adapters in that row; the provider-specific behavior does not require a driver class.
+All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Every bundled provider is declared as an `InferenceDriverSpec` -- a row naming its adapters and formatters -- and built by that shared driver. Providers that assemble their own URL or headers select bespoke request adapters in that row; the provider-specific behavior does not require a driver class.
 
 
 ### Shared Support
@@ -69,9 +69,6 @@ Inference and embeddings are separate subsystems with parallel class hierarchies
 - **`Support\Pricing\Cost`** -- the value object every cost calculator returns, on both sides. Note that the calculators themselves are *not* shared: `Inference\Pricing\FlatRateCostCalculator` prices five token categories and `Embeddings\Pricing\FlatRateCostCalculator` prices one, and `InferencePricing` and `EmbeddingsPricing` carry different rate fields. They share a name, not a signature.
 
 The retry and redaction classes previously lived under `Inference\`, which forced every embeddings file that needed them to import from the inference subsystem. `Cost` was already neutral, at a top-level `Polyglot\Pricing\`; it moved here so that `Support\` is the package's single answer to "where do things neither subsystem owns live?" rather than one of two competing conventions.
-
-The old fully-qualified names all still resolve, through a lazily-registered alias in `src/deprecated_aliases.php`, and will be removed in the next major version.
-
 
 ## How the Layers Connect
 
@@ -99,7 +96,7 @@ The old fully-qualified names all still resolve, through a lazily-registered ali
 +------------------------------------------------+
 |             HTTP Client (shared)               |     Transport
 +------------------------------------------------+
-// @doctest id="d489"
+// @doctest id="ebab"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.
@@ -113,4 +110,8 @@ The public facade creates a request and hands it to the runtime. The runtime del
 
 **Driver registry.** Inference drivers are resolved through `InferenceDriverRegistry`, which maps string names (like `'openai'` or `'anthropic'`) to driver factory functions. Embeddings drivers use `EmbeddingsDriverFactory` with a similar pattern. Both support registering custom drivers at runtime.
 
-**Provider-agnostic data.** The `InferenceResponse` and `EmbeddingsResponse` objects present a uniform shape regardless of which provider produced them. Provider-specific details are accessible through `responseData()` when needed, but the primary accessors (`content()`, `toolCalls()`, `usage()`, etc.) work identically across all providers.
+**Provider-agnostic data.** `InferenceResponse::message()` preserves one ordered
+assistant turn regardless of provider. Text, reasoning, and tool calls are projections
+of that message; provider-specific HTTP details remain available through
+`responseData()`. `EmbeddingsResponse` provides the corresponding normalized vector
+surface for embeddings.

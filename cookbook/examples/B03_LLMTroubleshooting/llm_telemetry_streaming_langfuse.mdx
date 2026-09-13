@@ -89,8 +89,9 @@ $stream = Inference::fromRuntime($runtime)
 echo "Response (streaming):\n";
 $fullContent = '';
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
-    $fullContent .= $delta->contentDelta;
+    $textDelta = $delta->messageChunks->textDelta();
+    echo $textDelta;
+    $fullContent .= $textDelta;
 }
 echo "\n\n";
 

@@ -27,7 +27,7 @@ $answer = Inference::using('anthropic')
         options: ['max_tokens' => 128]
     )
     ->withStreaming()
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

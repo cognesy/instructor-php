@@ -25,14 +25,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="b1ac"
+// @doctest id="bb5d"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="2663"
+// @doctest id="29bb"
 ```
 
 ### Building a Request
@@ -47,7 +47,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
 $response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
-// @doctest id="1f33"
+// @doctest id="e595"
 ```
 
 Available request methods:
@@ -74,8 +74,8 @@ Available request methods:
 Shortcuts execute the request and return results directly:
 
 ```php
-// Get the text content
-$text = $inference->withMessages(Messages::fromString('Hello'))->get();
+// Get the assistant message
+$message = $inference->withMessages(Messages::fromString('Hello'))->get();
 
 // Get the full response object
 $response = $inference->withMessages(Messages::fromString('Hello'))->response();
@@ -94,7 +94,7 @@ $json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCal
 
 // Stream the response
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
-// @doctest id="2319"
+// @doctest id="8716"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -103,37 +103,38 @@ For lower-level control, `create()` returns a `PendingInference` without trigger
 $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 
 // Then choose how to consume it
-$text = $pending->get();
+$message = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="c92e"
+// @doctest id="b712"
 ```
 
 ### Working with Responses
 
-The `InferenceResponse` object provides access to all parts of the provider's response:
+The `InferenceResponse` envelope carries the assistant message and execution metadata:
 
 ```php
 $response = $inference->withMessages(Messages::fromString('Hello'))->response();
 
-$response->content();          // string -- the text content
-$response->reasoningContent(); // string -- reasoning/thinking content (if supported)
-$response->toolCalls();        // ToolCalls -- tool call collection
+$message = $response->message(); // Message -- the complete ordered assistant turn
+$message->parts();               // ContentParts -- text, reasoning, and tool blocks in order
+$message->content()->toString(); // string -- text projection
+$message->reasoningContent();    // string -- reasoning projection
+$message->toolCalls();            // ToolCalls -- tool-call projection
 $response->usage();            // InferenceUsage -- token counts
 $response->finishReason();     // InferenceFinishReason enum
 $response->responseData();     // HttpResponse -- raw provider response
 $response->isPartial();        // bool -- true for partial streaming responses
 
-// Convenience checks
-$response->hasContent();
-$response->hasReasoningContent();
-$response->hasToolCalls();
+// Message checks
+$message->isEmpty();
+$message->hasToolCalls();
 $response->hasFinishReason();
 
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="456a"
+// @doctest id="9d87"
 ```
 
 ### Working with Streams
@@ -145,10 +146,12 @@ $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 
 // Iterate over visible deltas
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;          // incremental text
-    echo $delta->reasoningContentDelta; // incremental reasoning (if any)
-    echo $delta->toolName;              // tool name (if starting a tool call)
-    echo $delta->toolArgs;              // tool arguments fragment
+    echo $delta->messageChunks->textDelta();      // incremental text projection
+    echo $delta->messageChunks->reasoningDelta(); // incremental reasoning projection
+
+    foreach ($delta->messageChunks as $chunk) {
+        // Inspect ordered block starts, deltas, and completed blocks.
+    }
 }
 
 // Get the final assembled response
@@ -156,17 +159,17 @@ $finalResponse = $stream->final();
 
 // Register a callback for each delta
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 });
 
 // Functional-style processing
-$texts = $stream->map(fn($d) => $d->contentDelta);
-$full = $stream->reduce(fn($carry, $d) => $carry . $d->contentDelta, '');
-$toolOnly = $stream->filter(fn($d) => $d->toolName !== '');
+$texts = $stream->map(fn($d) => $d->messageChunks->textDelta());
+$full = $stream->reduce(fn($carry, $d) => $carry . $d->messageChunks->textDelta(), '');
+$nonEmpty = $stream->filter(fn($d) => !$d->messageChunks->isEmpty());
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="63f4"
+// @doctest id="2742"
 ```
 
 
@@ -192,7 +195,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="e2e9"
+// @doctest id="abe6"
 ```
 
 ### Building a Request
@@ -202,7 +205,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="5331"
+// @doctest id="3b49"
 ```
 
 Available request methods:
@@ -228,7 +231,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="9d47"
+// @doctest id="4a20"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -236,7 +239,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="d6a2"
+// @doctest id="ff34"
 ```
 
 ### Working with Responses
@@ -255,7 +258,7 @@ $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="af3e"
+// @doctest id="b0c5"
 ```
 
 
@@ -266,13 +269,13 @@ $response->toValuesArray(); // array -- raw float arrays
 Custom inference drivers are registered through the `InferenceDriverRegistry` and passed to the runtime:
 
 ```php
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 
-$registry = BundledInferenceDrivers::registry()
+$registry = InferenceDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="2f79"
+// @doctest id="8c59"
 ```
 
 ### Embeddings Drivers
@@ -280,14 +283,14 @@ $inference = Inference::using('my-provider', drivers: $registry);
 Custom embeddings drivers are registered through the `EmbeddingsDriverRegistry` and passed to the runtime:
 
 ```php
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="10a0"
+// @doctest id="d7af"
 ```
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

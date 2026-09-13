@@ -51,7 +51,7 @@ $request->cachedContext();       // ?CachedInferenceContext
 $request->responseCachePolicy(); // ResponseCachePolicy
 $request->retryPolicy();         // ?InferenceRetryPolicy
 $request->id();                  // InferenceRequestId
-// @doctest id="d1aa"
+// @doctest id="5f0b"
 ```
 
 Predicate methods are also available: `hasMessages()`, `hasModel()`, `hasTools()`, `hasToolChoice()`, `hasResponseFormat()`, `hasNonTextResponseFormat()`, `hasTextResponseFormat()`, `hasOptions()`.
@@ -71,7 +71,7 @@ $updated = $request
     ->withResponseFormat(['type' => 'json_object'])
     ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 3))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory);
-// @doctest id="180a"
+// @doctest id="a403"
 ```
 
 The `with(...)` method allows setting multiple fields in a single call:
@@ -82,7 +82,7 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="7f41"
+// @doctest id="2023"
 ```
 
 ### Cached Context
@@ -102,7 +102,7 @@ $request = new InferenceRequest(
 // Merges cached messages before request messages,
 // cached tools/format used if request has none
 $merged = $request->withCacheApplied();
-// @doctest id="1d1f"
+// @doctest id="e6b9"
 ```
 
 After applying, the merged request has an empty cached context to prevent double-application.
@@ -114,7 +114,7 @@ Requests can be serialized to and from arrays for storage or transport:
 ```php
 $array = $request->toArray();
 $restored = InferenceRequest::fromArray($array);
-// @doctest id="e403"
+// @doctest id="a030"
 ```
 
 
@@ -127,8 +127,8 @@ $restored = InferenceRequest::fromArray($array);
 ### Consuming Results
 
 ```php
-// Get plain text content
-$text = $pending->get();
+// Get the complete assistant message
+$message = $pending->get();
 
 // Get the full response object
 $response = $pending->response();
@@ -146,7 +146,7 @@ $data = $pending->asToolCallJsonData();  // array
 
 // Check if streaming is enabled for this request
 $isStreamed = $pending->isStreamed();
-// @doctest id="0e79"
+// @doctest id="42da"
 ```
 
 The underlying `InferenceExecutionSession` handles retry logic, event dispatching, and response caching. Once execution completes, the response is cached for the lifetime of the `PendingInference` instance.
@@ -156,24 +156,29 @@ The underlying `InferenceExecutionSession` handles retry logic, event dispatchin
 
 ## InferenceResponse
 
-`InferenceResponse` is a `final readonly` value object that normalizes the provider's result into a consistent shape.
+`InferenceResponse` is a `final readonly` envelope around the provider's complete
+assistant `Message` and inference metadata. The message preserves the provider's block
+order; text, reasoning, and tool calls are projections rather than parallel response fields.
 
 **Namespace:** `Cognesy\Polyglot\Inference\Data\InferenceResponse`
 
 ### Reading the Response
 
 ```php
-$response->content();           // string -- the generated text
-$response->reasoningContent();  // string -- chain-of-thought (if available)
-$response->toolCalls();         // ToolCalls collection
+$message = $response->message(); // Message -- the ordered assistant turn
+$message->parts();               // ContentParts in provider order
+$message->content()->toString(); // generated text projection
+$message->reasoningContent();    // reasoning projection
+$message->toolCalls();            // ToolCalls projection
 $response->usage();             // InferenceUsage object with token counts
 $response->finishReason();      // InferenceFinishReason enum
 $response->responseData();      // HttpResponse -- the raw HTTP response
 $response->isPartial();         // bool -- true for intermediate streaming results
-// @doctest id="ec75"
+// @doctest id="b205"
 ```
 
-Predicate methods: `hasContent()`, `hasReasoningContent()`, `hasToolCalls()`, `hasFinishReason()`.
+Message predicates such as `isEmpty()` and `hasToolCalls()` live on `Message`;
+`hasFinishReason()` remains on the response envelope.
 
 ### JSON Extraction
 
@@ -187,23 +192,25 @@ $str = $response->findJsonData()->toString(); // string
 
 // Extract tool call arguments
 $json = $response->findToolCallJsonData();  // Json object
-// @doctest id="2cde"
+// @doctest id="7849"
 ```
 
 When a response has a single tool call, `findToolCallJsonData()` returns the arguments of that call. When there are multiple tool calls, it returns an array of all tool call data.
 
-### Reasoning Content Fallback
+### Reasoning Normalization
 
-Some providers embed reasoning in `<think>` tags within the content rather than in a dedicated field. The `withReasoningContentFallbackFromContent()` method handles this:
+Some providers embed reasoning in `<think>` tags within a text field rather than in a
+dedicated block. Response adapters normalize that representation before constructing the
+assistant message:
 
 ```php
-$response = $response->withReasoningContentFallbackFromContent();
-// Now $response->reasoningContent() contains the extracted reasoning
-// And $response->content() has the <think> tags removed
-// @doctest id="334b"
+$message = $response->message();
+$message->reasoningContent();    // extracted reasoning
+$message->content()->toString(); // visible text without the tags
+// @doctest id="a619"
 ```
 
-This is a no-op if the response already has dedicated reasoning content or if no `<think>` tags are present.
+Dedicated reasoning blocks remain ordered and retain provider replay metadata.
 
 ### Finish Reason
 
@@ -213,7 +220,7 @@ The `finishReason()` method returns an `InferenceFinishReason` enum. The `hasFin
 if ($response->hasFinishedWithFailure()) {
     // Handle error, content_filter, or length finish reasons
 }
-// @doctest id="1caa"
+// @doctest id="2d9e"
 ```
 
 ### Serialization
@@ -223,13 +230,14 @@ Responses support round-trip serialization:
 ```php
 $array = $response->toArray();
 $restored = InferenceResponse::fromArray($array);
-// @doctest id="1851"
+// @doctest id="ac8f"
 ```
 
 
 ## PartialInferenceDelta
 
-During streaming, the driver emits `PartialInferenceDelta` objects for each SSE event. Each delta carries only the incremental change from that event.
+During streaming, the driver emits `PartialInferenceDelta` objects for each SSE event.
+Each delta carries ordered assistant-message block changes from that event.
 
 **Namespace:** `Cognesy\Polyglot\Inference\Data\PartialInferenceDelta`
 
@@ -237,18 +245,17 @@ During streaming, the driver emits `PartialInferenceDelta` objects for each SSE 
 
 | Field | Type | Description |
 |---|---|---|
-| `contentDelta` | `string` | Incremental text content |
-| `reasoningContentDelta` | `string` | Incremental reasoning content |
-| `toolId` | `ToolCallId\|string\|null` | Tool call identifier |
-| `toolName` | `string` | Tool name (first delta of a tool call) |
-| `toolArgs` | `string` | Incremental tool call arguments |
+| `messageChunks` | `AssistantMessageChunks` | Ordered block starts, text/reasoning/tool deltas, and completed blocks |
 | `finishReason` | `string` | Set on the final delta |
 | `usage` | `?InferenceUsage` | Token usage (typically on the last delta) |
 | `usageIsCumulative` | `bool` | Whether usage represents total (true) or incremental (false) |
 | `responseData` | `?HttpResponse` | Raw response data for this event |
-| `value` | `mixed` | Optional provider-specific value |
+| `value` | `mixed` | Optional higher-level value |
+| `replay` | `?ReplayEnvelope` | Provider replay state carried by this event |
 
-The `InferenceStream` accumulates these deltas internally using `InferenceStreamState` and assembles the final `InferenceResponse` when the stream completes. A `VisibilityTracker` ensures that only deltas with meaningful content changes are yielded to the caller.
+The `InferenceStream` applies the chunks to a shared assistant-message assembler and
+constructs the same `Message` shape produced by synchronous adapters. Stable block
+indices preserve interleaving and allow replay metadata to round-trip.
 
 
 ## InferenceUsage
@@ -274,12 +281,14 @@ $usage->cache();   // cache write + cache read tokens
 
 // String representation
 $usage->toString(); // "Tokens: 150 (i:100 o:40 c:0 r:10)"
-// @doctest id="8e09"
+// @doctest id="cabc"
 ```
 
 ### Cost Calculation
 
-Cost is calculated externally using a calculator rather than through methods on the usage object. Pricing is specified in USD per 1 million tokens:
+Cost is calculated externally using a calculator rather than through methods
+on the usage object. The caller supplies current pricing in USD per 1 million
+tokens; model catalog records do not contain pricing:
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
@@ -296,7 +305,7 @@ $cost->total;          // float -- total cost in USD
 $cost->breakdown;      // array -- per-category breakdown
 $cost->toString();     // string representation
 $cost->toArray();      // array representation
-// @doctest id="70c8"
+// @doctest id="f58b"
 ```
 
 ### Accumulation
@@ -306,7 +315,7 @@ Usage and cost can be accumulated across multiple requests:
 ```php
 $total = $usage1->withAccumulated($usage2);
 $totalCost = $cost1->withAccumulated($cost2);
-// @doctest id="8cc2"
+// @doctest id="6ece"
 ```
 
 
@@ -333,7 +342,7 @@ $request->retryPolicy(); // ?EmbeddingsRetryPolicy
 $updated = $request->withInputs('New text');
 $updated = $request->withModel('text-embedding-3-large');
 $updated = $request->withOptions(['dimensions' => 1024]);
-// @doctest id="fd26"
+// @doctest id="5b4a"
 ```
 
 ### EmbeddingsResponse
@@ -348,7 +357,7 @@ $response->all();           // Vector[] -- alias for vectors()
 $response->usage();         // InferenceUsage
 $response->toValuesArray(); // array of float arrays
 $response->split($index);   // [Vector[], Vector[]] -- split at index
-// @doctest id="d8da"
+// @doctest id="79f9"
 ```
 
 ### PendingEmbeddings
@@ -359,5 +368,5 @@ A lazy handle similar to `PendingInference`. Calling `get()` triggers the HTTP r
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();      // triggers HTTP call
 $request = $pending->request();   // access the original request
-// @doctest id="5095"
+// @doctest id="f9cb"
 ```

@@ -50,7 +50,7 @@ class Receipt {
 
 $receipt = new StructuredOutput(
     StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
-        ->withOutputMode(OutputMode::Json)
+        ->withOutputMode(OutputMode::MdJson)
 )->with(
     messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,

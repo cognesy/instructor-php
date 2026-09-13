@@ -1,0 +1,59 @@
+## Overview
+
+The `openai-compatible` driver extracts reasoning returned in the assistant
+message's `reasoning_content` field. This also works for an application model
+that has no bundled catalog record because reading response content does not
+require a typed reasoning selection.
+
+Set `OPENAI_COMPATIBLE_API_URL`, `OPENAI_COMPATIBLE_API_KEY`, and
+`OPENAI_COMPATIBLE_MODEL` for your backend. The live example otherwise uses
+DeepSeek through its OpenAI-compatible endpoint.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Config\Env;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Utils\Str;
+
+$customApiUrl = (string) Env::get('OPENAI_COMPATIBLE_API_URL', '');
+$usesCustomEndpoint = $customApiUrl !== '';
+$apiUrl = $usesCustomEndpoint ? $customApiUrl : 'https://api.deepseek.com';
+$apiKey = (string) Env::get(
+    'OPENAI_COMPATIBLE_API_KEY',
+    $usesCustomEndpoint ? 'local' : Env::get('DEEPSEEK_API_KEY', ''),
+);
+$model = (string) Env::get(
+    'OPENAI_COMPATIBLE_MODEL',
+    $usesCustomEndpoint ? 'local-reasoner' : 'deepseek-v4-flash',
+);
+
+$config = new LLMConfig(
+    apiUrl: $apiUrl,
+    apiKey: $apiKey,
+    endpoint: '/chat/completions',
+    model: $model,
+    maxTokens: 128,
+    driver: 'openai-compatible',
+);
+
+$response = Inference::fromConfig($config)
+    ->withMessages(Messages::fromString(
+        'What is the capital of France? Answer with just the city name.',
+    ))
+    ->response();
+
+$message = $response->message();
+
+echo "ASSISTANT: {$message->content()->toString()}\n";
+echo "REASONING: {$message->reasoningContent()}\n";
+
+assert(Str::contains($message->content()->toString(), 'Paris'));
+assert($message->reasoningContent() !== '');
+?>
+```

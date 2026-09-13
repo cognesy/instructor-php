@@ -1,6 +1,6 @@
 When you are asking multiple questions against the same background material -- a system prompt,
-a long document, a set of tools -- resending that material with every request wastes tokens and
-increases latency. Polyglot's `withCachedContext()` method lets you separate the **stable
+a long document, a set of tools -- processing that material repeatedly increases cost and
+latency. Polyglot's `withCachedContext()` method lets you separate the **stable
 parts** of a conversation from the **per-call messages**, so the provider can cache and reuse
 them across requests.
 
@@ -18,9 +18,44 @@ the number of tokens processed and the time to first token.
 Request 1:  [cached context] + [new question]  -->  cache write
 Request 2:  [cached context] + [new question]  -->  cache read (faster, cheaper)
 Request 3:  [cached context] + [new question]  -->  cache read (faster, cheaper)
-// @doctest id="8dfb"
+// @doctest id="6e62"
 ```
 
+
+## Anthropic Automatic Caching
+
+Enable automatic caching using a top-level request option. This works with both
+`Inference` and `StructuredOutput`:
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+
+$inference = Inference::using('anthropic')
+    ->withOptions([
+        'cache_control' => ['type' => 'ephemeral'],
+    ])
+    ->withMessages(Messages::fromArray([
+        ['role' => 'system', 'content' => 'Stable background instructions...'],
+        ['role' => 'user', 'content' => 'Analyze the first chapter.'],
+    ]));
+
+$response = $inference->response();
+// @doctest id="5d40"
+```
+
+Anthropic selects the last eligible block and moves the breakpoint forward as you send
+a growing conversation. You still supply the conversation on each request.
+For a one-hour automatic cache, use
+`['cache_control' => ['type' => 'ephemeral', 'ttl' => '1h']]`.
+You can also put this under `options` in an Anthropic preset.
+Omitting the option does not enable automatic caching.
+
+Automatic caching suits growing conversations. For independent questions against a stable
+document, put an explicit breakpoint at the end of the reusable prefix: automatic caching
+does not discover and write separate entries for every stable portion of a varying request.
 
 ## Using Cached Context
 
@@ -45,21 +80,21 @@ $response1 = $inference
     ->withMessages(Messages::fromString('What is supervised learning?'))
     ->response();
 
-echo $response1->content() . "\n";
+echo $response1->message()->content()->toString() . "\n";
 echo 'Cache read tokens: ' . $response1->usage()->cacheReadTokens . "\n";
 
 $response2 = $inference
     ->withMessages(Messages::fromString('And what about unsupervised learning?'))
     ->response();
 
-echo $response2->content() . "\n";
+echo $response2->message()->content()->toString() . "\n";
 echo 'Cache read tokens: ' . $response2->usage()->cacheReadTokens . "\n";
-// @doctest id="c890"
+// @doctest id="0fa7"
 ```
 
 The first request populates the provider's cache (you may see `cacheWriteTokens` reported).
-Every subsequent request that shares the same prefix benefits from a cache hit, reflected in
-`cacheReadTokens`.
+Later requests can reuse the prefix within the cache lifetime if it meets the model's minimum
+length. Cache hits are reflected in `cacheReadTokens`.
 
 
 ## What Can Be Cached
@@ -107,15 +142,14 @@ $inference = Inference::using('anthropic')->withCachedContext(
 
 // Each follow-up query reuses the cached system prompt and tool definitions
 $response = $inference->withMessages(Messages::fromString('Extract entities from: "Apple announced the new iPhone in Cupertino."'))->response();
-// @doctest id="3a3c"
+// @doctest id="390c"
 ```
 
 
 ## Processing Large Documents
 
-Context caching is particularly valuable when working with large documents. Instead of
-resending the full document with every question, you cache it once and issue lightweight
-follow-up queries:
+Context caching is particularly valuable when working with large documents. The full document is still sent with every question; the provider reuses cached prefix computation
+when it finds a matching entry:
 
 ```php
 <?php
@@ -143,10 +177,10 @@ foreach ($questions as $question) {
     $response = $inference->withMessages(Messages::fromString($question))->response();
 
     echo "Q: {$question}\n";
-    echo "A: " . $response->content() . "\n";
+    echo "A: " . $response->message()->content()->toString() . "\n";
     echo "Cache read tokens: " . $response->usage()->cacheReadTokens . "\n\n";
 }
-// @doctest id="c218"
+// @doctest id="098f"
 ```
 
 After the first request populates the provider's cache, subsequent questions benefit from
@@ -174,7 +208,7 @@ echo "Input tokens:       " . $usage->inputTokens . "\n";
 echo "Output tokens:      " . $usage->outputTokens . "\n";
 echo "Cache read tokens:  " . $usage->cacheReadTokens . "\n";
 echo "Cache write tokens: " . $usage->cacheWriteTokens . "\n";
-// @doctest id="0048"
+// @doctest id="3144"
 ```
 
 
@@ -184,7 +218,7 @@ Different providers handle context caching differently:
 
 | Provider | Caching Behavior | Cache Metrics |
 |---|---|---|
-| **Anthropic** | Explicit cache markers with native support | Full reporting (`cacheReadTokens`, `cacheWriteTokens`) |
+| **Anthropic** | Opt-in automatic caching via `options.cache_control`, or explicit markers via `withCachedContext()` | Aggregate `cacheReadTokens` and `cacheWriteTokens` |
 | **OpenAI** | Automatic server-side prompt caching | Cache reads reported as cached prompt tokens; cache writes are not reported |
 | **Other providers** | No native caching | Polyglot manages conversation state correctly; no cache metrics |
 
@@ -196,3 +230,60 @@ in the response.
 > **Tip:** To maximize cache hit rates with Anthropic, keep your cached context stable across
 > requests. Even small changes to the cached portion will invalidate the cache and trigger a
 > new cache write.
+
+
+## Anthropic Explicit Cache Lifetime
+
+`withCachedContext()` marks the end of the cached tools, system instructions, and
+conversation prefix. It places conversation markers on eligible rendered blocks, including
+tool calls and tool results, and skips thinking and empty text as breakpoint targets.
+
+Both public facades accept `ttl: '5m'` or `ttl: '1h'`. Omitting `ttl` uses Anthropic's
+five-minute default. Invalid TTL values are rejected locally.
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+
+$inference = Inference::using('anthropic')->withCachedContext(
+    messages: Messages::fromString('Large stable document...'),
+    ttl: '1h',
+);
+// @doctest id="5737"
+```
+
+For structured extraction, use
+`$structuredOutput->withCachedContext(system: $instructions, ttl: '1h')`.
+Explicit `cache_control` objects on individual content parts retain their TTL; an existing
+marker takes precedence over the generated cached-context marker on that block.
+The TTL is retained when cached contexts are serialized and restored.
+
+Automatic and explicit caching can be combined. Anthropic allows four breakpoints total,
+including the automatic one. A different TTL on the automatic target's existing marker
+causes an API error. Longer-lived breakpoints must precede shorter-lived ones, so use
+one-hour explicit prefixes with five-minute automatic caching, or keep all TTLs equal.
+The provider enforces these request-wide limits. The same 20-block lookback limit applies
+to both modes. Caching is prefix-based in `tools → system → messages` order, not four
+independent document slots.
+
+## Anthropic Minimum Prefix Length
+
+Verified against the [Anthropic prompt caching documentation](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+on September 6, 2026:
+
+| Model | Minimum cacheable prefix |
+|---|---|
+| Claude Haiku 4.5 | 4,096 tokens |
+| Claude Sonnet 4.5 / 4.6 | 1,024 tokens |
+
+Thresholds vary by model and platform; consult the provider documentation for other models.
+Below the threshold, Anthropic processes the request without caching and without an error.
+Small illustrative snippets above will therefore not produce cache hits.
+
+Inspect `cacheReadTokens` and `cacheWriteTokens` to confirm caching.
+Anthropic's total input is `inputTokens + cacheReadTokens + cacheWriteTokens`.
+These aggregate fields are also supported for streaming responses. The normalized usage
+does not split five-minute and one-hour writes, so it cannot by itself provide accurate
+mixed-TTL billing. One-hour writes have a higher price than five-minute writes.

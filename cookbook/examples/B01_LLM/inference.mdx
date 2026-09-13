@@ -21,7 +21,7 @@ use Cognesy\Utils\Str;
 // EXAMPLE 1: use default runtime configuration for convenient ad-hoc calls
 $answer = Inference::using('openai')
     ->with(messages: Messages::fromString('What is capital of Germany'))
-    ->get();
+    ->get()->content()->toString();
 
 echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n\n";
@@ -33,7 +33,7 @@ $response = Inference::using('openai')
     ->withOptions(['max_tokens' => 64])
     ->create();
 
-$answer = $response->get();
+$answer = $response->get()->content()->toString();
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n\n";
 assert(Str::contains($answer, 'Paris'));
@@ -49,7 +49,7 @@ $stream = Inference::using('openai')
 echo "USER: Describe capital of Brasil\n";
 echo 'ASSISTANT: ';
 foreach ($stream as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 echo "\n";
 ?>

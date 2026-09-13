@@ -1,0 +1,330 @@
+v2.10.0 makes the assistant turn a first-class `Message` across Polyglot,
+Instructor, and Agents. This is an intentional breaking change. There is no
+deprecated compatibility layer for the previous flattened response or streaming
+delta shapes.
+
+The release also removes Polyglot's lazy aliases for classes moved under
+`Cognesy\Polyglot\Support` in v2.7. Applications must use the canonical
+`Support\Redaction\SensitiveDataRedactor`, `Support\Retry\RetryBackoff`,
+`Support\Retry\RetryJitter`, `Support\Retry\RetryPolicyInvariants`, and
+`Support\Pricing\Cost` FQCNs.
+
+## Exact-offering model catalog
+
+Polyglot now provides an optional deterministic model catalog keyed by exact
+`(driver, wire model)`. Ordinary inference does not discover or load it. Applications compose a
+catalog explicitly when they need local capability enforcement, model metadata, or facts required
+by a selected processor. Unknown custom offerings remain executable and carry explicit unknown
+facts when inspected.
+
+Offering facts are stored as individual versioned YAML files using the connection-preset loading
+pattern. Runtime construction reads no model records; exact lookup loads only the selected
+offering and reuses its immutable profile. Project records use
+`config/llm/models/<encoded-driver>/<encoded-model>.yaml`; monolithic runtime `models.json`
+discovery was removed. Strict record parsing rejects unknown keys and malformed facts.
+
+This replaces and removes `CanDescribeCapabilities`, `DriverCapabilities`, and
+`SpecifiedInferenceDriver`. Default providers now use `BaseInferenceRequestDriver` directly.
+Reasoning capability facts also live in the exact offering record; provider drivers retain only
+the constant wire format used to render an already-approved selection.
+
+Request preflight is an in-process preparation step, not an LLM API request. It reads only facts
+explicitly attached to the request, rejects features and combinations marked unsupported, and
+preserves unknown facts for custom offerings. Missing model facts do not create a catalog veto.
+Reasoning translation can instead receive the narrow required facts directly. Model-name regexes
+are no longer a capability source.
+
+Provider adapters now render the approved intent or throw a precise protocol error; they never
+silently strip a response format or weaken tool choice. Known semantic fallback is disabled by
+default and requires `LLMConfig::$allowLossyFallback === true` (`allow_lossy_fallback` in Laravel
+and Symfony connection configuration). Every accepted fallback is recorded on the effective
+request and emitted with `InferenceRequested`.
+
+Catalog maintenance is explicit and offline: edit the reviewed source inputs, run
+`just models-build`, and use `just models-check` plus `just models-validate` as deterministic QA.
+There is no runtime refresh, staging, apply, mapping, or provenance subsystem.
+
+`LLMConfig` and connection presets no longer own `contextLength`, `maxOutputLength`, or
+`pricing`. Put limits, modalities, and capabilities in a model catalog record. Supply pricing
+explicitly to the existing inference or embeddings cost calculator. `LLMConfig::fromArray()`
+ignores fields outside its canonical constructor shape; Agents has no legacy migration layer.
+
+## Anthropic prompt caching
+
+`Inference::withCachedContext()` and `StructuredOutput::withCachedContext()` now
+accept an optional `ttl: '5m'` or `ttl: '1h'`. Omitting it keeps Anthropic's
+five-minute default. Explicit block TTLs are preserved, including when cached
+contexts are serialized and restored.
+
+Cached tool-use and tool-result messages now place the breakpoint on the actual
+eligible content block, without inserting an empty text block. Signed thinking
+history remains intact and is not used as a breakpoint target.
+
+Automatic caching remains opt-in through
+`->withOptions(['cache_control' => ['type' => 'ephemeral']])`; add `'ttl' => '1h'`
+inside that object for a one-hour automatic cache. This is distinct from the
+explicit-prefix `withCachedContext()` API. The caching guide now explains both
+modes, their shared limits, and model-specific minimum prefix lengths.
+
+## Ordered Assistant Messages
+
+`InferenceResponse` now carries one assistant `Message`. Its ordered
+`ContentParts` can contain text, reasoning, tool calls, and tool results without
+splitting a turn into unrelated response fields. Text, reasoning, and tool-call
+accessors are projections on `Message`:
+
+```php
+$response = $inference->response();
+$message = $response->message();
+
+$message->parts();               // ordered ContentParts
+$message->content()->toString(); // visible text projection
+$message->reasoningContent();    // reasoning projection
+$message->toolCalls();           // tool-call projection
+```
+
+`Inference::get()` and `PendingInference::get()` now return that `Message`, not
+a string. Call `->content()->toString()` explicitly when an application needs
+only text.
+
+Provider adapters and streaming use the same assistant-message assembler. Stable
+block identities preserve interleaved content, reasoning, and parallel tool calls.
+Anthropic thinking signatures, Gemini thought signatures, and OpenAI Responses
+reasoning replay state remain attached to their blocks so a completed assistant
+turn can be sent back on the next request.
+
+Structured output streams now retain token usage reported in a provider's terminal
+usage-only event. After `finalValue()` or `finalResponse()`, `$stream->usage()` and
+the final response expose the provider-reported input, output, cache, and reasoning
+counts.
+
+The `openai-compatible`, `ollama`, and `together` drivers now preserve reasoning
+returned in `reasoning_content`, `reasoning`, `thinking`, or `analysis` fields for
+both synchronous and streamed responses. For synchronous responses without one of
+those fields, an inline `<think>...</think>` block is moved from visible content
+into the message's reasoning part.
+
+Agents now archive the exact response message. They no longer reconstruct an
+assistant message from text, infer tool calls from separate fields, or JSON-parse
+text to guess whether a provider leaked tool arguments.
+
+## Migration
+
+### Tell runtime and composition
+
+Tell now has one direct execution path: `Tell` creates a fresh concrete
+`TellRuntime` through the final `Core\Execution\TellRuntimeFactory`. The shallow
+runner and runtime-factory interface chain was removed. CLI, conversations, and
+the one-run protocol use the same factory; request-scoped cancellation still
+overrides the host cancellation source.
+
+Direct tool dispatch now resolves `TellRequest` configuration through
+`CanResolveTellConfiguration`. It no longer receives the complete runtime merely
+to obtain effective configuration, and it still does not execute an agent turn.
+
+`StandaloneTellBuilder` exposes only named, typed replacement points. Migrate
+custom integrations as follows:
+
+| Before 2.10.0 | 2.10.0 |
+| --- | --- |
+| `CanRunTell` | Use the public `Tell` facade; use `TellRuntimeFactory` only when composing delivery adapters |
+| `CanCreateTellRuntime` | `Core\Execution\TellRuntimeFactory` |
+| `CanExecuteTellRuntime` | concrete `Core\Execution\TellRuntime` |
+| `DefaultTellRunner` | removed; `Tell` creates a runtime through `TellRuntimeFactory` |
+| `Composition\Standalone\Profile\StandardTellRuntimeFactory` | `Core\Execution\TellRuntimeFactory` |
+| `withInstance(CanObserveTellExecution::class, $observer)` | `withObserver($observer)` |
+| `withInstance(CanResolveTellModel::class, $resolver)` | `withModelResolver($resolver)` |
+| `withSingleton($contract, $factory)` | construct the supported replacement explicitly, then call its named builder method |
+
+There are no aliases, deprecated interfaces, dual registrations, or generic
+container-binding fallback in 2.10.
+
+The four default driver tables now have one entry point on their registry. The old static wrapper
+classes and reasoning capability accessors were removed without aliases:
+
+| Removed | Replacement |
+|---|---|
+| `BundledInferenceDrivers::registry()` | `InferenceDriverRegistry::default()` |
+| `BundledInferenceDrivers::specifications()` | private registry implementation |
+| `BundledInferenceDrivers::reasoningCapabilities()` | explicit `ModelCatalog` lookup or request-scoped `ReasoningCapabilities` |
+| `BundledEmbeddingsDrivers::registry()` | `EmbeddingsDriverRegistry::default()` |
+| `BundledHttpDrivers::registry()` | `HttpDriverRegistry::default()` |
+| `BundledHttpPools::registry()` | `HttpPoolRegistry::default()` |
+| `BundledReasoning` | exact records in `models-overrides.json` |
+| `InferenceDriverSpec::$reasoning` | `InferenceDriverSpec::$reasoningWireFormat` |
+| `CanTranslateReasoning::capabilities()` | explicitly supplied request or exact model facts |
+| `ModelModalities::$inputVideo`, `$outputImage`, `$outputAudio` | removed until adapters implement them |
+
+`ModelModalities::$inputFile` was also removed because Polyglot has no maintained generic file
+message-to-wire route. `ModelCapabilities::$reasoning` remains an optional typed model fact, and
+the narrower reasoning facts can be attached directly to a request. Custom driver registrations
+should start from `InferenceDriverRegistry::default()` when they want the shipped table, or
+`InferenceDriverRegistry::make()` when they want an empty one.
+
+Replace flattened response access with the canonical message:
+
+| Before 2.10.0 | 2.10.0 |
+|---|---|
+| `$inference->get()` returns `string` | `$inference->get()` returns `Message` |
+| `$response->content()` | `$response->message()->content()->toString()` |
+| `$response->reasoningContent()` | `$response->message()->reasoningContent()` |
+| `$response->toolCalls()` | `$response->message()->toolCalls()` |
+| `$response->hasContent()` | `!$response->message()->content()->isEmpty()` |
+| `$response->hasReasoningContent()` | `$response->message()->reasoningContent() !== ''` |
+| `$response->hasToolCalls()` | `$response->message()->hasToolCalls()` |
+| `$response->withContent($text)` | `$response->withMessage(Message::asAssistant($text))` |
+| `new InferenceResponse(content: $text)` | `new InferenceResponse(message: Message::asAssistant($text))` |
+| `['content' => ..., 'toolCalls' => ...]` response storage | `['message' => $message->toArray(), ...]` |
+| fake drivers queue flattened response fields | fake drivers queue an assistant `Message` in each response |
+| retries rebuild assistant text and tool calls | retries append `$response->message()` unchanged |
+
+Construct responses with an assistant message:
+
+```php
+use Cognesy\Messages\Message;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+
+$response = new InferenceResponse(
+    message: Message::asAssistant('Hello'),
+    finishReason: 'stop',
+);
+```
+
+For mixed blocks, construct ordered parts explicitly:
+
+```php
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
+use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Message;
+
+$message = new Message(
+    role: MessageRole::Assistant,
+    parts: new ContentParts(
+        ContentPart::reasoning('...'),
+        ContentPart::text('I will check.'),
+        ContentPart::toolCall($toolCall),
+    ),
+);
+```
+
+`Message` serialization is canonicalized at the same boundary. `Message::toArray()`
+now writes `parts` as the only semantic payload; it no longer duplicates those
+blocks into top-level `content`, `tool_calls`, or `tool_result` fields. Hydration
+rejects flattened tool fields because their original position cannot be recovered.
+
+```php
+// Before: ordering between text and tool calls was unknowable.
+new Message(role: 'assistant', content: 'Checking', toolCalls: $toolCalls);
+
+// 2.10.0: encode the actual order.
+new Message(
+    role: 'assistant',
+    parts: new ContentParts(
+        ContentPart::text('Checking'),
+        ...array_map(ContentPart::toolCall(...), $toolCalls->all()),
+    ),
+);
+```
+
+Migrate stored messages from `content`, `tool_calls`, and `tool_result` into an
+ordered `parts` list before calling `Message::fromArray()`. There is no runtime
+fallback because appending flattened fields would invent an order.
+
+Streaming deltas no longer expose flattened `contentDelta`,
+`reasoningContentDelta`, `toolId`, `toolName`, or `toolArgs` fields. Consume their
+ordered `AssistantMessageChunks` instead:
+
+```php
+foreach ($stream->deltas() as $delta) {
+    echo $delta->messageChunks->textDelta();
+
+    foreach ($delta->messageChunks as $chunk) {
+        // Inspect block starts, text/reasoning/tool deltas, and completed blocks.
+    }
+}
+```
+
+Custom response adapters must construct `InferenceResponse(message: ...)` for
+synchronous output and emit `PartialInferenceDelta(messageChunks: ...)` with a
+stable provider block index for streaming output.
+
+Bundled examples now use `messageChunks->textDelta()` for streamed text. Retry
+recordings also preserve the assistant tool-call block that is sent back to the
+model, and Anthropic prompt-based JSON extraction uses `OutputMode::MdJson` so
+request preflight does not claim native JSON Object support.
+
+## Provider and retry corrections
+
+Structured-output retries now preserve the rejected assistant tool call and
+append a matching tool-error result with the same call ID. This keeps retry
+history valid for providers that require every assistant tool call to have a
+corresponding tool message.
+
+DeepSeek V4 requests now downgrade a forced function choice to `auto` while the
+provider's default thinking mode is active, matching the live Chat API. A
+specific function choice remains available when the request explicitly disables
+thinking. Retriable HTTP transport failures without a response, including
+timeouts, are now classified as transient provider errors so configured retry
+policies can retry them.
+
+The Hugging Face preset now uses the supported
+`openai/gpt-oss-120b:fireworks-ai` route, and JSON Schema requests use the
+router's OpenAI-compatible `response_format.json_schema` envelope. The
+OpenAI-compatible reasoning example can target a private endpoint through
+environment variables and otherwise runs against DeepSeek's OpenAI-compatible
+endpoint. Its assertions verify both the visible answer and separately
+projected reasoning content.
+
+Cerebras, Fireworks, Moonshot, OpenRouter, SambaNova, and Together presets now
+reference exact model IDs returned by each provider's live model catalog. The
+Fireworks, Moonshot, OpenRouter, and Together inference and structured-output
+examples have fresh live recordings and are enabled in the Hub replay suite.
+
+## Agent CLI compatibility and replay isolation
+
+Tell no longer exposes the `tell planes` command or the associated
+`CanDescribeOperationalPlane`, `OperationalPlane`, `PlaneOperation`, and
+`PlaneMap` metadata API. This removes duplicated architectural descriptions
+from every command. Use each command's own help for its supported inputs and
+behavior; Tell's composition and ownership boundaries remain documented in the
+package README. There is no deprecated command alias or metadata compatibility
+layer.
+
+The AgentCtrl Codex bridge now targets the current `codex exec` interface. The
+removed `--full-auto` flag and `fullAuto()` builder method are replaced by
+`--approve-for-me` and `approveForMe()`. Explicit sandbox selection, automatic
+approval, and dangerous bypass are mutually exclusive; selecting one mode on the
+builder clears the others. Pi commands now include `--print` for explicit
+non-interactive execution.
+
+The Gemini CLI bridge is supported again after verification against the current
+Gemini CLI. Its live integration tests now run when the binary and credentials
+are available, and its basic and streaming examples assert response text,
+session and usage metadata, streamed output, and tool-call delivery.
+
+The runtime-switching example now verifies every `AgentType` factory mapping
+offline. Live mode is explicit, runs one selected backend, and uses a 30-second
+timeout instead of invoking every installed CLI serially.
+
+The AgentCtrl package PHPStan command now invokes the `analyse` command
+explicitly, and all bridge, event, response, and configuration payloads carry
+the iterable value types required by its level 6 configuration.
+
+Instructor Hub now extracts executable PHP fences from Markdown files with LF or
+CRLF line endings. AgentCtrl examples that launch external CLI processes are
+tagged `no-replay`, so the offline replay gate does not depend on locally
+installed agents, their credentials, or their provider quotas.
+
+Multi-request examples now use stable request labels and deterministic tool
+outputs, and their recordings have been refreshed for the message and model
+catalog changes. Examples that supply their own HTTP client are tagged
+`no-replay` because they bypass the Hub recorder by design.
+
+Serialized `InferenceResponse` data now requires a `message` entry. The old
+top-level `content`, `reasoningContent`, and `toolCalls` entries are rejected;
+stored payloads must be migrated before hydration.
+
+The rejection also applies when old fields appear beside `message`; they are not
+silently ignored. Remove the flattened fields after migrating their data into the
+ordered message parts.

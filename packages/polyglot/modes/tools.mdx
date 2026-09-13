@@ -29,7 +29,7 @@ $weatherTool = [
         ],
     ],
 ];
-// @doctest id="b829"
+// @doctest id="b11d"
 ```
 
 ## Making a Tool Call Request
@@ -51,7 +51,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="f125"
+// @doctest id="9c63"
 ```
 
 ## Processing Tool Call Results
@@ -61,8 +61,9 @@ The response object provides methods for inspecting whether the model made tool 
 ```php
 <?php
 
-if ($response->hasToolCalls()) {
-    $toolCalls = $response->toolCalls();
+$message = $response->message();
+if ($message->hasToolCalls()) {
+    $toolCalls = $message->toolCalls();
 
     foreach ($toolCalls->all() as $call) {
         $name = $call->name();        // e.g. 'get_weather'
@@ -73,9 +74,9 @@ if ($response->hasToolCalls()) {
     }
 } else {
     // The model responded with text instead
-    echo $response->content();
+    echo $message->content()->toString();
 }
-// @doctest id="c510"
+// @doctest id="5529"
 ```
 
 ## Convenience Accessors
@@ -107,7 +108,7 @@ $data = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->asToolCallJsonData();
-// @doctest id="3951"
+// @doctest id="4a7a"
 ```
 
 When the model returns a single tool call, `asToolCallJsonData()` returns that call's arguments as an array. When multiple tool calls are returned, it returns an array of all calls.
@@ -152,7 +153,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::none(),
     )
     ->response();
-// @doctest id="d1d9"
+// @doctest id="4dbe"
 ```
 
 ## Multiple Tools
@@ -206,7 +207,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="e882"
+// @doctest id="d8d0"
 ```
 
 ## Using the Fluent API
@@ -226,7 +227,7 @@ $response = Inference::using('openai')
     ->withTools(ToolDefinitions::fromArray([$weatherTool]))
     ->withToolChoice(ToolChoice::auto())
     ->response();
-// @doctest id="c76d"
+// @doctest id="73a4"
 ```
 
 ## Provider Support
@@ -241,7 +242,8 @@ Tool calling support varies across providers:
 | Gemini | Yes | Varies by model |
 | Other providers | Varies | Varies |
 
-You can query tool support programmatically through `DriverCapabilities::supportsToolCalling()` and `DriverCapabilities::supportsToolChoice()`.
+Query the exact offering through `ModelCatalog::find($driver, $model)->capabilities`; use its
+`tools` and `toolChoice` statuses.
 
 ## When to Use Tool Calling
 

@@ -15,12 +15,12 @@ $text = Inference::using('openai')
     ->withMessages(Messages::fromString('Write three short lines about queues.'))
     ->stream()
     ->reduce(
-        fn(string $carry, $delta) => $carry . $delta->contentDelta,
+        fn(string $carry, $delta) => $carry . $delta->messageChunks->textDelta(),
         '',
     );
 
 echo $text;
-// @doctest id="8104"
+// @doctest id="480a"
 ```
 
 Because `reduce()` drains the entire stream before returning, it blocks until the response is complete.
@@ -40,10 +40,10 @@ $stream = Inference::using('openai')
     ->withMessages(Messages::fromString('List five fun facts about PHP.'))
     ->stream();
 
-foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
+foreach ($stream->map(fn($delta) => strtoupper($delta->messageChunks->textDelta())) as $chunk) {
     echo $chunk;
 }
-// @doctest id="bffa"
+// @doctest id="d54c"
 ```
 
 
@@ -62,10 +62,10 @@ $stream = Inference::using('openai')
     ->stream();
 
 // Only process deltas that contain digits
-foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
-    echo $delta->contentDelta;
+foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->messageChunks->textDelta())) as $delta) {
+    echo $delta->messageChunks->textDelta();
 }
-// @doctest id="a27f"
+// @doctest id="5202"
 ```
 
 
@@ -85,7 +85,7 @@ $deltas = Inference::using('openai')
     ->all();
 
 echo "Received " . count($deltas) . " deltas.\n";
-// @doctest id="3eed"
+// @doctest id="12a1"
 ```
 
 
@@ -104,7 +104,7 @@ foreach ($stream->deltas() as $delta) {
 
 $last = $stream->lastDelta();
 echo $last->finishReason; // e.g. "stop"
-// @doctest id="d84f"
+// @doctest id="836b"
 ```
 
 This is particularly useful for inspecting the finish reason or final usage data without keeping track of it manually during iteration.
@@ -120,12 +120,12 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
 
 $usage = $stream->usage();
 echo "\nTokens used: input={$usage->inputTokens}, output={$usage->outputTokens}\n";
-// @doctest id="9092"
+// @doctest id="17f7"
 ```
 
 
@@ -143,7 +143,7 @@ $stream->final(); // ensure stream is consumed
 $execution = $stream->execution();
 echo "Execution ID: " . $execution->id->toString() . "\n";
 echo "Model used: " . $execution->request()->model() . "\n";
-// @doctest id="9f1e"
+// @doctest id="14f6"
 ```
 
 

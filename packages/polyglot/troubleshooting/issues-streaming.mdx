@@ -23,9 +23,9 @@ $stream = Inference::using('openai')
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
-// @doctest id="71ab"
+// @doctest id="a70e"
 ```
 
 Alternatively, use the `withStreaming()` method followed by `create()->stream()`:
@@ -43,9 +43,9 @@ $pending = Inference::using('openai')
 
 $stream = $pending->stream();
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 }
-// @doctest id="7f67"
+// @doctest id="c48c"
 ```
 
 ## Do Not Consume a Stream Twice
@@ -58,7 +58,7 @@ The most common streaming mistake is attempting to iterate over `deltas()` more 
 // This will throw LogicException on the second loop
 foreach ($stream->deltas() as $delta) { /* first pass */ }
 foreach ($stream->deltas() as $delta) { /* throws! */ }
-// @doctest id="c9e0"
+// @doctest id="b933"
 ```
 
 If you need to replay the stream content, enable the memory cache policy before creating the request:
@@ -74,7 +74,7 @@ $inference = Inference::using('openai')
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->withMessages(Messages::fromString('Write a haiku.'))
     ->withStreaming(true);
-// @doctest id="10d8"
+// @doctest id="5b14"
 ```
 
 ## Collect the Full Response After Streaming
@@ -93,14 +93,14 @@ $stream = Inference::using('openai')
 
 // Consume deltas for real-time output
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
     flush();
 }
 
 // Get the finalized response (assembled from all deltas)
 $response = $stream->final();
 echo "\n\nTotal tokens: " . $response->usage()->total() . "\n";
-// @doctest id="22c2"
+// @doctest id="f4e6"
 ```
 
 If you only need the final response and do not need to process deltas, call `final()` directly -- it will drain the stream internally.
@@ -113,7 +113,7 @@ When streaming to a browser or CLI, PHP's output buffering can delay visible out
 <?php
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
 
     // Flush PHP output buffer
     if (ob_get_level() > 0) {
@@ -121,7 +121,7 @@ foreach ($stream->deltas() as $delta) {
     }
     flush();
 }
-// @doctest id="c12f"
+// @doctest id="4d4c"
 ```
 
 For web applications, also ensure that your web server is not buffering the response. Common server-side buffering sources:
@@ -160,10 +160,10 @@ $stream = Inference::fromRuntime($runtime)
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
     flush();
 }
-// @doctest id="e6bd"
+// @doctest id="3d8f"
 ```
 
 The `idleTimeout` is particularly important for streaming. It controls how long the client waits for the next chunk before giving up. If a model pauses while generating (for example, during complex reasoning), a short idle timeout will cause the stream to terminate prematurely.
@@ -186,8 +186,9 @@ $content = '';
 
 try {
     foreach ($stream->deltas() as $delta) {
-        $content .= $delta->contentDelta;
-        echo $delta->contentDelta;
+        $text = $delta->messageChunks->textDelta();
+        $content .= $text;
+        echo $text;
         flush();
     }
 } catch (\Exception $e) {
@@ -197,7 +198,7 @@ try {
         echo "Partial content received: " . strlen($content) . " characters\n";
     }
 }
-// @doctest id="d469"
+// @doctest id="330f"
 ```
 
 ## Use the onDelta Callback
@@ -215,13 +216,13 @@ $stream = Inference::using('openai')
     ->stream();
 
 $stream->onDelta(function ($delta) {
-    echo $delta->contentDelta;
+    echo $delta->messageChunks->textDelta();
     flush();
 });
 
 // Drain the stream to trigger all callbacks
 $stream->all();
-// @doctest id="fcac"
+// @doctest id="ac22"
 ```
 
 ## Use Functional Stream Operations
@@ -240,12 +241,12 @@ $stream = Inference::using('openai')
 
 // Collect only non-empty content deltas
 $content = $stream->reduce(
-    fn(string $carry, $delta) => $carry . $delta->contentDelta,
+    fn(string $carry, $delta) => $carry . $delta->messageChunks->textDelta(),
     '',
 );
 
 echo $content;
-// @doctest id="d069"
+// @doctest id="4789"
 ```
 
 ## Fallback to Non-Streaming
@@ -265,7 +266,7 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
         try {
             $content = '';
             foreach ($inference->stream()->deltas() as $delta) {
-                $content .= $delta->contentDelta;
+                $content .= $delta->messageChunks->textDelta();
             }
             return $content;
         } catch (\Exception $e) {
@@ -275,7 +276,7 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
 
     return $inference->get();
 }
-// @doctest id="83ea"
+// @doctest id="cce4"
 ```
 
 ## Verify Model Supports Streaming

@@ -27,9 +27,10 @@ $messages = Messages::empty()
 $response = Inference::using('openai')
     ->withModel('gpt-4o-mini')
     ->withMessages($messages)
-    ->get();
+    ->get()->content()->toString();
 
 echo "Response: " . $response . "\n";
 
 assert(!empty($response), 'Expected non-empty response from image inference');
 ?>
+```

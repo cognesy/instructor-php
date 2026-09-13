@@ -64,7 +64,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a custom runtime (full control over driver and events)
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="ead0"
+// @doctest id="938c"
 ```
 
 ## Request Methods
@@ -116,18 +116,18 @@ You can register your own driver for providers not bundled with Polyglot by crea
 <?php
 
 use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 
 // Start from the bundled registry and add your driver (by class name or factory callable)
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('custom-provider', CustomEmbeddingsDriver::class);
 
 // Or register with a factory callable
-$registry = BundledEmbeddingsDrivers::registry()
+$registry = EmbeddingsDriverRegistry::default()
     ->withDriver('custom-provider', function ($config, $httpClient, $events) {
         return new CustomEmbeddingsDriver($config, $httpClient, $events);
     });
-// @doctest id="84d7"
+// @doctest id="6b54"
 ```
 
 Your custom driver must implement the `CanHandleVectorization` contract. Its `handle()` method

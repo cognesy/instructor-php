@@ -33,7 +33,7 @@ $loop = AgentLoop::default()
     ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withUserMessage(
-    'What is the current date and time? Also show the hostname and working directory. Be concise.'
+    "Use the bash tool to run exactly: printf 'agent-bash-ok\\n'. Return stdout verbatim."
 );
 
 echo "=== Agent Execution ===\n\n";
