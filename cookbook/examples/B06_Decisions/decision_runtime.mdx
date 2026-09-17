@@ -1,0 +1,57 @@
+## Overview
+
+Use the explicit runtime when application code owns configuration and request
+lifecycle. Creating a pending decision is lazy; consuming it executes once and
+memoizes the typed response.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Polyglot\Decision\Collections\Questions;
+use Cognesy\Polyglot\Decision\Config\DecisionConfig;
+use Cognesy\Polyglot\Decision\Config\DecisionRetryPolicy;
+use Cognesy\Polyglot\Decision\Data\DecisionRequest;
+use Cognesy\Polyglot\Decision\DecisionRuntime;
+use Cognesy\Polyglot\Decision\Questions\Noul;
+
+$runtime = DecisionRuntime::fromConfig(
+    DecisionConfig::fromPreset('typesafe'),
+);
+
+$request = new DecisionRequest(
+    input: 'Our checkout API has returned 503 for every request since 09:10 UTC.',
+    questions: Questions::of(new Noul(
+        id: 'production_incident',
+        instructions: 'Does this message describe an active production incident?',
+    )),
+    retryPolicy: new DecisionRetryPolicy(
+        maxAttempts: 3,
+        baseDelayMs: 250,
+        maxDelayMs: 2000,
+    ),
+);
+
+$pending = $runtime->create($request);
+
+echo "Request ID: {$pending->request()->id()->toString()}\n";
+echo "Execution ID: {$pending->executionId()}\n";
+
+$response = $pending->response();
+$sameResponse = $pending->response();
+$incident = $response->answers()->noul('production_incident');
+
+echo "Model: {$response->model()}\n";
+echo 'Incident probability: '.number_format($incident->probability(), 2)."\n";
+echo 'Usage: '.json_encode(
+    $response->usage()->toArray(),
+    JSON_THROW_ON_ERROR,
+)."\n";
+
+assert($response === $sameResponse);
+assert($incident->probability() >= 0.0 && $incident->probability() <= 1.0);
+assert(DecisionRequest::fromArray($request->toArray())->toArray() === $request->toArray());
+?>
+```

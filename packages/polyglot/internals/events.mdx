@@ -3,7 +3,8 @@ Polyglot uses an event system to provide observability into the internal executi
 
 ## Listening to Events
 
-Both inference and embeddings runtimes expose two ways to listen to events:
+Inference, embeddings, and Decision runtimes expose two ways to listen to
+events:
 
 ### Targeted Listeners
 
@@ -25,7 +26,7 @@ $runtime = InferenceRuntime::fromConfig(
 )->onEvent(InferenceResponseCreated::class, function ($event): void {
     // Log or inspect the response
 });
-// @doctest id="1f68"
+// @doctest id="6702"
 ```
 
 You can register multiple listeners for the same event class. An optional priority parameter controls the order (higher values run first):
@@ -33,7 +34,7 @@ You can register multiple listeners for the same event class. An optional priori
 ```php
 $runtime->onEvent(InferenceStarted::class, $highPriorityListener, priority: 10);
 $runtime->onEvent(InferenceStarted::class, $lowPriorityListener, priority: 0);
-// @doctest id="e46e"
+// @doctest id="cdce"
 ```
 
 ### Wiretap
@@ -44,7 +45,7 @@ Use `wiretap()` to receive all events regardless of type. This is useful for deb
 $runtime->wiretap(function ($event): void {
     echo get_class($event) . "\n";
 });
-// @doctest id="61ab"
+// @doctest id="1d8d"
 ```
 
 
@@ -120,6 +121,25 @@ The embeddings lifecycle dispatches a smaller set of events:
 | `EmbeddingsFailed` | On failure | error details |
 
 
+## Decision Events
+
+Decision exposes execution-level and attempt-level event pairs:
+
+| Event | When Dispatched | Key Data |
+|---|---|---|
+| `DecisionStarted` | Beginning of execution | request ID, execution ID, model, driver, and primitive count |
+| `DecisionCompleted` | Successful execution | attempt count, duration, model, driver, and usage |
+| `DecisionFailed` | Terminal failure | attempt count, duration, error type, and status code |
+| `DecisionAttemptStarted` | Beginning of an attempt | attempt ID, number, model, driver, and retry flag |
+| `DecisionAttemptSucceeded` | Successful attempt | attempt ID, number, duration, and usage |
+| `DecisionAttemptFailed` | Failed attempt | attempt ID, number, duration, error type, status, and `willRetry` |
+
+Decision event payloads deliberately omit input state, question instructions,
+criteria, provider bodies, credentials, and exception messages. See
+[Configuration and runtime](../decision/runtime) for telemetry span names and
+runtime composition.
+
+
 ## Practical Examples
 
 ### Logging Token Usage
@@ -135,7 +155,7 @@ $runtime->onEvent(InferenceUsageReported::class, function ($event): void {
         'totalTokens' => $event->data['totalTokens'] ?? 0,
     ]);
 });
-// @doctest id="d290"
+// @doctest id="71a5"
 ```
 
 ### Measuring Time-to-First-Chunk
@@ -146,7 +166,7 @@ use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 $runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkReceived $event): void {
     logger()->info("TTFC: {$event->timeToFirstChunkMs}ms for model {$event->model}");
 });
-// @doctest id="365d"
+// @doctest id="8e12"
 ```
 
 ### Tracking Retry Attempts
@@ -163,7 +183,7 @@ $runtime->onEvent(InferenceAttemptFailed::class, function (InferenceAttemptFaile
         'httpStatus' => $event->data['httpStatusCode'] ?? null,
     ]);
 });
-// @doctest id="449f"
+// @doctest id="3076"
 ```
 
 ### Monitoring Execution Outcomes
@@ -180,13 +200,17 @@ $runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event
         'durationMs' => $event->data['durationMs'] ?? 0,
     ]);
 });
-// @doctest id="6d43"
+// @doctest id="cc6a"
 ```
 
 
 ## Event Dispatcher
 
-Events are dispatched through an `EventDispatcher` that implements `CanHandleEvents` (which extends `Psr\EventDispatcher\EventDispatcherInterface`). When a runtime is created without an explicit event dispatcher, it creates a default one named `'polyglot.inference.runtime'` or `'polyglot.embeddings.runtime'`.
+Events are dispatched through an `EventDispatcher` that implements
+`CanHandleEvents` (which extends
+`Psr\EventDispatcher\EventDispatcherInterface`). When a runtime is created
+without an explicit dispatcher, it creates a default root named for the
+operation family, including `'polyglot.decision.runtime'` for Decision.
 
 You can inject a shared event dispatcher to correlate events across multiple runtimes or integrate with your application's existing event system:
 
@@ -195,10 +219,12 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher(name: 'my-app');
 $runtime = InferenceRuntime::fromConfig($config, events: $events);
-// @doctest id="2f91"
+// @doctest id="aaa7"
 ```
 
-The same event dispatcher instance can be shared between inference and embeddings runtimes, allowing a single wiretap listener to observe all Polyglot activity.
+The same event dispatcher instance can be shared across inference, embeddings,
+and Decision runtimes, allowing one wiretap listener to observe all Polyglot
+activity.
 
 
 ## Listener Gating
@@ -209,7 +235,7 @@ Gating is decided by `Cognesy\Events\Support\ListenerGate`, the single definitio
 
 ```php
 ListenerGate::wants($events, PartialInferenceDeltaCreated::class);
-// @doctest id="eacb"
+// @doctest id="5799"
 ```
 
 Two properties matter to anyone writing a dispatcher or a listener.
@@ -231,6 +257,7 @@ For a `wiretap()` or `onEvent()` call made on the runtime before the request is 
 | Emitter | Events |
 |---|---|
 | `InferenceExecutionSession` | `InferenceStarted`, `InferenceAttemptStarted`, `InferenceAttemptSucceeded`, `InferenceUsageReported`, `InferenceAttemptFailed`, `InferenceCompleted` |
+| `DecisionLifecycleEmitter` | `DecisionStarted`, `DecisionAttemptStarted`, `DecisionAttemptSucceeded`, `DecisionAttemptFailed`, `DecisionCompleted`, `DecisionFailed` |
 | `BaseInferenceRequestDriver` | `InferenceRequested`, `InferenceResponseCreated`, `InferenceFailed` |
 | `BaseEmbedDriver` | `EmbeddingsRequested`, `EmbeddingsFailed` |
 | `InferenceStream` | `PartialInferenceDeltaCreated` |

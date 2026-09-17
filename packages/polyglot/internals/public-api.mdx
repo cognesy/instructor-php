@@ -1,4 +1,6 @@
-Most applications only need a small part of the package. The `Inference` and `Embeddings` facades provide a fluent, immutable interface that handles provider differences behind the scenes.
+Most applications only need a small part of the package. The `Inference`,
+`Embeddings`, and `Decision` facades provide fluent, immutable interfaces that
+hide provider wire differences.
 
 
 ## Inference
@@ -25,14 +27,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="c954"
+// @doctest id="8c7c"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="2be0"
+// @doctest id="e25d"
 ```
 
 ### Building a Request
@@ -47,7 +49,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
 $response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
-// @doctest id="5452"
+// @doctest id="ef9a"
 ```
 
 Available request methods:
@@ -94,7 +96,7 @@ $json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCal
 
 // Stream the response
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
-// @doctest id="2e5e"
+// @doctest id="1b9c"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -106,7 +108,7 @@ $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 $message = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="8d8b"
+// @doctest id="7087"
 ```
 
 ### Working with Responses
@@ -134,7 +136,7 @@ $response->hasFinishReason();
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="73d4"
+// @doctest id="5cd2"
 ```
 
 ### Working with Streams
@@ -169,7 +171,7 @@ $nonEmpty = $stream->filter(fn($d) => !$d->messageChunks->isEmpty());
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="a813"
+// @doctest id="cdd2"
 ```
 
 
@@ -195,7 +197,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="e71b"
+// @doctest id="7f05"
 ```
 
 ### Building a Request
@@ -205,7 +207,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="2cd1"
+// @doctest id="3b9e"
 ```
 
 Available request methods:
@@ -231,7 +233,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="116e"
+// @doctest id="11d4"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -239,7 +241,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="1c02"
+// @doctest id="f14b"
 ```
 
 ### Working with Responses
@@ -258,8 +260,46 @@ $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="4fd4"
+// @doctest id="5eda"
 ```
+
+
+## Decision
+
+`Decision` evaluates text or structured state against typed questions and
+returns typed answers rather than generated text.
+
+**Namespace:** `Cognesy\Polyglot\Decision\Decision`
+
+```php
+use Cognesy\Polyglot\Decision\Decision;
+
+$decision = Decision::using('typesafe');
+$decision = Decision::fromConfig($decisionConfig);
+$decision = Decision::fromProvider($decisionProvider);
+$decision = Decision::fromRuntime($decisionRuntime);
+// @doctest id="90a7"
+```
+
+Its immutable request methods are `withInput()`, `withQuestions()`,
+`withModel()`, `withRetryPolicy()`, `withRequest()`, `withRuntime()`, and the
+combined `with()`. `get()` returns `Answers`; `response()` returns the complete
+`DecisionResponse`; and `create()` returns a lazy `PendingDecision`.
+
+```php
+$answers = $decision
+    ->with(input: $state, questions: $questions)
+    ->get();
+
+$yesProbability = $answers->noul('eligible')->probability();
+$winner = $answers->choice('route')->value();
+$position = $answers->score('priority')->value();
+// @doctest id="8a11"
+```
+
+Start with [Structured Decisions](../decision/overview), then use
+[Question design](../decision/questions) and
+[Response handling](../decision/responses) for the complete typed surface.
 
 
 ## Registering Custom Drivers
@@ -275,7 +315,7 @@ $registry = InferenceDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="07d0"
+// @doctest id="919d"
 ```
 
 ### Embeddings Drivers
@@ -290,7 +330,14 @@ $registry = EmbeddingsDriverRegistry::default()
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="5af0"
+// @doctest id="7102"
 ```
+
+### Decision Drivers
+
+Custom Decision drivers implement `CanProcessDecisionRequest` and are
+registered through `DecisionDriverRegistry`. See
+[Decision custom drivers](../decision/runtime#custom-drivers) for the constructor
+and factory contracts.
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

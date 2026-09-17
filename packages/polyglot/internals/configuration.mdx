@@ -1,4 +1,6 @@
-Polyglot resolves two configuration types -- one for inference and one for embeddings. Both follow the same patterns: they can be loaded from YAML presets, constructed from arrays, or parsed from DSN strings.
+Polyglot has a configuration type for each operation family: `LLMConfig`,
+`EmbeddingsConfig`, and `DecisionConfig`. All can be loaded from YAML presets,
+constructed from arrays, or parsed from DSN strings.
 
 
 ## LLMConfig
@@ -45,7 +47,7 @@ $config = LLMConfig::fromArray([
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
-// @doctest id="1572"
+// @doctest id="6a66"
 ```
 
 ### Presets
@@ -61,7 +63,7 @@ You may also pass a custom base path:
 
 ```php
 $config = LLMConfig::fromPreset('my-preset', basePath: '/path/to/presets');
-// @doctest id="595c"
+// @doctest id="7169"
 ```
 
 ### Overriding Values
@@ -71,7 +73,7 @@ Use `withOverrides()` to create a modified copy of an existing config:
 ```php
 $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
-// @doctest id="e021"
+// @doctest id="1592"
 ```
 
 `allowLossyFallback` is deliberately separate from provider `options`. It authorizes only a
@@ -93,7 +95,7 @@ use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 $profile = ModelCatalog::discover()->find('openai', 'gpt-5.6');
 $profile->limits->contextWindow;
 $profile->capabilities->jsonSchema;
-// @doctest id="d986"
+// @doctest id="0059"
 ```
 
 `discover()` resolves application `config/llm/models` and packaged model directories through
@@ -105,7 +107,8 @@ profile. Enumeration is explicit, and runtime never performs network discovery. 
 
 ### Type Coercion
 
-Both config classes automatically coerce numeric string values to integers for fields that expect `int` types. This is useful when loading values from YAML files or environment variables where values may arrive as strings. For `LLMConfig`, the coerced field is `maxTokens`.
+`LLMConfig` and `EmbeddingsConfig` automatically coerce numeric strings to
+integers for integer fields. For `LLMConfig`, the coerced field is `maxTokens`.
 
 
 ## EmbeddingsConfig
@@ -147,7 +150,7 @@ $config = EmbeddingsConfig::fromArray([
 
 // From a DSN string
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-small');
-// @doctest id="7fd8"
+// @doctest id="f886"
 ```
 
 Presets for embeddings are resolved from similar paths, under the `embed` config group:
@@ -164,12 +167,43 @@ $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
     'dimensions' => 1024,
 ]);
-// @doctest id="0a65"
+// @doctest id="341d"
 ```
 
 For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs` fields.
 
 > **Note:** The legacy field name `defaultDimensions` is automatically normalized to `dimensions` during config loading.
+
+
+## DecisionConfig
+
+`DecisionConfig` holds the connection and model settings for structured
+decision providers.
+
+**Namespace:** `Cognesy\Polyglot\Decision\Config\DecisionConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `driver` | `string` | Decision driver name; currently `typesafe` is bundled |
+| `apiUrl` | `string` | Provider base URL |
+| `apiKey` | `string` | Authentication key |
+| `endpoint` | `string` | Endpoint path beginning with `/` |
+| `model` | `string` | Default structured decision model |
+
+Decision presets use the `sdm` config group:
+
+```php
+use Cognesy\Polyglot\Decision\Config\DecisionConfig;
+
+$config = DecisionConfig::fromPreset('typesafe');
+$modified = $config->withOverrides(['model' => 'jev-latest']);
+// @doctest id="9fca"
+```
+
+Use `DecisionConfig::fromDefaults()` to read `config/sdm/default.yaml` and
+`presetNames()` to enumerate resolvable presets. See
+[Decision configuration and runtime](../decision/runtime) for YAML examples,
+search paths, redacted inspection, and runtime wiring.
 
 
 ## Retry Policies
@@ -196,7 +230,7 @@ $policy = new InferenceRetryPolicy(
 );
 
 $inference->withRetryPolicy($policy);
-// @doctest id="7885"
+// @doctest id="9d81"
 ```
 
 The retry delay uses exponential backoff: `baseDelayMs * 2^(attempt-1)`, capped at `maxDelayMs`. The `jitter` strategy adds randomness to avoid thundering herd problems:
@@ -219,5 +253,26 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
-// @doctest id="c3ea"
+// @doctest id="0829"
 ```
+
+### DecisionRetryPolicy
+
+Decision defaults to one attempt. `DecisionRetryPolicy` enables bounded retries
+for configured statuses and transport failures:
+
+```php
+use Cognesy\Polyglot\Decision\Config\DecisionRetryPolicy;
+
+$decision->withRetryPolicy(new DecisionRetryPolicy(
+    maxAttempts: 3,
+    baseDelayMs: 250,
+    maxDelayMs: 4000,
+));
+// @doctest id="8b89"
+```
+
+The policy defaults to `408`, `429`, selected `5xx` statuses, `529`, timeout,
+and network failures. It honors bounded `Retry-After` by default. See
+[Decision configuration and runtime](../decision/runtime#retry-policy) for the
+single-owner retry rule.

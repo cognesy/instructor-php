@@ -10,19 +10,24 @@ interface CanSendHttpRequests
 {
     public function send(HttpRequest $request): PendingHttpResponse;
 }
-// @doctest id="8039"
+// @doctest id="1953"
 ```
 
-Every inference and embeddings driver receives a `CanSendHttpRequests` implementation. The driver translates its `InferenceRequest` into an `HttpRequest`, sends it via the client's `send()` method (which returns a `PendingHttpResponse`), calls `get()` on the pending response to obtain the `HttpResponse`, and translates that back.
+Inference, embeddings, and Decision drivers receive a
+`CanSendHttpRequests` implementation. Each driver translates its domain request
+into an `HttpRequest`, resolves the `PendingHttpResponse`, and normalizes the
+result into its operation-specific response.
 
 
 ## Default Client
 
-When you call `InferenceRuntime::fromConfig(...)` or `EmbeddingsRuntime::fromConfig(...)` without providing an HTTP client, Polyglot creates a default one using `HttpClientBuilder`:
+When a runtime is created from config without an HTTP client, Polyglot creates
+a default one using `HttpClientBuilder`. This applies to `InferenceRuntime`,
+`EmbeddingsRuntime`, and `DecisionRuntime`:
 
 ```php
 $httpClient = (new HttpClientBuilder(events: $events))->create();
-// @doctest id="7241"
+// @doctest id="20ae"
 ```
 
 The builder selects an appropriate underlying HTTP library (Guzzle, Symfony HttpClient, or Laravel's HTTP client) based on what is available in your project.
@@ -37,8 +42,13 @@ $httpClient = (new HttpClientBuilder())
     ->create();
 
 $runtime = InferenceRuntime::fromConfig($config, httpClient: $httpClient);
-// @doctest id="0f80"
+// @doctest id="91c2"
 ```
+
+Pass the same client through `DecisionRuntime::fromConfig(..., httpClient:
+$httpClient)` when transport customization or mock HTTP behavior is required.
+Decision owns its retry loop, so avoid wrapping Decision calls in a second HTTP
+retry middleware.
 
 
 ## HttpRequest and HttpResponse
@@ -65,7 +75,7 @@ $request->isStreamed(); // bool
 
 // Create a copy with streaming toggled
 $streamRequest = $request->withStreaming(true);
-// @doctest id="cc1f"
+// @doctest id="30c5"
 ```
 
 ### HttpResponse
@@ -78,7 +88,7 @@ $response->headers();    // array
 $response->body();       // string -- the full response body
 $response->stream();     // Generator -- for streaming responses
 $response->original();   // mixed -- the underlying library's native response
-// @doctest id="a6e3"
+// @doctest id="aa19"
 ```
 
 For streaming, the `stream()` method returns a `Generator` that yields chunks as they arrive from the provider. The driver's response adapter parses these chunks into SSE events and then into `PartialInferenceDelta` objects.
@@ -96,7 +106,7 @@ interface HttpMiddleware
         CanHandleHttpRequest $next,
     ): HttpResponse;
 }
-// @doctest id="d676"
+// @doctest id="6944"
 ```
 
 The `BaseMiddleware` abstract class provides convenient hooks so you do not need to manage the chain manually:
@@ -131,7 +141,7 @@ abstract class BaseMiddleware implements HttpMiddleware
         return $response;
     }
 }
-// @doctest id="4de3"
+// @doctest id="cec3"
 ```
 
 ### Managing the Middleware Stack
@@ -147,7 +157,7 @@ $client->middleware()->has('logging'); // bool
 $client->middleware()->get('logging'); // ?HttpMiddleware
 $client->middleware()->all();          // array
 $client->middleware()->clear();        // self
-// @doctest id="3236"
+// @doctest id="7b5d"
 ```
 
 Middleware runs in stack order: middleware added with `prepend()` runs before middleware added with `append()`. The `name` parameter is optional but recommended -- it allows you to replace or remove middleware later without tracking references.
@@ -162,7 +172,7 @@ $runtime = InferenceRuntime::fromConfig(
     $config,
     streamCacheManager: $cacheManager,
 );
-// @doctest id="bea8"
+// @doctest id="d07f"
 ```
 
 The cache behavior is controlled per-request through the `ResponseCachePolicy` enum on the `InferenceRequest`. You can set this through the facade:
@@ -171,7 +181,7 @@ The cache behavior is controlled per-request through the `ResponseCachePolicy` e
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $inference->withResponseCachePolicy(ResponseCachePolicy::Memory);
-// @doctest id="cbbc"
+// @doctest id="5dfb"
 ```
 
 

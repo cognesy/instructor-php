@@ -1,0 +1,131 @@
+A Decision evaluates one shared input against one or more independently answerable questions. Keep each question narrow: use the primitive whose result your application can consume directly, give it a stable ID, and make its criteria or options concrete.
+
+## Text or structured state
+
+Input does not have to be JSON. A string is valid and is wrapped as text automatically:
+
+```php
+$decision = Decision::using('typesafe')
+    ->withInput('The customer was charged twice and needs a refund.');
+// @doctest id="fa62"
+```
+
+Use `JsonContent` when field names add useful context:
+
+```php
+use Cognesy\Polyglot\Decision\Data\JsonContent;
+
+$state = JsonContent::object([
+    'message' => 'Please reverse the duplicate charge.',
+    'account' => ['plan' => 'pro', 'charge_count' => 2],
+]);
+// @doctest id="a5c6"
+```
+
+`JsonContent::text()`, `object()`, `list()`, `from()`, and `fromJson()` preserve the root kind. The same value type is accepted for question instructions, option descriptions, criteria descriptions, and Score levels.
+
+## Noul: probability of yes
+
+Use `Noul` for a binary proposition. Its answer is one probability in `[0, 1]`: the probability that the proposition is true.
+
+```php
+use Cognesy\Polyglot\Decision\Data\NoulCriteria;
+use Cognesy\Polyglot\Decision\Questions\Noul;
+
+$question = new Noul(
+    id: 'needs_refund',
+    instructions: 'Does this case require a refund?',
+    criteria: new NoulCriteria(
+        true: 'A settled charge must be reversed.',
+        false: 'No settled charge needs reversal.',
+    ),
+);
+// @doctest id="e3db"
+```
+
+A result near `1` supports yes, a result near `0` supports no, and a result near `0.5` is uncertain. Noul intentionally has no separate confidence field: the probability is the result.
+
+## Choice: winner from a closed set
+
+Use `Choice` when exactly one application-owned option should win. Option IDs are strings and remain strings even when they look numeric.
+
+```php
+use Cognesy\Polyglot\Decision\Collections\ChoiceOptions;
+use Cognesy\Polyglot\Decision\Data\ChoiceOption;
+use Cognesy\Polyglot\Decision\Questions\Choice;
+
+$question = new Choice(
+    id: 'route',
+    options: ChoiceOptions::of(
+        new ChoiceOption('billing', 'Payments, invoices, charges, or refunds.'),
+        new ChoiceOption('technical', 'Product behavior or an integration problem.'),
+        new ChoiceOption('other', 'None of the named routes is a good fit.'),
+    ),
+    instructions: 'Choose the best support route.',
+);
+// @doctest id="e684"
+```
+
+The provider must choose from this closed set. Add an explicit `other`, `unknown`, or `not_applicable` option when the named choices are not exhaustive. Choice requires at least one option, and option IDs must be unique.
+
+Dynamic options are ordinary typed values, so they can be built from current application state:
+
+```php
+$options = ChoiceOptions::of(...array_map(
+    static fn (array $route): ChoiceOption => new ChoiceOption(
+        id: $route['id'],
+        description: $route['description'],
+    ),
+    $availableRoutes,
+));
+// @doctest id="16b4"
+```
+
+## Score: position across ordered levels
+
+Use `Score` when the application needs an ordered judgment. Levels are indexed from `0` in the order supplied and must contain at least two entries.
+
+```php
+use Cognesy\Polyglot\Decision\Collections\ScoreLevels;
+use Cognesy\Polyglot\Decision\Questions\Score;
+
+$question = new Score(
+    id: 'urgency',
+    levels: ScoreLevels::of(
+        'Can wait for the normal queue.',
+        'Should be handled this week.',
+        'Must be handled today.',
+    ),
+    instructions: 'Assess the required response urgency.',
+);
+// @doctest id="b5a6"
+```
+
+The result is the probability-weighted position across those indexes, so it may be fractional. For example, `1.4` lies between the second and third supplied levels; it is not an arbitrary rating on a hidden scale. Make adjacent levels concrete, distinct, and independently understandable.
+
+## Group questions over shared state
+
+Use `Questions::of()` to evaluate several independent judgments over the same state in one request:
+
+```php
+use Cognesy\Polyglot\Decision\Collections\Questions;
+
+$questions = Questions::of($refundQuestion, $routeQuestion, $urgencyQuestion);
+// @doctest id="99ab"
+```
+
+Question IDs must be unique. An executable `DecisionRequest` requires at least one question. Use `Questions::question($id)` to inspect a definition and `all()`, `count()`, or `toArray()` when building tooling around a collection.
+
+Do not make one question depend on another answer inside the same request. Execute a second Decision when a later judgment genuinely depends on the first result.
+
+## Portable question payloads
+
+Every question and collection supports `toArray()`. `Questions::fromArray()` reconstructs the discriminated `noul`, `choice`, and `score` variants:
+
+```php
+$payload = $questions->toArray();
+$restored = Questions::fromArray($payload);
+// @doctest id="66cb"
+```
+
+Unknown fields, unknown question types, duplicate IDs, invalid probabilities, empty option sets, and invalid level sets fail early with `InvalidArgumentException` instead of being forwarded as ambiguous provider input.

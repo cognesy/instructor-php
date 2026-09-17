@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.11.0",
                 "release-notes/v2.10.1",
                 "release-notes/v2.10.0",
                 "release-notes/v2.9.5",
@@ -277,6 +278,16 @@
                         "packages/polyglot/embeddings/overview",
                         "packages/polyglot/embeddings/work-with-embeddings",
                         "packages/polyglot/embeddings/optimization"
+                    ]
+                },
+                {
+                    "group": "Decision",
+                    "pages": [
+                        "packages/polyglot/decision/overview",
+                        "packages/polyglot/decision/questions",
+                        "packages/polyglot/decision/responses",
+                        "packages/polyglot/decision/runtime",
+                        "packages/polyglot/decision/errors-testing"
                     ]
                 },
                 {
@@ -664,6 +675,15 @@
                 "cookbook/examples/B05_LLMExtras/summary_with_llm",
                 "cookbook/examples/B05_LLMExtras/tool_use",
                 "cookbook/examples/B05_LLMExtras/tool_use_react"
+            ]
+        },
+        {
+            "group": "B06_Decisions",
+            "pages": [
+                "cookbook/examples/B06_Decisions/decision_primitives",
+                "cookbook/examples/B06_Decisions/decision_runtime",
+                "cookbook/examples/B06_Decisions/decision_dynamic_choices",
+                "cookbook/examples/B06_Decisions/decision_structured_state"
             ]
         },
         {

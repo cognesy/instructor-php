@@ -7,21 +7,29 @@ Understanding these layers will help you extend the library, contribute to its d
 
 ### Public Layer
 
-This is what application code usually touches. Two facade classes provide a unified interface for all provider interactions:
+This is what application code usually touches. Three operation facades provide
+a stable interface for provider interactions:
 
 - **`Inference`** -- for chat completions and text generation
 - **`Embeddings`** -- for generating vector embeddings
+- **`Decision`** -- for typed `Noul`, `Choice`, and `Score` judgments
 
-These facades build request objects, delegate execution to runtimes, and return normalized responses regardless of the underlying provider. Both facades follow an immutable, fluent interface pattern -- every method that modifies state returns a new instance, so you can safely branch configurations from a shared base.
+These facades build request objects, delegate execution to runtimes, and return
+normalized responses regardless of the underlying provider. All three follow an
+immutable, fluent interface pattern, so configurations can branch safely from a
+shared base.
 
 ### Runtime Layer
 
-Runtimes assemble the moving parts needed for a provider call. They wire together the configuration, driver, HTTP client, and event dispatcher, and they own the execution lifecycle including retry logic and response caching.
+Runtimes assemble the moving parts needed for a provider call. They wire
+together configuration, a driver, the HTTP client, and event dispatch, and own
+the operation lifecycle and retry policy.
 
 The key classes are:
 
 - **`InferenceRuntime`** -- coordinates inference execution and creates `PendingInference` handles
 - **`EmbeddingsRuntime`** -- coordinates embeddings execution and creates `PendingEmbeddings` handles
+- **`DecisionRuntime`** -- coordinates decision execution and creates `PendingDecision` handles
 
 Each runtime can be constructed from a config object, a provider, or injected directly. When no HTTP client is provided, the runtime builds a default one via `HttpClientBuilder`. Runtimes also expose `onEvent()` and `wiretap()` methods for hooking into the event system.
 
@@ -34,8 +42,12 @@ Requests and responses are normalized into package data objects that are provide
 - **`PartialInferenceDelta`** -- ordered assistant-message chunks plus finish reason, usage, and provider replay data
 - **`EmbeddingsRequest`** -- input texts, model, options, retry policy
 - **`EmbeddingsResponse`** -- vectors and usage
+- **`DecisionRequest`** -- text or structured state, typed questions, model, retry policy, and telemetry correlation
+- **`DecisionResponse`** -- typed answers, model, usage, provider request ID, and raw HTTP response data
 
-These objects isolate your application from provider-specific response shapes. Both request types support immutable `with*()` mutators for building modified copies.
+These objects isolate application code from provider-specific response shapes.
+Request objects support immutable `with*()` mutators for building modified
+copies.
 
 `PendingInference` is the laziness boundary -- nothing is sent until you ask for a result. Behind it, `InferenceExecutionSession` drives one request to one response and divides that job with two per-execution collaborators, both in `Inference/Core/`:
 
@@ -48,7 +60,10 @@ See [`lifecycle.md`](lifecycle) for the event sequence each path emits.
 
 ### Driver Layer
 
-Drivers translate Polyglot requests into provider-native HTTP payloads and normalize the results back. Each driver implements `CanProcessInferenceRequest` (for inference) or `CanHandleVectorization` (for embeddings) and is composed of smaller adapter responsibilities:
+Drivers translate Polyglot requests into provider-native HTTP payloads and
+normalize the results back. Drivers implement `CanProcessInferenceRequest`,
+`CanHandleVectorization`, or `CanProcessDecisionRequest` for their operation
+family. Inference drivers are further composed from these responsibilities:
 
 - **Request adapters** (`CanTranslateInferenceRequest`) -- convert `InferenceRequest` into an `HttpRequest`
 - **Response adapters** (`CanTranslateInferenceResponse`) -- convert raw `HttpResponse` data into `InferenceResponse` or stream of `PartialInferenceDelta`
@@ -58,45 +73,47 @@ Drivers translate Polyglot requests into provider-native HTTP payloads and norma
 
 All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Every bundled provider is declared as an `InferenceDriverSpec` -- a row naming its adapters and formatters -- and built by that shared driver. Providers that assemble their own URL or headers select bespoke request adapters in that row; the provider-specific behavior does not require a driver class.
 
+Decision drivers use `DecisionRequestAdapter` and `DecisionResponseAdapter` to
+translate between the stable Decision domain and provider wire formats. The
+first bundled implementation is the TypeSafe driver. See
+[Configuration and runtime](../decision/runtime) for its registry contract.
+
 
 ### Shared Support
 
-Inference and embeddings are separate subsystems with parallel class hierarchies, but a few primitives belong to neither. They live under `Cognesy\Polyglot\Support\`:
+Inference, embeddings, and Decision are separate operation families, but a few
+primitives belong to none of them. They live under
+`Cognesy\Polyglot\Support\`:
 
 - **`Support\Redaction\SensitiveDataRedactor`** -- decides *what* is sensitive: which header names, query parameters and option keys are masked before a value can reach an event payload or an exception message.
 - **`Support\Redaction\RedactsHttpPayloads`** -- decides *where* the drivers apply it. `BaseInferenceRequestDriver` and `BaseEmbedDriver` both use this trait, so a tightened rule takes effect on both sides at once. Redaction runs on error paths only; nothing here executes on a successful request.
-- **`Support\Retry\RetryBackoff`, `RetryJitter`, `RetryPolicyInvariants`** -- the delay computation, jitter strategies and constructor invariants shared by `InferenceRetryPolicy` and `EmbeddingsRetryPolicy`.
+- **`Support\Retry\RetryBackoff`, `RetryJitter`, `RetryPolicyInvariants`** -- the delay computation, jitter strategies, and constructor invariants shared by inference, embeddings, and Decision retry policies.
 - **`Support\Pricing\Cost`** -- the value object every cost calculator returns, on both sides. Note that the calculators themselves are *not* shared: `Inference\Pricing\FlatRateCostCalculator` prices five token categories and `Embeddings\Pricing\FlatRateCostCalculator` prices one, and `InferencePricing` and `EmbeddingsPricing` carry different rate fields. They share a name, not a signature.
 
-The retry and redaction classes previously lived under `Inference\`, which forced every embeddings file that needed them to import from the inference subsystem. `Cost` was already neutral, at a top-level `Polyglot\Pricing\`; it moved here so that `Support\` is the package's single answer to "where do things neither subsystem owns live?" rather than one of two competing conventions.
+The retry and redaction classes previously lived under `Inference\`, which
+forced other operation families to import from the inference subsystem. `Cost`
+was already neutral, at a top-level `Polyglot\Pricing\`; it moved here so that
+`Support\` is the package's single answer to "where do things no operation
+family owns live?" rather than one of two competing conventions.
 
 ## How the Layers Connect
 
 ```text
-+---------------------+    +---------------------+
-|      Inference      |    |     Embeddings      |     Public Layer
-+---------------------+    +---------------------+
-          |                          |
-+---------------------+    +---------------------+
-|  InferenceRuntime   |    | EmbeddingsRuntime   |     Runtime Layer
-+---------------------+    +---------------------+
-          |                          |
-+---------------------+    +---------------------+
-|  InferenceRequest   |    | EmbeddingsRequest   |
-|  PendingInference   |    | PendingEmbeddings   |     Request/Response
-|  InferenceResponse  |    | EmbeddingsResponse  |     Layer
-+---------------------+    +---------------------+
-          |                          |
-+---------------------+    +---------------------+
-|  Inference Drivers  |    |  Embeddings Drivers |     Driver Layer
-| (OpenAI, Anthropic, |    | (OpenAI, Cohere,    |
-|  Gemini, etc.)      |    |  Gemini, etc.)      |
-+---------------------+    +---------------------+
-          |                          |
-+------------------------------------------------+
-|             HTTP Client (shared)               |     Transport
-+------------------------------------------------+
-// @doctest id="5927"
++-------------------+  +-------------------+  +-------------------+
+|     Inference     |  |    Embeddings     |  |     Decision      | Public
++-------------------+  +-------------------+  +-------------------+
+| InferenceRuntime  |  | EmbeddingsRuntime |  | DecisionRuntime   | Runtime
++-------------------+  +-------------------+  +-------------------+
+| Request/Pending/  |  | Request/Pending/  |  | Request/Pending/  |
+| Response          |  | Response          |  | Response          | Domain
++-------------------+  +-------------------+  +-------------------+
+| Inference drivers |  | Embedding drivers |  | Decision drivers  | Drivers
++-------------------+  +-------------------+  +-------------------+
+          |                      |                      |
++-----------------------------------------------------------------+
+|                      HTTP Client (shared)                       |
++-----------------------------------------------------------------+
+// @doctest id="520b"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.
@@ -104,14 +121,21 @@ The public facade creates a request and hands it to the runtime. The runtime del
 
 ## Key Design Decisions
 
-**Immutability.** Both the public facades and the request/response objects are immutable. Calling `withMessages()` or `withModel()` always returns a new instance rather than modifying the original. This makes it safe to reuse a configured `Inference` or `Embeddings` instance across multiple concurrent calls.
+**Immutability.** The public facades and request/response objects are immutable.
+Calling methods such as `withMessages()`, `withInput()`, or `withModel()` returns
+a new instance rather than modifying the original.
 
-**Lazy execution.** Calling `create()` on a facade returns a `PendingInference` or `PendingEmbeddings` handle without triggering the HTTP call. Execution is deferred until the application reads from the handle via `get()`, `response()`, or `stream()`.
+**Lazy execution.** Calling `create()` returns a `PendingInference`,
+`PendingEmbeddings`, or `PendingDecision` handle without triggering the HTTP
+call. Execution begins when the application reads from the handle.
 
-**Driver registry.** Inference drivers are resolved through `InferenceDriverRegistry`, which maps string names (like `'openai'` or `'anthropic'`) to driver factory functions. Embeddings drivers use `EmbeddingsDriverFactory` with a similar pattern. Both support registering custom drivers at runtime.
+**Driver registry.** Inference and Decision use `InferenceDriverRegistry` and
+`DecisionDriverRegistry`; embeddings use `EmbeddingsDriverFactory`. Each
+operation family supports custom runtime wiring.
 
 **Provider-agnostic data.** `InferenceResponse::message()` preserves one ordered
 assistant turn regardless of provider. Text, reasoning, and tool calls are projections
 of that message; provider-specific HTTP details remain available through
 `responseData()`. `EmbeddingsResponse` provides the corresponding normalized vector
-surface for embeddings.
+surface for embeddings. `DecisionResponse` provides typed answers and preserves
+the provider request ID and normalized HTTP response for diagnostics.
