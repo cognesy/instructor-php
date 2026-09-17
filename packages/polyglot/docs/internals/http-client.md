@@ -17,12 +17,17 @@ interface CanSendHttpRequests
 }
 ```
 
-Every inference and embeddings driver receives a `CanSendHttpRequests` implementation. The driver translates its `InferenceRequest` into an `HttpRequest`, sends it via the client's `send()` method (which returns a `PendingHttpResponse`), calls `get()` on the pending response to obtain the `HttpResponse`, and translates that back.
+Inference, embeddings, and Decision drivers receive a
+`CanSendHttpRequests` implementation. Each driver translates its domain request
+into an `HttpRequest`, resolves the `PendingHttpResponse`, and normalizes the
+result into its operation-specific response.
 
 
 ## Default Client
 
-When you call `InferenceRuntime::fromConfig(...)` or `EmbeddingsRuntime::fromConfig(...)` without providing an HTTP client, Polyglot creates a default one using `HttpClientBuilder`:
+When a runtime is created from config without an HTTP client, Polyglot creates
+a default one using `HttpClientBuilder`. This applies to `InferenceRuntime`,
+`EmbeddingsRuntime`, and `DecisionRuntime`:
 
 ```php
 $httpClient = (new HttpClientBuilder(events: $events))->create();
@@ -41,6 +46,11 @@ $httpClient = (new HttpClientBuilder())
 
 $runtime = InferenceRuntime::fromConfig($config, httpClient: $httpClient);
 ```
+
+Pass the same client through `DecisionRuntime::fromConfig(..., httpClient:
+$httpClient)` when transport customization or mock HTTP behavior is required.
+Decision owns its retry loop, so avoid wrapping Decision calls in a second HTTP
+retry middleware.
 
 
 ## HttpRequest and HttpResponse

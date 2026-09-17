@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Polyglot\Inference\Config;
 
 use Cognesy\Config\BasePath;
-use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
 use Cognesy\Config\EnvTemplate;
+use Cognesy\Polyglot\Support\Config\PresetConfigLoader;
 use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 use InvalidArgumentException;
 use Throwable;
@@ -66,23 +66,20 @@ final class LLMConfig
         __DIR__.'/../../../resources/config/llm/presets',
     ];
 
+    public static function fromDefaultPreset(?EnvTemplate $template = null): self
+    {
+        $preset = PresetConfigLoader::defaultName('LLM', self::PRESET_PATHS, $template);
+
+        return self::fromPreset($preset, template: $template);
+    }
+
     public static function fromPreset(
         string $preset,
         ?string $basePath = null,
         ?EnvTemplate $template = null,
     ): self {
-        $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
-        $resolvedPaths = BasePath::resolveExisting(...$basePaths);
-        if ($resolvedPaths === []) {
-            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: ".implode(', ', $basePaths));
-        }
-        $config = Config::fromPaths(...$resolvedPaths);
-        if ($template !== null) {
-            $config = $config->withTemplate($template);
-        }
-        $data = $config
-            ->load("{$preset}.yaml")
-            ->toArray();
+        $paths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
+        $data = PresetConfigLoader::load($preset, $paths, $template);
 
         return self::fromArray($data);
     }

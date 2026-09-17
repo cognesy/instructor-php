@@ -1,0 +1,89 @@
+{
+  "simple_noul": {
+    "url": "https://api.example.test/v1/systemone",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer synthetic-test-key",
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "state": "Our payment integration is down.",
+      "model": "jev-override",
+      "questions": {
+        "urgent": {
+          "type": "noul",
+          "instructions": "Does this require immediate attention?",
+          "criteria": {
+            "true": "Immediate action is required",
+            "false": "Normal handling is sufficient"
+          }
+        }
+      }
+    }
+  },
+  "structured_mixed_numeric_ids": {
+    "url": "https://api.example.test/v1/systemone",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer synthetic-test-key",
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "state": {
+        "elements": {
+          "0": {"label": "Submit"},
+          "1": {"label": "Cancel"}
+        },
+        "history": []
+      },
+      "model": "jev-test",
+      "questions": {
+        "0": {
+          "type": "choice",
+          "instructions": {"task": "Pick an element", "context": []},
+          "criteria": {
+            "0": {"role": "button", "enabled": true},
+            "1": null
+          }
+        },
+        "1": {
+          "type": "score",
+          "criteria": [
+            "No impact",
+            {"label": "Work blocked", "reasons": ["checkout"]}
+          ]
+        },
+        "safe": {
+          "type": "noul",
+          "criteria": {
+            "true": {"meaning": "safe to proceed"}
+          }
+        }
+      }
+    }
+  },
+  "list_state_choice": {
+    "url": "https://api.example.test/v1/systemone",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer synthetic-test-key",
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "state": ["first", {"kind": "second"}],
+      "model": "jev-test",
+      "questions": {
+        "route": {
+          "type": "choice",
+          "criteria": {
+            "alpha": "First path",
+            "beta": "Second path"
+          }
+        }
+      }
+    }
+  }
+}

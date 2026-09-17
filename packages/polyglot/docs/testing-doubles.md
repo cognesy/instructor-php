@@ -1,6 +1,6 @@
 ---
 title: Testing Doubles
-description: 'Deterministic testing seams for inference and embeddings.'
+description: 'Deterministic testing seams for inference, embeddings, and decisions.'
 ---
 
 ## Overview
@@ -11,6 +11,11 @@ Polyglot supports deterministic tests at two main seams.
 - use `MockHttpDriver` when you want to keep transport and provider adapter behavior in play
 
 Pick the shallowest seam that still exercises the behavior you care about.
+
+The same rule applies to all three operation families. Inference and embeddings
+ship reusable fake drivers in test support. For Decision, implement the small
+`CanProcessDecisionRequest` contract as an application-local fake or inject a
+`MockHttpDriver` client when the TypeSafe wire adapter is under test.
 
 ## `FakeInferenceDriver`
 
@@ -70,10 +75,18 @@ This is the right seam for:
 If the test is really about transport or adapter behavior, keep the mock HTTP path.
 If it is about runtime behavior above transport, prefer the fake drivers.
 
+For Decision, build the runtime with
+`DecisionRuntime::fromConfig(..., httpClient: $httpClient)` to cover the
+TypeSafe request and response adapters without a live API call. See
+[Decision errors and testing](decision/errors-testing) for the full Decision
+test matrix and opt-in live smoke command.
+
 ## Which One To Use
 
 Use this rule of thumb:
 
 - `FakeInferenceDriver` for most deterministic inference tests
 - `FakeEmbeddingsDriver` for most deterministic embeddings tests
+- an application-local `CanProcessDecisionRequest` fake for Decision runtime
+  behavior
 - `MockHttpDriver` for transport and provider adapter coverage

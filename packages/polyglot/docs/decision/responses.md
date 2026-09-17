@@ -1,0 +1,87 @@
+---
+title: Response Handling
+description: Read typed Decision answers, distributions, confidence, usage, and provider metadata.
+---
+
+<!-- markdownlint-disable MD013 -->
+
+`Decision::get()` returns an `Answers` collection. `Decision::response()` returns the full `DecisionResponse` envelope. Both terminal methods use the same lazy execution path.
+
+## Read answers by question ID
+
+Use the typed accessor when the expected primitive is known:
+
+```php
+$answers = $decision->get();
+
+$probability = $answers->noul('needs_refund')->probability();
+$route = $answers->choice('route')->value();
+$urgency = $answers->score('urgency')->value();
+```
+
+`noul()`, `choice()`, and `score()` reject a missing ID and reject an answer of the wrong primitive. `answer($id)` returns the `NoulAnswer|ChoiceAnswer|ScoreAnswer` union when generic processing is intentional. Collections also expose `all()`, `count()`, and `toArray()`.
+
+## Interpret each result
+
+### NoulAnswer
+
+`NoulAnswer::probability()` is the probability of yes. There is no separate confidence property. Treat values near `0.5` as uncertainty and choose application thresholds based on the cost of false positives and false negatives.
+
+### ChoiceAnswer
+
+```php
+$answer = $answers->choice('route');
+
+$winner = $answer->value();
+$confidence = $answer->confidence();
+$billingProbability = $answer->probabilities()->probability('billing');
+$highestProbability = $answer->probabilities()->highest();
+$optionIds = $answer->probabilities()->ids();
+```
+
+`value()` is always one of the option IDs supplied by the request. `probabilities()` contains the full normalized distribution over those exact IDs. Confidence describes how concentrated the judgment is; it is not a guarantee that the selected option is correct.
+
+### ScoreAnswer
+
+```php
+$answer = $answers->score('urgency');
+
+$position = $answer->value();
+$confidence = $answer->confidence();
+$levelTwoProbability = $answer->probabilities()->at(2);
+$expected = $answer->probabilities()->expectedValue();
+$levelTwoDescription = $answer->legend()->at(2)->value();
+```
+
+`value()` is the probability-weighted index across the ordered levels and therefore may be fractional. `probabilities()` is indexed from `0`; `legend()` preserves the corresponding level definitions. Polyglot validates that the distribution, expected value, and legend agree with the original question.
+
+## Use the response envelope
+
+```php
+$response = $decision->response();
+
+$answers = $response->answers();
+$model = $response->model();
+$inputTokens = $response->usage()->inputTokens();
+$outputTokens = $response->usage()->outputTokens();
+$totalTokens = $response->usage()->totalTokens();
+$providerRequestId = $response->providerRequestId()->toString();
+$httpResponse = $response->responseData();
+```
+
+Token counts are nullable because a provider may omit usage. `totalTokens()` is available only when both input and output counts are present. `responseData()` exposes the underlying normalized HTTP response for diagnostics; keep business logic on typed answers instead of provider bodies.
+
+## Lazy and memoized execution
+
+`create()` returns `PendingDecision` without making a network call. The first `get()` or `response()` executes it, and later calls return the memoized result. Terminal failures are memoized too.
+
+```php
+$pending = $decision->create();
+
+$request = $pending->request();
+$executionId = $pending->executionId();
+$answers = $pending->get();
+$sameResponse = $pending->response();
+```
+
+There is no Decision stream. A structured decision is returned as one validated result.

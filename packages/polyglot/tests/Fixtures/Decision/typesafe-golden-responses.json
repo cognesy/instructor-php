@@ -1,0 +1,105 @@
+{
+  "mixed": {
+    "model": "jev-test-2026-09-17",
+    "answers": {
+      "urgent": {
+        "type": "noul",
+        "noul": 0.93
+      },
+      "route": {
+        "type": "choice",
+        "choice": "technical",
+        "confidence": 0.72,
+        "probabilities": {
+          "billing": 0.2,
+          "technical": 0.8
+        }
+      },
+      "impact": {
+        "type": "score",
+        "score": 1.2,
+        "confidence": 0.64,
+        "probabilities": {
+          "0": 0.1,
+          "1": 0.6,
+          "2": 0.3
+        },
+        "legend": {
+          "0": "No impact",
+          "1": {
+            "label": "Degraded",
+            "workaround": true
+          },
+          "2": [
+            "Blocked",
+            {
+              "workaround": false
+            }
+          ]
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 321,
+      "output_tokens": 47
+    }
+  },
+  "choice_tie": {
+    "model": "jev-test",
+    "answers": {
+      "route": {
+        "type": "choice",
+        "choice": "alpha",
+        "confidence": 0.0,
+        "probabilities": {
+          "alpha": 0.5,
+          "beta": 0.5
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 4
+    }
+  },
+  "rounded_score": {
+    "model": "jev-test",
+    "answers": {
+      "impact": {
+        "type": "score",
+        "score": 0.6667,
+        "confidence": 0.4,
+        "probabilities": {
+          "0": 0.3333,
+          "1": 0.6666
+        },
+        "legend": {
+          "0": "Low",
+          "1": "High"
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 16,
+      "output_tokens": 5
+    }
+  },
+  "numeric_ids": {
+    "model": "jev-test",
+    "answers": {
+      "0": {
+        "type": "choice",
+        "choice": "1",
+        "confidence": 0.7,
+        "probabilities": {
+          "0": 0.2,
+          "1": 0.8
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 3
+    }
+  }
+}

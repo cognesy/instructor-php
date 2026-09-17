@@ -358,3 +358,23 @@ $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();      // triggers HTTP call
 $request = $pending->request();   // access the original request
 ```
+
+
+## Decision Data Objects
+
+`DecisionRequest` carries text or structured input, a non-empty `Questions`
+collection, an optional model override, retry policy, request ID, and telemetry
+correlation. Its `toArray()` representation deliberately includes only input,
+questions, and the optional model.
+
+`PendingDecision` is the lazy execution boundary. The first `get()` returns
+typed `Answers`; `response()` returns `DecisionResponse`. Both successful and
+failed terminal results are memoized on that pending handle.
+
+`DecisionResponse` contains typed answers, model, nullable token usage, the
+provider request ID, and normalized `HttpResponse`. There is no partial delta or
+streaming counterpart.
+
+See [Question design](../decision/questions) for request primitives and
+[Response handling](../decision/responses) for typed accessors and probability
+distributions.

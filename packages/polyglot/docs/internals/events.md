@@ -8,7 +8,8 @@ Polyglot uses an event system to provide observability into the internal executi
 
 ## Listening to Events
 
-Both inference and embeddings runtimes expose two ways to listen to events:
+Inference, embeddings, and Decision runtimes expose two ways to listen to
+events:
 
 ### Targeted Listeners
 
@@ -122,6 +123,25 @@ The embeddings lifecycle dispatches a smaller set of events:
 | `EmbeddingsFailed` | On failure | error details |
 
 
+## Decision Events
+
+Decision exposes execution-level and attempt-level event pairs:
+
+| Event | When Dispatched | Key Data |
+|---|---|---|
+| `DecisionStarted` | Beginning of execution | request ID, execution ID, model, driver, and primitive count |
+| `DecisionCompleted` | Successful execution | attempt count, duration, model, driver, and usage |
+| `DecisionFailed` | Terminal failure | attempt count, duration, error type, and status code |
+| `DecisionAttemptStarted` | Beginning of an attempt | attempt ID, number, model, driver, and retry flag |
+| `DecisionAttemptSucceeded` | Successful attempt | attempt ID, number, duration, and usage |
+| `DecisionAttemptFailed` | Failed attempt | attempt ID, number, duration, error type, status, and `willRetry` |
+
+Decision event payloads deliberately omit input state, question instructions,
+criteria, provider bodies, credentials, and exception messages. See
+[Configuration and runtime](../decision/runtime) for telemetry span names and
+runtime composition.
+
+
 ## Practical Examples
 
 ### Logging Token Usage
@@ -184,7 +204,11 @@ $runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event
 
 ## Event Dispatcher
 
-Events are dispatched through an `EventDispatcher` that implements `CanHandleEvents` (which extends `Psr\EventDispatcher\EventDispatcherInterface`). When a runtime is created without an explicit event dispatcher, it creates a default one named `'polyglot.inference.runtime'` or `'polyglot.embeddings.runtime'`.
+Events are dispatched through an `EventDispatcher` that implements
+`CanHandleEvents` (which extends
+`Psr\EventDispatcher\EventDispatcherInterface`). When a runtime is created
+without an explicit dispatcher, it creates a default root named for the
+operation family, including `'polyglot.decision.runtime'` for Decision.
 
 You can inject a shared event dispatcher to correlate events across multiple runtimes or integrate with your application's existing event system:
 
@@ -195,7 +219,9 @@ $events = new EventDispatcher(name: 'my-app');
 $runtime = InferenceRuntime::fromConfig($config, events: $events);
 ```
 
-The same event dispatcher instance can be shared between inference and embeddings runtimes, allowing a single wiretap listener to observe all Polyglot activity.
+The same event dispatcher instance can be shared across inference, embeddings,
+and Decision runtimes, allowing one wiretap listener to observe all Polyglot
+activity.
 
 
 ## Listener Gating
@@ -227,6 +253,7 @@ For a `wiretap()` or `onEvent()` call made on the runtime before the request is 
 | Emitter | Events |
 |---|---|
 | `InferenceExecutionSession` | `InferenceStarted`, `InferenceAttemptStarted`, `InferenceAttemptSucceeded`, `InferenceUsageReported`, `InferenceAttemptFailed`, `InferenceCompleted` |
+| `DecisionLifecycleEmitter` | `DecisionStarted`, `DecisionAttemptStarted`, `DecisionAttemptSucceeded`, `DecisionAttemptFailed`, `DecisionCompleted`, `DecisionFailed` |
 | `BaseInferenceRequestDriver` | `InferenceRequested`, `InferenceResponseCreated`, `InferenceFailed` |
 | `BaseEmbedDriver` | `EmbeddingsRequested`, `EmbeddingsFailed` |
 | `InferenceStream` | `PartialInferenceDeltaCreated` |

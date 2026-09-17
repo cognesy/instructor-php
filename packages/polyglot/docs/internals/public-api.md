@@ -3,7 +3,9 @@ title: Public API
 description: The main classes applications are expected to use.
 ---
 
-Most applications only need a small part of the package. The `Inference` and `Embeddings` facades provide a fluent, immutable interface that handles provider differences behind the scenes.
+Most applications only need a small part of the package. The `Inference`,
+`Embeddings`, and `Decision` facades provide fluent, immutable interfaces that
+hide provider wire differences.
 
 
 ## Inference
@@ -255,6 +257,42 @@ $response->toValuesArray(); // array -- raw float arrays
 ```
 
 
+## Decision
+
+`Decision` evaluates text or structured state against typed questions and
+returns typed answers rather than generated text.
+
+**Namespace:** `Cognesy\Polyglot\Decision\Decision`
+
+```php
+use Cognesy\Polyglot\Decision\Decision;
+
+$decision = Decision::using('typesafe');
+$decision = Decision::fromConfig($decisionConfig);
+$decision = Decision::fromProvider($decisionProvider);
+$decision = Decision::fromRuntime($decisionRuntime);
+```
+
+Its immutable request methods are `withInput()`, `withQuestions()`,
+`withModel()`, `withRetryPolicy()`, `withRequest()`, `withRuntime()`, and the
+combined `with()`. `get()` returns `Answers`; `response()` returns the complete
+`DecisionResponse`; and `create()` returns a lazy `PendingDecision`.
+
+```php
+$answers = $decision
+    ->with(input: $state, questions: $questions)
+    ->get();
+
+$yesProbability = $answers->noul('eligible')->probability();
+$winner = $answers->choice('route')->value();
+$position = $answers->score('priority')->value();
+```
+
+Start with [Structured Decisions](../decision/overview), then use
+[Question design](../decision/questions) and
+[Response handling](../decision/responses) for the complete typed surface.
+
+
 ## Registering Custom Drivers
 
 ### Inference Drivers
@@ -283,5 +321,12 @@ $registry = EmbeddingsDriverRegistry::default()
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
 ```
+
+### Decision Drivers
+
+Custom Decision drivers implement `CanProcessDecisionRequest` and are
+registered through `DecisionDriverRegistry`. See
+[Decision custom drivers](../decision/runtime#custom-drivers) for the constructor
+and factory contracts.
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

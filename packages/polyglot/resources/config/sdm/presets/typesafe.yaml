@@ -1,0 +1,6 @@
+---
+driver: typesafe
+apiUrl: 'https://api.typesafe.ai/v1'
+apiKey: '${TYPESAFE_API_KEY}'
+endpoint: '/systemone'
+model: 'jev-latest'

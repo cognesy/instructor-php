@@ -18,7 +18,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
     // FACTORIES /////////////////////////////////////////////////////////////
 
     public static function new(?LLMConfig $config = null): LLMProvider {
-        return new self(config: $config ?? LLMConfig::fromPreset('openai'));
+        return new self(config: $config ?? LLMConfig::fromDefaultPreset());
     }
 
     public static function using(string $preset, ?string $basePath = null): LLMProvider {

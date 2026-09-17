@@ -4,6 +4,8 @@ description: Unified LLM API — inference, embeddings, request building, stream
 package: polyglot
 ---
 
+<!-- markdownlint-disable MD013 MD025 -->
+
 # Polyglot Package Cheatsheet
 
 Code-verified API reference for `packages/polyglot`.
@@ -13,9 +15,11 @@ Code-verified API reference for `packages/polyglot`.
 ```php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Decision\Decision;
 
 $inference = new Inference();
 $embeddings = new Embeddings();
+$decision = new Decision();
 ```
 
 ## Inference Quick Start
@@ -352,6 +356,69 @@ $provider = EmbeddingsProvider::new()
     ->withConfigOverrides(['model' => 'text-embedding-3-small']);
 ```
 
+## Decision Quick Start
+
+```php
+use Cognesy\Polyglot\Decision\Collections\ChoiceOptions;
+use Cognesy\Polyglot\Decision\Collections\Questions;
+use Cognesy\Polyglot\Decision\Collections\ScoreLevels;
+use Cognesy\Polyglot\Decision\Data\ChoiceOption;
+use Cognesy\Polyglot\Decision\Decision;
+use Cognesy\Polyglot\Decision\Questions\Choice;
+use Cognesy\Polyglot\Decision\Questions\Noul;
+use Cognesy\Polyglot\Decision\Questions\Score;
+
+$questions = Questions::of(
+    new Noul('billing', 'Is this about billing?'),
+    new Choice(
+        id: 'tone',
+        options: ChoiceOptions::of(
+            new ChoiceOption('calm'),
+            new ChoiceOption('frustrated'),
+        ),
+        instructions: 'What is the tone?',
+    ),
+    new Score(
+        id: 'urgency',
+        levels: ScoreLevels::of('low', 'medium', 'high'),
+        instructions: 'How urgent is this?',
+    ),
+);
+
+$answers = Decision::using('typesafe')
+    ->with(input: 'Charged twice; please help today.', questions: $questions)
+    ->get();
+
+$probability = $answers->noul('billing')->probability();
+$tone = $answers->choice('tone')->value();
+$urgency = $answers->score('urgency')->value();
+```
+
+## Decision Runtime and Pending Result
+
+```php
+use Cognesy\Polyglot\Decision\Config\DecisionConfig;
+use Cognesy\Polyglot\Decision\Config\DecisionRetryPolicy;
+use Cognesy\Polyglot\Decision\Data\DecisionRequest;
+use Cognesy\Polyglot\Decision\DecisionRuntime;
+
+$runtime = DecisionRuntime::fromConfig(DecisionConfig::fromPreset('typesafe'));
+$pending = $runtime->create(new DecisionRequest(
+    input: 'Charged twice; please help today.',
+    questions: $questions,
+    retryPolicy: new DecisionRetryPolicy(maxAttempts: 3),
+));
+
+$request = $pending->request();
+$executionId = $pending->executionId();
+$answers = $pending->get();
+$response = $pending->response(); // memoized after get()
+```
+
+Decision defaults to one attempt and has no streaming API. Lifecycle telemetry uses
+`sdm.decision` and `sdm.decision.attempt`. See `docs/decision/overview.md` for
+serialization, structured content, dynamic options, retry ownership, and live testing.
+
 ## Testing
 
 Deterministic test seams:
@@ -365,3 +432,6 @@ Deterministic test seams:
 - `MockHttpDriver`
   - use when transport and provider adapter behavior still matter
   - best for golden tests, request assertions, and provider-specific error-path coverage
+- `POLYGLOT_TYPESAFE_LIVE=1`
+  - opts into the bounded TypeSafe integration smoke
+  - ordinary test runs remain offline

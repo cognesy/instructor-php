@@ -2,9 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings\Config;
 
-use Cognesy\Config\BasePath;
-use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
+use Cognesy\Polyglot\Support\Config\PresetConfigLoader;
 use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 use InvalidArgumentException;
 use Throwable;
@@ -41,15 +40,15 @@ final class EmbeddingsConfig
         __DIR__ . '/../../../resources/config/embed/presets',
     ];
 
+    public static function fromDefaultPreset(): self {
+        $preset = PresetConfigLoader::defaultName('embeddings', self::PRESET_PATHS);
+
+        return self::fromPreset($preset);
+    }
+
     public static function fromPreset(string $preset, ?string $basePath = null): self {
-        $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
-        $resolvedPaths = BasePath::resolveExisting(...$basePaths);
-        if ($resolvedPaths === []) {
-            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: " . implode(', ', $basePaths));
-        }
-        $data = Config::fromPaths(...$resolvedPaths)
-            ->load("{$preset}.yaml")
-            ->toArray();
+        $paths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
+        $data = PresetConfigLoader::load($preset, $paths);
         return self::fromArray($data);
     }
 

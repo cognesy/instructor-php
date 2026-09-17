@@ -1,3 +1,4 @@
+---
 # Navigation order for Polyglot documentation
 order:
   - overview
@@ -9,6 +10,7 @@ order:
   - modes
   - streaming
   - embeddings
+  - decision
   - advanced
   - internals
   - troubleshooting

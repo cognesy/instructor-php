@@ -1,0 +1,97 @@
+---
+title: 'v2.11.0'
+description: Typed structured decisions and TypeSafe connectivity in Polyglot.
+---
+
+v2.11.0 introduces structured decision models as a third Polyglot operation
+family alongside inference and embeddings. Applications can now evaluate text
+or structured state through strictly typed `Noul`, `Choice`, and `Score`
+questions without depending on a provider-specific SDK.
+
+TypeSafe is the first Decision provider. The bundled `typesafe` preset uses the
+`TYPESAFE_API_KEY` environment variable and the `jev-latest` model alias.
+
+## Typed structured decisions
+
+The new `Cognesy\Polyglot\Decision` namespace provides:
+
+- `Decision`, `DecisionProvider`, `DecisionRuntime`, and `PendingDecision`
+- provider-neutral `DecisionRequest` and `DecisionResponse` objects
+- typed `Noul`, `Choice`, and `Score` questions
+- typed answers with validated probability distributions
+- application-owned Choice option IDs and ordered Score levels
+- text, object, or list state through `JsonContent`
+- portable `toArray()` and `fromArray()` payloads
+
+```php
+use Cognesy\Polyglot\Decision\Collections\ChoiceOptions;
+use Cognesy\Polyglot\Decision\Collections\Questions;
+use Cognesy\Polyglot\Decision\Data\ChoiceOption;
+use Cognesy\Polyglot\Decision\Decision;
+use Cognesy\Polyglot\Decision\Questions\Choice;
+
+$questions = Questions::of(
+    new Choice(
+        id: 'route',
+        options: ChoiceOptions::of(
+            new ChoiceOption('billing'),
+            new ChoiceOption('technical'),
+            new ChoiceOption('other'),
+        ),
+        instructions: 'Choose the best support route.',
+    ),
+);
+
+$route = Decision::using('typesafe')
+    ->with(
+        input: 'I was charged twice. Please reverse the duplicate charge.',
+        questions: $questions,
+    )
+    ->get()
+    ->choice('route')
+    ->value();
+```
+
+Decision input does not need to be JSON. Passing a PHP string sends text state;
+`JsonContent::object()` and `JsonContent::list()` preserve structured state when
+named fields or list position matter.
+
+## Runtime, retries, and observability
+
+Decision follows Polyglot's established facade, request, pending handle,
+runtime, driver, and response shape. `create()` is lazy, and one
+`PendingDecision` memoizes both successful responses and terminal failures.
+There is no Decision stream: one execution returns one validated typed result.
+
+Retries are opt-in through `DecisionRetryPolicy`. The Decision execution session
+is the single retry owner, applies bounded backoff and jitter, and honors bounded
+`Retry-After` for retriable provider responses.
+
+The runtime emits execution and attempt lifecycle events and projects them as
+`sdm.decision` and `sdm.decision.attempt` telemetry spans. Default event and
+telemetry payloads omit state, question content, provider bodies, credentials,
+and exception messages.
+
+## TypeSafe adapter and extension points
+
+The TypeSafe driver translates the stable Decision domain to the System One API
+and validates that returned IDs, primitive kinds, Choice winners, Score legends,
+and probability distributions match the original request.
+
+Provider failures are normalized into Decision-specific authentication, invalid
+request, rate-limit, transient, and response exceptions. Custom providers can
+implement `CanProcessDecisionRequest` and register through
+`DecisionDriverRegistry` without changing application-facing request or answer
+types.
+
+## Configuration and documentation
+
+Decision presets live under `config/sdm`. The release also makes bundled
+`default.yaml` discovery consistent for LLM, embeddings, and SDM configuration
+in aggregate and standalone Composer installations.
+
+Polyglot documentation now covers question design, typed response handling,
+configuration, runtime composition, retries, lifecycle events, telemetry,
+errors, testing, and custom drivers. Four executable `B06_Decisions` examples
+demonstrate primitives, dynamic choices, structured state, and explicit runtime
+composition.

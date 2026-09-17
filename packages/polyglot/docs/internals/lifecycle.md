@@ -3,7 +3,9 @@ title: Lifecycle
 description: What happens between building a request and receiving the final response.
 ---
 
-Understanding the request lifecycle helps when debugging provider issues, implementing custom drivers, or hooking into events for observability. This page traces the complete flow for both inference and embeddings operations.
+Understanding the request lifecycle helps when debugging provider issues,
+implementing custom drivers, or hooking into events for observability. This page
+traces inference, embeddings, and structured Decision operations.
 
 
 ## Inference Lifecycle
@@ -193,9 +195,37 @@ $usage = $response->usage();       // InferenceUsage
 Retry logic is handled internally by `PendingEmbeddings` based on the `EmbeddingsRetryPolicy` attached to the request. The retry loop follows the same exponential backoff pattern as inference retries.
 
 
+## Decision Lifecycle
+
+Decision follows the same facade, runtime, request, pending handle, and response
+shape without a streaming branch:
+
+1. `Decision` builds a provider-neutral `DecisionRequest` from input and typed
+   `Questions`.
+2. `create()` returns `PendingDecision` without network I/O.
+3. The first `get()` or `response()` creates a `DecisionExecutionSession` and
+   dispatches `DecisionStarted`.
+4. Each attempt dispatches `DecisionAttemptStarted`, calls
+   `CanProcessDecisionRequest::handle()`, and emits success or failure.
+5. A successful provider response is validated against the original question
+   IDs, primitive types, option IDs, Score levels, and probability invariants.
+6. The session dispatches `DecisionCompleted` and memoizes the typed
+   `DecisionResponse`; a terminal error dispatches `DecisionFailed` and is
+   memoized too.
+
+`DecisionExecutionSession` is the sole retry owner. It applies the request's
+`DecisionRetryPolicy`, including bounded backoff and `Retry-After`, around the
+driver call. Decision has no stream API because the response is one validated
+set of typed answers. See [Configuration and runtime](../decision/runtime) for
+the public composition surface.
+
+
 ## Response Caching
 
-A `PendingInference` executes at most once. Repeat calls to `response()` or `get()` return the result of that execution without another HTTP call, and a repeat call after a failure rethrows the original error rather than retrying.
+`PendingInference` and `PendingDecision` each execute at most once. Repeat calls
+to `response()` or `get()` return the result of that execution without another
+HTTP call, and a repeat call after a failure rethrows the original error rather
+than retrying.
 
 That memoization is unconditional -- it comes from the finalized attempt held on the `InferenceExecution`, not from `ResponseCachePolicy`. `withResponseCachePolicy()` is accepted and carried on the request, but the session's own cache is currently never read, because the finalized-attempt check always answers first. Do not rely on the policy to change single-session behaviour; it does not. Tracked as `instructor-eexl.23`.
 

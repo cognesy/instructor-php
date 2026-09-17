@@ -6,7 +6,9 @@ meta:
     content: false
 ---
 
-Polyglot is a PHP library that provides a unified API for interacting with various Large Language Model (LLM) providers. It serves as the low-level transport and normalization layer for InstructorPHP, but can also be used as a standalone library for direct LLM interactions.
+<!-- markdownlint-disable MD012 MD013 -->
+
+Polyglot is a PHP library that provides unified APIs for inference, embeddings, and structured decision models. It serves as the low-level transport and normalization layer for InstructorPHP, but can also be used as a standalone library.
 
 The core philosophy behind Polyglot is to create a consistent, provider-agnostic interface that abstracts away the differences between LLM APIs while staying close to provider-native request shapes. This enables developers to:
 
@@ -16,10 +18,11 @@ The core philosophy behind Polyglot is to create a consistent, provider-agnostic
 - Fall back to alternative providers if one becomes unavailable
 - Use local models (via Ollama) for development and cloud providers for production
 
-Polyglot has two main entrypoints:
+Polyglot has three main entrypoints:
 
 - `Cognesy\Polyglot\Inference\Inference` for model responses (chat completions)
 - `Cognesy\Polyglot\Embeddings\Embeddings` for vector embeddings
+- `Cognesy\Polyglot\Decision\Decision` for typed `Noul`, `Choice`, and `Score` judgments
 
 In 2.0, Polyglot stays close to provider-native request shapes, supporting:
 
@@ -29,6 +32,7 @@ In 2.0, Polyglot stays close to provider-native request shapes, supporting:
 - Tool calling through `tools` and `toolChoice`
 - Streaming through `withStreaming()` and `stream()`
 - Embeddings through the `Embeddings` facade
+- Structured decisions through the `Decision` facade
 
 Polyglot is a transport and normalization layer. If you need higher-level structured output workflows, fallback prompting, or schema-to-object extraction, use Instructor on top.
 
@@ -39,9 +43,9 @@ Polyglot is a transport and normalization layer. If you need higher-level struct
 
 Polyglot's primary feature is its unified API that works across multiple LLM providers:
 
-- Consistent interface for making inference and embedding requests
+- Consistent facades for inference, embeddings, and structured decisions
 - Common message format across all providers
-- Standardized response handling with `InferenceResponse` and `EmbeddingsResponse`
+- Standardized response handling with operation-specific response objects
 - Unified error handling and retry policies
 
 ### Framework-Agnostic
@@ -107,6 +111,10 @@ Streaming also dispatches events for monitoring, including `StreamFirstChunkRece
 
 The `Embeddings` class is the facade for generating vector embeddings from text inputs. It follows the same fluent builder pattern as `Inference`.
 
+### Structured Decisions
+
+The `Decision` class evaluates text or JSON state against typed `Noul`, `Choice`, and `Score` questions. It returns typed answers and probability distributions rather than generated text. TypeSafe is the first provider; see [Structured Decisions](decision/overview.md) for the domain, runtime, retry, serialization, and telemetry contracts.
+
 Use `Embeddings` when you want vectors from one or more text inputs. The `EmbeddingsResponse` gives you:
 
 - `first()` -- the first embedding vector (useful for single-input requests)
@@ -119,11 +127,11 @@ Use `Embeddings` when you want vectors from one or more text inputs. The `Embedd
 
 ### Presets
 
-The usual entrypoint is `Inference::using('openai')` or `Embeddings::using('openai')`, which loads a named preset configuration.
+The usual entrypoint is `Inference::using('openai')`, `Embeddings::using('openai')`, or `Decision::using('typesafe')`, which loads a named preset configuration.
 
 Preset files are YAML files that define the connection details for a provider. They are loaded from the following locations (searched in order):
 
-- `config/llm/presets` (or `config/embed/presets`) in your application root
+- `config/llm/presets`, `config/embed/presets`, or `config/sdm/presets` in your application root
 - `packages/polyglot/resources/config/llm/presets` within the monorepo
 - `vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/presets` when installed via Composer
 - `vendor/cognesy/instructor-polyglot/resources/config/llm/presets` for standalone installs
@@ -145,7 +153,9 @@ You can override any preset value at runtime using the fluent API -- for example
 
 Each LLM provider is backed by a driver that knows how to format requests and parse responses for that provider's API. Polyglot ships with drivers for all supported providers, and you can register custom drivers when needed.
 
-The `LLMProvider` and `EmbeddingsProvider` classes act as configuration holders that pair a config with an optional explicit driver. They are typically created behind the scenes when you use `Inference::using()` or `Inference::fromConfig()`.
+`LLMProvider`, `EmbeddingsProvider`, and `DecisionProvider` pair operation
+configuration with an optional explicit driver. They are normally created
+behind the corresponding facade.
 
 
 ## What Polyglot Covers
@@ -153,11 +163,12 @@ The `LLMProvider` and `EmbeddingsProvider` classes act as configuration holders 
 - **Provider selection** -- choose any supported provider through presets or programmatic configuration
 - **Request building** -- fluent API for constructing messages, setting models, tools, response formats, and options
 - **Request execution** -- handles HTTP communication with provider APIs
-- **Response normalization** -- unified `InferenceResponse` and `EmbeddingsResponse` regardless of provider
+- **Response normalization** -- stable inference, embeddings, and Decision response objects regardless of provider
 - **Streaming deltas** -- real-time streaming with event-driven processing
-- **Retry policy** -- configurable retry behavior for transient failures via `InferenceRetryPolicy` and `EmbeddingsRetryPolicy`
+- **Retry policy** -- operation-specific retry policies for transient failures
 - **Custom drivers and runtimes** -- extensible architecture for adding new providers or custom execution logic
 - **Response caching** -- configurable cache policy for inference responses
+- **Structured decisions** -- typed Noul, Choice, and Score requests with bounded retry and lifecycle telemetry
 
 ## What It Does Not Try To Hide
 

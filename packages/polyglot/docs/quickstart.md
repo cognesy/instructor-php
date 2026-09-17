@@ -168,3 +168,5 @@ unlock the full power of Polyglot:
   and partial updates.
 - **[Embeddings](embeddings/overview)** -- generate vector embeddings for
   semantic search and RAG.
+- **[Structured Decisions](decision/overview)** -- evaluate text or structured
+  state with typed `Noul`, `Choice`, and `Score` questions.

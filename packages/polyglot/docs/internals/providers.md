@@ -210,7 +210,17 @@ $registry = $registry->withDriver('my-provider', function ($config, $httpClient,
 });
 ```
 
-Both `InferenceDriverRegistry` and `EmbeddingsDriverRegistry` use immutable instance-based registration, so driver registrations can vary per runtime.
+`InferenceDriverRegistry`, `EmbeddingsDriverRegistry`, and
+`DecisionDriverRegistry` use immutable instance-based registration, so driver
+registrations can vary per runtime.
+
+### Decision Driver Registry
+
+The Decision registry currently bundles the `typesafe` driver. Custom drivers
+implement `CanProcessDecisionRequest` and may be registered as a class string
+or a factory receiving `DecisionConfig`, `CanSendHttpRequests`, and the event
+dispatcher. See
+[Decision configuration and runtime](../decision/runtime#custom-drivers).
 
 
 ## Key Contracts
@@ -226,6 +236,8 @@ The provider system is built on a small set of interfaces:
 | `CanAcceptLLMConfig` | Allows setting an `LLMConfig` on a provider |
 | `CanResolveEmbeddingsConfig` | Returns an `EmbeddingsConfig` from a provider |
 | `HasExplicitEmbeddingsDriver` | Optionally returns a pre-built embeddings driver |
+| `CanResolveDecisionConfig` | Returns a `DecisionConfig` from a provider |
+| `HasExplicitDecisionDriver` | Optionally returns a pre-built Decision driver |
 
 ### Driver Contracts
 
@@ -234,6 +246,8 @@ The provider system is built on a small set of interfaces:
 | `CanProcessInferenceRequest` | Main inference driver contract (make responses, stream deltas, report capabilities) |
 | `CanHandleVectorization` | Main embeddings driver contract; returns a normalized `EmbeddingsResponse` |
 | `CanProvideInferenceDrivers` | Registry that creates inference drivers by name |
+| `CanProcessDecisionRequest` | Handles one `DecisionRequest` and returns `DecisionResponse` |
+| `CanProvideDecisionDrivers` | Registry that creates Decision drivers by name |
 
 ### Adapter Contracts
 
@@ -244,6 +258,8 @@ The provider system is built on a small set of interfaces:
 | `CanMapMessages` | Maps typed `Messages` to provider format |
 | `CanMapRequestBody` | Assembles the request body |
 | `CanMapUsage` | Extracts token usage from response data |
+| `DecisionRequestAdapter` | Converts `DecisionRequest` to `HttpRequest` |
+| `DecisionResponseAdapter` | Converts `HttpResponse` to `DecisionResponse` |
 
 The driver contract `CanProcessInferenceRequest` also includes a `capabilities()` method that reports what features a driver supports (e.g., streaming, tool calls, structured output). This can be used to make runtime decisions about which features to use with a given provider:
 

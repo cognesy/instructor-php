@@ -2,6 +2,8 @@
 
 namespace Cognesy\Polyglot\Telemetry;
 
+use Cognesy\Polyglot\Decision\Events\DecisionEvent;
+use Cognesy\Polyglot\Decision\Telemetry\DecisionTelemetryProjector;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsFailed;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsResponseReceived;
@@ -15,9 +17,6 @@ use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Telemetry\Application\Projector\CanProjectTelemetry;
 use Cognesy\Telemetry\Application\Projector\Support\EventData;
 use Cognesy\Telemetry\Application\Telemetry;
-use Cognesy\Telemetry\Domain\Envelope\OperationKind;
-use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelope;
-use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelopeAttributes;
 use Cognesy\Metrics\Data\Counter;
 use Cognesy\Metrics\Data\Histogram;
 use Cognesy\Metrics\Data\Timer;
@@ -27,14 +26,21 @@ use Cognesy\Telemetry\Domain\Value\AttributeBag;
 
 final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 {
+    private DecisionTelemetryProjector $decision;
+    private TelemetryEnvelopeProjector $envelopes;
+
     public function __construct(
         private Telemetry $telemetry,
-    ) {}
+    ) {
+        $this->decision = new DecisionTelemetryProjector($telemetry);
+        $this->envelopes = new TelemetryEnvelopeProjector($telemetry);
+    }
 
     #[\Override]
     public function project(object $event): void
     {
         match (true) {
+            $event instanceof DecisionEvent => $this->decision->project($event),
             $event instanceof InferenceStarted => $this->onInferenceStarted($event),
             $event instanceof InferenceCompleted => $this->onInferenceCompleted($event),
             $event instanceof InferenceFailed => $this->onInferenceFailed($event),
@@ -55,7 +61,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $envelope = EventData::telemetry($data);
 
         if ($envelope !== null) {
-            $this->openEnvelope($envelope, $this->attributes([
+            $this->envelopes->open($envelope, $this->envelopes->attributes([
                 'inference.request.id' => $event->requestId(),
                 'inference.response.model' => $event->model(),
                 'inference.request.is_streamed' => $event->isStreamed(),
@@ -73,7 +79,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $this->telemetry->openRoot(
             key: $executionId,
             name: 'llm.inference',
-            attributes: $this->attributes([
+            attributes: $this->envelopes->attributes([
                 'inference.execution.id' => $executionId,
                 'inference.request.id' => $event->requestId(),
                 'inference.response.model' => $event->model(),
@@ -93,7 +99,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $envelope = EventData::telemetry($data);
 
         if ($envelope !== null) {
-            $this->completeEnvelope($envelope, $this->attributes([
+            $this->envelopes->complete($envelope, $this->envelopes->attributes([
                 'inference.finish_reason' => $event->finishReason(),
                 'inference.attempt_count' => $event->attemptCount(),
                 'inference.duration_ms' => $event->durationMs(),
@@ -108,7 +114,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             return;
         }
 
-        $attributes = $this->attributes([
+        $attributes = $this->envelopes->attributes([
             'inference.finish_reason' => $event->finishReason(),
             'inference.attempt_count' => $event->attemptCount(),
             'inference.duration_ms' => $event->durationMs(),
@@ -131,7 +137,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             null => $this->telemetry->log(
                 key: 'polyglot.inference.failure',
                 name: 'llm.inference.failure',
-                attributes: $this->attributes([
+                attributes: $this->envelopes->attributes([
                     'error.message' => EventData::string($data, 'exception'),
                     'error.context' => EventData::string($data, 'context'),
                     'http.response.status_code' => EventData::int($data, 'statusCode'),
@@ -140,7 +146,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             ),
             default => $this->telemetry->fail(
                 $executionId,
-                $this->attributes([
+                $this->envelopes->attributes([
                     'error.message' => EventData::string($data, 'exception'),
                     'error.context' => EventData::string($data, 'context'),
                     'http.response.status_code' => EventData::int($data, 'statusCode'),
@@ -155,7 +161,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $envelope = EventData::telemetry($data);
 
         if ($envelope !== null) {
-            $this->openEnvelope($envelope, $this->attributes([
+            $this->envelopes->open($envelope, $this->envelopes->attributes([
                 'inference.attempt_number' => $event->attemptNumber,
                 'inference.response.model' => $event->model,
                 'inference.retry' => $event->isRetry(),
@@ -168,7 +174,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             key: $event->attemptId,
             parentKey: $event->executionId,
             name: 'llm.inference.attempt',
-            attributes: $this->attributes([
+            attributes: $this->envelopes->attributes([
                 'inference.execution.id' => $event->executionId,
                 'inference.attempt_number' => $event->attemptNumber,
                 'inference.response.model' => $event->model,
@@ -187,7 +193,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $envelope = EventData::telemetry($data);
 
         if ($envelope !== null) {
-            $this->completeEnvelope($envelope, $this->attributes([
+            $this->envelopes->complete($envelope, $this->envelopes->attributes([
                 'inference.finish_reason' => $event->finishReason(),
                 'inference.duration_ms' => $event->durationMs(),
                 'inference.tokens.total' => $event->totalTokens(),
@@ -201,7 +207,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             return;
         }
 
-        $this->telemetry->complete($attemptId, $this->attributes([
+        $this->telemetry->complete($attemptId, $this->envelopes->attributes([
             'inference.finish_reason' => $event->finishReason(),
             'inference.duration_ms' => $event->durationMs(),
             'inference.tokens.total' => $event->totalTokens(),
@@ -220,7 +226,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $envelope = EventData::telemetry($data);
 
         if ($envelope !== null) {
-            $this->failEnvelope($envelope, $this->attributes([
+            $this->envelopes->fail($envelope, $this->envelopes->attributes([
                 'error.message' => $event->errorMessage(),
                 'http.response.status_code' => $event->httpStatusCode(),
                 'inference.retry' => $event->willRetry(),
@@ -234,7 +240,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             return;
         }
 
-        $this->telemetry->fail($attemptId, $this->attributes([
+        $this->telemetry->fail($attemptId, $this->envelopes->attributes([
             'error.message' => $event->errorMessage(),
             'http.response.status_code' => $event->httpStatusCode(),
             'inference.retry' => $event->willRetry(),
@@ -243,7 +249,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
     private function onInferenceUsageReported(InferenceUsageReported $event): void
     {
-        $attributes = $this->attributes([
+        $attributes = $this->envelopes->attributes([
             MetricNames::TAG_EXECUTION_ID => $event->executionId(),
             'inference.response.model' => $event->model(),
             MetricNames::TAG_USAGE_FINAL => $event->isFinal(),
@@ -267,7 +273,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $this->telemetry->openRoot(
             key: $requestId,
             name: 'inference.embeddings',
-            attributes: $this->attributes([
+            attributes: $this->envelopes->attributes([
                 'inference.request.id' => $requestId,
                 'inference.response.model' => EventData::string($request, 'model'),
                 'inference.input_count' => is_array($request['inputs'] ?? null) ? count($request['inputs']) : null,
@@ -279,7 +285,7 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
     {
         $data = EventData::of($event);
         $model = EventData::string($data, 'model');
-        $attributes = $this->attributes([
+        $attributes = $this->envelopes->attributes([
             'inference.execution.id' => EventData::string($data, 'executionId'),
             'inference.response.model' => $model,
             'inference.vector_count' => EventData::int($data, 'vectorCount'),
@@ -320,18 +326,12 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         $this->telemetry->log(
             key: 'inference.embeddings.failure',
             name: 'inference.embeddings.failure',
-            attributes: $this->attributes([
+            attributes: $this->envelopes->attributes([
                 'error.message' => EventData::string($data, 'exception'),
                 'http.response.status_code' => EventData::int($data, 'statusCode'),
             ]),
             status: ObservationStatus::Error,
         );
-    }
-
-    /** @param array<string, scalar|array<array-key, scalar>|null> $items */
-    private function attributes(array $items): AttributeBag
-    {
-        return AttributeBag::fromArray(array_filter($items, static fn(mixed $value): bool => $value !== null));
     }
 
     private function emitMetric(string $name, ?int $value, AttributeBag $attributes): void
@@ -393,74 +393,4 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         return array_filter($items, static fn(string|int|float|bool|null $value): bool => $value !== null);
     }
 
-    private function openEnvelope(TelemetryEnvelope $envelope, AttributeBag $attributes): void
-    {
-        $operation = $envelope->operation();
-
-        if ($this->telemetry->spanReference($operation->id()) !== null) {
-            return;
-        }
-
-        $correlation = $envelope->correlation();
-        $parentKey = $correlation->parentOperationId() ?? $correlation->rootOperationId();
-        $rootKey = $correlation->rootOperationId();
-        $resolvedParent = match (true) {
-            $this->telemetry->spanReference($parentKey) !== null => $parentKey,
-            $parentKey !== $rootKey && $this->telemetry->spanReference($rootKey) !== null => $rootKey,
-            default => null,
-        };
-
-        match ($operation->kind()) {
-            OperationKind::RootSpan => $this->telemetry->openRoot(
-                key: $operation->id(),
-                name: $operation->name(),
-                context: $envelope->trace(),
-                attributes: $this->envelopeAttributes($envelope)->merge($attributes),
-            ),
-            OperationKind::Span => match ($resolvedParent) {
-                null => $this->telemetry->openRoot(
-                    key: $operation->id(),
-                    name: $operation->name(),
-                    context: $envelope->trace(),
-                    attributes: $this->envelopeAttributes($envelope)->merge($attributes),
-                ),
-                default => $this->telemetry->openChild(
-                    key: $operation->id(),
-                    parentKey: $resolvedParent,
-                    name: $operation->name(),
-                    attributes: $this->envelopeAttributes($envelope)->merge($attributes),
-                ),
-            },
-            OperationKind::Event => match ($resolvedParent) {
-                null => null,
-                default => $this->telemetry->log(
-                    key: $resolvedParent,
-                    name: $operation->name(),
-                    attributes: $this->envelopeAttributes($envelope)->merge($attributes),
-                ),
-            },
-            default => null,
-        };
-    }
-
-    private function completeEnvelope(TelemetryEnvelope $envelope, AttributeBag $attributes): void
-    {
-        $this->telemetry->complete(
-            $envelope->operation()->id(),
-            $this->envelopeAttributes($envelope)->merge($attributes),
-        );
-    }
-
-    private function failEnvelope(TelemetryEnvelope $envelope, AttributeBag $attributes): void
-    {
-        $this->telemetry->fail(
-            $envelope->operation()->id(),
-            $this->envelopeAttributes($envelope)->merge($attributes),
-        );
-    }
-
-    private function envelopeAttributes(TelemetryEnvelope $envelope): AttributeBag
-    {
-        return TelemetryEnvelopeAttributes::fromEnvelope($envelope);
-    }
 }

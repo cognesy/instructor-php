@@ -20,16 +20,22 @@ final class RetryBackoff
         RetryJitter $jitter,
     ): int {
         $attempt = max(1, $attemptNumber);
-        $base = $baseDelayMs * (2 ** ($attempt - 1));
-        $capped = (int) min($base, $maxDelayMs);
-
-        if ($capped <= 0) {
+        if ($baseDelayMs <= 0 || $maxDelayMs <= 0) {
             return 0;
         }
+        $capped = min($baseDelayMs, $maxDelayMs);
+        for ($number = 1; $number < $attempt && $capped < $maxDelayMs; $number++) {
+            if ($capped > intdiv($maxDelayMs, 2)) {
+                $capped = $maxDelayMs;
+                break;
+            }
+            $capped *= 2;
+        }
+        $half = intdiv($capped, 2);
 
         return match ($jitter) {
             RetryJitter::None => $capped,
-            RetryJitter::Equal => (int) ($capped / 2 + random_int(0, intdiv($capped, 2))),
+            RetryJitter::Equal => $half + random_int(0, $half),
             RetryJitter::Full => random_int(0, $capped),
         };
     }

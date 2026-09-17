@@ -217,8 +217,10 @@ $embeddings = Embeddings::fromRuntime($runtime);
 
 ## Sharing an HTTP Client Across Runtimes
 
-If your application uses both inference and embeddings, you can share a single HTTP client
-between them to reuse connection pools and middleware configuration:
+Inference, embeddings, and Decision runtimes can share one HTTP client to reuse
+connection pools and non-retry middleware. Decision owns its operation retry
+loop; do not give Decision an HTTP client with retry middleware around the same
+call.
 
 ```php
 <?php

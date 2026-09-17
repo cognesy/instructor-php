@@ -3,9 +3,10 @@ title: Extending Polyglot
 description: Register custom drivers or build a runtime with your own wiring.
 ---
 
-Polyglot ships with drivers for over 25 LLM providers and several embeddings providers. When
-you need to integrate a provider that is not bundled -- or override the behavior of an existing
-one -- the library exposes clean extension points for both inference and embeddings.
+Polyglot ships with drivers for over 25 LLM providers, several embeddings
+providers, and TypeSafe structured decisions. When you need to integrate a
+provider that is not bundled, each operation family exposes an explicit driver
+extension point.
 
 
 ## Custom Inference Drivers
@@ -337,11 +338,17 @@ The full list is defined in `InferenceDriverRegistry::default()`.
 Bundled embeddings drivers include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`,
 and `ollama`.
 
+The bundled Decision registry currently contains `typesafe`. Decision drivers
+implement `CanProcessDecisionRequest` and are registered through
+`DecisionDriverRegistry`; see
+[Decision configuration and runtime](../decision/runtime#custom-drivers).
+
 
 ## Listening to Events
 
-Both `InferenceRuntime` and `EmbeddingsRuntime` dispatch events at key lifecycle points. You
-can listen for specific events or wiretap all of them:
+`InferenceRuntime`, `EmbeddingsRuntime`, and `DecisionRuntime` dispatch events
+at key lifecycle points. You can listen for specific events or wiretap all of
+them:
 
 ```php
 <?php

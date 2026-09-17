@@ -20,7 +20,10 @@ When you call `Inference::using('openai')`, Polyglot searches for a file named `
 3. `vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/presets/` -- installed via Composer as part of instructor-php
 4. `vendor/cognesy/instructor-polyglot/resources/config/llm/presets/` -- installed via Composer as standalone package
 
-For embeddings, the equivalent paths use `config/embed/presets/` instead of `config/llm/presets/`.
+For embeddings, the equivalent paths use `config/embed/presets/` instead of
+`config/llm/presets/`. Structured Decision presets use `config/sdm/presets/`,
+and `Decision::using('typesafe')` resolves `typesafe.yaml` through the same
+application, monorepo, and Composer-package layouts.
 
 If none of these directories exist, Polyglot throws an `InvalidArgumentException`. To override the search path, pass a `basePath` argument:
 
@@ -57,6 +60,22 @@ The following fields are required or strongly recommended:
 | `maxTokens` | integer | Maximum tokens for the response |
 
 Optional fields include `metadata` (an associative array for provider-specific values like `organization` or `apiVersion`), `queryParams`, and `options`.
+
+A minimal TypeSafe Decision preset contains only the shared connection fields:
+
+```yaml
+driver: typesafe
+apiUrl: 'https://api.typesafe.ai/v1'
+apiKey: '${TYPESAFE_API_KEY}'
+endpoint: /systemone
+model: jev-latest
+```
+
+The default Decision preset name belongs in `config/sdm/default.yaml`:
+
+```yaml
+defaultPreset: typesafe
+```
 
 ## Integer Field Validation
 

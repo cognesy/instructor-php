@@ -18,7 +18,7 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
         ?EmbeddingsConfig $config = null,
     ): self {
         return new self(
-            config: $config ?? EmbeddingsConfig::fromArray([]),
+            config: $config ?? EmbeddingsConfig::fromDefaultPreset(),
         );
     }
 

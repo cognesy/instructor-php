@@ -3,7 +3,9 @@ title: Configuration
 description: The config objects used to build runtimes and presets.
 ---
 
-Polyglot resolves two configuration types -- one for inference and one for embeddings. Both follow the same patterns: they can be loaded from YAML presets, constructed from arrays, or parsed from DSN strings.
+Polyglot has a configuration type for each operation family: `LLMConfig`,
+`EmbeddingsConfig`, and `DecisionConfig`. All can be loaded from YAML presets,
+constructed from arrays, or parsed from DSN strings.
 
 
 ## LLMConfig
@@ -106,7 +108,8 @@ profile. Enumeration is explicit, and runtime never performs network discovery. 
 
 ### Type Coercion
 
-Both config classes automatically coerce numeric string values to integers for fields that expect `int` types. This is useful when loading values from YAML files or environment variables where values may arrive as strings. For `LLMConfig`, the coerced field is `maxTokens`.
+`LLMConfig` and `EmbeddingsConfig` automatically coerce numeric strings to
+integers for integer fields. For `LLMConfig`, the coerced field is `maxTokens`.
 
 
 ## EmbeddingsConfig
@@ -171,6 +174,36 @@ For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs
 > **Note:** The legacy field name `defaultDimensions` is automatically normalized to `dimensions` during config loading.
 
 
+## DecisionConfig
+
+`DecisionConfig` holds the connection and model settings for structured
+decision providers.
+
+**Namespace:** `Cognesy\Polyglot\Decision\Config\DecisionConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `driver` | `string` | Decision driver name; currently `typesafe` is bundled |
+| `apiUrl` | `string` | Provider base URL |
+| `apiKey` | `string` | Authentication key |
+| `endpoint` | `string` | Endpoint path beginning with `/` |
+| `model` | `string` | Default structured decision model |
+
+Decision presets use the `sdm` config group:
+
+```php
+use Cognesy\Polyglot\Decision\Config\DecisionConfig;
+
+$config = DecisionConfig::fromPreset('typesafe');
+$modified = $config->withOverrides(['model' => 'jev-latest']);
+```
+
+Use `DecisionConfig::fromDefaults()` to read `config/sdm/default.yaml` and
+`presetNames()` to enumerate resolvable presets. See
+[Decision configuration and runtime](../decision/runtime) for YAML examples,
+search paths, redacted inspection, and runtime wiring.
+
+
 ## Retry Policies
 
 Retry behavior is configured separately from the provider config, via dedicated policy objects. Retry policies must not be placed inside the `options` array -- Polyglot will throw an `InvalidArgumentException` if you attempt this.
@@ -218,3 +251,23 @@ $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
 ```
+
+### DecisionRetryPolicy
+
+Decision defaults to one attempt. `DecisionRetryPolicy` enables bounded retries
+for configured statuses and transport failures:
+
+```php
+use Cognesy\Polyglot\Decision\Config\DecisionRetryPolicy;
+
+$decision->withRetryPolicy(new DecisionRetryPolicy(
+    maxAttempts: 3,
+    baseDelayMs: 250,
+    maxDelayMs: 4000,
+));
+```
+
+The policy defaults to `408`, `429`, selected `5xx` statuses, `529`, timeout,
+and network failures. It honors bounded `Retry-After` by default. See
+[Decision configuration and runtime](../decision/runtime#retry-policy) for the
+single-owner retry rule.
