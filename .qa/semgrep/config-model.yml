@@ -61,6 +61,8 @@ rules:
         - "/packages/http-client/src/HttpClient.php"
         - "/packages/instructor/src/StructuredOutput.php"
         - "/packages/polyglot/src/Embeddings/Embeddings.php"
+        - "/packages/polyglot/src/Decision/Decision.php"
+        - "/packages/polyglot/src/Decision/DecisionProvider.php"
         - "/packages/polyglot/src/Inference/Inference.php"
         - "/packages/polyglot/src/Inference/LLMProvider.php"
     pattern-regex: "public\\s+static\\s+function\\s+using\\s*\\(\\s*\\??string\\s+\\$[A-Za-z_][A-Za-z0-9_]*"
@@ -91,6 +93,7 @@ rules:
         - "/packages/agents/src/Capability/StructuredOutput/StructuredOutputPolicy.php"
         - "/packages/instructor/src/StructuredOutputRuntime.php"
         - "/packages/polyglot/src/Embeddings/EmbeddingsProvider.php"
+        - "/packages/polyglot/src/Decision/DecisionProvider.php"
         - "/packages/polyglot/src/Inference/Contracts/CanAcceptLLMConfig.php"
         - "/packages/polyglot/src/Inference/LLMProvider.php"
         # Template engine selection is an existing public compatibility seam;

@@ -9,11 +9,11 @@ use Traversable;
 /** @implements IteratorAggregate<int, ExampleMatchRule> */
 final class ExampleMatchRules implements IteratorAggregate
 {
-    /** @var ExampleMatchRule[] */
+    /** @var list<ExampleMatchRule> */
     private array $rules;
 
     /**
-     * @param ExampleMatchRule[] $rules
+     * @param list<ExampleMatchRule> $rules
      */
     private function __construct(array $rules)
     {
@@ -21,11 +21,11 @@ final class ExampleMatchRules implements IteratorAggregate
     }
 
     /**
-     * @param ExampleMatchRule[] $rules
+     * @param array<array-key, ExampleMatchRule> $rules
      */
     public static function fromArray(array $rules): self
     {
-        return new self($rules);
+        return new self(array_values($rules));
     }
 
     public static function empty(): self
@@ -54,7 +54,7 @@ final class ExampleMatchRules implements IteratorAggregate
     }
 
     /**
-     * @return Traversable<ExampleMatchRule>
+     * @return Traversable<int, ExampleMatchRule>
      */
     #[\Override]
     public function getIterator(): Traversable

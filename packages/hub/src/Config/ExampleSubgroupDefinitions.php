@@ -8,11 +8,11 @@ use Traversable;
 /** @implements IteratorAggregate<int, ExampleSubgroupDefinition> */
 final class ExampleSubgroupDefinitions implements IteratorAggregate
 {
-    /** @var ExampleSubgroupDefinition[] */
+    /** @var list<ExampleSubgroupDefinition> */
     private array $subgroups;
 
     /**
-     * @param ExampleSubgroupDefinition[] $subgroups
+     * @param list<ExampleSubgroupDefinition> $subgroups
      */
     private function __construct(array $subgroups)
     {
@@ -20,11 +20,11 @@ final class ExampleSubgroupDefinitions implements IteratorAggregate
     }
 
     /**
-     * @param ExampleSubgroupDefinition[] $subgroups
+     * @param array<array-key, ExampleSubgroupDefinition> $subgroups
      */
     public static function fromArray(array $subgroups): self
     {
-        return new self($subgroups);
+        return new self(array_values($subgroups));
     }
 
     public static function empty(): self
@@ -33,7 +33,7 @@ final class ExampleSubgroupDefinitions implements IteratorAggregate
     }
 
     /**
-     * @return Traversable<ExampleSubgroupDefinition>
+     * @return Traversable<int, ExampleSubgroupDefinition>
      */
     #[\Override]
     public function getIterator(): Traversable

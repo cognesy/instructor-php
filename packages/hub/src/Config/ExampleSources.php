@@ -8,11 +8,11 @@ use Traversable;
 /** @implements IteratorAggregate<int, ExampleSource> */
 final class ExampleSources implements IteratorAggregate
 {
-    /** @var ExampleSource[] */
+    /** @var list<ExampleSource> */
     private array $sources;
 
     /**
-     * @param ExampleSource[] $sources
+     * @param list<ExampleSource> $sources
      */
     private function __construct(array $sources)
     {
@@ -20,11 +20,11 @@ final class ExampleSources implements IteratorAggregate
     }
 
     /**
-     * @param ExampleSource[] $sources
+     * @param array<array-key, ExampleSource> $sources
      */
     public static function fromArray(array $sources): self
     {
-        return new self($sources);
+        return new self(array_values($sources));
     }
 
     public static function legacy(string $path): self
@@ -40,7 +40,7 @@ final class ExampleSources implements IteratorAggregate
     }
 
     /**
-     * @return Traversable<ExampleSource>
+     * @return Traversable<int, ExampleSource>
      */
     #[\Override]
     public function getIterator(): Traversable
@@ -49,7 +49,7 @@ final class ExampleSources implements IteratorAggregate
     }
 
     /**
-     * @return ExampleSource[]
+     * @return list<ExampleSource>
      */
     public function all(): array
     {

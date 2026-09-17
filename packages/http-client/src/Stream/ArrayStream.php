@@ -27,7 +27,7 @@ final class ArrayStream implements StreamInterface
         return new self($chunks);
     }
 
-    /** @return \Traversable<string> */
+    /** @return \Traversable<int, string> */
     #[\Override]
     public function getIterator(): \Traversable {
         $consumedFully = false;
