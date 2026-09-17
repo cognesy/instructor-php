@@ -124,8 +124,9 @@ function polyglotPublicMethodSignaturesOf(string $class): array
 
 function polyglotMethodSignatureString(ReflectionMethod $method): string
 {
-    $params = array_map(static function (ReflectionParameter $p): string {
-        $type = $p->hasType() ? (string) $p->getType() : 'mixed';
+    $declaringClass = $method->getDeclaringClass();
+    $params = array_map(static function (ReflectionParameter $p) use ($declaringClass): string {
+        $type = polyglotCanonicalType($p->getType(), $declaringClass);
         $variadic = $p->isVariadic() ? '...' : '';
         $optional = $p->isOptional() ? '=' : '';
 
@@ -133,9 +134,36 @@ function polyglotMethodSignatureString(ReflectionMethod $method): string
     }, $method->getParameters());
 
     $static = $method->isStatic() ? 'static ' : '';
-    $return = $method->hasReturnType() ? (string) $method->getReturnType() : 'mixed';
+    $return = polyglotCanonicalType($method->getReturnType(), $declaringClass);
 
     return $static.$method->getName().'('.implode(', ', $params).'): '.$return;
+}
+
+function polyglotCanonicalType(?ReflectionType $type, ReflectionClass $declaringClass): string
+{
+    if ($type === null) {
+        return 'mixed';
+    }
+
+    return polyglotCanonicalTypeName((string) $type, $declaringClass);
+}
+
+function polyglotCanonicalTypeName(string $type, ReflectionClass $declaringClass): string
+{
+    $aliases = ['self' => $declaringClass->getName()];
+    $parent = $declaringClass->getParentClass();
+    if ($parent !== false) {
+        $aliases['parent'] = $parent->getName();
+    }
+
+    $canonical = preg_replace_callback(
+        '/(?<![A-Za-z0-9_\\\\])(self|parent)(?![A-Za-z0-9_\\\\])/',
+        static fn (array $matches): string => $aliases[$matches[1]] ?? $matches[1],
+        $type,
+    );
+    assert(is_string($canonical));
+
+    return $canonical;
 }
 
 it('locks the Tier-1 polyglot API surface against the golden fixture', function () {
@@ -188,4 +216,12 @@ it('keeps event FQCNs that examples bind to resolvable', function () {
     foreach (POLYGLOT_TIER1_EVENT_FQCNS as $fqcn) {
         expect(class_exists($fqcn))->toBeTrue("Event FQCN no longer resolves: {$fqcn}");
     }
+});
+
+it('normalizes scope-relative API types independently of PHP reflection rendering', function () {
+    $class = new ReflectionClass(Decision::class);
+
+    expect(polyglotCanonicalTypeName('self', $class))->toBe(Decision::class)
+        ->and(polyglotCanonicalTypeName('?self', $class))->toBe('?'.Decision::class)
+        ->and(polyglotCanonicalTypeName('self|static', $class))->toBe(Decision::class.'|static');
 });
