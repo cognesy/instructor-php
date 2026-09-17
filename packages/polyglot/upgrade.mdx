@@ -43,7 +43,7 @@ $reasoning = ModelCatalog::discover()
     ->find($driver, $model)
     ->capabilities
     ->reasoning;
-// @doctest id="a789"
+// @doctest id="d25e"
 ```
 
 Typed reasoning does not require a catalog merely to be requested. Missing or unknown facts make no
@@ -71,7 +71,7 @@ extends `BaseInferenceRequestDriver`:
 
 ```php
 final class MyDriver extends BaseInferenceRequestDriver { /* override one method */ }
-// @doctest id="19a4"
+// @doctest id="b883"
 ```
 
 `LLMConfig::fromArray()` hydrates the fields owned by `LLMConfig` and ignores unrelated input
@@ -118,7 +118,7 @@ $registry = InferenceDriverRegistry::default()->withDriver(
         driverClass: MyDriver::class,
     ),
 );
-// @doctest id="0eeb"
+// @doctest id="0167"
 ```
 
 If you only changed the wire format, no subclass is needed — pass your own `bodyFormat`,
@@ -170,7 +170,7 @@ updated together with the v2.7 package upgrade.
 - public function handle(EmbeddingsRequest $request): HttpResponse;
 - public function fromData(array $data): ?EmbeddingsResponse;
 + public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
-// @doctest id="7779"
+// @doctest id="b442"
 ```
 
 Move HTTP response decoding and adaptation into `handle()`. The separate `fromData()` method
@@ -209,7 +209,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="1d47"
+// @doctest id="b63f"
 ```
 
 ## After
@@ -225,7 +225,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('Return JSON.'))
     ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="f810"
+// @doctest id="cfc1"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.

@@ -13,7 +13,7 @@ $builder = AgentCtrl::codex();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::Codex);
-// @doctest id="6bbf"
+// @doctest id="e0d2"
 ```
 
 ## Basic Usage
@@ -25,7 +25,7 @@ $response = AgentCtrl::codex()
     ->execute('Summarize the test suite in this repository.');
 
 echo $response->text();
-// @doctest id="03a2"
+// @doctest id="4652"
 ```
 
 With model and sandbox configuration:
@@ -40,7 +40,7 @@ $response = AgentCtrl::codex()
     ->execute('Write tests for the UserService class.');
 
 echo $response->text();
-// @doctest id="d72b"
+// @doctest id="2eed"
 ```
 
 ## Sandbox Modes
@@ -49,7 +49,7 @@ Codex provides three sandbox modes that control what filesystem and network acce
 
 ```php
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
-// @doctest id="83fb"
+// @doctest id="765c"
 ```
 
 | Mode | Filesystem | Network | CLI Value | Use Case |
@@ -73,7 +73,7 @@ $response = AgentCtrl::codex()
 $response = AgentCtrl::codex()
     ->withSandbox(SandboxMode::DangerFullAccess)
     ->execute('Install a dependency and update the code to use it.');
-// @doctest id="237d"
+// @doctest id="ecec"
 ```
 
 ### Disabling the Sandbox
@@ -84,7 +84,7 @@ The `disableSandbox()` method is a shorthand for `withSandbox(SandboxMode::Dange
 $response = AgentCtrl::codex()
     ->disableSandbox()
     ->execute('Run the full test suite and report results.');
-// @doctest id="0a0b"
+// @doctest id="07c5"
 ```
 
 ## Approval Modes
@@ -99,7 +99,7 @@ Codex supports two approval configuration methods that control how the agent han
 $response = AgentCtrl::codex()
     ->approveForMe()
     ->execute('Implement the feature described in SPEC.md.');
-// @doctest id="8538"
+// @doctest id="4ee7"
 ```
 
 Explicit sandbox selection, automatic approval, and dangerous bypass are mutually exclusive modes. Calling one of their builder methods selects it and clears the other modes.
@@ -110,7 +110,7 @@ Disable it when you want more conservative behavior:
 $response = AgentCtrl::codex()
     ->approveForMe(false)
     ->execute('Analyze the codebase structure.');
-// @doctest id="1eb1"
+// @doctest id="6221"
 ```
 
 ### Dangerous Bypass
@@ -121,7 +121,7 @@ $response = AgentCtrl::codex()
 $response = AgentCtrl::codex()
     ->dangerouslyBypass()
     ->execute('Deploy the application to staging.');
-// @doctest id="55fd"
+// @doctest id="d296"
 ```
 
 > **Warning:** This mode disables all safety guardrails. The agent can execute arbitrary commands, modify any file, and access the network without restriction.
@@ -135,7 +135,7 @@ $response = AgentCtrl::codex()
     ->skipGitRepoCheck()
     ->inDirectory('/tmp/workspace')
     ->execute('Create a new project skeleton.');
-// @doctest id="28a8"
+// @doctest id="0519"
 ```
 
 ## Image Input
@@ -146,7 +146,7 @@ Codex supports image attachments, allowing the agent to analyze visual content a
 $response = AgentCtrl::codex()
     ->withImages(['/tmp/mockup.png'])
     ->execute('Implement the UI component shown in the mockup.');
-// @doctest id="de82"
+// @doctest id="b9e8"
 ```
 
 Multiple images can be attached:
@@ -158,7 +158,7 @@ $response = AgentCtrl::codex()
         '/tmp/target-design.png',
     ])
     ->execute('Compare the current UI with the target design and list the differences.');
-// @doctest id="26ed"
+// @doctest id="b378"
 ```
 
 Each path must point to an existing image file on the local filesystem.
@@ -172,7 +172,7 @@ $response = AgentCtrl::codex()
     ->inDirectory('/projects/my-app')
     ->withAdditionalDirs(['/shared/assets', '/configs'])
     ->execute('Update the shared configuration files.');
-// @doctest id="9cab"
+// @doctest id="9ddb"
 ```
 
 ## Streaming with Codex
@@ -188,7 +188,7 @@ $response = AgentCtrl::codex()
     ->onToolUse(fn(string $tool, array $input, ?string $output) => print("\n> [{$tool}]\n"))
     ->onError(fn(string $message, ?string $code) => print("\nError [{$code}]: {$message}\n"))
     ->executeStreaming('Explain the test framework used in this project.');
-// @doctest id="1405"
+// @doctest id="cc5e"
 ```
 
 ### Tool Call Normalization
@@ -224,7 +224,7 @@ foreach ($response->toolCalls as $tc) {
         echo "Searched: {$tc->input['query']}\n";
     }
 }
-// @doctest id="8376"
+// @doctest id="7279"
 ```
 
 ## Session Management
@@ -247,7 +247,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Continue from where we left off.');
 }
-// @doctest id="a342"
+// @doctest id="9fe3"
 ```
 
 ## Data Availability
@@ -275,7 +275,7 @@ if ($usage !== null) {
     echo "Cache read: " . ($usage->cacheRead ?? 'N/A') . "\n";
     echo "Total: {$usage->total()}\n";
 }
-// @doctest id="f047"
+// @doctest id="629d"
 ```
 
 ## Complete Example
@@ -322,5 +322,5 @@ if ($response->isSuccess()) {
 } else {
     echo "\n\nTask failed with exit code: {$response->exitCode}\n";
 }
-// @doctest id="880f"
+// @doctest id="69be"
 ```

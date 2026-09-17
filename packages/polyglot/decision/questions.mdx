@@ -7,7 +7,7 @@ Input does not have to be JSON. A string is valid and is wrapped as text automat
 ```php
 $decision = Decision::using('typesafe')
     ->withInput('The customer was charged twice and needs a refund.');
-// @doctest id="fa62"
+// @doctest id="8b5a"
 ```
 
 Use `JsonContent` when field names add useful context:
@@ -19,7 +19,7 @@ $state = JsonContent::object([
     'message' => 'Please reverse the duplicate charge.',
     'account' => ['plan' => 'pro', 'charge_count' => 2],
 ]);
-// @doctest id="a5c6"
+// @doctest id="1f48"
 ```
 
 `JsonContent::text()`, `object()`, `list()`, `from()`, and `fromJson()` preserve the root kind. The same value type is accepted for question instructions, option descriptions, criteria descriptions, and Score levels.
@@ -40,7 +40,7 @@ $question = new Noul(
         false: 'No settled charge needs reversal.',
     ),
 );
-// @doctest id="e3db"
+// @doctest id="02e4"
 ```
 
 A result near `1` supports yes, a result near `0` supports no, and a result near `0.5` is uncertain. Noul intentionally has no separate confidence field: the probability is the result.
@@ -63,7 +63,7 @@ $question = new Choice(
     ),
     instructions: 'Choose the best support route.',
 );
-// @doctest id="e684"
+// @doctest id="3ee2"
 ```
 
 The provider must choose from this closed set. Add an explicit `other`, `unknown`, or `not_applicable` option when the named choices are not exhaustive. Choice requires at least one option, and option IDs must be unique.
@@ -78,7 +78,7 @@ $options = ChoiceOptions::of(...array_map(
     ),
     $availableRoutes,
 ));
-// @doctest id="16b4"
+// @doctest id="e89a"
 ```
 
 ## Score: position across ordered levels
@@ -98,7 +98,7 @@ $question = new Score(
     ),
     instructions: 'Assess the required response urgency.',
 );
-// @doctest id="b5a6"
+// @doctest id="902e"
 ```
 
 The result is the probability-weighted position across those indexes, so it may be fractional. For example, `1.4` lies between the second and third supplied levels; it is not an arbitrary rating on a hidden scale. Make adjacent levels concrete, distinct, and independently understandable.
@@ -111,7 +111,7 @@ Use `Questions::of()` to evaluate several independent judgments over the same st
 use Cognesy\Polyglot\Decision\Collections\Questions;
 
 $questions = Questions::of($refundQuestion, $routeQuestion, $urgencyQuestion);
-// @doctest id="99ab"
+// @doctest id="f7b5"
 ```
 
 Question IDs must be unique. An executable `DecisionRequest` requires at least one question. Use `Questions::question($id)` to inspect a definition and `all()`, `count()`, or `toArray()` when building tooling around a collection.
@@ -125,7 +125,7 @@ Every question and collection supports `toArray()`. `Questions::fromArray()` rec
 ```php
 $payload = $questions->toArray();
 $restored = Questions::fromArray($payload);
-// @doctest id="66cb"
+// @doctest id="acd6"
 ```
 
 Unknown fields, unknown question types, duplicate IDs, invalid probabilities, empty option sets, and invalid level sets fail early with `InvalidArgumentException` instead of being forwarded as ambiguous provider input.

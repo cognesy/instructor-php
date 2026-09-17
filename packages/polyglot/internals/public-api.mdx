@@ -27,14 +27,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="8c7c"
+// @doctest id="659a"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="e25d"
+// @doctest id="7497"
 ```
 
 ### Building a Request
@@ -49,7 +49,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
 $response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
-// @doctest id="ef9a"
+// @doctest id="8811"
 ```
 
 Available request methods:
@@ -96,7 +96,7 @@ $json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCal
 
 // Stream the response
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
-// @doctest id="1b9c"
+// @doctest id="5cb3"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -108,7 +108,7 @@ $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 $message = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="7087"
+// @doctest id="5fba"
 ```
 
 ### Working with Responses
@@ -136,7 +136,7 @@ $response->hasFinishReason();
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="5cd2"
+// @doctest id="d45b"
 ```
 
 ### Working with Streams
@@ -171,7 +171,7 @@ $nonEmpty = $stream->filter(fn($d) => !$d->messageChunks->isEmpty());
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="cdd2"
+// @doctest id="7084"
 ```
 
 
@@ -197,7 +197,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="7f05"
+// @doctest id="cd8e"
 ```
 
 ### Building a Request
@@ -207,7 +207,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="3b9e"
+// @doctest id="bb52"
 ```
 
 Available request methods:
@@ -233,7 +233,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="11d4"
+// @doctest id="2628"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -241,7 +241,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="f14b"
+// @doctest id="314d"
 ```
 
 ### Working with Responses
@@ -260,7 +260,7 @@ $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="5eda"
+// @doctest id="9bb7"
 ```
 
 
@@ -278,7 +278,7 @@ $decision = Decision::using('typesafe');
 $decision = Decision::fromConfig($decisionConfig);
 $decision = Decision::fromProvider($decisionProvider);
 $decision = Decision::fromRuntime($decisionRuntime);
-// @doctest id="90a7"
+// @doctest id="4818"
 ```
 
 Its immutable request methods are `withInput()`, `withQuestions()`,
@@ -294,7 +294,7 @@ $answers = $decision
 $yesProbability = $answers->noul('eligible')->probability();
 $winner = $answers->choice('route')->value();
 $position = $answers->score('priority')->value();
-// @doctest id="8a11"
+// @doctest id="7b18"
 ```
 
 Start with [Structured Decisions](../decision/overview), then use
@@ -315,7 +315,7 @@ $registry = InferenceDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="919d"
+// @doctest id="bb26"
 ```
 
 ### Embeddings Drivers
@@ -330,7 +330,7 @@ $registry = EmbeddingsDriverRegistry::default()
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="7102"
+// @doctest id="42c5"
 ```
 
 ### Decision Drivers

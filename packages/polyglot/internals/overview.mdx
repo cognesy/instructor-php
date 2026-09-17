@@ -113,7 +113,7 @@ family owns live?" rather than one of two competing conventions.
 +-----------------------------------------------------------------+
 |                      HTTP Client (shared)                       |
 +-----------------------------------------------------------------+
-// @doctest id="520b"
+// @doctest id="691c"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.
