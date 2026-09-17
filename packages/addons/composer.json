@@ -28,17 +28,17 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-contracts": "^2.10",
-    "cognesy/instructor-events": "^2.10",
+    "cognesy/instructor-contracts": "^2.11",
+    "cognesy/instructor-events": "^2.11",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-dynamic": "^2.10",
-    "cognesy/instructor-messages": "^2.10",
-    "cognesy/instructor-polyglot": "^2.10",
-    "cognesy/instructor-sandbox": "^2.10",
-    "cognesy/instructor-schema": "^2.10",
-    "cognesy/instructor-struct": "^2.10",
-    "cognesy/instructor-utils": "^2.10"
+    "cognesy/instructor-dynamic": "^2.11",
+    "cognesy/instructor-messages": "^2.11",
+    "cognesy/instructor-polyglot": "^2.11",
+    "cognesy/instructor-sandbox": "^2.11",
+    "cognesy/instructor-schema": "^2.11",
+    "cognesy/instructor-struct": "^2.11",
+    "cognesy/instructor-utils": "^2.11"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

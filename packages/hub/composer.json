@@ -25,10 +25,10 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-config": "^2.10",
-    "cognesy/instructor-struct": "^2.10",
-    "cognesy/instructor-auxiliary": "^2.10",
-    "cognesy/instructor-utils": "^2.10",
+    "cognesy/instructor-config": "^2.11",
+    "cognesy/instructor-struct": "^2.11",
+    "cognesy/instructor-auxiliary": "^2.11",
+    "cognesy/instructor-utils": "^2.11",
     "composer-runtime-api": "^2.0"
   },
   "require-dev": {
