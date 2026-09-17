@@ -16,7 +16,10 @@ final class PendingDecision
 {
     private readonly DecisionExecutionSession $session;
 
-    /** @param (callable():int)|null $unixTimeReader */
+    /**
+     * @param (callable():int)|null $unixTimeReader
+     * @param (callable():int)|null $monotonicNanoReader
+     */
     public function __construct(
         DecisionRequest $request,
         CanProcessDecisionRequest $driver,

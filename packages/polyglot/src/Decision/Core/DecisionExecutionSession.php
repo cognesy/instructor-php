@@ -22,6 +22,7 @@ final class DecisionExecutionSession
 
     private readonly DecisionRetryPolicy $retryPolicy;
 
+    /** @var Closure():int */
     private readonly Closure $unixTimeReader;
 
     private readonly DecisionLifecycleEmitter $lifecycle;
@@ -34,7 +35,10 @@ final class DecisionExecutionSession
 
     private ?Throwable $terminalError = null;
 
-    /** @param (callable():int)|null $unixTimeReader */
+    /**
+     * @param (callable():int)|null $unixTimeReader
+     * @param (callable():int)|null $monotonicNanoReader
+     */
     public function __construct(
         private readonly DecisionRequest $request,
         private readonly CanProcessDecisionRequest $driver,

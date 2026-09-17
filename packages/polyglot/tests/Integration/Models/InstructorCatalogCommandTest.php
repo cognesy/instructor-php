@@ -42,6 +42,7 @@ it('builds deterministic readable records and removes obsolete output', function
         $firstBuild = catalogCommandArtifact($directory);
 
         expect(fileperms($record) & 0777)->toBe(0644)
+            ->and(file_get_contents($record))->toContain('- requested: low')
             ->and(runCatalogCommand($directory, 'build')->isSuccessful())->toBeTrue()
             ->and(catalogCommandArtifact($directory))->toBe($firstBuild)
             ->and(runCatalogCommand($directory, 'check')->isSuccessful())->toBeTrue()
@@ -101,7 +102,13 @@ function catalogCommandFixture(): string
             'status' => 'supported',
             'limits' => ['contextWindow' => 100, 'maxOutput' => 10],
             'modalities' => ['inputText' => 'supported', 'outputText' => 'supported'],
-            'capabilities' => ['tools' => 'supported'],
+            'capabilities' => [
+                'tools' => 'supported',
+                'reasoning' => [
+                    'selections' => ['effort'],
+                    'efforts' => [['requested' => 'low', 'provider' => 'low']],
+                ],
+            ],
             'source' => 'fixture',
         ]],
     ]);

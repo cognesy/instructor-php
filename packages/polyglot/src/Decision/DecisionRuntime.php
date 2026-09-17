@@ -26,13 +26,18 @@ final class DecisionRuntime implements CanCreateDecision
 {
     private readonly CanDelayRetries $retryDelay;
 
+    /** @var Closure():int */
     private readonly Closure $unixTimeReader;
 
     private readonly string $driverName;
 
+    /** @var (Closure():int)|null */
     private readonly ?Closure $monotonicNanoReader;
 
-    /** @param (callable():int)|null $unixTimeReader */
+    /**
+     * @param (callable():int)|null $unixTimeReader
+     * @param (callable():int)|null $monotonicNanoReader
+     */
     public function __construct(
         private readonly CanProcessDecisionRequest $driver,
         private readonly CanHandleEvents $events,
@@ -71,6 +76,7 @@ final class DecisionRuntime implements CanCreateDecision
         );
     }
 
+    /** @param (callable():int)|null $unixTimeReader */
     public static function fromConfig(
         DecisionConfig $config,
         ?CanHandleEvents $events = null,
@@ -92,6 +98,7 @@ final class DecisionRuntime implements CanCreateDecision
         );
     }
 
+    /** @param (callable():int)|null $unixTimeReader */
     public static function fromProvider(
         DecisionProvider $provider,
         ?CanHandleEvents $events = null,
@@ -126,6 +133,7 @@ final class DecisionRuntime implements CanCreateDecision
         return $this;
     }
 
+    /** @param (callable():int)|null $unixTimeReader */
     private static function fromResolver(
         CanResolveDecisionConfig $resolver,
         ?CanHandleEvents $events,

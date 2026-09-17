@@ -116,7 +116,7 @@ function catalogRecordFiles(ModelCatalog $catalog): array {
             'schemaVersion' => 1,
             'version' => $profile->catalogVersion,
             'profile' => $profile->toArray(),
-        ], 12, 2);
+        ], 12, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
     }
     ksort($files, SORT_STRING);
 

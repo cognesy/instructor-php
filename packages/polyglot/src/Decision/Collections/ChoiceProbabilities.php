@@ -9,7 +9,7 @@ use InvalidArgumentException;
 
 final readonly class ChoiceProbabilities
 {
-    /** @var list<array{id: string, probability: float}> */
+    /** @var non-empty-list<array{id: string, probability: float}> */
     private array $probabilities;
 
     /** @var array<string, float> */
@@ -18,6 +18,9 @@ final readonly class ChoiceProbabilities
     /** @param list<array{id: string, probability: float}> $probabilities */
     private function __construct(array $probabilities)
     {
+        if ($probabilities === []) {
+            throw new InvalidArgumentException('Choice probabilities must not be empty.');
+        }
         $byId = [];
         foreach ($probabilities as $entry) {
             $key = self::key($entry['id']);
@@ -34,13 +37,13 @@ final readonly class ChoiceProbabilities
     /** @param array{0: string, 1: int|float} ...$probabilities */
     public static function of(array ...$probabilities): self
     {
-        return new self(array_map(
+        return new self(array_values(array_map(
             static fn (array $entry): array => [
                 'id' => DecisionData::nonEmptyString($entry[0] ?? null, 'Choice probability ID'),
                 'probability' => DecisionData::probability($entry[1] ?? null, 'Choice probability'),
             ],
             $probabilities,
-        ));
+        )));
     }
 
     public static function fromArray(array $data): self
@@ -87,7 +90,12 @@ final readonly class ChoiceProbabilities
 
     public function highest(): float
     {
-        return max($this->byId);
+        $highest = $this->probabilities[0]['probability'];
+        foreach ($this->probabilities as $entry) {
+            $highest = max($highest, $entry['probability']);
+        }
+
+        return $highest;
     }
 
     public function toArray(): array

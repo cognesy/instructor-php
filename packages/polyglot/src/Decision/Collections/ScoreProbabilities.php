@@ -12,21 +12,22 @@ final readonly class ScoreProbabilities
     /** @var list<float> */
     private array $probabilities;
 
-    private function __construct(float ...$probabilities)
+    /** @param list<float> $probabilities */
+    private function __construct(array $probabilities)
     {
         if (count($probabilities) < 2) {
             throw new InvalidArgumentException('Score probabilities require at least two levels.');
         }
         DecisionData::assertProbabilityDistribution($probabilities, 'Score probabilities');
-        $this->probabilities = array_values($probabilities);
+        $this->probabilities = $probabilities;
     }
 
     public static function of(float ...$probabilities): self
     {
-        return new self(...array_map(
+        return new self(array_values(array_map(
             static fn (float $probability): float => DecisionData::probability($probability, 'Score probability'),
             $probabilities,
-        ));
+        )));
     }
 
     public static function fromArray(array $data): self
@@ -35,7 +36,7 @@ final readonly class ScoreProbabilities
             throw new InvalidArgumentException('Score probabilities must be a list.');
         }
 
-        return new self(...array_map(
+        return new self(array_map(
             static fn (mixed $probability): float => DecisionData::probability($probability, 'Score probability'),
             $data,
         ));

@@ -29,7 +29,7 @@ final readonly class TypesafeDriver implements CanProcessDecisionRequest
     public function __construct(
         private DecisionConfig $config,
         private CanSendHttpRequests $httpClient,
-        private EventDispatcherInterface $events,
+        EventDispatcherInterface $events,
         ?DecisionRequestAdapter $requestAdapter = null,
         ?DecisionResponseAdapter $responseAdapter = null,
     ) {
