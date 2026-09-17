@@ -8,11 +8,13 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * Strips YAML frontmatter from all files in a directory.
+ * Strips source-only metadata from generated MDX files.
  *
  * MDX (used by Mintlify) does not support YAML frontmatter delimited by `---`.
  * Source markdown files may contain frontmatter for MkDocs or other tooling,
  * so this class removes it after files are copied into the build directory.
+ * Markdownlint directives are HTML comments, which MDX treats as malformed
+ * JSX, so those directives are removed from build output as well.
  */
 class FrontmatterStripper
 {
@@ -65,27 +67,27 @@ class FrontmatterStripper
     }
 
     /**
-     * Remove YAML frontmatter from content string.
+     * Remove YAML frontmatter and markdownlint directives from content.
      *
      * Frontmatter is defined as content between opening `---` (at start of file)
      * and closing `---`, optionally preceded by whitespace/newlines.
      */
     public function stripContent(string $content): string
     {
-        // Must start with --- (possibly after BOM or whitespace)
-        if (!preg_match('/\A\s*---\s*\n/', $content)) {
-            return $content;
+        $stripped = $content;
+        if (preg_match('/\A\s*---\s*\n/', $content)) {
+            $withoutLeading = preg_replace('/\A\s*/', '', $content) ?? $content;
+            $endPos = strpos($withoutLeading, "\n---", 3);
+            if ($endPos !== false) {
+                $afterFrontmatter = substr($withoutLeading, $endPos + 4);
+                $stripped = ltrim($afterFrontmatter, "\r\n");
+            }
         }
 
-        // Find closing ---
-        $withoutLeading = preg_replace('/\A\s*/', '', $content) ?? $content;
-        $endPos = strpos($withoutLeading, "\n---", 3);
-        if ($endPos === false) {
-            return $content;
-        }
-
-        // Skip past the closing --- and any trailing newline
-        $afterFrontmatter = substr($withoutLeading, $endPos + 4);
-        return ltrim($afterFrontmatter, "\r\n");
+        return preg_replace(
+            '/^[ \t]*<!--\s*markdownlint-(?:disable|enable)\b[^\r\n]*-->[ \t]*(?:\R[ \t]*)*/m',
+            '',
+            $stripped,
+        ) ?? $stripped;
     }
 }
