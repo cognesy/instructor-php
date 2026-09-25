@@ -5,5 +5,3 @@ endpoint: /embeddings
 metadata:
   organization: ''
 model: text-embedding-3-small
-dimensions: 1536
-maxInputs: 2048

@@ -113,7 +113,7 @@ The `Embeddings` class is the facade for generating vector embeddings from text 
 
 ### Structured Decisions
 
-The `Decision` class evaluates text or JSON state against typed `Noul`, `Choice`, and `Score` questions. It returns typed answers and probability distributions rather than generated text. TypeSafe is the first provider; see [Structured Decisions](decision/overview.md) for the domain, runtime, retry, serialization, and telemetry contracts.
+The `Decision` class evaluates text or JSON state against typed `Noul`, `Choice`, and `Score` questions. It returns typed answers and probability distributions rather than generated text. Bundled backends include TypeSafe, classifier.dev, self-hosted Jeff, and Laya through a separately deployed Typed Decision Lab service; see [Structured Decisions](decision/overview.md) for the domain, runtime, retry, serialization, and telemetry contracts.
 
 Use `Embeddings` when you want vectors from one or more text inputs. The `EmbeddingsResponse` gives you:
 
@@ -127,7 +127,7 @@ Use `Embeddings` when you want vectors from one or more text inputs. The `Embedd
 
 ### Presets
 
-The usual entrypoint is `Inference::using('openai')`, `Embeddings::using('openai')`, or `Decision::using('typesafe')`, which loads a named preset configuration.
+The usual entrypoint is `Inference::using('openai')`, `Embeddings::using('openai')`, or a Decision preset such as `Decision::using('typesafe')`, `Decision::using('classifier-dev')`, `Decision::using('jeff')`, or `Decision::using('laya')`.
 
 Preset files are YAML files that define the connection details for a provider. They are loaded from the following locations (searched in order):
 

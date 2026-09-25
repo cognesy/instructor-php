@@ -1,0 +1,13 @@
+# Sources reviewed 2026-09-20:
+# https://github.com/logan-markewich/jeff
+# Native Score semantics require JEFF_TEMPERATURE=1. Deployments using the
+# upstream default temperature must override score support to unsupported.
+schemaVersion: 1
+version: '2026-09-20'
+profile:
+  driver: jeff
+  model: gliformer-large-v1
+  capabilities:
+    choice: native
+    noul: native
+    score: native

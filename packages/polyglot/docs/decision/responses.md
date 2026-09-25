@@ -25,7 +25,10 @@ $urgency = $answers->score('urgency')->value();
 
 ### NoulAnswer
 
-`NoulAnswer::probability()` is the probability of yes. There is no separate confidence property. Treat values near `0.5` as uncertainty and choose application thresholds based on the cost of false positives and false negatives.
+`NoulAnswer::probability()` is the probability of yes. `confidence()` derives the
+winning-side confidence as `max(p, 1 - p)`; it is not stored as a second source of
+truth. Treat values near `0.5` as uncertainty and choose application thresholds
+based on the cost of false positives and false negatives.
 
 ### ChoiceAnswer
 
@@ -55,6 +58,22 @@ $levelTwoDescription = $answer->legend()->at(2)->value();
 
 `value()` is the probability-weighted index across the ordered levels and therefore may be fractional. `probabilities()` is indexed from `0`; `legend()` preserves the corresponding level definitions. Polyglot validates that the distribution, expected value, and legend agree with the original question.
 
+## Inspect optional model signals
+
+Every answer exposes `signals()`. A provider such as Laya can attach a typed
+`modelActionProbability()` without forcing application code to parse its raw
+response:
+
+```php
+$actionProbability = $answers->choice('route')
+    ->signals()
+    ->modelActionProbability(); // ?float
+```
+
+The signal is omitted from serialized answers when absent. It is a model output,
+not authorization or permission to perform an action; application policy remains
+responsible for deciding whether any action is allowed.
+
 ## Use the response envelope
 
 ```php
@@ -70,6 +89,12 @@ $httpResponse = $response->responseData();
 ```
 
 Token counts are nullable because a provider may omit usage. `totalTokens()` is available only when both input and output counts are present. `responseData()` exposes the underlying normalized HTTP response for diagnostics; keep business logic on typed answers instead of provider bodies.
+
+For an estimate, look up the exact returned model in
+`Decision\Models\ModelCatalog` and pass its optional pricing plus this usage to
+`Decision\Pricing\FlatRateCostCalculator`. The calculator returns `null` when
+required paid usage is unknown; an explicitly zero-priced category does not
+require a count.
 
 ## Lazy and memoized execution
 

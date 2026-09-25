@@ -12,14 +12,14 @@ it('maps EmbeddingsRequest to Gemini embeddings HttpRequest correctly', function
         endpoint: '/{model}:batchEmbedContents',
         model: 'models/gemini-embedding-001',
         driver: 'gemini',
-        maxInputs: 10,
     );
     $adapter = new GeminiRequestAdapter($config, new GeminiBodyFormat($config));
 
-    $req = new EmbeddingsRequest(input: ['hello'], model: 'models/gemini-embedding-001');
+    $req = new EmbeddingsRequest(input: ['hello'], model: 'models/gemini-embedding-002');
     $http = $adapter->toHttpClientRequest($req);
 
     expect($http->method())->toBe('POST');
-    expect($http->url())->toContain('https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents');
+    expect($http->url())->toContain('https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-002:batchEmbedContents');
     expect($http->url())->toContain('key=KEY');
+    expect($http->body()->toArray()['requests'][0]['model'])->toBe('models/gemini-embedding-002');
 });

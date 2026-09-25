@@ -9,7 +9,7 @@ Configuration issues typically surface when Polyglot cannot find a preset file, 
 
 - `InvalidArgumentException` with "No preset directory found" or "Invalid configuration"
 - Unexpected driver or model being used
-- Type errors mentioning `maxTokens`, `dimensions`, or `maxInputs`
+- Type errors mentioning `maxTokens` or an unknown configuration field
 
 ## Preset File Location
 
@@ -81,7 +81,10 @@ defaultPreset: typesafe
 
 The `maxTokens` field must be a valid integer. If it is provided as a numeric string in YAML, Polyglot coerces it automatically. Non-numeric strings and floats cause an `InvalidArgumentException`.
 
-For embeddings presets, the same rule applies to `dimensions` and `maxInputs`.
+Embedding `dimensions`, `defaultDimensions`, and `maxInputs` are no longer
+configuration fields. Remove them from presets and framework configuration.
+Use request options for a caller-selected dimension and an embedding model
+catalog for reviewed defaults and provider limits.
 
 ## Building Configuration Programmatically
 

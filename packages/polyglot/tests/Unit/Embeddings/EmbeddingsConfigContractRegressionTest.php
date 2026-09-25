@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Config\Dsn;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
 it('resolves embeddings config from raw DSN parameters', function () {
-    $raw = Dsn::fromString('driver=openai,model=text-embedding-3-small,dimensions=1536,apiUrl=https://api.openai.com/v1,endpoint=/embeddings,apiKey=test,maxInputs=64')
+    $raw = Dsn::fromString('driver=openai,model=text-embedding-3-small,apiUrl=https://api.openai.com/v1,endpoint=/embeddings,apiKey=test')
         ->toArray();
 
     $config = EmbeddingsProvider::fromEmbeddingsConfig(EmbeddingsConfig::fromArray($raw))
@@ -15,15 +17,20 @@ it('resolves embeddings config from raw DSN parameters', function () {
         ->and($config->model)->toBe('text-embedding-3-small');
 });
 
-it('keeps dimensions when applying overrides to embeddings config', function () {
+it('keeps metadata when applying overrides to embeddings config', function () {
     $base = new EmbeddingsConfig(
         driver: 'openai',
         model: 'text-embedding-3-small',
-        dimensions: 1536,
+        metadata: ['organization' => 'acme'],
     );
 
     $updated = $base->withOverrides(['model' => 'text-embedding-3-large']);
 
     expect($updated->model)->toBe('text-embedding-3-large')
-        ->and($updated->dimensions)->toBe(1536);
+        ->and($updated->metadata)->toBe(['organization' => 'acme']);
 });
+
+it('rejects removed model capability fields', function (string $field) {
+    expect(fn () => EmbeddingsConfig::fromArray([$field => 1536]))
+        ->toThrow(InvalidArgumentException::class, 'Invalid configuration for EmbeddingsConfig');
+})->with(['dimensions', 'defaultDimensions', 'maxInputs']);

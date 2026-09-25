@@ -90,8 +90,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
                 interceptor: $interceptor,
             ),
             driver: new ToolCallingDriver(
-                llm: $llm,
                 inference: InferenceRuntime::fromProvider($llm, events: $events),
+                llm: $llm,
                 messageCompiler: new ConversationWithCurrentToolTrace(),
                 events: $events,
             ),

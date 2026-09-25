@@ -1,0 +1,15 @@
+# Sources reviewed 2026-09-18:
+# https://github.com/openai/openai-python/blob/main/src/openai/resources/embeddings.py
+# https://developers.openai.com/api/docs/models/text-embedding-3-small
+# https://developers.openai.com/api/docs/guides/embeddings
+schemaVersion: 1
+version: '2026-09-18'
+profile:
+  driver: openai
+  model: text-embedding-3-small
+  maxInputs: 2048
+  maxInputTokens: 8192
+  maxRequestTokens: 300000
+  defaultDimensions: 1536
+  pricing:
+    inputPerMToken: 0.02

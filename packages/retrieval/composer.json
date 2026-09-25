@@ -1,0 +1,46 @@
+{
+  "name": "cognesy/instructor-retrieval",
+  "license": "MIT",
+  "description": "Vector storage, indexing, and retrieval for InstructorPHP",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Retrieval\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Retrieval\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "cognesy/instructor-events": "^2.11",
+    "cognesy/instructor-http-client": "^2.11",
+    "cognesy/instructor-polyglot": "^2.11",
+    "cognesy/instructor-telemetry": "^2.11",
+    "cognesy/instructor-utils": "^2.11",
+    "cognesy/logging": "^2.3"
+  },
+  "require-dev": {
+    "pestphp/pest": "^4.0",
+    "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm -c psalm.xml"
+  },
+  "suggest": {
+    "ext-pdo": "Required for the bundled PostgreSQL/pgvector driver"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

@@ -1,0 +1,5 @@
+driver: classifier-dev
+apiUrl: 'https://classifier.dev'
+apiKey: '${CLASSIFIER_API_KEY}'
+endpoint: '/v1/classify'
+model: 'fast'

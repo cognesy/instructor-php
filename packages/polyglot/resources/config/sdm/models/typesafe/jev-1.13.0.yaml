@@ -1,0 +1,20 @@
+# Sources reviewed 2026-09-18:
+# https://docs.typesafe.ai/models.md
+# https://docs.typesafe.ai/model-jaggedness/jev-1.13.md
+# The 64k/32k labels are stored as conservative planning ceilings. TypeSafe does
+# not publish exact integer expansion or tokenizer/framing details for local
+# rejection.
+schemaVersion: 1
+version: '2026-09-18'
+profile:
+  driver: typesafe
+  model: jev-1.13.0
+  maxRequestTokens: 64000
+  maxStateAndQuestionTokens: 32000
+  capabilities:
+    choice: native
+    noul: native
+    score: native
+  pricing:
+    inputPerMToken: 0.042
+    outputPerMToken: 0

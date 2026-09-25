@@ -1,0 +1,14 @@
+# Sources reviewed 2026-09-20:
+# https://classifier.dev/docs
+# https://github.com/mrmps/classifier-dev
+# classifier.dev exposes every dimension as a nominal Choice. Noul and Score
+# are explicit Polyglot projections over complete fast-tier label scores.
+schemaVersion: 1
+version: '2026-09-20'
+profile:
+  driver: classifier-dev
+  model: fast
+  capabilities:
+    choice: native
+    noul: projected
+    score: projected

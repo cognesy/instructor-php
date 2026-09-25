@@ -419,6 +419,20 @@ Decision defaults to one attempt and has no streaming API. Lifecycle telemetry u
 `sdm.decision` and `sdm.decision.attempt`. See `docs/decision/overview.md` for
 serialization, structured content, dynamic options, retry ownership, and live testing.
 
+Bundled Decision presets are explicit:
+
+| Preset | Semantics |
+| --- | --- |
+| `typesafe` | Native Choice, Noul, and Score |
+| `classifier-dev` | Native Choice; projected Noul and Score |
+| `jeff` | Native primitives; Score requires `JEFF_TEMPERATURE=1` |
+| `laya` | Native primitives plus typed `modelActionProbability` signals |
+
+Provider compatibility does not imply equal quality or calibration. Run the
+fixed example corpus with
+`php examples/B06_Decisions/ProviderEvaluation/evaluate.php <preset>`, then
+replace it with independently labeled application cases.
+
 ## Testing
 
 Deterministic test seams:
@@ -434,4 +448,8 @@ Deterministic test seams:
   - best for golden tests, request assertions, and provider-specific error-path coverage
 - `POLYGLOT_TYPESAFE_LIVE=1`
   - opts into the bounded TypeSafe integration smoke
-  - ordinary test runs remain offline
+- `POLYGLOT_CLASSIFIER_DEV_LIVE=1`, `POLYGLOT_JEFF_LIVE=1`, and
+  `POLYGLOT_LAYA_LIVE=1`
+  - opt into the corresponding bounded provider smoke
+- ordinary test runs remain offline and do not require credentials, Python,
+  model weights, or special hardware

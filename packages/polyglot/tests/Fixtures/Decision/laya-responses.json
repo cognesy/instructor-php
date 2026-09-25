@@ -1,0 +1,56 @@
+{
+  "mlx": {
+    "model": "laya-typed-decisions@mlx-checkpoint-abc",
+    "answers": {
+      "route": {
+        "type": "choice",
+        "choice": "billing",
+        "confidence": 0.71,
+        "probabilities": {"billing": 0.75, "technical": 0.25},
+        "action": {"act_probability": 0.61}
+      },
+      "safe": {
+        "type": "noul",
+        "noul": 0.8,
+        "confidence": 0.8,
+        "action": {"act_probability": 0.7}
+      },
+      "impact": {
+        "type": "score",
+        "score": 0.8,
+        "confidence": 0.59,
+        "probabilities": {"0": 0.2, "1": 0.8},
+        "legend": {"0": "low", "1": {"label": "high"}},
+        "action": {"act_probability": 0.54}
+      }
+    },
+    "usage": {"input_tokens": 42, "output_tokens": 0}
+  },
+  "torch": {
+    "model": "laya-typed-decisions@torch-checkpoint-def",
+    "answers": {
+      "route": {
+        "type": "choice",
+        "choice": "technical",
+        "confidence": 0.64,
+        "probabilities": {"billing": 0.35, "technical": 0.65},
+        "action": {"act_probability": 0.44}
+      },
+      "safe": {
+        "type": "noul",
+        "noul": 0.3,
+        "confidence": 0.7,
+        "action": {"act_probability": 0.37}
+      },
+      "impact": {
+        "type": "score",
+        "score": 0.45,
+        "confidence": 0.48,
+        "probabilities": {"0": 0.55, "1": 0.45},
+        "legend": {"0": "low", "1": {"label": "high"}},
+        "action": {"act_probability": 0.41}
+      }
+    },
+    "usage": {"input_tokens": 39, "output_tokens": 0}
+  }
+}

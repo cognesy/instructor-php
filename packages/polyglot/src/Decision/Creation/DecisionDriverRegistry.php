@@ -25,6 +25,9 @@ final readonly class DecisionDriverRegistry implements CanProvideDecisionDrivers
     public static function default(): self
     {
         return new self([
+            'classifier-dev' => 'Cognesy\\Polyglot\\Decision\\Drivers\\ClassifierDev\\ClassifierDevDriver',
+            'jeff' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Jeff\\JeffDriver',
+            'laya' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Laya\\LayaDriver',
             'typesafe' => 'Cognesy\\Polyglot\\Decision\\Drivers\\TypeSafe\\TypesafeDriver',
         ]);
     }

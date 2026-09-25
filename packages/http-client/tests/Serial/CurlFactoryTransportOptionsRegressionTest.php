@@ -70,4 +70,31 @@ namespace {
             ->and($options[CURLOPT_MAXREDIRS])->toBe(2)
             ->and($options[CURLOPT_HTTP_VERSION])->toBe(CURL_HTTP_VERSION_1_1);
     });
+
+    it('defaults to HTTP 2 over TLS without attempting cleartext h2c', function () {
+        if (!extension_loaded('curl')) {
+            Assert::markTestSkipped('cURL extension not available');
+        }
+
+        CurlFactoryTransportOptionsHook::reset();
+        CurlFactoryTransportOptionsHook::$enabled = true;
+
+        try {
+            $factory = new CurlFactory(new HttpClientConfig);
+            $handle = $factory->createHandle(new HttpRequest(
+                url: 'http://127.0.0.1:8000',
+                method: 'POST',
+                headers: ['Content-Type' => 'application/json'],
+                body: '{}',
+                options: [],
+            ));
+        } finally {
+            CurlFactoryTransportOptionsHook::$enabled = false;
+        }
+
+        $handle->close();
+
+        expect(CurlFactoryTransportOptionsHook::$options[CURLOPT_HTTP_VERSION])
+            ->toBe(CURL_HTTP_VERSION_2TLS);
+    });
 }

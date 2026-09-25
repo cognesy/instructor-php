@@ -29,6 +29,7 @@
         <directory name="packages/messages/src" />
         <directory name="packages/pipeline/src" />
         <directory name="packages/polyglot/src" />
+        <directory name="packages/retrieval/src" />
         <directory name="packages/schema/src" />
         <directory name="packages/setup/src" />
         <directory name="packages/stream/src" />

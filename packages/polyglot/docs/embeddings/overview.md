@@ -58,8 +58,6 @@ $config = new EmbeddingsConfig(
     apiKey: getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-small',
-    dimensions: 1536,
-    maxInputs: 2048,
     driver: 'openai',
 );
 $embeddings = Embeddings::fromConfig($config);
@@ -70,6 +68,11 @@ $embeddings = Embeddings::fromProvider($provider);
 // From a custom runtime (full control over driver and events)
 $embeddings = Embeddings::fromRuntime($runtime);
 ```
+
+`EmbeddingsConfig` owns connection and route selection. Model facts such as
+default dimensions, input limits, token limits, and pricing live in the optional
+`Embeddings\Models\ModelCatalog`. Inject it into `EmbeddingsRuntime` when an
+application wants metadata or known input-count preflight.
 
 ## Request Methods
 

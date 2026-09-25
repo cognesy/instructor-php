@@ -110,7 +110,7 @@ it('rejects unknown and invalid fields without exposing credentials', function (
     }
 });
 
-it('preflights required fields and redacts diagnostic projections', function () {
+it('validates routing target and authentication independently and redacts diagnostics', function () {
     $config = new DecisionConfig(
         driver: 'typesafe',
         apiUrl: 'https://api.typesafe.ai/v1',
@@ -119,20 +119,33 @@ it('preflights required fields and redacts diagnostic projections', function () 
         model: '',
     );
 
-    $config->assertUsable('request-model');
+    $config->assertRoutingIdentity('request-model');
+    $config->assertHttpTarget();
+    $config->assertBearerAuthentication();
+
+    $keyless = new DecisionConfig(
+        driver: 'local',
+        apiUrl: 'http://127.0.0.1:8000',
+        endpoint: '/systemone',
+        model: 'local-model',
+    );
+    $keyless->assertRoutingIdentity();
+    $keyless->assertHttpTarget();
 
     expect($config->toRedactedArray()['apiKey'])->toBe(SensitiveDataRedactor::MASK)
-        ->and(fn () => (new DecisionConfig(driver: 'typesafe'))->assertUsable())
+        ->and(fn () => (new DecisionConfig(driver: 'typesafe'))->assertHttpTarget())
         ->toThrow(InvalidArgumentException::class, "field 'apiUrl' is missing or empty")
-        ->and(fn () => $config->assertUsable())
+        ->and(fn () => $config->assertRoutingIdentity())
         ->toThrow(InvalidArgumentException::class, "field 'model' is missing or empty")
+        ->and(fn () => $keyless->assertBearerAuthentication())
+        ->toThrow(InvalidArgumentException::class, "field 'apiKey' is missing or empty")
         ->and(fn () => (new DecisionConfig(
             driver: 'typesafe',
             apiUrl: 'file:///tmp/service',
             apiKey: 'test-key',
             endpoint: '/systemone',
             model: 'jev-test',
-        ))->assertUsable())->toThrow(InvalidArgumentException::class, 'HTTP(S) URL');
+        ))->assertHttpTarget())->toThrow(InvalidArgumentException::class, 'HTTP(S) URL');
 });
 
 function decisionConfigConsumerRoot(): string

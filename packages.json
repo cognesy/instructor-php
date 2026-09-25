@@ -141,6 +141,13 @@
             "tier": "public"
         },
         {
+            "local": "packages/retrieval",
+            "repo": "cognesy/instructor-retrieval",
+            "github_name": "instructor-retrieval",
+            "composer_name": "cognesy/instructor-retrieval",
+            "tier": "public"
+        },
+        {
             "local": "packages/sandbox",
             "repo": "cognesy/instructor-sandbox",
             "github_name": "instructor-sandbox",

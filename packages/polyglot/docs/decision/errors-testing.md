@@ -1,13 +1,13 @@
 ---
 title: Errors and Testing
-description: Handle Decision failures and test TypeSafe integrations without live API calls.
+description: Handle Decision failures and test provider integrations without live API calls.
 ---
 
 <!-- markdownlint-disable MD013 -->
 
 ## Failure classes
 
-TypeSafe HTTP failures are normalized into Decision-specific exceptions:
+Provider HTTP failures are normalized into Decision-specific exceptions:
 
 | Condition | Exception | Retriable by default |
 | --- | --- | --- |
@@ -43,8 +43,9 @@ Provider exception messages deliberately exclude request bodies, response bodies
 Choose the shallowest seam that covers the behavior under test:
 
 - Implement `CanProcessDecisionRequest` as an in-memory fake for application logic, facade behavior, pending execution, retries, and lifecycle events.
-- Inject an HTTP client backed by `MockHttpDriver` to exercise the TypeSafe request and response adapters, headers, payload shape, error classification, and provider request IDs.
-- Use the live smoke only to verify real credentials and provider compatibility.
+- Inject an HTTP client backed by `MockHttpDriver` to exercise provider request and response adapters, headers, payload shape, error classification, and provider request IDs.
+- Use an opt-in live smoke only to verify real credentials, a prestarted service,
+  and provider compatibility. Evaluate quality separately.
 
 Inject a fake driver directly through a runtime:
 
@@ -63,14 +64,20 @@ $answers = Decision::fromRuntime($runtime)
     ->get();
 ```
 
-For adapter tests, pass the configured mock client through `DecisionRuntime::fromConfig(..., httpClient: $httpClient)`. No ordinary unit or feature test should require `TYPESAFE_API_KEY`.
+For adapter tests, pass the configured mock client through `DecisionRuntime::fromConfig(..., httpClient: $httpClient)`. No ordinary unit or feature test should require provider credentials, network access, Python, model weights, or special hardware.
 
 ## Opt-in live smoke
 
-The repository includes one bounded live integration test:
+The repository includes bounded, opt-in provider integration tests:
 
 ```bash
 POLYGLOT_TYPESAFE_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/TypesafeLiveTest.php
+POLYGLOT_CLASSIFIER_DEV_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/ClassifierDevLiveTest.php
+POLYGLOT_JEFF_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/JeffLiveTest.php
+POLYGLOT_LAYA_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/LayaLiveTest.php
 ```
 
-The test is skipped unless explicitly enabled, fails clearly when enabled without `TYPESAFE_API_KEY`, and emits only safe endpoint, model, count, and usage evidence.
+Each test is skipped unless explicitly enabled. TypeSafe requires its API key;
+classifier.dev may be keyless; Jeff and Laya require prestarted services. The
+tests verify bounded transport and contract behavior without claiming quality
+parity. Use the [provider evaluation](evaluation) workflow for labeled metrics.

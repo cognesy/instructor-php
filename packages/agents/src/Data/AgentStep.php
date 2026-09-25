@@ -199,17 +199,17 @@ final readonly class AgentStep
             outputMessages: isset($data['outputMessages'])
                 ? Messages::fromArray($data['outputMessages'])
                 : Messages::empty(),
-            historyMessages: isset($data['historyMessages'])
-                ? Messages::fromArray($data['historyMessages'])
-                : null,
             inferenceResponse: $inferenceResponse,
-            requestedToolCalls: isset($data['requestedToolCalls'])
-                ? ToolCalls::fromArray($data['requestedToolCalls'])
-                : null,
             toolExecutions: isset($data['toolExecutions'])
                 ? ToolExecutions::fromArray($data['toolExecutions'])
                 : null,
+            requestedToolCalls: isset($data['requestedToolCalls'])
+                ? ToolCalls::fromArray($data['requestedToolCalls'])
+                : null,
             errors: ErrorList::fromArray($data['errors'] ?? []),
+            historyMessages: isset($data['historyMessages'])
+                ? Messages::fromArray($data['historyMessages'])
+                : null,
             id: isset($data['id']) ? new AgentStepId($data['id']) : null,
         );
     }

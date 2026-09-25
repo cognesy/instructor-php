@@ -7,14 +7,28 @@ description: Execute typed Noul, Choice, and Score questions through Polyglot's 
 
 Polyglot's `Decision` operation family evaluates application state against a closed set of typed questions. It is separate from chat inference: a decision returns `NoulAnswer`, `ChoiceAnswer`, and `ScoreAnswer` objects rather than generated text or an invented chat envelope.
 
-TypeSafe is the first provider. The domain and runtime contracts live in Polyglot, so callers depend on the stable Decision API rather than a provider-specific SDK.
+The domain and runtime contracts live in Polyglot, so callers depend on the
+stable Decision API rather than a provider-specific SDK. The bundled registry
+contains explicit `typesafe`, `classifier-dev`, `jeff`, and `laya` drivers; none
+is an automatic fallback for another.
 
 Use the rest of this section for the complete surface:
 
 - [Question design](questions) explains `Noul`, `Choice`, `Score`, and text versus structured state.
 - [Response handling](responses) covers typed answers, probability distributions, confidence, usage, and IDs.
 - [Configuration and runtime](runtime) covers presets, explicit wiring, pending execution, retries, events, and custom drivers.
+- [Provider evaluation](evaluation) defines primitive-specific quality, calibration, latency, failure, and review-policy evidence.
 - [Errors and testing](errors-testing) covers provider failures, validation failures, test seams, and the opt-in live test.
+
+| Provider | API boundary | Primitive semantics |
+| --- | --- | --- |
+| TypeSafe | System One | Native Choice, Noul, and Score |
+| classifier.dev | `items + dimensions` | Native Choice; projected Noul and Score |
+| Jeff | Self-hosted System One | Native primitives; Score requires temperature 1 |
+| Laya | External Typed Decision Lab (`laya-v1`) | Native primitives plus typed action-head signals |
+
+These are contract facts, not quality or calibration claims. Read the provider
+page and evaluate the exact returned model before selecting a preset.
 
 ## Configure TypeSafe
 

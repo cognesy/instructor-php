@@ -18,11 +18,14 @@ final readonly class ChoiceAnswer
 
     private float $confidence;
 
+    private AnswerSignals $signals;
+
     public function __construct(
         string $questionId,
         string $value,
         float $confidence,
         private ChoiceProbabilities $probabilities,
+        ?AnswerSignals $signals = null,
     ) {
         $this->questionId = DecisionData::nonEmptyString($questionId, 'Choice answer question ID');
         $this->value = DecisionData::nonEmptyString($value, 'Choice answer value');
@@ -33,11 +36,16 @@ final readonly class ChoiceAnswer
         if ($probabilities->probability($value) < $probabilities->highest() - self::MAXIMUM_TOLERANCE) {
             throw new InvalidArgumentException('Choice answer value must have the highest probability.');
         }
+        $this->signals = $signals ?? AnswerSignals::empty();
     }
 
     public static function fromArray(array $data): self
     {
-        DecisionData::assertKnownFields($data, ['id', 'type', 'value', 'confidence', 'probabilities'], 'Choice answer');
+        DecisionData::assertKnownFields(
+            $data,
+            ['id', 'type', 'value', 'confidence', 'probabilities', 'signals'],
+            'Choice answer',
+        );
         if (($data['type'] ?? null) !== 'choice') {
             throw new InvalidArgumentException('Choice answer type must be choice.');
         }
@@ -50,6 +58,7 @@ final readonly class ChoiceAnswer
             value: DecisionData::nonEmptyString($data['value'] ?? null, 'Choice answer value'),
             confidence: DecisionData::probability($data['confidence'] ?? null, 'Choice answer confidence'),
             probabilities: ChoiceProbabilities::fromArray($data['probabilities']),
+            signals: self::signalsFrom($data),
         );
     }
 
@@ -73,6 +82,11 @@ final readonly class ChoiceAnswer
         return $this->probabilities;
     }
 
+    public function signals(): AnswerSignals
+    {
+        return $this->signals;
+    }
+
     public function toArray(): array
     {
         return [
@@ -81,6 +95,24 @@ final readonly class ChoiceAnswer
             'value' => $this->value,
             'confidence' => $this->confidence,
             'probabilities' => $this->probabilities->toArray(),
+            ...match ($this->signals->isEmpty()) {
+                true => [],
+                false => ['signals' => $this->signals->toArray()],
+            },
         ];
+    }
+
+    private static function signalsFrom(array $data): AnswerSignals
+    {
+        if (! array_key_exists('signals', $data)) {
+            return AnswerSignals::empty();
+        }
+
+        $signals = $data['signals'];
+        if (! is_array($signals) || array_is_list($signals)) {
+            throw new InvalidArgumentException('Choice answer signals must be an object.');
+        }
+
+        return AnswerSignals::fromArray($signals);
     }
 }

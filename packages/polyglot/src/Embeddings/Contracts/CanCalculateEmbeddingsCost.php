@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
@@ -11,5 +13,5 @@ use Cognesy\Polyglot\Support\Pricing\Cost;
  */
 interface CanCalculateEmbeddingsCost
 {
-    public function calculate(EmbeddingsUsage $usage, EmbeddingsPricing $pricing): Cost;
+    public function calculate(EmbeddingsUsage $usage, EmbeddingsPricing $pricing): ?Cost;
 }

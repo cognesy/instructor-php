@@ -103,9 +103,13 @@ Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut
 
 ```php
 $provider = EmbeddingsProvider::fromArray([...])
-    ->withConfigOverrides(['dimensions' => 256])
+    ->withConfigOverrides(['model' => 'text-embedding-3-large'])
     ->withDriver($customDriver);
 ```
+
+Output dimensions are request options, not provider configuration. Set them on
+`EmbeddingsRequest` or the `Embeddings` facade with
+`withOptions(['dimensions' => 256])`.
 
 
 ## Driver Factories
@@ -216,7 +220,7 @@ registrations can vary per runtime.
 
 ### Decision Driver Registry
 
-The Decision registry currently bundles the `typesafe` driver. Custom drivers
+The Decision registry bundles `typesafe`, `classifier-dev`, `jeff`, and `laya`. Custom drivers
 implement `CanProcessDecisionRequest` and may be registered as a class string
 or a factory receiving `DecisionConfig`, `CanSendHttpRequests`, and the event
 dispatcher. See

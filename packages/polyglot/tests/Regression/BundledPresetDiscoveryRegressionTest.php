@@ -71,6 +71,69 @@ it('discovers bundled Decision presets when consumer app has no local config', f
     }
 });
 
+it('discovers the bundled Jeff preset with operator-owned endpoint and optional auth', function () {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset('jeff', template: new EnvTemplate(
+            new ArraySecretSource('test', [
+                'JEFF_API_URL' => 'http://127.0.0.1:8000',
+                'JEFF_API_KEY' => '',
+            ]),
+        ));
+
+        expect($config->driver)->toBe('jeff')
+            ->and($config->apiUrl)->toBe('http://127.0.0.1:8000')
+            ->and($config->apiKey)->toBe('')
+            ->and($config->endpoint)->toBe('/v1/systemone')
+            ->and($config->model)->toBe('gliformer-large-v1');
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+});
+
+it('discovers the bundled ClassifierDev preset with optional auth', function () {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset('classifier-dev', template: new EnvTemplate(
+            new ArraySecretSource('test', ['CLASSIFIER_API_KEY' => '']),
+        ));
+
+        expect($config->driver)->toBe('classifier-dev')
+            ->and($config->apiUrl)->toBe('https://classifier.dev')
+            ->and($config->apiKey)->toBe('')
+            ->and($config->endpoint)->toBe('/v1/classify')
+            ->and($config->model)->toBe('fast');
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+});
+
+it('discovers the bundled Laya preset with an operator-owned external service', function () {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset('laya', template: new EnvTemplate(
+            new ArraySecretSource('test', [
+                'LAYA_API_URL' => 'http://127.0.0.1:8091',
+                'LAYA_API_KEY' => '',
+            ]),
+        ));
+
+        expect($config->driver)->toBe('laya')
+            ->and($config->apiUrl)->toBe('http://127.0.0.1:8091')
+            ->and($config->apiKey)->toBe('')
+            ->and($config->endpoint)->toBe('/v1/systemone')
+            ->and($config->model)->toBe('laya-typed-decisions');
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+});
+
 it('uses bundled default preset selectors for no-argument providers', function () {
     $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
     BasePath::set($consumerRoot);
@@ -143,8 +206,6 @@ it('prefers application default selectors and presets for no-argument providers'
         'apiKey' => 'test-key',
         'endpoint' => '/embeddings',
         'model' => 'application-embed',
-        'dimensions' => 256,
-        'maxInputs' => 16,
     ]);
     polyglotWriteDefaultPreset($consumerRoot, 'sdm', 'application', [
         'driver' => 'typesafe',
@@ -164,7 +225,6 @@ it('prefers application default selectors and presets for no-argument providers'
             ->and($llm->model)->toBe('application-llm')
             ->and($embeddings->apiUrl)->toBe('https://embed.example.test/v1')
             ->and($embeddings->model)->toBe('application-embed')
-            ->and($embeddings->dimensions)->toBe(256)
             ->and($decision->apiUrl)->toBe('https://decision.example.test/v1')
             ->and($decision->model)->toBe('application-decision');
     } finally {
@@ -226,8 +286,7 @@ it('does not expose credentials when a selected default preset is invalid', func
         'apiKey' => 'must-not-appear-in-errors',
         'endpoint' => '/embeddings',
         'model' => 'application-embed',
-        'dimensions' => [],
-        'maxInputs' => 16,
+        'removedField' => [],
     ]);
     BasePath::set($consumerRoot);
 
@@ -237,7 +296,7 @@ it('does not expose credentials when a selected default preset is invalid', func
             test()->fail('Expected invalid default embeddings preset to fail.');
         } catch (InvalidArgumentException $exception) {
             expect($exception->getMessage())
-                ->toContain('Invalid dimensions value')
+                ->toContain('Invalid configuration for EmbeddingsConfig')
                 ->not->toContain('must-not-appear-in-errors');
         }
     } finally {

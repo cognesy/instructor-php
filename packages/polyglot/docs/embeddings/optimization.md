@@ -25,7 +25,19 @@ $response = Embeddings::using('openai')
 $vectors = $response->toValuesArray();
 ```
 
-Each provider has a maximum number of inputs per request (configured as `maxInputs` in the preset). For OpenAI this defaults to 2048; for Cohere it is 96. When processing large datasets, chunk your documents to stay within these limits.
+Provider input limits are exact-model facts, not connection preset settings.
+When a catalog is injected, `EmbeddingsRuntime` rejects a request whose input
+count exceeds a known `maxInputs` before HTTP. Unknown or uninjected limits make
+no local assertion.
+
+```php
+use Cognesy\Polyglot\Embeddings\Models\ModelCatalog;
+
+$model = ModelCatalog::discover()->find('openai', 'text-embedding-3-small');
+$batchSize = min(100, $model->maxInputs ?? 100);
+```
+
+Applications still own chunking and may choose a smaller operational batch.
 
 ### Processing Large Datasets
 
@@ -39,7 +51,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 $embeddings = Embeddings::using('openai');
 $allDocuments = [/* hundreds or thousands of documents */];
 
-$batchSize = 25; // Stay well within provider limits
+$batchSize = 25; // Application policy, at or below any known provider limit
 $vectors = [];
 
 for ($i = 0; $i < count($allDocuments); $i += $batchSize) {

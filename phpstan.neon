@@ -19,6 +19,7 @@ parameters:
     - packages/messages/src
     - packages/pipeline/src
     - packages/polyglot/src
+    - packages/retrieval/src
     - packages/schema/src
     - packages/setup/src
     - packages/stream/src

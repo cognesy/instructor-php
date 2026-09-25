@@ -88,8 +88,6 @@ class Embeddings extends Facade
             'apiKey' => (string) ($connection['api_key'] ?? ''),
             'endpoint' => (string) ($connection['endpoint'] ?? '/embeddings'),
             'model' => (string) ($connection['model'] ?? ''),
-            'dimensions' => (int) ($connection['dimensions'] ?? 0),
-            'maxInputs' => (int) ($connection['max_inputs'] ?? 0),
         ]);
     }
 }

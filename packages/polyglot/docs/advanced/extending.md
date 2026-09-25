@@ -250,8 +250,6 @@ $config = new EmbeddingsConfig(
     apiKey: (string) getenv('ACME_API_KEY'),
     endpoint: '/embeddings',
     model: 'acme-embed-v1',
-    dimensions: 768,
-    maxInputs: 100,
 );
 
 $embeddings = Embeddings::fromRuntime(
@@ -338,7 +336,7 @@ The full list is defined in `InferenceDriverRegistry::default()`.
 Bundled embeddings drivers include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`,
 and `ollama`.
 
-The bundled Decision registry currently contains `typesafe`. Decision drivers
+The bundled Decision registry contains `typesafe`, `classifier-dev`, `jeff`, and `laya`. Decision drivers
 implement `CanProcessDecisionRequest` and are registered through
 `DecisionDriverRegistry`; see
 [Decision configuration and runtime](../decision/runtime#custom-drivers).

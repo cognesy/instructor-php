@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Tests\Support;
 
@@ -8,7 +10,8 @@ use InvalidArgumentException;
 
 final class TestConfig
 {
-    public static function llm(string $name): LLMConfig {
+    public static function llm(string $name): LLMConfig
+    {
         return LLMConfig::fromArray(match ($name) {
             'openai' => [
                 'driver' => 'openai',
@@ -49,7 +52,8 @@ final class TestConfig
         });
     }
 
-    public static function embeddings(string $name): EmbeddingsConfig {
+    public static function embeddings(string $name): EmbeddingsConfig
+    {
         return EmbeddingsConfig::fromArray(match ($name) {
             'openai' => [
                 'driver' => 'openai',
@@ -57,8 +61,6 @@ final class TestConfig
                 'endpoint' => '/embeddings',
                 'apiKey' => 'test',
                 'model' => 'text-embedding-3-small',
-                'dimensions' => 1536,
-                'maxInputs' => 2048,
                 'metadata' => [],
             ],
             default => throw new InvalidArgumentException("Unknown test embeddings config: {$name}"),

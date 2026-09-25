@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Cognesy\Polyglot\Decision\Answers\AnswerSignals;
 use Cognesy\Polyglot\Decision\Answers\ChoiceAnswer;
 use Cognesy\Polyglot\Decision\Answers\NoulAnswer;
 use Cognesy\Polyglot\Decision\Answers\ScoreAnswer;
@@ -30,6 +31,9 @@ use Cognesy\Polyglot\Decision\Events\DecisionAttemptSucceeded;
 use Cognesy\Polyglot\Decision\Events\DecisionCompleted;
 use Cognesy\Polyglot\Decision\Events\DecisionFailed;
 use Cognesy\Polyglot\Decision\Events\DecisionStarted;
+use Cognesy\Polyglot\Decision\Models\DecisionCapabilities;
+use Cognesy\Polyglot\Decision\Models\DecisionModel;
+use Cognesy\Polyglot\Decision\Models\DecisionPrimitiveSupport;
 use Cognesy\Polyglot\Decision\PendingDecision;
 use Cognesy\Polyglot\Decision\Questions\Choice;
 use Cognesy\Polyglot\Decision\Questions\Noul;
@@ -69,12 +73,16 @@ const POLYGLOT_TIER1_CLASSES = [
     JsonContent::class,
     NoulCriteria::class,
     ChoiceOption::class,
+    AnswerSignals::class,
     Noul::class,
     Choice::class,
     Score::class,
     NoulAnswer::class,
     ChoiceAnswer::class,
     ScoreAnswer::class,
+    DecisionPrimitiveSupport::class,
+    DecisionCapabilities::class,
+    DecisionModel::class,
     Questions::class,
     Answers::class,
     ChoiceOptions::class,

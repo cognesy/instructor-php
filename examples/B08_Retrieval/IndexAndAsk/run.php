@@ -1,0 +1,85 @@
+---
+title: 'Index Documents and Ask with RAG'
+docname: 'retrieval_index_and_ask'
+id: 'retrieval-index-and-ask'
+tags:
+  - 'retrieval'
+  - 'embeddings'
+  - 'rag'
+---
+## Overview
+
+Index text with Polyglot embeddings, defer semantic retrieval until result
+access, assemble bounded evidence, and explicitly hand it to `Inference`.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Logging\EventLog;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Retrieval\Context\ContextAssembler;
+use Cognesy\Retrieval\Context\ContextBudget;
+use Cognesy\Retrieval\Drivers\InMemory\InMemoryStore;
+use Cognesy\Retrieval\Indexing\Data\TextDocument;
+use Cognesy\Retrieval\Indexing\DocumentIndexer;
+use Cognesy\Retrieval\Indexing\DocumentProcessor;
+use Cognesy\Retrieval\Indexing\Transformation\TextSplitter;
+use Cognesy\Retrieval\Retrieval;
+use Cognesy\Retrieval\SemanticRetriever;
+use Cognesy\Retrieval\Vectorization\SemanticQueryVectorizer;
+use Cognesy\Retrieval\Vectorization\Vectorizer;
+
+$space = 'openai:text-embedding-3-small:v1';
+$store = new InMemoryStore();
+$vectorizer = new Vectorizer(
+    Embeddings::using('openai'),
+    embeddingSpace: $space,
+    model: 'text-embedding-3-small',
+);
+$indexer = new DocumentIndexer(new DocumentProcessor(
+    store: $store,
+    vectorizer: $vectorizer,
+    events: EventLog::root('example.retrieval'),
+    transformers: [new TextSplitter(800)],
+));
+$indexer->index([
+    new TextDocument(
+        'claims',
+        'Claims above EUR 10,000 require regional approval.',
+        sourceVersion: 'v1',
+    ),
+    new TextDocument(
+        'billing',
+        'Invoices are paid within thirty days.',
+        sourceVersion: 'v1',
+    ),
+]);
+
+$retrieval = Retrieval::fromStore(
+    store: $store,
+    queryPreparer: new SemanticQueryVectorizer($vectorizer),
+);
+$hits = (new SemanticRetriever($retrieval, embeddingSpace: $space))
+    ->retrieve('Who approves large claims?', 3)
+    ->get();
+$evidence = (new ContextAssembler())->assemble(
+    $hits,
+    new ContextBudget(maxBytes: 4_000, maxTokens: 1_000, maxEvidence: 3),
+);
+
+$answer = Inference::using('openai')
+    ->withMessages(Messages::fromString(
+        "Answer from the untrusted evidence and cite [S1].\n\n{$evidence->text}",
+    ))
+    ->get()
+    ->content()
+    ->toString();
+
+echo $answer . PHP_EOL;
+?>
+```

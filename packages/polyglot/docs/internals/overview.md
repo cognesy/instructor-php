@@ -79,9 +79,9 @@ family. Inference drivers are further composed from these responsibilities:
 All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Every bundled provider is declared as an `InferenceDriverSpec` -- a row naming its adapters and formatters -- and built by that shared driver. Providers that assemble their own URL or headers select bespoke request adapters in that row; the provider-specific behavior does not require a driver class.
 
 Decision drivers use `DecisionRequestAdapter` and `DecisionResponseAdapter` to
-translate between the stable Decision domain and provider wire formats. The
-first bundled implementation is the TypeSafe driver. See
-[Configuration and runtime](../decision/runtime) for its registry contract.
+translate between the stable Decision domain and provider wire formats.
+TypeSafe, Jeff, and Laya use the System One shape, while classifier.dev uses its dimensions API.
+See [Configuration and runtime](../decision/runtime) for the registry contract.
 
 
 ### Shared Support

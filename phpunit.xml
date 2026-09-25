@@ -31,6 +31,7 @@
             <directory suffix="Test.php">./packages/metrics/tests/Unit</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Unit</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/retrieval/tests/Unit</directory>
             <directory suffix="Test.php">./packages/schema/tests/Unit</directory>
             <directory suffix="Test.php">./packages/setup/tests/Unit</directory>
             <directory suffix="Test.php">./packages/stream/tests/Unit</directory>
@@ -64,6 +65,7 @@
             <directory suffix="Test.php">./packages/metrics/tests/Feature</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Feature</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/retrieval/tests/Feature</directory>
             <directory suffix="Test.php">./packages/schema/tests/Feature</directory>
             <directory suffix="Test.php">./packages/setup/tests/Feature</directory>
             <directory suffix="Test.php">./packages/stream/tests/Feature</directory>
@@ -92,6 +94,7 @@
             <directory suffix="Test.php">./packages/messages/tests/Integration</directory>
             <directory suffix="Test.php">./packages/metrics/tests/Integration</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/retrieval/tests/Integration</directory>
             <directory suffix="Test.php">./packages/schema/tests/Integration</directory>
             <directory suffix="Test.php">./packages/setup/tests/Integration</directory>
             <directory suffix="Test.php">./packages/stream/tests/Integration</directory>
@@ -124,6 +127,7 @@
             <directory suffix="Test.php">./packages/metrics/tests/Regression</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Regression</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/retrieval/tests/Regression</directory>
             <directory suffix="Test.php">./packages/schema/tests/Regression</directory>
             <directory suffix="Test.php">./packages/setup/tests/Regression</directory>
             <directory suffix="Test.php">./packages/stream/tests/Regression</directory>
@@ -172,6 +176,7 @@
             <directory suffix=".php">./packages/metrics/src</directory>
             <directory suffix=".php">./packages/pipeline/src</directory>
             <directory suffix=".php">./packages/polyglot/src</directory>
+            <directory suffix=".php">./packages/retrieval/src</directory>
             <directory suffix=".php">./packages/schema/src</directory>
             <directory suffix=".php">./packages/setup/src</directory>
             <directory suffix=".php">./packages/stream/src</directory>

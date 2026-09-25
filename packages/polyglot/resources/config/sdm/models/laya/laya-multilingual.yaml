@@ -1,0 +1,13 @@
+# Sources reviewed 2026-09-20:
+# https://github.com/NandhaKishorM/laya
+# https://github.com/mizorewww/laya-mlx
+schemaVersion: 1
+version: '2026-09-20'
+profile:
+  driver: laya
+  model: laya-multilingual
+  maxStateAndQuestionTokens: 1024
+  capabilities:
+    choice: native
+    noul: native
+    score: native

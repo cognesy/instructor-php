@@ -19,12 +19,15 @@ final readonly class ScoreAnswer
 
     private float $confidence;
 
+    private AnswerSignals $signals;
+
     public function __construct(
         string $questionId,
         float $value,
         float $confidence,
         private ScoreProbabilities $probabilities,
         private ScoreLegend $legend,
+        ?AnswerSignals $signals = null,
     ) {
         $this->questionId = DecisionData::nonEmptyString($questionId, 'Score answer question ID');
         $this->value = DecisionData::finiteFloat($value, 'Score answer value');
@@ -38,13 +41,14 @@ final readonly class ScoreAnswer
         if (abs($this->value - $probabilities->expectedValue()) > self::EXPECTED_VALUE_TOLERANCE) {
             throw new InvalidArgumentException('Score answer value must match the probability-weighted level.');
         }
+        $this->signals = $signals ?? AnswerSignals::empty();
     }
 
     public static function fromArray(array $data): self
     {
         DecisionData::assertKnownFields(
             $data,
-            ['id', 'type', 'value', 'confidence', 'probabilities', 'legend'],
+            ['id', 'type', 'value', 'confidence', 'probabilities', 'legend', 'signals'],
             'Score answer',
         );
         if (($data['type'] ?? null) !== 'score') {
@@ -60,6 +64,7 @@ final readonly class ScoreAnswer
             confidence: DecisionData::probability($data['confidence'] ?? null, 'Score answer confidence'),
             probabilities: ScoreProbabilities::fromArray($data['probabilities']),
             legend: ScoreLegend::fromArray($data['legend']),
+            signals: self::signalsFrom($data),
         );
     }
 
@@ -88,6 +93,11 @@ final readonly class ScoreAnswer
         return $this->legend;
     }
 
+    public function signals(): AnswerSignals
+    {
+        return $this->signals;
+    }
+
     public function toArray(): array
     {
         return [
@@ -97,6 +107,24 @@ final readonly class ScoreAnswer
             'confidence' => $this->confidence,
             'probabilities' => $this->probabilities->toArray(),
             'legend' => $this->legend->toArray(),
+            ...match ($this->signals->isEmpty()) {
+                true => [],
+                false => ['signals' => $this->signals->toArray()],
+            },
         ];
+    }
+
+    private static function signalsFrom(array $data): AnswerSignals
+    {
+        if (! array_key_exists('signals', $data)) {
+            return AnswerSignals::empty();
+        }
+
+        $signals = $data['signals'];
+        if (! is_array($signals) || array_is_list($signals)) {
+            throw new InvalidArgumentException('Score answer signals must be an object.');
+        }
+
+        return AnswerSignals::fromArray($signals);
     }
 }

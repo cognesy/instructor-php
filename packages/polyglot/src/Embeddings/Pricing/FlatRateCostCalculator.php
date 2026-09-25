@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings\Pricing;
 
@@ -13,9 +15,12 @@ use Cognesy\Polyglot\Support\Pricing\Cost;
  */
 final class FlatRateCostCalculator implements CanCalculateEmbeddingsCost
 {
-    public function calculate(EmbeddingsUsage $usage, EmbeddingsPricing $pricing): Cost
+    public function calculate(EmbeddingsUsage $usage, EmbeddingsPricing $pricing): ?Cost
     {
-        $input = ($usage->inputTokens / 1_000_000) * $pricing->inputPerMToken;
+        if ($usage->inputTokens === null && $pricing->inputPerMToken > 0) {
+            return null;
+        }
+        $input = (($usage->inputTokens ?? 0) / 1_000_000) * $pricing->inputPerMToken;
 
         return new Cost(
             total: round($input, 6),

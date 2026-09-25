@@ -19,8 +19,8 @@ function flatten(mixed $node, array $ctx = []): string
         is_string($node)        => $node,
         $node instanceof Prompt => $node->render(...$ctx),
         is_array($node)         => implode("\n\n", array_filter(
-            array_map(fn(mixed $n): string => flatten($n, $ctx), $node),
-            fn(string $s): bool => $s !== '',
+            array_map(fn(mixed $n): string  => flatten($n, $ctx), $node),
+            fn(string $s): bool             => $s !== '',
         )),
         $node instanceof Stringable => (string) $node,
         default                 => (string) $node,

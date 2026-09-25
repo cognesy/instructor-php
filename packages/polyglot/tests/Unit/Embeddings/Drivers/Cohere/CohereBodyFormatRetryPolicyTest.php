@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
@@ -12,7 +14,6 @@ it('Embeddings Cohere: omits retryPolicy from request body', function () {
         endpoint: '/v1/embed',
         model: 'embed-multilingual-v3.0',
         driver: 'cohere',
-        maxInputs: 10,
     );
 
     $body = new CohereBodyFormat($config);

@@ -31,7 +31,7 @@ it('composes explicit config driver and model without mutating the provider', fu
         ->and($configured->explicitDecisionDriver())->toBe($driver);
 });
 
-it('registers typesafe by default and supports explicit driver factories', function () {
+it('registers bundled Decision drivers and supports explicit driver factories', function () {
     $driver = new class implements CanProcessDecisionRequest
     {
         #[Override]
@@ -46,8 +46,11 @@ it('registers typesafe by default and supports explicit driver factories', funct
     );
     $http = (new HttpClientBuilder)->withDriver(new MockHttpDriver)->create();
 
-    expect($registry->has('typesafe'))->toBeTrue()
-        ->and($registry->driverNames())->toBe(['typesafe', 'test'])
+    expect($registry->has('classifier-dev'))->toBeTrue()
+        ->and($registry->has('jeff'))->toBeTrue()
+        ->and($registry->has('laya'))->toBeTrue()
+        ->and($registry->has('typesafe'))->toBeTrue()
+        ->and($registry->driverNames())->toBe(['classifier-dev', 'jeff', 'laya', 'typesafe', 'test'])
         ->and($registry->makeDriver('test', new DecisionConfig, $http, new EventDispatcher))->toBe($driver)
         ->and($registry->withoutDriver('typesafe')->has('typesafe'))->toBeFalse()
         ->and(fn () => $registry->makeDriver('missing', new DecisionConfig, $http, new EventDispatcher))

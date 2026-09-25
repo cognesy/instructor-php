@@ -1,0 +1,5 @@
+driver: laya
+apiUrl: '${LAYA_API_URL}'
+apiKey: '${LAYA_API_KEY}'
+endpoint: '/v1/systemone'
+model: 'laya-typed-decisions'

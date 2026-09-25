@@ -1,0 +1,6 @@
+---
+driver: jeff
+apiUrl: '${JEFF_API_URL}'
+apiKey: '${JEFF_API_KEY}'
+endpoint: '/v1/systemone'
+model: 'gliformer-large-v1'

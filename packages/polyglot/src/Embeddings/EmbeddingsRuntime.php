@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings;
 
@@ -16,6 +18,7 @@ use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Creation\EmbeddingsDriverRegistry;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsDriverBuilt;
+use Cognesy\Polyglot\Embeddings\Models\ModelCatalog;
 use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 use InvalidArgumentException;
 use Override;
@@ -25,12 +28,25 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     public function __construct(
         private readonly CanHandleVectorization $driver,
         private readonly CanHandleEvents $events,
+        private readonly ?ModelCatalog $models = null,
+        private readonly string $driverName = '',
+        private readonly string $defaultModel = '',
     ) {}
 
     #[Override]
-    public function create(EmbeddingsRequest $request): PendingEmbeddings {
-        if (!$request->hasInputs()) {
+    public function create(EmbeddingsRequest $request): PendingEmbeddings
+    {
+        if (! $request->hasInputs()) {
             throw new InvalidArgumentException('Input data is required');
+        }
+        $model = $request->model() !== '' ? $request->model() : $this->defaultModel;
+        $request = $request->withModel($model);
+        if ($this->models !== null && $model !== '') {
+            $request = $request->withModelProfile($this->models->find($this->driverName, $model));
+        }
+        $maxInputs = $request->modelProfile()?->maxInputs;
+        if ($maxInputs !== null && count($request->inputs()) > $maxInputs) {
+            throw new InvalidArgumentException("Number of inputs exceeds the model limit of {$maxInputs}");
         }
 
         return new PendingEmbeddings(
@@ -45,6 +61,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?CanProvideEmbeddingsDrivers $drivers = null,
+        ?ModelCatalog $models = null,
     ): self {
         $events = self::resolveEvents($events);
         $httpClient = self::resolveHttpClient($events, $httpClient);
@@ -54,7 +71,14 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
             httpClient: $httpClient,
             drivers: $drivers,
         );
-        return new self(driver: $driver, events: $events);
+
+        return new self(
+            driver: $driver,
+            events: $events,
+            models: $models,
+            driverName: $config->driver,
+            defaultModel: $config->model,
+        );
     }
 
     private static function fromResolver(
@@ -62,12 +86,12 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?CanProvideEmbeddingsDrivers $drivers = null,
+        ?ModelCatalog $models = null,
     ): self {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
         $driver = match (true) {
-            $resolver instanceof HasExplicitEmbeddingsDriver && $resolver->explicitEmbeddingsDriver() !== null
-                => $resolver->explicitEmbeddingsDriver(),
+            $resolver instanceof HasExplicitEmbeddingsDriver && $resolver->explicitEmbeddingsDriver() !== null => $resolver->explicitEmbeddingsDriver(),
             default => self::makeDriver(
                 config: $config,
                 events: $events,
@@ -76,7 +100,13 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
             ),
         };
 
-        return new self(driver: $driver, events: $events);
+        return new self(
+            driver: $driver,
+            events: $events,
+            models: $models,
+            driverName: $config->driver,
+            defaultModel: $config->model,
+        );
     }
 
     public static function fromProvider(
@@ -84,24 +114,30 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?CanProvideEmbeddingsDrivers $drivers = null,
+        ?ModelCatalog $models = null,
     ): self {
         return self::fromResolver(
             resolver: $provider,
             events: $events,
             httpClient: $httpClient,
             drivers: $drivers,
+            models: $models,
         );
     }
 
     /** @param callable(object):void $listener */
-    public function onEvent(string $class, callable $listener, int $priority = 0): self {
+    public function onEvent(string $class, callable $listener, int $priority = 0): self
+    {
         $this->events->addListener($class, $listener, $priority);
+
         return $this;
     }
 
     /** @param callable(object):void $listener */
-    public function wiretap(callable $listener): self {
+    public function wiretap(callable $listener): self
+    {
         $this->events->wiretap($listener);
+
         return $this;
     }
 
@@ -127,7 +163,8 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         return $driver;
     }
 
-    private static function resolveDrivers(?CanProvideEmbeddingsDrivers $drivers): CanProvideEmbeddingsDrivers {
+    private static function resolveDrivers(?CanProvideEmbeddingsDrivers $drivers): CanProvideEmbeddingsDrivers
+    {
         return $drivers ?? EmbeddingsDriverRegistry::default();
     }
 
@@ -138,22 +175,26 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         if ($httpClient !== null) {
             return $httpClient;
         }
+
         // Implicit-build path: consult the ambient middleware registry (default
         // empty). Explicit clients returned above never reach this hook.
         return HttpClientDefaults::applyTo(new HttpClientBuilder(events: $events))->create();
     }
 
-    private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
+    private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents
+    {
         if ($events !== null) {
             return $events;
         }
+
         return EventLog::root('polyglot.embeddings.runtime');
     }
 
     /**
      * @return array<string,mixed>
      */
-    private static function redactedConfig(EmbeddingsConfig $config): array {
+    private static function redactedConfig(EmbeddingsConfig $config): array
+    {
         return SensitiveDataRedactor::redactValues($config->toArray());
     }
 }

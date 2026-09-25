@@ -247,8 +247,6 @@ final class SymfonyConfigProvider implements CanProvideConfig
             'apiKey' => $this->stringValue($config, 'apiKey', 'api_key'),
             'endpoint' => $endpoint !== '' ? $endpoint : '/embeddings',
             'model' => $this->stringValue($config, 'model'),
-            'dimensions' => $this->intValue($config, 0, 'dimensions', 'defaultDimensions', 'default_dimensions'),
-            'maxInputs' => $this->intValue($config, 0, 'maxInputs', 'max_inputs'),
             'metadata' => $this->embeddingsMetadata($config),
         ];
     }

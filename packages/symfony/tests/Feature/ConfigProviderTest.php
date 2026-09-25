@@ -37,7 +37,6 @@ it('provides normalized framework config views and typed runtime objects', funct
                     'deployment_id' => 'text-embedding-3-small',
                     'api_version' => '2024-08-01-preview',
                     'model' => 'text-embedding-3-small',
-                    'dimensions' => '1536',
                 ],
             ],
         ],
@@ -92,7 +91,7 @@ it('provides normalized framework config views and typed runtime objects', funct
             'presence_penalty' => 0.1,
         ])
         ->and($embeddings->driver)->toBe('azure')
-        ->and($embeddings->dimensions)->toBe(1536)
+        ->and($embeddings->model)->toBe('text-embedding-3-small')
         ->and($structured->outputMode())->toBe(OutputMode::Tools)
         ->and($structured->maxRetries())->toBe(2)
         ->and($structured->toolName())->toBe('extract_contact')
@@ -121,7 +120,6 @@ it('supports flat connection maps and legacy preset aliases', function (): void 
         'embeddings' => [
             'openai' => [
                 'model' => 'text-embedding-3-small',
-                'default_dimensions' => '1536',
             ],
         ],
     ]);
@@ -129,7 +127,7 @@ it('supports flat connection maps and legacy preset aliases', function (): void 
     expect($provider->get('llm.defaultPreset'))->toBe('openai')
         ->and($provider->get('llm.presets.openai.model'))->toBe('gpt-4o-mini')
         ->and($provider->llm()->metadata)->toBe(['organization' => 'acme'])
-        ->and($provider->embeddings()->dimensions)->toBe(1536)
+        ->and($provider->embeddings()->model)->toBe('text-embedding-3-small')
         ->and($provider->httpClient()->driver)->toBe('symfony');
 });
 

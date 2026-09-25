@@ -1,11 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings\Drivers\OpenAI;
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
-use InvalidArgumentException;
 
 class OpenAIBodyFormat implements CanMapRequestBody
 {
@@ -14,14 +15,11 @@ class OpenAIBodyFormat implements CanMapRequestBody
     ) {}
 
     #[\Override]
-    public function toRequestBody(EmbeddingsRequest $request): array {
+    public function toRequestBody(EmbeddingsRequest $request): array
+    {
         $inputs = $request->inputs();
         $model = $request->model() ?: $this->config->model;
         $options = $request->options();
-
-        if (count($inputs) > $this->config->maxInputs) {
-            throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config->maxInputs}");
-        }
 
         return array_filter(array_merge([
             'input' => $inputs,

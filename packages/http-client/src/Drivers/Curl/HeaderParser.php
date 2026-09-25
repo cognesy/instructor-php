@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Http\Drivers\Curl;
 
@@ -11,51 +13,59 @@ namespace Cognesy\Http\Drivers\Curl;
 final class HeaderParser
 {
     private array $headers = [];
+
     private int $statusCode = 0;
 
-    public function parse(string $headerLine): void {
+    public function parse(string $headerLine): void
+    {
         $line = trim($headerLine);
 
         if ($line === '') {
             return;
         }
 
-        // Parse status line (HTTP/1.1 200 OK)
         if (str_starts_with($line, 'HTTP/')) {
-            $parts = explode(' ', $line, 3);
-            if (count($parts) >= 2) {
-                $code = (int) $parts[1];
-                if ($code > 0) {
-                    $this->headers = [];
-                    $this->statusCode = $code;
-                }
+            if (! preg_match('/^HTTP\/\S+\s+([1-9]\d{2})\b/', $line, $matches)) {
+                return;
             }
+
+            $code = (int) $matches[1];
+            $this->headers = [];
+            $this->statusCode = intdiv($code, 100) === 1 ? 0 : $code;
+
             return;
         }
 
-        // Parse header (Content-Type: application/json)
-        $parts = explode(':', $line, 2);
-        if (count($parts) === 2) {
-            $name = trim($parts[0]);
-            $value = trim($parts[1]);
-
-            // Headers can appear multiple times (e.g., Set-Cookie)
-            if (!isset($this->headers[$name])) {
-                $this->headers[$name] = [];
-            }
-            $this->headers[$name][] = $value;
+        if ($this->statusCode === 0) {
+            return;
         }
+
+        $parts = explode(':', $line, 2);
+        if (count($parts) !== 2) {
+            return;
+        }
+
+        $name = trim($parts[0]);
+        $value = trim($parts[1]);
+
+        if (! isset($this->headers[$name])) {
+            $this->headers[$name] = [];
+        }
+        $this->headers[$name][] = $value;
     }
 
-    public function headers(): array {
+    public function headers(): array
+    {
         return $this->headers;
     }
 
-    public function statusCode(): int {
+    public function statusCode(): int
+    {
         return $this->statusCode;
     }
 
-    public function reset(): void {
+    public function reset(): void
+    {
         $this->headers = [];
         $this->statusCode = 0;
     }

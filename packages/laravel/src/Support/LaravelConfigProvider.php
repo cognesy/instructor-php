@@ -251,7 +251,6 @@ final class LaravelConfigProvider implements CanProvideConfig
             'apiKey' => $config['api_key'] ?? '',
             'endpoint' => $config['endpoint'] ?? '/embeddings',
             'model' => $config['model'] ?? '',
-            'dimensions' => $config['dimensions'] ?? 1536,
         ];
     }
 

@@ -35,13 +35,16 @@ final readonly class DecisionTelemetry
             ),
         };
 
-        return self::envelope(
-            id: $executionId,
-            type: 'sdm.decision',
-            kind: $parentOperationId === null ? OperationKind::RootSpan : OperationKind::Span,
-            correlation: $correlation,
-            tags: ['sdm', 'decision'],
-        );
+        return [
+            ...self::envelope(
+                id: $executionId,
+                type: 'sdm.decision',
+                kind: $parentOperationId === null ? OperationKind::RootSpan : OperationKind::Span,
+                correlation: $correlation,
+                tags: ['sdm', 'decision'],
+            ),
+            ...self::modelMetadata($request),
+        ];
     }
 
     public static function attempt(
@@ -51,20 +54,23 @@ final readonly class DecisionTelemetry
     ): array {
         $seed = $request->telemetryCorrelation();
 
-        return self::envelope(
-            id: $attemptId,
-            type: 'sdm.decision.attempt',
-            kind: OperationKind::Span,
-            correlation: OperationCorrelation::child(
-                rootOperationId: $seed?->rootOperationId() ?? $executionId,
-                parentOperationId: $executionId,
-                sessionId: $seed?->sessionId() ?? $request->id()->toString(),
-                userId: $seed?->userId(),
-                conversationId: $seed?->conversationId(),
-                requestId: $request->id()->toString(),
+        return [
+            ...self::envelope(
+                id: $attemptId,
+                type: 'sdm.decision.attempt',
+                kind: OperationKind::Span,
+                correlation: OperationCorrelation::child(
+                    rootOperationId: $seed?->rootOperationId() ?? $executionId,
+                    parentOperationId: $executionId,
+                    sessionId: $seed?->sessionId() ?? $request->id()->toString(),
+                    userId: $seed?->userId(),
+                    conversationId: $seed?->conversationId(),
+                    requestId: $request->id()->toString(),
+                ),
+                tags: ['sdm', 'decision', 'attempt'],
             ),
-            tags: ['sdm', 'decision', 'attempt'],
-        );
+            ...self::modelMetadata($request),
+        ];
     }
 
     /** @param list<string> $tags */
@@ -85,6 +91,26 @@ final readonly class DecisionTelemetry
                 ),
                 correlation: $correlation,
             ))->withTags($tags)->toArray(),
+        ];
+    }
+
+    /** @return array<string, string|array<string, string>> */
+    private static function modelMetadata(DecisionRequest $request): array
+    {
+        $profile = $request->modelProfile();
+        if ($profile === null) {
+            return [];
+        }
+
+        $capabilities = $profile->capabilities->toArray();
+
+        return [
+            'modelKey' => $profile->driver.'/'.$profile->model,
+            'modelCatalogVersion' => $profile->catalogVersion,
+            ...match ($capabilities) {
+                [] => [],
+                default => ['decisionPrimitiveSupport' => $capabilities],
+            },
         ];
     }
 }

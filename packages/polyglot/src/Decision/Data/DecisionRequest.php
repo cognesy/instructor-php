@@ -7,6 +7,7 @@ namespace Cognesy\Polyglot\Decision\Data;
 use Cognesy\Polyglot\Decision\Collections\Questions;
 use Cognesy\Polyglot\Decision\Config\DecisionRetryPolicy;
 use Cognesy\Polyglot\Decision\Internal\DecisionData;
+use Cognesy\Polyglot\Decision\Models\DecisionModel;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use InvalidArgumentException;
 use stdClass;
@@ -26,6 +27,7 @@ final readonly class DecisionRequest
         private ?DecisionRetryPolicy $retryPolicy = null,
         private ?OperationCorrelation $telemetryCorrelation = null,
         ?DecisionRequestId $id = null,
+        private ?DecisionModel $modelProfile = null,
     ) {
         $this->input = is_string($input) ? JsonContent::text($input) : $input;
         if ($questions->isEmpty()) {
@@ -90,6 +92,11 @@ final readonly class DecisionRequest
         return $this->retryPolicy;
     }
 
+    public function modelProfile(): ?DecisionModel
+    {
+        return $this->modelProfile;
+    }
+
     public function telemetryCorrelation(): ?OperationCorrelation
     {
         return $this->telemetryCorrelation;
@@ -104,6 +111,7 @@ final readonly class DecisionRequest
             $this->retryPolicy,
             $this->telemetryCorrelation,
             $this->id,
+            $this->modelProfile,
         );
     }
 
@@ -116,6 +124,7 @@ final readonly class DecisionRequest
             $this->retryPolicy,
             $this->telemetryCorrelation,
             $this->id,
+            $this->modelProfile,
         );
     }
 
@@ -128,6 +137,7 @@ final readonly class DecisionRequest
             $this->retryPolicy,
             $this->telemetryCorrelation,
             $this->id,
+            null,
         );
     }
 
@@ -140,6 +150,7 @@ final readonly class DecisionRequest
             $retryPolicy,
             $this->telemetryCorrelation,
             $this->id,
+            $this->modelProfile,
         );
     }
 
@@ -152,6 +163,20 @@ final readonly class DecisionRequest
             $this->retryPolicy,
             $correlation,
             $this->id,
+            $this->modelProfile,
+        );
+    }
+
+    public function withModelProfile(DecisionModel $modelProfile): self
+    {
+        return new self(
+            $this->input,
+            $this->questions,
+            $this->model,
+            $this->retryPolicy,
+            $this->telemetryCorrelation,
+            $this->id,
+            $modelProfile,
         );
     }
 

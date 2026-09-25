@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
@@ -8,7 +10,6 @@ it('applies request overrides over runtime defaults in embeddings request body',
     $config = new EmbeddingsConfig(
         model: 'runtime-default-model',
         driver: 'openai',
-        maxInputs: 10,
     );
 
     $body = (new OpenAIBodyFormat($config))->toRequestBody(new EmbeddingsRequest(

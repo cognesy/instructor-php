@@ -68,7 +68,11 @@ final class CurlFactory
     }
 
     private function configureHttpVersion(CurlHandle $handle): void {
-        $handle->setOption(CURLOPT_HTTP_VERSION, $this->curlHttpVersion($this->config->httpVersion ?? '2.0'));
+        $version = match ($this->config->httpVersion) {
+            null => CURL_HTTP_VERSION_2TLS,
+            default => $this->curlHttpVersion($this->config->httpVersion),
+        };
+        $handle->setOption(CURLOPT_HTTP_VERSION, $version);
     }
 
     private function curlHttpVersion(string $version): int {

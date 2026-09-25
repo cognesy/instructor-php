@@ -100,7 +100,6 @@ return [
                 'api_url' => env('OPENAI_API_URL', 'https://api.openai.com/v1'),
                 'api_key' => env('OPENAI_API_KEY'),
                 'model' => env('OPENAI_EMBEDDINGS_MODEL', 'text-embedding-3-small'),
-                'dimensions' => env('OPENAI_EMBEDDINGS_DIMENSIONS', 1536),
             ],
 
             'ollama' => [
@@ -108,7 +107,6 @@ return [
                 'api_url' => env('OLLAMA_API_URL', 'http://localhost:11434/v1'),
                 'api_key' => env('OLLAMA_API_KEY', 'ollama'),
                 'model' => env('OLLAMA_EMBEDDINGS_MODEL', 'nomic-embed-text'),
-                'dimensions' => env('OLLAMA_EMBEDDINGS_DIMENSIONS', 768),
             ],
 
         ],

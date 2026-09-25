@@ -15,8 +15,63 @@ This is a breaking removal. Delete `contextLength`, `maxOutputLength`, and `pric
 offerings return an explicit profile whose facts are unknown; Polyglot does not infer support
 from a provider name or model-name regex.
 
-Catalog records do not contain pricing. Use `InferencePricing` or `EmbeddingsPricing` explicitly
-with their existing calculators when an application has sourced pricing data.
+Inference catalog records do not contain pricing. Embedding and Decision model
+catalogs may carry a reviewed pricing snapshot for estimates; callers can still
+provide an explicit rate instead.
+
+### Embedding and Decision model catalogs
+
+Embeddings and structured decisions now have separate, domain-owned exact model
+catalogs:
+
+```php
+use Cognesy\Polyglot\Decision\Models\ModelCatalog as DecisionModels;
+use Cognesy\Polyglot\Embeddings\Models\ModelCatalog as EmbeddingModels;
+
+$embedding = EmbeddingModels::discover()
+    ->find('openai', 'text-embedding-3-small');
+$decision = DecisionModels::discover()
+    ->find('typesafe', 'jev-1.13.0');
+```
+
+This is also a clean configuration cutover. Remove `dimensions`, the
+`defaultDimensions` alias, and `maxInputs` from `EmbeddingsConfig`, embedding
+DSNs and presets, and Laravel/Symfony embedding connection configuration. Put a
+caller-selected width in request options, such as
+`withOptions(['dimensions' => 256])`. Read reviewed defaults and provider limits
+from `EmbeddingModel`.
+
+The old preset-level `maxInputs` guards are gone. Inject an embedding catalog at
+the composition root to enforce a known exact-model input count before HTTP:
+
+```php
+$runtime = EmbeddingsRuntime::fromConfig(
+    $config,
+    models: EmbeddingModels::discover(),
+);
+```
+
+Without `models:`, embedding requests perform no catalog I/O or catalog-based
+check. Unknown exact routes remain executable. Request model overrides now drive
+one effective model for both catalog lookup and provider URL/body rendering.
+
+`DecisionRuntime::__construct()`, `fromConfig()`, and `fromProvider()` accept an
+optional Decision catalog. `DecisionRequest` now exposes `modelProfile()` and
+`withModelProfile()`; the profile is transient and excluded from portable
+serialization. Embedding requests follow the same profile rule.
+
+Embedding usage no longer converts an omitted provider count to zero.
+`EmbeddingsUsage::$inputTokens`, `input()`, and `total()` are nullable, and the
+embedding cost calculator returns `?Cost`. Initialize known accumulation with
+`EmbeddingsUsage::zero()`; `none()` now means unknown. Unknown usage plus a
+nonzero rate yields no estimate, while explicit zero usage or an explicit zero
+rate still yields a known zero cost.
+
+Decision catalog records for `jev-1.13.0` and `jev-latest` are independent
+reviewed snapshots. The 64,000 request and 32,000 state-plus-question values are
+planning ceilings, not tokenizer-exact runtime checks. Pin a version when stable
+constraints matter, and price the exact model returned in `DecisionResponse`
+instead of inheriting an old alias price.
 
 ### Individual model files
 

@@ -3,7 +3,22 @@ title: Model Catalog
 description: Exact, request-scoped model facts without provider guessing.
 ---
 
-## One identity and one source
+## Domain-owned catalogs
+
+Inference, embeddings, and structured decisions use separate model types because
+their useful facts differ:
+
+| Domain | Catalog | Model facts |
+| --- | --- | --- |
+| Inference | `Inference\Models\ModelCatalog` | support, limits, modalities, capabilities, reasoning |
+| Embeddings | `Embeddings\Models\ModelCatalog` | input limits, default dimensions, optional input pricing |
+| Decision | `Decision\Models\ModelCatalog` | request budgets, primitive semantics, and optional input/output pricing |
+
+They share exact `(driver, wire model)` lookup semantics, not a common capability
+object. This prevents an embedding dimension or Jev state budget from being
+misrepresented as an inference capability.
+
+## Inference identity and source
 
 Polyglot identifies an offering by the exact pair `(driver, wire model)`. A profile owns the
 offering's support status, context and output limits, modalities, capabilities, source, and
@@ -67,17 +82,65 @@ request-level model override. The transient profile travels with the in-process 
 policy, translation, and telemetry describe the model actually executed. It is excluded from
 request serialization.
 
-`discover()` resolves model directories through the same application, monorepo, and vendor
-locations as LLM presets. It creates a reusable catalog without reading any model records.
-`find()` reads only the exact offering's YAML file, using the first matching directory.
-Application `config/llm/models` takes precedence over packaged records. Overlays replace whole
-records; omitted facts in a replacement become unknown rather than inheriting packaged values.
+Embedding and Decision runtimes use the same explicit composition with their own
+catalog classes:
+
+```php
+use Cognesy\Polyglot\Decision\Models\ModelCatalog as DecisionModels;
+use Cognesy\Polyglot\Decision\DecisionRuntime;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Embeddings\Models\ModelCatalog as EmbeddingModels;
+
+$embeddingRuntime = EmbeddingsRuntime::fromConfig(
+    $embeddingConfig,
+    models: EmbeddingModels::discover(),
+);
+$decisionRuntime = DecisionRuntime::fromConfig(
+    $decisionConfig,
+    models: DecisionModels::discover(),
+);
+```
+
+The effective request model is resolved before lookup. A request-level override
+therefore changes both the wire route and attached profile. The profile is
+transient and excluded from `toArray()`. Without `models:`, runtime performs no
+catalog lookup or catalog-based validation.
+
+Embedding runtime enforces a known `maxInputs` before HTTP. Unknown limits are
+permissive. Token limits in both newer catalogs are inspection and application
+budgeting facts; Polyglot does not estimate provider tokens or split requests
+automatically.
+
+```php
+$embedding = EmbeddingModels::discover()
+    ->find('openai', 'text-embedding-3-small');
+$decision = DecisionModels::discover()
+    ->find('typesafe', 'jev-1.13.0');
+
+$embedding->maxInputs;                 // ?int
+$embedding->defaultDimensions;         // ?int
+$decision->maxRequestTokens;           // ?int
+$decision->maxStateAndQuestionTokens;  // ?int
+$decision->capabilities->choice;       // DecisionPrimitiveSupport
+$decision->capabilities->noul;         // DecisionPrimitiveSupport
+$decision->capabilities->score;        // DecisionPrimitiveSupport
+```
+
+`discover()` resolves domain-specific model directories through the same application,
+monorepo, and vendor layouts as presets: `config/llm/models`,
+`config/embed/models`, or `config/sdm/models`. It creates a reusable catalog
+without reading any model records. `find()` reads only the exact offering's YAML
+file, using the first matching directory. Application records take precedence
+over packaged records. Replacements are whole records; omitted facts become
+unknown rather than inheriting packaged values.
 
 Discovered catalogs are memoized by application root. `discover($projectRoot)` selects a project
 explicitly without changing the global base path; `fromPaths($projectModels, $packageModels)`
 creates an independent catalog with explicit ordered roots. Each catalog caches hydrated profiles
-and missing keys. Reusing it across hundreds of inference objects avoids repeated file reads and
-hydration. `count()`, iteration, `forDriver()`, and `toArray()` explicitly enumerate records.
+and missing keys. Reusing it across hundreds of requests avoids repeated file
+reads and hydration. Inference's richer catalog also offers explicit enumeration
+through `count()`, iteration, `forDriver()`, and `toArray()`; embedding and
+Decision catalogs intentionally expose exact lookup only.
 
 Profiles are immutable. A catalog instance has no automatic reload; create a new instance to
 change its configured scope. The shared config reader caches parsed source by path and mtime;
@@ -90,6 +153,12 @@ Before a provider body is rendered, an in-process preflight step reads only fact
 attached to that request. It does not make an LLM or network request. Explicitly unsupported
 streaming, tools, tool choice, JSON Object, and reasoning selections are rejected. Missing or
 unknown facts make no local support assertion, so custom models remain executable.
+
+Decision preflight applies the same rule to Choice, Noul, and Score questions:
+only `unsupported` rejects a request. `native` means the provider implements the
+primitive directly, while `projected` means its driver maps that primitive onto a
+different provider operation. These states describe semantics, not model quality,
+calibration, accuracy, or fitness for an application.
 
 A semantic change such as JSON Schema to JSON Object requires both an exact supported fallback
 fact and `LLMConfig::$allowLossyFallback === true`. The default is `false`. Approved changes are
@@ -119,6 +188,36 @@ profile:
     streaming: supported
   source: project
 ```
+
+Embedding and Decision records use the same strict envelope under
+`config/embed/models` and `config/sdm/models`. Their `profile` fields are parsed
+by `EmbeddingModel` and `DecisionModel`, respectively. Application records take
+whole-record precedence over packaged records; omitted override facts stay
+unknown rather than inheriting from a lower-priority file.
+
+A Decision record can declare primitive semantics explicitly:
+
+```yaml
+schemaVersion: 1
+version: project-1
+profile:
+  driver: classifier-dev
+  model: fast
+  capabilities:
+    choice: native
+    noul: projected
+    score: projected
+```
+
+Decision primitive support accepts `native`, `projected`, `unsupported`, and
+`unknown`. Unknown fields are omitted from serialization; an uncatalogued route
+therefore remains executable.
+
+The bundled Decision records cover `typesafe/{jev-1.13.0,jev-latest}`,
+`classifier-dev/fast`, `jeff/gliformer-large-v1`, and
+`laya/{laya,laya-multilingual,laya-typed-decisions}`. `jev-latest` is an
+independently reviewed snapshot, not a dynamic alias resolver. Pin an exact
+returned model or self-hosted revision when stable planning facts matter.
 
 The path is `<encoded-driver>/<encoded-model>.yaml`, with each component encoded using
 `rawurlencode()`; the special components `.` and `..` have their dots percent-encoded as well.

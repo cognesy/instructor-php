@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<psalm errorLevel="7"
+       resolveFromConfigFile="true"
+       findUnusedCode="false"
+       findUnusedVariables="false"
+       xmlns="https://getpsalm.org/schema/config">
+    <projectFiles>
+        <directory name="src" />
+    </projectFiles>
+</psalm>

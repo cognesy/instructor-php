@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings\Config;
 
@@ -11,10 +13,9 @@ use Throwable;
 final class EmbeddingsConfig
 {
     public const CONFIG_GROUP = 'embed';
-    /** @var list<string> */
-    private const INT_FIELDS = ['dimensions', 'maxInputs'];
 
-    public static function group() : string {
+    public static function group(): string
+    {
         return self::CONFIG_GROUP;
     }
 
@@ -25,10 +26,8 @@ final class EmbeddingsConfig
         public string $apiKey = '',
         public string $endpoint = '',
         public string $model = '',
-        public int    $dimensions = 0,
-        public int    $maxInputs = 0,
         #[\SensitiveParameter]
-        public array  $metadata = [],
+        public array $metadata = [],
         public string $driver = 'openai',
     ) {}
 
@@ -37,91 +36,60 @@ final class EmbeddingsConfig
         'packages/polyglot/resources/config/embed/presets',
         'vendor/cognesy/instructor-php/packages/polyglot/resources/config/embed/presets',
         'vendor/cognesy/instructor-polyglot/resources/config/embed/presets',
-        __DIR__ . '/../../../resources/config/embed/presets',
+        __DIR__.'/../../../resources/config/embed/presets',
     ];
 
-    public static function fromDefaultPreset(): self {
+    public static function fromDefaultPreset(): self
+    {
         $preset = PresetConfigLoader::defaultName('embeddings', self::PRESET_PATHS);
 
         return self::fromPreset($preset);
     }
 
-    public static function fromPreset(string $preset, ?string $basePath = null): self {
+    public static function fromPreset(string $preset, ?string $basePath = null): self
+    {
         $paths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
         $data = PresetConfigLoader::load($preset, $paths);
+
         return self::fromArray($data);
     }
 
-    public static function fromArray(#[\SensitiveParameter] array $config) : EmbeddingsConfig {
-        $normalized = self::coerceScalarTypes(self::normalizeConfigArray($config));
-
+    public static function fromArray(#[\SensitiveParameter] array $config): EmbeddingsConfig
+    {
         try {
-            $instance = new self(...$normalized);
+            $instance = new self(...$config);
         } catch (Throwable $e) {
-            $fields = SensitiveDataRedactor::summarizeFieldTypes($normalized);
+            $fields = SensitiveDataRedactor::summarizeFieldTypes($config);
             throw new InvalidArgumentException(
                 message: "Invalid configuration for EmbeddingsConfig: {$e->getMessage()}\nFields: {$fields}",
                 previous: $e,
             );
         }
+
         return $instance;
     }
 
-    public static function fromDsn(#[\SensitiveParameter] string $dsn): self {
+    public static function fromDsn(#[\SensitiveParameter] string $dsn): self
+    {
         return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
-    public function withOverrides(#[\SensitiveParameter] array $values) : self {
+    public function withOverrides(#[\SensitiveParameter] array $values): self
+    {
         $config = array_merge($this->toArray(), $values);
+
         return self::fromArray($config);
     }
 
-    public function toArray() : array {
+    public function toArray(): array
+    {
         return [
             'apiUrl' => $this->apiUrl,
             'apiKey' => $this->apiKey,
             'endpoint' => $this->endpoint,
             'model' => $this->model,
-            'dimensions' => $this->dimensions,
-            'maxInputs' => $this->maxInputs,
             'metadata' => $this->metadata,
             'driver' => $this->driver,
         ];
-    }
-
-    private static function normalizeConfigArray(#[\SensitiveParameter] array $config): array {
-        if (array_key_exists('dimensions', $config)) {
-            return $config;
-        }
-
-        if (!array_key_exists('defaultDimensions', $config)) {
-            return $config;
-        }
-
-        $config['dimensions'] = $config['defaultDimensions'];
-        unset($config['defaultDimensions']);
-
-        return $config;
-    }
-
-    private static function coerceScalarTypes(#[\SensitiveParameter] array $config): array {
-        $typed = $config;
-        foreach (self::INT_FIELDS as $field) {
-            if (!array_key_exists($field, $typed)) {
-                continue;
-            }
-            $typed[$field] = self::toInt($field, $typed[$field]);
-        }
-        return $typed;
-    }
-
-    private static function toInt(string $field, #[\SensitiveParameter] mixed $value): int {
-        return match (true) {
-            is_int($value) => $value,
-            is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,
-            default => throw new InvalidArgumentException(
-                sprintf('Invalid %s value: expected integer, got %s', $field, get_debug_type($value)),
-            ),
-        };
     }
 }

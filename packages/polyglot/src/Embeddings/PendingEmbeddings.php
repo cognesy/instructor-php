@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings;
 
@@ -12,7 +14,9 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class PendingEmbeddings
 {
     private readonly CanHandleVectorization $driver;
+
     private readonly EventDispatcherInterface $events;
+
     private readonly EmbeddingsRequest $request;
 
     private ?EmbeddingsResponse $response = null;
@@ -27,19 +31,23 @@ class PendingEmbeddings
         $this->driver = $driver;
     }
 
-    public function request() : EmbeddingsRequest {
+    public function request(): EmbeddingsRequest
+    {
         return $this->request;
     }
 
-    public function get() : EmbeddingsResponse {
+    public function get(): EmbeddingsResponse
+    {
         if ($this->response === null) {
             $this->response = $this->makeResponse();
         }
+
         return $this->response;
     }
 
-    private function makeResponse() : EmbeddingsResponse {
-        $policy = $this->request->retryPolicy() ?? new EmbeddingsRetryPolicy();
+    private function makeResponse(): EmbeddingsResponse
+    {
+        $policy = $this->request->retryPolicy() ?? new EmbeddingsRetryPolicy;
         $maxAttempts = max(1, $policy->maxAttempts);
         $attempt = 0;
 
@@ -49,11 +57,12 @@ class PendingEmbeddings
             try {
                 $response = $this->driver->handle($this->request);
                 $this->events->dispatch(new EmbeddingsResponseReceived($this->responseEventData($response)));
+
                 return $response;
             } catch (\Throwable $e) {
                 $shouldRetry = $attempt < $maxAttempts
                     && $policy->shouldRetryException($e, $attempt);
-                if (!$shouldRetry) {
+                if (! $shouldRetry) {
                     throw $e;
                 }
                 $delayMs = $policy->delayMsForAttempt($attempt);
@@ -70,10 +79,25 @@ class PendingEmbeddings
 
         return [
             'model' => $this->request->model(),
+            ...$this->modelMetadata(),
             'inputCount' => count($this->request->inputs()),
             'vectorCount' => count($response->vectors()),
             'dimensions' => $firstVector === null ? 0 : count($firstVector->values()),
             'usage' => $response->usage()->toArray(),
+        ];
+    }
+
+    /** @return array<string, string> */
+    private function modelMetadata(): array
+    {
+        $profile = $this->request->modelProfile();
+        if ($profile === null) {
+            return [];
+        }
+
+        return [
+            'modelKey' => $profile->driver.'/'.$profile->model,
+            'modelCatalogVersion' => $profile->catalogVersion,
         ];
     }
 }

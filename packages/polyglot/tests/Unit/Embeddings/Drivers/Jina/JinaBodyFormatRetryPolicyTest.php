@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
@@ -12,7 +14,6 @@ it('Embeddings Jina: omits retryPolicy from request body', function () {
         endpoint: '/v1/embeddings',
         model: 'jina-embeddings-v2-base-en',
         driver: 'jina',
-        maxInputs: 10,
     );
 
     $body = new JinaBodyFormat($config);

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
@@ -12,7 +14,6 @@ it('Embeddings OpenAI: omits retryPolicy from request body', function () {
         endpoint: '/embeddings',
         model: 'text-embedding-3-small',
         driver: 'openai',
-        maxInputs: 10,
     );
 
     $body = new OpenAIBodyFormat($config);

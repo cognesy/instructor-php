@@ -2,6 +2,7 @@
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Models\EmbeddingModel;
 
 it('normalizes inputs and stores model and options', function () {
     $req = new EmbeddingsRequest(input: 'hello', options: ['user' => 'u1'], model: 'text-embedding-3-small');
@@ -34,4 +35,14 @@ it('accepts retry policy via constructor named args', function () {
     );
 
     expect($req->retryPolicy())->toBe($retryPolicy);
+});
+
+it('preserves a model profile across unrelated changes and clears it when the route changes', function () {
+    $profile = new EmbeddingModel('openai', 'text-embedding-3-small', maxInputs: 2048);
+    $request = (new EmbeddingsRequest(input: 'hello', model: $profile->model))
+        ->withModelProfile($profile);
+
+    expect($request->withOptions(['dimensions' => 256])->modelProfile())->toBe($profile)
+        ->and($request->withInputs(['hello', 'world'])->modelProfile())->toBe($profile)
+        ->and($request->withModel('text-embedding-3-large')->modelProfile())->toBeNull();
 });

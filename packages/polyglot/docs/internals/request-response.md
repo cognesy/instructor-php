@@ -279,9 +279,9 @@ $usage->toString(); // "Tokens: 150 (i:100 o:40 c:0 r:10)"
 
 ### Cost Calculation
 
-Cost is calculated externally using a calculator rather than through methods
-on the usage object. The caller supplies current pricing in USD per 1 million
-tokens; model catalog records do not contain pricing:
+Inference cost is calculated externally using a calculator rather than through
+methods on the usage object. The caller supplies current pricing in USD per 1
+million tokens; inference model catalog records do not contain pricing:
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
@@ -344,10 +344,14 @@ $response->vectors();       // Vector[] -- all embedding vectors
 $response->first();         // ?Vector -- first vector
 $response->last();          // ?Vector -- last vector
 $response->all();           // Vector[] -- alias for vectors()
-$response->usage();         // InferenceUsage
+$response->usage();         // EmbeddingsUsage; input count may be null
 $response->toValuesArray(); // array of float arrays
 $response->split($index);   // [Vector[], Vector[]] -- split at index
 ```
+
+Missing provider usage remains `null`, distinct from a reported zero. Embedding
+cost calculation therefore returns `null` when a nonzero rate requires a token
+count that the provider did not report.
 
 ### PendingEmbeddings
 

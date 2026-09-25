@@ -36,6 +36,7 @@
     "cognesy/logging": "^2.3",
     "cognesy/instructor-messages": "^2.11",
     "cognesy/instructor-polyglot": "^2.11",
+    "cognesy/instructor-retrieval": "^2.11",
     "cognesy/instructor-sandbox": "^2.11",
     "cognesy/instructor-schema": "^2.11",
     "cognesy/instructor-struct": "^2.11",

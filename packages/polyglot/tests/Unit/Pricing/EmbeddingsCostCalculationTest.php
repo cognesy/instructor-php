@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsPricing;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsUsage;
@@ -37,12 +39,12 @@ describe('EmbeddingsPricing', function () {
     });
 
     it('throws on non-numeric value', function () {
-        expect(fn() => EmbeddingsPricing::fromArray(['input' => 'bad']))
+        expect(fn () => EmbeddingsPricing::fromArray(['input' => 'bad']))
             ->toThrow(InvalidArgumentException::class, "Pricing field 'input' must be numeric");
     });
 
     it('throws on negative value', function () {
-        expect(fn() => EmbeddingsPricing::fromArray(['input' => -0.5]))
+        expect(fn () => EmbeddingsPricing::fromArray(['input' => -0.5]))
             ->toThrow(InvalidArgumentException::class, "Pricing field 'input' must be non-negative");
     });
 
@@ -62,28 +64,46 @@ describe('EmbeddingsPricing', function () {
 
 describe('Embeddings FlatRateCostCalculator', function () {
     it('calculates cost for input tokens', function () {
-        $calculator = new FlatRateCostCalculator();
+        $calculator = new FlatRateCostCalculator;
         $usage = new EmbeddingsUsage(inputTokens: 1_000_000);
         $pricing = new EmbeddingsPricing(inputPerMToken: 0.1);
 
         $cost = $calculator->calculate($usage, $pricing);
 
-        expect($cost->total)->toBe(0.1)
-            ->and($cost->breakdown)->toBe(['input' => 0.1]);
+        expect($cost?->total)->toBe(0.1)
+            ->and($cost?->breakdown)->toBe(['input' => 0.1]);
     });
 
-    it('returns zero cost with no usage', function () {
-        $calculator = new FlatRateCostCalculator();
+    it('returns unavailable cost when paid usage is unknown', function () {
+        $calculator = new FlatRateCostCalculator;
         $usage = EmbeddingsUsage::none();
         $pricing = new EmbeddingsPricing(inputPerMToken: 0.1);
 
-        $cost = $calculator->calculate($usage, $pricing);
+        expect($calculator->calculate($usage, $pricing))->toBeNull();
+    });
 
-        expect($cost->total)->toBe(0.0);
+    it('distinguishes explicit zero usage and free pricing from unknown usage', function () {
+        $calculator = new FlatRateCostCalculator;
+
+        expect($calculator->calculate(
+            EmbeddingsUsage::zero(),
+            new EmbeddingsPricing(inputPerMToken: 0.1),
+        )?->total)->toBe(0.0)
+            ->and($calculator->calculate(
+                EmbeddingsUsage::none(),
+                EmbeddingsPricing::none(),
+            )?->total)->toBe(0.0);
+    });
+
+    it('keeps accumulated usage unknown when any part is unknown', function () {
+        expect(EmbeddingsUsage::zero()
+            ->withAccumulated(new EmbeddingsUsage(12))
+            ->withAccumulated(EmbeddingsUsage::none())
+            ->input())->toBeNull();
     });
 
     it('calculates realistic text-embedding-3-small pricing', function () {
-        $calculator = new FlatRateCostCalculator();
+        $calculator = new FlatRateCostCalculator;
         // text-embedding-3-small: $0.02/1M tokens
         $usage = new EmbeddingsUsage(inputTokens: 50_000);
         $pricing = new EmbeddingsPricing(inputPerMToken: 0.02);
@@ -91,17 +111,30 @@ describe('Embeddings FlatRateCostCalculator', function () {
         $cost = $calculator->calculate($usage, $pricing);
 
         // 0.05 * 0.02 = 0.001
-        expect($cost->total)->toBeCloseTo(0.001, 6);
+        expect($cost?->total)->toBeCloseTo(0.001, 6);
     });
 
     it('has only input breakdown key', function () {
-        $calculator = new FlatRateCostCalculator();
+        $calculator = new FlatRateCostCalculator;
         $usage = new EmbeddingsUsage(inputTokens: 1000);
         $pricing = new EmbeddingsPricing(inputPerMToken: 1.0);
 
         $cost = $calculator->calculate($usage, $pricing);
 
-        expect($cost->breakdown)->toHaveKeys(['input'])
-            ->and($cost->breakdown)->toHaveCount(1);
+        expect($cost?->breakdown)->toHaveKeys(['input'])
+            ->and($cost?->breakdown)->toHaveCount(1);
     });
+});
+
+describe('EmbeddingsUsage', function () {
+    it('keeps missing usage distinct from reported zero', function () {
+        expect(EmbeddingsUsage::fromArray([])->input())->toBeNull()
+            ->and(EmbeddingsUsage::fromArray(['input' => null])->input())->toBeNull()
+            ->and(EmbeddingsUsage::fromArray(['input' => 0])->input())->toBe(0);
+    });
+
+    it('rejects malformed reported token counts', function (mixed $input) {
+        expect(fn () => EmbeddingsUsage::fromArray(['input' => $input]))
+            ->toThrow(InvalidArgumentException::class, 'non-negative integer or null');
+    })->with([-1, '12', 1.5, true]);
 });

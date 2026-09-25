@@ -7,5 +7,3 @@ metadata:
   resourceName: instructor-dev
   deploymentId: text-embedding-3-small
 model: text-embedding-3-small
-dimensions: 1536
-maxInputs: 16

@@ -15,8 +15,10 @@ use Cognesy\Polyglot\Decision\Contracts\CanProcessDecisionRequest;
 use Cognesy\Polyglot\Decision\Contracts\CanProvideDecisionDrivers;
 use Cognesy\Polyglot\Decision\Contracts\CanResolveDecisionConfig;
 use Cognesy\Polyglot\Decision\Contracts\HasExplicitDecisionDriver;
+use Cognesy\Polyglot\Decision\Core\DecisionRequestPreflight;
 use Cognesy\Polyglot\Decision\Creation\DecisionDriverRegistry;
 use Cognesy\Polyglot\Decision\Data\DecisionRequest;
+use Cognesy\Polyglot\Decision\Models\ModelCatalog;
 use Cognesy\Polyglot\Support\Retry\CanDelayRetries;
 use Cognesy\Polyglot\Support\Retry\SystemRetryDelay;
 use InvalidArgumentException;
@@ -35,8 +37,8 @@ final class DecisionRuntime implements CanCreateDecision
     private readonly ?Closure $monotonicNanoReader;
 
     /**
-     * @param (callable():int)|null $unixTimeReader
-     * @param (callable():int)|null $monotonicNanoReader
+     * @param  (callable():int)|null  $unixTimeReader
+     * @param  (callable():int)|null  $monotonicNanoReader
      */
     public function __construct(
         private readonly CanProcessDecisionRequest $driver,
@@ -46,6 +48,7 @@ final class DecisionRuntime implements CanCreateDecision
         ?callable $unixTimeReader = null,
         string $driverName = '',
         ?callable $monotonicNanoReader = null,
+        private readonly ?ModelCatalog $models = null,
     ) {
         $this->retryDelay = $retryDelay ?? new SystemRetryDelay;
         $this->unixTimeReader = $unixTimeReader === null
@@ -65,8 +68,14 @@ final class DecisionRuntime implements CanCreateDecision
             throw new InvalidArgumentException('Decision model is required.');
         }
 
+        $request = $request->withModel($model);
+        if ($this->models !== null) {
+            $request = $request->withModelProfile($this->models->find($this->driverName, $model));
+        }
+        DecisionRequestPreflight::assertSupported($request);
+
         return new PendingDecision(
-            request: $request->withModel($model),
+            request: $request,
             driver: $this->driver,
             retryDelay: $this->retryDelay,
             events: $this->events,
@@ -84,6 +93,7 @@ final class DecisionRuntime implements CanCreateDecision
         ?CanProvideDecisionDrivers $drivers = null,
         ?CanDelayRetries $retryDelay = null,
         ?callable $unixTimeReader = null,
+        ?ModelCatalog $models = null,
     ): self {
         $events = self::resolveEvents($events);
         $httpClient = self::resolveHttpClient($events, $httpClient);
@@ -95,6 +105,7 @@ final class DecisionRuntime implements CanCreateDecision
             retryDelay: $retryDelay,
             unixTimeReader: $unixTimeReader,
             driverName: $config->driver,
+            models: $models,
         );
     }
 
@@ -106,6 +117,7 @@ final class DecisionRuntime implements CanCreateDecision
         ?CanProvideDecisionDrivers $drivers = null,
         ?CanDelayRetries $retryDelay = null,
         ?callable $unixTimeReader = null,
+        ?ModelCatalog $models = null,
     ): self {
         return self::fromResolver(
             resolver: $provider,
@@ -114,6 +126,7 @@ final class DecisionRuntime implements CanCreateDecision
             drivers: $drivers,
             retryDelay: $retryDelay,
             unixTimeReader: $unixTimeReader,
+            models: $models,
         );
     }
 
@@ -141,6 +154,7 @@ final class DecisionRuntime implements CanCreateDecision
         ?CanProvideDecisionDrivers $drivers,
         ?CanDelayRetries $retryDelay,
         ?callable $unixTimeReader,
+        ?ModelCatalog $models,
     ): self {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
@@ -162,6 +176,7 @@ final class DecisionRuntime implements CanCreateDecision
             retryDelay: $retryDelay,
             unixTimeReader: $unixTimeReader,
             driverName: $config->driver,
+            models: $models,
         );
     }
 

@@ -1,0 +1,20 @@
+# Sources reviewed 2026-09-18:
+# https://docs.typesafe.ai/models.md
+# https://docs.typesafe.ai/model-jaggedness/jev-1.13.md
+# Snapshot: jev-latest pointed to jev-1.13.0 at review time. Pin jev-1.13.0 when
+# stable limits matter; the provider can move this alias independently.
+# The 64k/32k labels are conservative planning ceilings, not exact local checks.
+schemaVersion: 1
+version: '2026-09-18'
+profile:
+  driver: typesafe
+  model: jev-latest
+  maxRequestTokens: 64000
+  maxStateAndQuestionTokens: 32000
+  capabilities:
+    choice: native
+    noul: native
+    score: native
+  pricing:
+    inputPerMToken: 0.042
+    outputPerMToken: 0

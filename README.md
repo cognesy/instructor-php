@@ -98,6 +98,24 @@ $refundProbability = $answers->noul('refund_requested')->probability();
 Detailed docs: [Decision API](packages/polyglot/docs/decision/overview.md) and
 [full example](examples/B06_Decisions/DecisionPrimitives/run.php).
 
+### Vector stores and retrieval
+
+Purpose: persist embeddings, index documents, retrieve evidence, and assemble
+bounded RAG context.
+Benefit: use replaceable in-memory, Qdrant, or Pgvector stores without coupling
+retrieval to generation.
+
+```php
+use Cognesy\Retrieval\Retrieval;
+use Cognesy\Retrieval\Query\VectorQuery;
+
+$hits = Retrieval::fromStore($store)
+    ->withQuery(new VectorQuery($queryVector, maxResults: 5))
+    ->get();
+```
+
+Detailed docs: [packages/retrieval/README.md](packages/retrieval/README.md)
+
 ### Agents SDK
 
 Purpose: build tool-using agents as a simple loop over state.

@@ -12,6 +12,7 @@ use Cognesy\Polyglot\Decision\Data\DecisionRequest;
 use Cognesy\Polyglot\Decision\Data\DecisionResponse;
 use Cognesy\Polyglot\Decision\Data\DecisionUsage;
 use Cognesy\Polyglot\Decision\Data\JsonContent;
+use Cognesy\Polyglot\Decision\Models\DecisionModel;
 use Cognesy\Polyglot\Decision\Questions\Noul;
 
 it('round-trips a portable mixed request without execution or credential state', function () {
@@ -80,4 +81,17 @@ it('rejects invalid usage counts and blank response models', function () {
         ->toThrow(InvalidArgumentException::class, 'non-negative integer')
         ->and(fn () => new DecisionResponse(Answers::of(), ''))
         ->toThrow(InvalidArgumentException::class, 'non-empty string');
+});
+
+it('preserves a decision profile across unrelated changes and clears it when the route changes', function () {
+    $profile = new DecisionModel('typesafe', 'jev-latest', maxRequestTokens: 64000);
+    $request = (new DecisionRequest(
+        input: 'state',
+        questions: Questions::of(new Noul('safe')),
+        model: $profile->model,
+    ))->withModelProfile($profile);
+
+    expect($request->withInput('new state')->modelProfile())->toBe($profile)
+        ->and($request->withQuestions(Questions::of(new Noul('other')))->modelProfile())->toBe($profile)
+        ->and($request->withModel('jev-1.13.0')->modelProfile())->toBeNull();
 });

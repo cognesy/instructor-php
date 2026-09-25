@@ -12,7 +12,6 @@ it('maps EmbeddingsRequest to Cohere embeddings HttpRequest correctly', function
         endpoint: '/embed',
         model: 'embed-multilingual-v3.0',
         driver: 'cohere',
-        maxInputs: 10,
     );
     $adapter = new CohereRequestAdapter($config, new CohereBodyFormat($config));
 

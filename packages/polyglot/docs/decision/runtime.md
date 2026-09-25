@@ -40,7 +40,15 @@ $config = DecisionConfig::fromPreset('typesafe')
     ->withOverrides(['model' => 'jev-latest']);
 ```
 
-A usable configuration requires non-empty `driver`, `apiUrl`, `apiKey`, `endpoint`, and `model` fields. The URL must be HTTP(S), and the endpoint must start with `/`.
+Other bundled presets are `classifier-dev`, `jeff`, and `laya`. Each selects a
+distinct driver; none aliases TypeSafe or acts as an automatic fallback. See
+[classifier.dev](classifier-dev), [Jeff](jeff), and [Laya](laya) for their
+provider-specific environment, semantics, and service requirements.
+
+Every provider validates a non-empty driver/effective model and an HTTP(S)
+target whose endpoint starts with `/`. Authentication is provider-specific:
+TypeSafe requires a bearer API key, while a local or otherwise keyless driver
+can validate the route and target without inventing a dummy secret.
 
 ## Facade, provider, and runtime
 
@@ -69,6 +77,55 @@ $decision = Decision::fromRuntime($runtime);
 
 The facade is immutable: `withInput()`, `withQuestions()`, `withModel()`, `withRetryPolicy()`, `withRequest()`, and the combined `with()` method return a copy.
 
+## Decision model catalog
+
+Catalog composition is optional and explicit:
+
+```php
+use Cognesy\Polyglot\Decision\Models\ModelCatalog;
+
+$models = ModelCatalog::discover();
+$runtime = DecisionRuntime::fromConfig(
+    config: $config,
+    models: $models,
+);
+
+$jev = $models->find('typesafe', 'jev-1.13.0');
+$jev->maxRequestTokens;           // 64000 planning ceiling
+$jev->maxStateAndQuestionTokens;  // 32000 planning ceiling
+```
+
+`maxRequestTokens` budgets shared state plus all questions. The separate
+`maxStateAndQuestionTokens` budgets shared state plus each individual question.
+These values are conservative planning ceilings from TypeSafe's published 64k
+and 32k descriptions; Polyglot does not claim tokenizer-exact enforcement or
+split requests automatically.
+
+`jev-latest` has its own reviewed snapshot. It is not resolved dynamically to a
+pinned record, so pin `jev-1.13.0` when stable constraints matter. Missing exact
+routes return a typed `DecisionModel` with nullable unknown facts.
+
+After execution, prefer the exact model ID returned by the provider for pricing:
+
+```php
+use Cognesy\Polyglot\Decision\Pricing\FlatRateCostCalculator;
+
+$actual = $models->find('typesafe', $response->model());
+$cost = $actual->pricing === null
+    ? null
+    : (new FlatRateCostCalculator)->calculate($response->usage(), $actual->pricing);
+```
+
+The calculator returns `null` when a nonzero rate needs usage the provider did
+not report. An explicit zero rate is known free and requires no token count.
+Do not fall back to an alias price when a provider returns an uncatalogued pinned
+version.
+
+Model records describe known request limits, pricing inputs, and primitive
+semantics. They do not claim accuracy or calibration. Use
+[provider evaluation](evaluation) against the returned model identity for those
+questions.
+
 ## Explicit requests
 
 `DecisionRequest` is the provider-neutral execution input:
@@ -85,7 +142,7 @@ $request = new DecisionRequest(
 $pending = $runtime->create($request);
 ```
 
-`toArray()` serializes only the portable payload: input, typed questions, and optional model. Request IDs, retry policy, and telemetry correlation are execution-envelope concerns and are intentionally not serialized. `DecisionRequest::fromArray()` restores the portable payload.
+`toArray()` serializes only the portable payload: input, typed questions, and optional model. Request IDs, retry policy, telemetry correlation, and an attached model profile are execution-envelope concerns and are intentionally not serialized. `DecisionRequest::fromArray()` restores the portable payload.
 
 ## Retry policy
 
@@ -121,7 +178,12 @@ The event pairs are:
 - `DecisionStarted` followed by `DecisionCompleted` or `DecisionFailed`
 - `DecisionAttemptStarted` followed by `DecisionAttemptSucceeded` or `DecisionAttemptFailed`
 
-Polyglot projects them as an `sdm.decision` span with `sdm.decision.attempt` children. Default event and telemetry attributes omit input state, instructions, criteria, provider bodies, credentials, and exception messages.
+Polyglot projects them as an `sdm.decision` span with `sdm.decision.attempt`
+children. When a model catalog is explicitly composed, lifecycle metadata also
+includes the exact model key, catalog revision, and known native/projected/
+unsupported primitive facts. Default event and telemetry attributes omit input
+state, instructions, criteria, provider bodies, credentials, and exception
+messages.
 
 ## Custom drivers
 

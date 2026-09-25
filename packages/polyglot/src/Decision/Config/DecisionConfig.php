@@ -98,13 +98,16 @@ final class DecisionConfig
         return self::fromArray(array_merge($this->toArray(), $overrides));
     }
 
-    public function assertUsable(?string $modelOverride = null): void
+    public function assertRoutingIdentity(?string $modelOverride = null): void
     {
         self::assertPresent($this->driver, 'driver');
-        self::assertPresent($this->apiUrl, 'apiUrl');
-        self::assertPresent($this->apiKey, 'apiKey');
-        self::assertPresent($this->endpoint, 'endpoint');
         self::assertPresent($modelOverride ?? $this->model, 'model');
+    }
+
+    public function assertHttpTarget(): void
+    {
+        self::assertPresent($this->apiUrl, 'apiUrl');
+        self::assertPresent($this->endpoint, 'endpoint');
 
         $scheme = parse_url($this->apiUrl, PHP_URL_SCHEME);
         if (! in_array($scheme, ['http', 'https'], true) || filter_var($this->apiUrl, FILTER_VALIDATE_URL) === false) {
@@ -113,6 +116,11 @@ final class DecisionConfig
         if (! str_starts_with($this->endpoint, '/')) {
             throw new InvalidArgumentException("Decision configuration field 'endpoint' must start with '/'.");
         }
+    }
+
+    public function assertBearerAuthentication(): void
+    {
+        self::assertPresent($this->apiKey, 'apiKey');
     }
 
     public function toArray(): array

@@ -119,7 +119,7 @@ The embeddings lifecycle dispatches a smaller set of events:
 |---|---|---|
 | `EmbeddingsDriverBuilt` | After the embeddings driver is created | driver class, config, HTTP client class |
 | `EmbeddingsRequested` | Before sending the embeddings request | request data |
-| `EmbeddingsResponseReceived` | After receiving the response | `data['model']`, `data['inputCount']`, `data['vectorCount']`, `data['dimensions']`, `data['usage']` |
+| `EmbeddingsResponseReceived` | After receiving the response | model, counts, dimensions, usage; optional `modelKey` and `modelCatalogVersion` |
 | `EmbeddingsFailed` | On failure | error details |
 
 
@@ -129,7 +129,7 @@ Decision exposes execution-level and attempt-level event pairs:
 
 | Event | When Dispatched | Key Data |
 |---|---|---|
-| `DecisionStarted` | Beginning of execution | request ID, execution ID, model, driver, and primitive count |
+| `DecisionStarted` | Beginning of execution | request ID, execution ID, model, driver, primitive count; optional model key and catalog version |
 | `DecisionCompleted` | Successful execution | attempt count, duration, model, driver, and usage |
 | `DecisionFailed` | Terminal failure | attempt count, duration, error type, and status code |
 | `DecisionAttemptStarted` | Beginning of an attempt | attempt ID, number, model, driver, and retry flag |

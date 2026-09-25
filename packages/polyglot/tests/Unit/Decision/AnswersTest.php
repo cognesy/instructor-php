@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Cognesy\Polyglot\Decision\Answers\ChoiceAnswer;
+use Cognesy\Polyglot\Decision\Answers\AnswerSignals;
 use Cognesy\Polyglot\Decision\Answers\NoulAnswer;
 use Cognesy\Polyglot\Decision\Answers\ScoreAnswer;
 use Cognesy\Polyglot\Decision\Collections\Answers;
@@ -65,6 +66,51 @@ it('accepts rounded distributions and probability-weighted score rounding', func
     expect($choice->value())->toBe('a')
         ->and($score->value())->toBe(1.0)
         ->and($score->probabilities()->expectedValue())->toBeGreaterThan(0.999);
+});
+
+it('round-trips typed answer signals and derives Noul confidence', function () {
+    $signals = new AnswerSignals(modelActionProbability: 0.73);
+    $answers = Answers::of(
+        new NoulAnswer('urgent', 0.2, $signals),
+        new ChoiceAnswer(
+            'route',
+            'a',
+            0.8,
+            ChoiceProbabilities::of(['a', 0.8], ['b', 0.2]),
+            $signals,
+        ),
+        new ScoreAnswer(
+            'severity',
+            0.25,
+            0.75,
+            ScoreProbabilities::of(0.75, 0.25),
+            ScoreLegend::of('Low', 'High'),
+            $signals,
+        ),
+    );
+
+    $roundTrip = Answers::fromArray($answers->toArray());
+
+    expect($roundTrip->noul('urgent')->confidence())->toBe(0.8)
+        ->and($roundTrip->noul('urgent')->signals()->modelActionProbability())->toBe(0.73)
+        ->and($roundTrip->choice('route')->signals()->modelActionProbability())->toBe(0.73)
+        ->and($roundTrip->score('severity')->signals()->modelActionProbability())->toBe(0.73)
+        ->and($roundTrip->toArray())->toEqual($answers->toArray());
+});
+
+it('omits empty signals and rejects malformed action probabilities', function () {
+    expect((new NoulAnswer('q', 0.5))->toArray())->not->toHaveKey('signals')
+        ->and(AnswerSignals::empty()->toArray())->toBe([])
+        ->and(fn () => new AnswerSignals(1.01))
+        ->toThrow(InvalidArgumentException::class, 'between 0 and 1')
+        ->and(fn () => AnswerSignals::fromArray(['modelActionProbability' => NAN]))
+        ->toThrow(InvalidArgumentException::class, 'finite number')
+        ->and(fn () => NoulAnswer::fromArray([
+            'id' => 'q',
+            'type' => 'noul',
+            'probability' => 0.5,
+            'signals' => [],
+        ]))->toThrow(InvalidArgumentException::class, 'signals must be an object');
 });
 
 it('throws for missing answer IDs and wrong-kind access', function () {

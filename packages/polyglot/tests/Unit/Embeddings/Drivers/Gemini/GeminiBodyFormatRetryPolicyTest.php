@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
@@ -12,7 +14,6 @@ it('Embeddings Gemini: omits retryPolicy from request body', function () {
         endpoint: '/models/{model}:batchEmbedContents',
         model: 'models/gemini-embedding-001',
         driver: 'gemini',
-        maxInputs: 10,
     );
 
     $body = new GeminiBodyFormat($config);

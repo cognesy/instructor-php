@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings\Drivers\Gemini;
 
@@ -16,9 +18,10 @@ class GeminiRequestAdapter implements EmbedRequestAdapter
     ) {}
 
     #[\Override]
-    public function toHttpClientRequest(EmbeddingsRequest $request): HttpRequest {
-         return new HttpRequest(
-            url: $this->getEndpointUrl(),
+    public function toHttpClientRequest(EmbeddingsRequest $request): HttpRequest
+    {
+        return new HttpRequest(
+            url: $this->getEndpointUrl($request),
             method: 'POST',
             headers: $this->getRequestHeaders(),
             body: $this->bodyFormat->toRequestBody($request),
@@ -28,15 +31,19 @@ class GeminiRequestAdapter implements EmbedRequestAdapter
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function getEndpointUrl(): string {
+    protected function getEndpointUrl(EmbeddingsRequest $request): string
+    {
+        $model = $request->model() ?: $this->config->model;
+
         return str_replace(
-            "{model}",
-            $this->config->model,
+            '{model}',
+            $model,
             "{$this->config->apiUrl}{$this->config->endpoint}?key={$this->config->apiKey}"
         );
     }
 
-    protected function getRequestHeaders(): array {
+    protected function getRequestHeaders(): array
+    {
         return [
             'Content-Type' => 'application/json; charset=utf-8',
         ];

@@ -1,0 +1,63 @@
+---
+title: 'Decision model pricing'
+docname: 'decision_model_pricing'
+id: 'c7e4'
+tags:
+  - 'decisions'
+  - 'typesafe'
+  - 'model-catalog'
+  - 'pricing'
+  - 'offline'
+---
+## Overview
+
+Estimate cost from provider-reported usage and the pricing snapshot attached to
+an exact Decision model record. Unknown paid usage returns no estimate. An
+explicit zero rate remains known free and does not require a token count.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Polyglot\Decision\Data\DecisionPricing;
+use Cognesy\Polyglot\Decision\Data\DecisionUsage;
+use Cognesy\Polyglot\Decision\Models\ModelCatalog;
+use Cognesy\Polyglot\Decision\Pricing\FlatRateCostCalculator;
+
+$models = ModelCatalog::discover();
+$jev = $models->find('typesafe', 'jev-1.13.0');
+$pricing = $jev->pricing;
+
+if ($pricing === null) {
+    throw new RuntimeException('No reviewed pricing is available for this exact model.');
+}
+
+$calculator = new FlatRateCostCalculator;
+$reportedUsage = new DecisionUsage(inputTokens: 25_000, outputTokens: null);
+$cost = $calculator->calculate($reportedUsage, $pricing);
+
+echo "Jev pricing snapshot (USD per 1M tokens):\n";
+echo json_encode($pricing->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)."\n";
+echo 'Estimated cost: '.($cost?->toString() ?? 'unavailable')."\n\n";
+
+$unavailable = $calculator->calculate(
+    new DecisionUsage(inputTokens: null, outputTokens: null),
+    $pricing,
+);
+$knownFree = $calculator->calculate(
+    new DecisionUsage(inputTokens: null, outputTokens: null),
+    new DecisionPricing(inputPerMToken: 0, outputPerMToken: 0),
+);
+
+echo 'Unknown paid input usage: '.($unavailable?->toString() ?? 'unavailable')."\n";
+echo 'Explicitly free rates: '.($knownFree?->toString() ?? 'unavailable')."\n";
+
+assert($pricing->inputPerMToken === 0.042);
+assert($pricing->outputPerMToken === 0.0);
+assert($cost?->total === 0.00105);
+assert($unavailable === null);
+assert($knownFree?->total === 0.0);
+?>
+```

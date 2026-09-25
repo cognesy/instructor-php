@@ -151,8 +151,6 @@ apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /embeddings
 model: text-embedding-3-small
-dimensions: 1536
-maxInputs: 2048
 ```
 
 Once the file exists, `Inference::using('openai')` or
@@ -187,8 +185,6 @@ $text = Inference::using('local-vllm')
 | `apiKey` | string | `''` | Authentication key |
 | `endpoint` | string | `''` | API endpoint path (e.g., `/embeddings`) |
 | `model` | string | `''` | Embedding model identifier |
-| `dimensions` | int | `0` | Output vector dimensions |
-| `maxInputs` | int | `0` | Maximum number of inputs per request |
 | `metadata` | array | `[]` | Provider-specific metadata |
 
 ### 3. Runtime Configuration (Programmatic)
@@ -231,10 +227,12 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-small',
-    dimensions: 1536,
-    maxInputs: 2048,
 ));
 ```
+
+Embedding dimensions and input limits are model facts, available from
+`Embeddings\Models\ModelCatalog`. A caller-selected dimension remains a request
+option: `$embeddings->withOptions(['dimensions' => 256])`.
 
 #### LLMConfig Reference
 

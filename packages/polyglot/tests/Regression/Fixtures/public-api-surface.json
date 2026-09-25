@@ -96,10 +96,10 @@
         "withRuntime": "withRuntime(Cognesy\\Polyglot\\Decision\\Contracts\\CanCreateDecision $runtime): Cognesy\\Polyglot\\Decision\\Decision"
     },
     "Cognesy\\Polyglot\\Decision\\DecisionRuntime": {
-        "__construct": "__construct(Cognesy\\Polyglot\\Decision\\Contracts\\CanProcessDecisionRequest $driver, Cognesy\\Events\\Contracts\\CanHandleEvents $events, string $defaultModel=, ?Cognesy\\Polyglot\\Support\\Retry\\CanDelayRetries $retryDelay=, ?callable $unixTimeReader=, string $driverName=, ?callable $monotonicNanoReader=): mixed",
+        "__construct": "__construct(Cognesy\\Polyglot\\Decision\\Contracts\\CanProcessDecisionRequest $driver, Cognesy\\Events\\Contracts\\CanHandleEvents $events, string $defaultModel=, ?Cognesy\\Polyglot\\Support\\Retry\\CanDelayRetries $retryDelay=, ?callable $unixTimeReader=, string $driverName=, ?callable $monotonicNanoReader=, ?Cognesy\\Polyglot\\Decision\\Models\\ModelCatalog $models=): mixed",
         "create": "create(Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest $request): Cognesy\\Polyglot\\Decision\\PendingDecision",
-        "fromConfig": "static fromConfig(Cognesy\\Polyglot\\Decision\\Config\\DecisionConfig $config, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Polyglot\\Decision\\Contracts\\CanProvideDecisionDrivers $drivers=, ?Cognesy\\Polyglot\\Support\\Retry\\CanDelayRetries $retryDelay=, ?callable $unixTimeReader=): Cognesy\\Polyglot\\Decision\\DecisionRuntime",
-        "fromProvider": "static fromProvider(Cognesy\\Polyglot\\Decision\\DecisionProvider $provider, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Polyglot\\Decision\\Contracts\\CanProvideDecisionDrivers $drivers=, ?Cognesy\\Polyglot\\Support\\Retry\\CanDelayRetries $retryDelay=, ?callable $unixTimeReader=): Cognesy\\Polyglot\\Decision\\DecisionRuntime",
+        "fromConfig": "static fromConfig(Cognesy\\Polyglot\\Decision\\Config\\DecisionConfig $config, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Polyglot\\Decision\\Contracts\\CanProvideDecisionDrivers $drivers=, ?Cognesy\\Polyglot\\Support\\Retry\\CanDelayRetries $retryDelay=, ?callable $unixTimeReader=, ?Cognesy\\Polyglot\\Decision\\Models\\ModelCatalog $models=): Cognesy\\Polyglot\\Decision\\DecisionRuntime",
+        "fromProvider": "static fromProvider(Cognesy\\Polyglot\\Decision\\DecisionProvider $provider, ?Cognesy\\Events\\Contracts\\CanHandleEvents $events=, ?Cognesy\\Http\\Contracts\\CanSendHttpRequests $httpClient=, ?Cognesy\\Polyglot\\Decision\\Contracts\\CanProvideDecisionDrivers $drivers=, ?Cognesy\\Polyglot\\Support\\Retry\\CanDelayRetries $retryDelay=, ?callable $unixTimeReader=, ?Cognesy\\Polyglot\\Decision\\Models\\ModelCatalog $models=): Cognesy\\Polyglot\\Decision\\DecisionRuntime",
         "onEvent": "onEvent(string $class, callable $listener, int $priority=): Cognesy\\Polyglot\\Decision\\DecisionRuntime",
         "wiretap": "wiretap(callable $listener): Cognesy\\Polyglot\\Decision\\DecisionRuntime"
     },
@@ -124,7 +124,9 @@
     },
     "Cognesy\\Polyglot\\Decision\\Config\\DecisionConfig": {
         "__construct": "__construct(string $driver=, string $apiUrl=, string $apiKey=, string $endpoint=, string $model=): mixed",
-        "assertUsable": "assertUsable(?string $modelOverride=): void",
+        "assertBearerAuthentication": "assertBearerAuthentication(): void",
+        "assertHttpTarget": "assertHttpTarget(): void",
+        "assertRoutingIdentity": "assertRoutingIdentity(?string $modelOverride=): void",
         "fromArray": "static fromArray(array $config): Cognesy\\Polyglot\\Decision\\Config\\DecisionConfig",
         "fromDefaults": "static fromDefaults(?Cognesy\\Config\\EnvTemplate $template=): Cognesy\\Polyglot\\Decision\\Config\\DecisionConfig",
         "fromDsn": "static fromDsn(string $dsn): Cognesy\\Polyglot\\Decision\\Config\\DecisionConfig",
@@ -143,18 +145,20 @@
         "toArray": "toArray(): array"
     },
     "Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest": {
-        "__construct": "__construct(Cognesy\\Polyglot\\Decision\\Data\\JsonContent|string $input, Cognesy\\Polyglot\\Decision\\Collections\\Questions $questions, ?string $model=, ?Cognesy\\Polyglot\\Decision\\Config\\DecisionRetryPolicy $retryPolicy=, ?Cognesy\\Telemetry\\Domain\\Envelope\\OperationCorrelation $telemetryCorrelation=, ?Cognesy\\Polyglot\\Decision\\Data\\DecisionRequestId $id=): mixed",
+        "__construct": "__construct(Cognesy\\Polyglot\\Decision\\Data\\JsonContent|string $input, Cognesy\\Polyglot\\Decision\\Collections\\Questions $questions, ?string $model=, ?Cognesy\\Polyglot\\Decision\\Config\\DecisionRetryPolicy $retryPolicy=, ?Cognesy\\Telemetry\\Domain\\Envelope\\OperationCorrelation $telemetryCorrelation=, ?Cognesy\\Polyglot\\Decision\\Data\\DecisionRequestId $id=, ?Cognesy\\Polyglot\\Decision\\Models\\DecisionModel $modelProfile=): mixed",
         "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest",
         "hasModel": "hasModel(): bool",
         "id": "id(): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequestId",
         "input": "input(): Cognesy\\Polyglot\\Decision\\Data\\JsonContent",
         "model": "model(): ?string",
+        "modelProfile": "modelProfile(): ?Cognesy\\Polyglot\\Decision\\Models\\DecisionModel",
         "questions": "questions(): Cognesy\\Polyglot\\Decision\\Collections\\Questions",
         "retryPolicy": "retryPolicy(): ?Cognesy\\Polyglot\\Decision\\Config\\DecisionRetryPolicy",
         "telemetryCorrelation": "telemetryCorrelation(): ?Cognesy\\Telemetry\\Domain\\Envelope\\OperationCorrelation",
         "toArray": "toArray(): array",
         "withInput": "withInput(Cognesy\\Polyglot\\Decision\\Data\\JsonContent|string $input): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest",
         "withModel": "withModel(string $model): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest",
+        "withModelProfile": "withModelProfile(Cognesy\\Polyglot\\Decision\\Models\\DecisionModel $modelProfile): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest",
         "withQuestions": "withQuestions(Cognesy\\Polyglot\\Decision\\Collections\\Questions $questions): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest",
         "withRetryPolicy": "withRetryPolicy(Cognesy\\Polyglot\\Decision\\Config\\DecisionRetryPolicy $retryPolicy): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest",
         "withTelemetryCorrelation": "withTelemetryCorrelation(Cognesy\\Telemetry\\Domain\\Envelope\\OperationCorrelation $correlation): Cognesy\\Polyglot\\Decision\\Data\\DecisionRequest"
@@ -220,6 +224,14 @@
         "id": "id(): string",
         "toArray": "toArray(): array"
     },
+    "Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals": {
+        "__construct": "__construct(?float $modelActionProbability=): mixed",
+        "empty": "static empty(): Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals",
+        "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals",
+        "isEmpty": "isEmpty(): bool",
+        "modelActionProbability": "modelActionProbability(): ?float",
+        "toArray": "toArray(): array"
+    },
     "Cognesy\\Polyglot\\Decision\\Questions\\Noul": {
         "__construct": "__construct(string $id, Cognesy\\Polyglot\\Decision\\Data\\JsonContent|string|null $instructions=, ?Cognesy\\Polyglot\\Decision\\Data\\NoulCriteria $criteria=): mixed",
         "criteria": "criteria(): ?Cognesy\\Polyglot\\Decision\\Data\\NoulCriteria",
@@ -245,30 +257,54 @@
         "toArray": "toArray(): array"
     },
     "Cognesy\\Polyglot\\Decision\\Answers\\NoulAnswer": {
-        "__construct": "__construct(string $questionId, float $probability): mixed",
+        "__construct": "__construct(string $questionId, float $probability, ?Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals $signals=): mixed",
+        "confidence": "confidence(): float",
         "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Answers\\NoulAnswer",
         "probability": "probability(): float",
         "questionId": "questionId(): string",
+        "signals": "signals(): Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals",
         "toArray": "toArray(): array"
     },
     "Cognesy\\Polyglot\\Decision\\Answers\\ChoiceAnswer": {
-        "__construct": "__construct(string $questionId, string $value, float $confidence, Cognesy\\Polyglot\\Decision\\Collections\\ChoiceProbabilities $probabilities): mixed",
+        "__construct": "__construct(string $questionId, string $value, float $confidence, Cognesy\\Polyglot\\Decision\\Collections\\ChoiceProbabilities $probabilities, ?Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals $signals=): mixed",
         "confidence": "confidence(): float",
         "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Answers\\ChoiceAnswer",
         "probabilities": "probabilities(): Cognesy\\Polyglot\\Decision\\Collections\\ChoiceProbabilities",
         "questionId": "questionId(): string",
+        "signals": "signals(): Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals",
         "toArray": "toArray(): array",
         "value": "value(): string"
     },
     "Cognesy\\Polyglot\\Decision\\Answers\\ScoreAnswer": {
-        "__construct": "__construct(string $questionId, float $value, float $confidence, Cognesy\\Polyglot\\Decision\\Collections\\ScoreProbabilities $probabilities, Cognesy\\Polyglot\\Decision\\Collections\\ScoreLegend $legend): mixed",
+        "__construct": "__construct(string $questionId, float $value, float $confidence, Cognesy\\Polyglot\\Decision\\Collections\\ScoreProbabilities $probabilities, Cognesy\\Polyglot\\Decision\\Collections\\ScoreLegend $legend, ?Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals $signals=): mixed",
         "confidence": "confidence(): float",
         "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Answers\\ScoreAnswer",
         "legend": "legend(): Cognesy\\Polyglot\\Decision\\Collections\\ScoreLegend",
         "probabilities": "probabilities(): Cognesy\\Polyglot\\Decision\\Collections\\ScoreProbabilities",
         "questionId": "questionId(): string",
+        "signals": "signals(): Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals",
         "toArray": "toArray(): array",
         "value": "value(): float"
+    },
+    "Cognesy\\Polyglot\\Decision\\Models\\DecisionPrimitiveSupport": {
+        "cases": "static cases(): array",
+        "from": "static from(string|int $value): static",
+        "fromMixed": "static fromMixed(mixed $value): Cognesy\\Polyglot\\Decision\\Models\\DecisionPrimitiveSupport",
+        "isUnsupported": "isUnsupported(): bool",
+        "tryFrom": "static tryFrom(string|int $value): ?static"
+    },
+    "Cognesy\\Polyglot\\Decision\\Models\\DecisionCapabilities": {
+        "__construct": "__construct(Cognesy\\Polyglot\\Decision\\Models\\DecisionPrimitiveSupport $choice=, Cognesy\\Polyglot\\Decision\\Models\\DecisionPrimitiveSupport $noul=, Cognesy\\Polyglot\\Decision\\Models\\DecisionPrimitiveSupport $score=): mixed",
+        "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Models\\DecisionCapabilities",
+        "toArray": "toArray(): array",
+        "unknown": "static unknown(): Cognesy\\Polyglot\\Decision\\Models\\DecisionCapabilities"
+    },
+    "Cognesy\\Polyglot\\Decision\\Models\\DecisionModel": {
+        "__construct": "__construct(string $driver, string $model, ?int $maxRequestTokens=, ?int $maxStateAndQuestionTokens=, ?Cognesy\\Polyglot\\Decision\\Data\\DecisionPricing $pricing=, string $catalogVersion=, ?Cognesy\\Polyglot\\Decision\\Models\\DecisionCapabilities $capabilities=): mixed",
+        "fromArray": "static fromArray(array $data, string $catalogVersion=): Cognesy\\Polyglot\\Decision\\Models\\DecisionModel",
+        "matches": "matches(string $driver, string $model): bool",
+        "toArray": "toArray(): array",
+        "unknown": "static unknown(string $driver, string $model): Cognesy\\Polyglot\\Decision\\Models\\DecisionModel"
     },
     "Cognesy\\Polyglot\\Decision\\Collections\\Questions": {
         "all": "all(): array",

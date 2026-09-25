@@ -206,7 +206,6 @@ $runtime = EmbeddingsRuntime::fromConfig(
         apiKey: (string) getenv('OPENAI_API_KEY'),
         endpoint: '/embeddings',
         model: 'text-embedding-3-small',
-        dimensions: 1536,
     ),
     httpClient: $httpClient,
 );

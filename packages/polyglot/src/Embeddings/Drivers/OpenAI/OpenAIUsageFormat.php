@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Embeddings\Drivers\OpenAI;
 
@@ -8,10 +10,10 @@ use Cognesy\Polyglot\Embeddings\Data\EmbeddingsUsage;
 class OpenAIUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data): EmbeddingsUsage {
-         $input = (int)($data['usage']['prompt_tokens'] ?? 0);
-         return new EmbeddingsUsage(
-            inputTokens: $input,
-        );
-   }
+    public function fromData(array $data): EmbeddingsUsage
+    {
+        return EmbeddingsUsage::fromArray([
+            'input' => $data['usage']['prompt_tokens'] ?? null,
+        ]);
+    }
 }

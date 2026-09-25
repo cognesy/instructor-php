@@ -89,7 +89,8 @@ The `get()` method returns an `EmbeddingsResponse` with several methods for acce
 
 ### Accessing Usage Information
 
-Every response includes token usage data:
+Every response includes an `EmbeddingsUsage` object, but a provider may omit the
+token count. Missing usage is `null`, not zero:
 
 ```php
 <?php
@@ -101,8 +102,8 @@ $response = Embeddings::using('openai')
     ->get();
 
 $usage = $response->usage();
-echo "Input tokens: " . $usage->input() . "\n";
-echo "Total tokens: " . $usage->total() . "\n";
+echo 'Input tokens: '.($usage->input() ?? 'unknown')."\n";
+echo 'Total tokens: '.($usage->total() ?? 'unknown')."\n";
 ```
 
 ## Working with Vector Objects
@@ -286,13 +287,12 @@ $config = new EmbeddingsConfig(
     apiKey: getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-large',
-    dimensions: 3072,
-    maxInputs: 100,
     driver: 'openai',
 );
 
 $vector = Embeddings::fromConfig($config)
     ->withInputs('Custom configuration example')
+    ->withOptions(['dimensions' => 1024])
     ->first();
 
 echo "Generated embedding with " . count($vector->values()) . " dimensions.\n";

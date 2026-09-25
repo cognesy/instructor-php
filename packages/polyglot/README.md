@@ -36,5 +36,9 @@ echo $message->content()->toString();
 - `packages/polyglot/docs/decision/questions.md`
 - `packages/polyglot/docs/decision/responses.md`
 - `packages/polyglot/docs/decision/runtime.md`
+- `packages/polyglot/docs/decision/classifier-dev.md`
+- `packages/polyglot/docs/decision/jeff.md`
+- `packages/polyglot/docs/decision/laya.md`
+- `packages/polyglot/docs/decision/evaluation.md`
 - `packages/polyglot/docs/decision/errors-testing.md`
 - `packages/polyglot/docs/_meta.yaml`

@@ -60,8 +60,8 @@ Each LLM configuration includes these parameters:
 | `maxTokens` | `int` | Default maximum tokens for responses |
 | `options` | `array` | Default request options passed to every call |
 
-Embeddings configurations use a similar structure with `dimensions` and `maxInputs` instead of
-the token-related fields.
+Embeddings configurations use the same transport and route fields. Their model
+limits and default dimensions are catalog metadata rather than configuration.
 
 
 ## Runtime Configuration with LLMConfig
@@ -153,8 +153,6 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-small',
-    dimensions: 1536,
-    maxInputs: 2048,
 ));
 ```
 
@@ -167,9 +165,11 @@ The embeddings configuration parameters are:
 | `apiKey` | `string` | API key for authentication |
 | `endpoint` | `string` | The API endpoint path (e.g. `/embeddings`) |
 | `model` | `string` | The embedding model name |
-| `dimensions` | `int` | The dimensionality of the embedding vectors |
-| `maxInputs` | `int` | Maximum number of inputs per batch request |
 | `metadata` | `array` | Provider-specific settings |
+
+Set a provider-supported output dimension on the request with
+`withOptions(['dimensions' => 256])`. Use
+`Embeddings\Models\ModelCatalog` to inspect reviewed defaults and limits.
 
 
 ## DSN Input

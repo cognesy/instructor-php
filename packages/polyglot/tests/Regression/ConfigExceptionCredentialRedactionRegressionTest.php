@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -19,6 +21,7 @@ function capturedConfigException(callable $operation): array
         throw new RuntimeException('Expected configuration operation to fail.');
     } catch (Throwable $exception) {
         $snapshot = configExceptionChainSnapshot($exception);
+
         return ['exception' => $exception, 'snapshot' => $snapshot];
     } finally {
         if ($previousSetting !== false) {
@@ -38,7 +41,7 @@ function configExceptionChainSnapshot(Throwable $exception): string
             'message' => $current->getMessage(),
             'trace' => array_values(array_filter(
                 $current->getTrace(),
-                static fn(array $frame): bool => str_starts_with(
+                static fn (array $frame): bool => str_starts_with(
                     $frame['class'] ?? '',
                     'Cognesy\\',
                 ),
@@ -53,7 +56,7 @@ function configExceptionChainSnapshot(Throwable $exception): string
 it('does not leak the apiKey when LLMConfig hydration fails', function () {
     $secret = 'sk-llm-should-not-appear-1234567890';
 
-    expect(fn() => LLMConfig::fromArray([
+    expect(fn () => LLMConfig::fromArray([
         'apiKey' => $secret,
         'apiUrl' => [],
     ]))->toThrow(InvalidArgumentException::class);
@@ -86,7 +89,7 @@ it('does not leak nested option credentials when LLMConfig hydration fails', fun
 it('does not leak the apiKey when EmbeddingsConfig hydration fails', function () {
     $secret = 'sk-embed-should-not-appear-0987654321';
 
-    expect(fn() => EmbeddingsConfig::fromArray([
+    expect(fn () => EmbeddingsConfig::fromArray([
         'apiKey' => $secret,
         'unknownField' => 'boom',
     ]))->toThrow(InvalidArgumentException::class);
@@ -103,7 +106,7 @@ it('does not leak the apiKey when EmbeddingsConfig hydration fails', function ()
 
 it('redacts LLM credentials from wrapper and previous exception traces', function () {
     $secret = 'sk-llm-trace-should-not-appear-1234567890';
-    $result = capturedConfigException(fn() => LLMConfig::fromArray([
+    $result = capturedConfigException(fn () => LLMConfig::fromArray([
         'apiKey' => $secret,
         'apiUrl' => [],
     ]));
@@ -117,7 +120,7 @@ it('redacts LLM credentials from wrapper and previous exception traces', functio
 
 it('redacts embeddings credentials from wrapper and previous exception traces', function () {
     $secret = 'sk-embed-trace-should-not-appear-0987654321';
-    $result = capturedConfigException(fn() => EmbeddingsConfig::fromArray([
+    $result = capturedConfigException(fn () => EmbeddingsConfig::fromArray([
         'apiKey' => $secret,
         'unknownField' => 'boom',
     ]));
@@ -132,7 +135,7 @@ it('redacts embeddings credentials from wrapper and previous exception traces', 
 it('redacts credentials from LLM nested options and override traces', function () {
     $secret = 'nested-llm-trace-token-abcdef';
     $base = new LLMConfig(apiKey: 'base-key');
-    $result = capturedConfigException(fn() => $base->withOverrides([
+    $result = capturedConfigException(fn () => $base->withOverrides([
         'options' => [
             'access_token' => $secret,
             'retryPolicy' => ['maxAttempts' => 2],
@@ -145,7 +148,7 @@ it('redacts credentials from LLM nested options and override traces', function (
 });
 
 it('redacts credentials from LLM and embeddings DSN traces', function (string $configClass, string $secret, string $invalid) {
-    $result = capturedConfigException(fn() => $configClass::fromDsn(
+    $result = capturedConfigException(fn () => $configClass::fromDsn(
         "apiKey={$secret},{$invalid}",
     ));
 
@@ -153,13 +156,13 @@ it('redacts credentials from LLM and embeddings DSN traces', function (string $c
         ->and($result['snapshot'])->not->toContain($secret);
 })->with([
     'LLM config' => [LLMConfig::class, 'llm-dsn-secret-123', 'maxTokens=invalid'],
-    'embeddings config' => [EmbeddingsConfig::class, 'embed-dsn-secret-456', 'dimensions=invalid'],
+    'embeddings config' => [EmbeddingsConfig::class, 'embed-dsn-secret-456', 'removedField=invalid'],
 ]);
 
 it('redacts a direct embeddings constructor apiKey when another argument is invalid', function () {
     $secret = 'direct-embed-secret-789';
     $result = capturedConfigException(
-        fn() => new EmbeddingsConfig(apiKey: $secret, dimensions: 'not-an-int'),
+        fn () => new EmbeddingsConfig(apiKey: $secret, metadata: 'not-an-array'),
     );
 
     expect($result['exception'])->toBeInstanceOf(TypeError::class)

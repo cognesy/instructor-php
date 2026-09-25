@@ -12,7 +12,6 @@ it('maps EmbeddingsRequest to OpenAI embeddings HttpRequest correctly', function
         endpoint: '/embeddings',
         model: 'text-embedding-3-small',
         driver: 'openai',
-        maxInputs: 10,
     );
     $adapter = new OpenAIRequestAdapter($config, new OpenAIBodyFormat($config));
 

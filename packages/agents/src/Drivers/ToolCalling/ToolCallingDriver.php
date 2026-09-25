@@ -53,7 +53,7 @@ use Override;
  * @phpstan-consistent-constructor the private `with()` helper relies on `new static()`;
  *     no subclass in this repo overrides the constructor, so the promise holds.
  */
-class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMConfig, CanAcceptMessageCompiler, CanAcceptToolRuntime, CanResolveLLMConfig, CanUseTools
+class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLifecycleInterceptor, CanAcceptLLMConfig, CanAcceptMessageCompiler, CanResolveLLMConfig
 {
     private LLMProvider $llm;
     private ?CanSendHttpRequests $httpClient = null;
@@ -309,7 +309,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
             return $this->model;
         }
 
-        $model = $state->llmConfig()?->model ?? '';
+        $model = $state->llmConfig()->model ?? '';
 
         return $model !== '' ? $model : null;
     }
@@ -317,7 +317,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
     // EVENT EMISSION ////////////////////////////////////////////
 
     private function emitInferenceRequestStarted(AgentState $state, InferenceRequest $request, ?string $inferenceExecutionId = null): void {
-        $model = $request->model() !== '' ? $request->model() : $this->resolveModel($state);
+        $model = ($request->model() !== '') ? $request->model() : $this->resolveModel($state);
         $this->events->dispatch(new InferenceRequestStarted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',

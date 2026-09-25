@@ -108,8 +108,9 @@ profile. Enumeration is explicit, and runtime never performs network discovery. 
 
 ### Type Coercion
 
-`LLMConfig` and `EmbeddingsConfig` automatically coerce numeric strings to
-integers for integer fields. For `LLMConfig`, the coerced field is `maxTokens`.
+`LLMConfig` automatically coerces numeric strings for its integer fields,
+including `maxTokens`. `EmbeddingsConfig` contains connection and route data;
+model limits and dimensions belong to the embeddings model catalog.
 
 
 ## EmbeddingsConfig
@@ -126,8 +127,6 @@ integers for integer fields. For `LLMConfig`, the coerced field is `maxTokens`.
 | `apiKey` | `string` | `''` | Authentication key |
 | `endpoint` | `string` | `''` | API endpoint path |
 | `model` | `string` | `''` | Model identifier |
-| `dimensions` | `int` | `0` | Embedding dimensions (0 = provider default) |
-| `maxInputs` | `int` | `0` | Maximum number of inputs per request |
 | `metadata` | `array` | `[]` | Provider-specific metadata |
 | `driver` | `string` | `'openai'` | Driver name |
 
@@ -146,7 +145,6 @@ $config = EmbeddingsConfig::fromArray([
     'apiKey' => getenv('OPENAI_API_KEY'),
     'endpoint' => '/embeddings',
     'model' => 'text-embedding-3-small',
-    'dimensions' => 1536,
 ]);
 
 // From a DSN string
@@ -165,13 +163,12 @@ Presets for embeddings are resolved from similar paths, under the `embed` config
 ```php
 $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
-    'dimensions' => 1024,
 ]);
 ```
 
-For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs` fields.
-
-> **Note:** The legacy field name `defaultDimensions` is automatically normalized to `dimensions` during config loading.
+Request a provider-specific output width through request options, for example
+`$embeddings->withOptions(['dimensions' => 1024])`. Inspect provider defaults and
+limits through `Embeddings\Models\ModelCatalog`; they are not connection settings.
 
 
 ## DecisionConfig
@@ -183,9 +180,9 @@ decision providers.
 
 | Field | Type | Description |
 |---|---|---|
-| `driver` | `string` | Decision driver name; currently `typesafe` is bundled |
+| `driver` | `string` | Decision driver name |
 | `apiUrl` | `string` | Provider base URL |
-| `apiKey` | `string` | Authentication key |
+| `apiKey` | `string` | Optional authentication key; required only by providers that use bearer authentication |
 | `endpoint` | `string` | Endpoint path beginning with `/` |
 | `model` | `string` | Default structured decision model |
 
@@ -197,6 +194,11 @@ use Cognesy\Polyglot\Decision\Config\DecisionConfig;
 $config = DecisionConfig::fromPreset('typesafe');
 $modified = $config->withOverrides(['model' => 'jev-latest']);
 ```
+
+Adapters compose validation explicitly: `assertRoutingIdentity()` checks the
+driver and effective model, `assertHttpTarget()` checks the URL and endpoint,
+and `assertBearerAuthentication()` is called only when that deployment requires
+a key. `DecisionConfig` does not branch on provider names.
 
 Use `DecisionConfig::fromDefaults()` to read `config/sdm/default.yaml` and
 `presetNames()` to enumerate resolvable presets. See
