@@ -72,6 +72,32 @@ $vectors = Embeddings::using('openai')
 
 Detailed docs: [packages/polyglot/docs/](packages/polyglot/docs/)
 
+### Structured decisions
+
+Purpose: evaluate application state with typed yes/no, choice, and score questions.
+Benefit: use probabilities to decide when to act or ask for review.
+
+```php
+use Cognesy\Polyglot\Decision\Collections\Questions;
+use Cognesy\Polyglot\Decision\Decision;
+use Cognesy\Polyglot\Decision\Questions\Noul;
+
+$answers = Decision::using('typesafe')
+    ->with(
+        input: 'I was charged twice. Please refund the duplicate.',
+        questions: Questions::of(new Noul(
+            id: 'refund_requested',
+            instructions: 'Does the customer explicitly request a refund?',
+        )),
+    )
+    ->get();
+
+$refundProbability = $answers->noul('refund_requested')->probability();
+```
+
+Detailed docs: [Decision API](packages/polyglot/docs/decision/overview.md) and
+[full example](examples/B06_Decisions/DecisionPrimitives/run.php).
+
 ### Agents SDK
 
 Purpose: build tool-using agents as a simple loop over state.
