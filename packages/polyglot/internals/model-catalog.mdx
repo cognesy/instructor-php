@@ -13,7 +13,7 @@ $profile = ModelCatalog::discover()->find('qwen', 'qwen3.8-max');
 if ($profile->capabilities->jsonSchema === SupportStatus::Supported) {
     // This exact route supports native JSON Schema.
 }
-// @doctest id="f23f"
+// @doctest id="dd18"
 ```
 
 `find()` never guesses by provider or model-family pattern. A missing pair returns a
@@ -42,7 +42,7 @@ $runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
 
 $first = Inference::fromRuntime($runtime)->withMessages($messages)->create();
 $second = Inference::fromRuntime($runtime)->withMessages($otherMessages)->create();
-// @doctest id="b92a"
+// @doctest id="3f55"
 ```
 
 Pass a catalog only when the application wants local capability enforcement, metadata, or facts
@@ -57,7 +57,7 @@ $catalog = ModelCatalog::discover()->overlay(
 );
 
 $runtime = InferenceRuntime::fromConfig($config, models: $catalog);
-// @doctest id="bb79"
+// @doctest id="1ea0"
 ```
 
 With this explicit composition, `InferenceRuntime` resolves the exact profile after applying a
@@ -116,7 +116,7 @@ profile:
   capabilities:
     streaming: supported
   source: project
-# @doctest id="61cf"
+# @doctest id="81eb"
 ```
 
 The path is `<encoded-driver>/<encoded-model>.yaml`, with each component encoded using
@@ -170,7 +170,7 @@ The packaged record directory is generated offline from source and override file
 packages/polyglot/bin/instructor-catalog build
 packages/polyglot/bin/instructor-catalog check
 packages/polyglot/bin/instructor-catalog validate
-# @doctest id="178e"
+# @doctest id="01c3"
 ```
 
 These commands do not fetch provider APIs. Updating upstream facts is an explicit source-review
@@ -193,7 +193,7 @@ source diff directly in Git, then rebuild the deterministic runtime records:
 just models-build
 just models-check
 just models-validate
-# @doctest id="fd63"
+# @doctest id="b5ec"
 ```
 
 All three commands are offline. Build validates both inputs before changing output, writes readable
