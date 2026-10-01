@@ -40,7 +40,7 @@ class PersonExtractionTest extends TestCase
         $fake->assertExtracted(PersonData::class);
     }
 }
-// @doctest id="7571"
+// @doctest id="61ac"
 ```
 
 ### Response Mapping
@@ -57,7 +57,7 @@ $fake = StructuredOutput::fake([
 // Each class returns its mapped response
 $person = StructuredOutput::with(..., responseModel: PersonData::class)->get();
 $address = StructuredOutput::with(..., responseModel: AddressData::class)->get();
-// @doctest id="70e5"
+// @doctest id="f461"
 ```
 
 If you request a response model that has no mapping, the fake throws a `RuntimeException` with a helpful message telling you which class needs a fake response.
@@ -83,7 +83,7 @@ $second = StructuredOutput::with(...)->get(); // Second Person
 
 // Third call
 $third = StructuredOutput::with(...)->get();  // Third Person
-// @doctest id="bc1f"
+// @doctest id="b4bd"
 ```
 
 ### Available Assertions
@@ -111,7 +111,7 @@ $fake->assertUsedConnection('anthropic');
 
 // Assert model was used
 $fake->assertUsedModel('gpt-4o');
-// @doctest id="9607"
+// @doctest id="8213"
 ```
 
 ### Accessing Recorded Calls
@@ -132,7 +132,7 @@ foreach ($recorded as $extraction) {
     echo "Model: " . $extraction['model'];
     echo "Connection: " . $extraction['connection'];
 }
-// @doctest id="7163"
+// @doctest id="648f"
 ```
 
 ---
@@ -169,7 +169,7 @@ final class InferenceFakeTest extends TestCase
         $fake->assertCalledWith('What is 2+2?');
     }
 }
-// @doctest id="f0ed"
+// @doctest id="efc7"
 ```
 
 ### Pattern Matching
@@ -191,7 +191,7 @@ $response2 = Inference::with(messages: Messages::fromString('How is the weather 
 
 // No match, uses 'default'
 $response3 = Inference::with(messages: Messages::fromString('Random question'))->get();
-// @doctest id="59e5"
+// @doctest id="6eb9"
 ```
 
 ### Response Sequences
@@ -213,7 +213,7 @@ $second = Inference::with(...)->get();
 
 $first->content()->toString();  // "First response"
 $second->content()->toString(); // "Second response"
-// @doctest id="40a2"
+// @doctest id="14cd"
 ```
 
 ### Available Assertions
@@ -241,7 +241,7 @@ $fake->assertUsedModel('llama-3.3-70b');
 
 // Assert called with specific tools
 $fake->assertCalledWithTools(['search', 'calculate']);
-// @doctest id="1773"
+// @doctest id="4ee3"
 ```
 
 ---
@@ -274,7 +274,7 @@ final class EmbeddingsFakeTest extends TestCase
         $fake->assertCalledWith('hello world');
     }
 }
-// @doctest id="c924"
+// @doctest id="768f"
 ```
 
 ### Default Embeddings
@@ -288,7 +288,7 @@ $fake = Embeddings::fake();
 $embedding = Embeddings::withInputs('anything')->first();
 
 $this->assertCount(1536, $embedding);
-// @doctest id="9e6a"
+// @doctest id="1128"
 ```
 
 ### Custom Dimensions
@@ -301,7 +301,7 @@ $fake = Embeddings::fake()
 
 $embedding = Embeddings::withInputs('test')->first();
 $this->assertCount(768, $embedding);
-// @doctest id="f5a9"
+// @doctest id="d4a1"
 ```
 
 ### Available Assertions
@@ -326,7 +326,7 @@ $fake->assertUsedConnection('openai');
 
 // Assert model was used
 $fake->assertUsedModel('text-embedding-3-large');
-// @doctest id="5d6d"
+// @doctest id="742b"
 ```
 
 ---
@@ -362,7 +362,7 @@ final class AgentCtrlFakeTest extends TestCase
         $fake->assertExecutedWith('migration');
     }
 }
-// @doctest id="7331"
+// @doctest id="98b5"
 ```
 
 ### Response Sequences
@@ -381,7 +381,7 @@ $second = AgentCtrl::claudeCode()->execute('Second'); // "Second response"
 $third = AgentCtrl::claudeCode()->execute('Third');   // "Third response"
 
 $fake->assertExecutedTimes(3);
-// @doctest id="a1de"
+// @doctest id="8f78"
 ```
 
 ### Custom Responses
@@ -405,7 +405,7 @@ $response = AgentCtrl::claudeCode()->execute('Test');
 
 expect($response->cost)->toBe(0.05);
 expect($response->agentType)->toBe(AgentType::ClaudeCode);
-// @doctest id="309a"
+// @doctest id="ff22"
 ```
 
 ### Fake Tool Calls
@@ -437,7 +437,7 @@ $response = AgentCtrl::claudeCode()->execute('...');
 
 expect($response->toolCalls)->toHaveCount(2);
 expect($response->toolCalls[0]->tool)->toBe('write_file');
-// @doctest id="d873"
+// @doctest id="892c"
 ```
 
 ### Available Assertions
@@ -477,7 +477,7 @@ foreach ($executions as $exec) {
 
 // Reset fake state between test scenarios
 $fake->reset();
-// @doctest id="4c73"
+// @doctest id="0a17"
 ```
 
 ### Testing Agent Services
@@ -518,7 +518,7 @@ final class CodeGeneratorServiceTest extends TestCase
         $fake->assertExecutedWith('users');
     }
 }
-// @doctest id="1462"
+// @doctest id="37be"
 ```
 
 ---
@@ -555,7 +555,7 @@ final class HttpFakeTest extends TestCase
         });
     }
 }
-// @doctest id="048c"
+// @doctest id="6a67"
 ```
 
 This works because the `LaravelDriver` HTTP transport uses the same `Illuminate\Http\Client\Factory` instance that `Http::fake()` instruments. Make sure the `instructor.http.driver` config is set to `'laravel'` (the default).
@@ -599,7 +599,7 @@ final class PersonExtractorTest extends TestCase
         $this->assertEquals('John', $person->name);
     }
 }
-// @doctest id="f6fb"
+// @doctest id="8522"
 ```
 
 ---
@@ -627,7 +627,7 @@ final class StructuredOutputBestPracticesTest extends TestCase
         $fake->assertExtracted(...);
     }
 }
-// @doctest id="099c"
+// @doctest id="006b"
 ```
 
 ### 2. Use Realistic Test Data
@@ -652,7 +652,7 @@ $fake = StructuredOutput::fake([
         dueDate: '',
     ),
 ]);
-// @doctest id="60b0"
+// @doctest id="f4e2"
 ```
 
 ### 3. Test Edge Cases
@@ -690,7 +690,7 @@ final class StructuredOutputEdgeCaseTest extends TestCase
         $this->assertNull($person->email);
     }
 }
-// @doctest id="d416"
+// @doctest id="57ff"
 ```
 
 ### 4. Verify Connection and Model Usage
@@ -712,7 +712,7 @@ final class StructuredOutputConnectionTest extends TestCase
         $fake->assertUsedModel('claude-3-5-sonnet-20241022');
     }
 }
-// @doctest id="dba4"
+// @doctest id="8a5a"
 ```
 
 ---
@@ -739,7 +739,7 @@ $driver = $testing->fakeDriver(FakeAgentDriver::fromResponses('done'));
 $sessions = $testing->fakeSessions();
 $broadcasts = $testing->fakeBroadcasts();
 $telemetry = $testing->captureTelemetry();
-// @doctest id="4aa1"
+// @doctest id="3e66"
 ```
 
 Those helpers are container-aware, so the native runtime bindings exposed by `packages/laravel` immediately use the swapped testing surfaces.
