@@ -6,7 +6,7 @@ Set `TYPESAFE_API_KEY`, then use the bundled preset:
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('typesafe');
-// @doctest id="1fe7"
+// @doctest id="9852"
 ```
 
 The preset selects the `typesafe` driver, `https://api.typesafe.ai/v1/systemone`, and the `jev-latest` model alias. Application Decision configuration lives under the `sdm` group:
@@ -14,7 +14,7 @@ The preset selects the `typesafe` driver, `https://api.typesafe.ai/v1/systemone`
 ```yaml
 # config/sdm/default.yaml
 defaultPreset: typesafe
-# @doctest id="cd1c"
+# @doctest id="b33d"
 ```
 
 ```yaml
@@ -24,7 +24,7 @@ apiUrl: 'https://api.typesafe.ai/v1'
 apiKey: '${TYPESAFE_API_KEY}'
 endpoint: '/systemone'
 model: 'jev-latest'
-# @doctest id="d307"
+# @doctest id="5599"
 ```
 
 `DecisionConfig` supports `fromDefaults()`, `fromPreset()`, `presetNames()`, `fromArray()`, `fromDsn()`, and immutable `withOverrides()`. Use `toRedactedArray()` rather than `toArray()` when configuration may reach logs or diagnostics.
@@ -34,7 +34,7 @@ use Cognesy\Polyglot\Decision\Config\DecisionConfig;
 
 $config = DecisionConfig::fromPreset('typesafe')
     ->withOverrides(['model' => 'jev-latest']);
-// @doctest id="c8bb"
+// @doctest id="8b08"
 ```
 
 Other bundled presets are `classifier-dev`, `jeff`, and `laya`. Each selects a
@@ -55,7 +55,7 @@ Use the facade for ordinary calls:
 $answers = Decision::fromConfig($config)
     ->with(input: $state, questions: $questions)
     ->get();
-// @doctest id="654c"
+// @doctest id="f982"
 ```
 
 Use `DecisionProvider` when application composition needs reusable config overrides, a model override, or an explicit driver. Use `DecisionRuntime` when it needs an event root, HTTP client, driver registry, or retry-delay implementation.
@@ -71,7 +71,7 @@ $runtime = DecisionRuntime::fromConfig(
 );
 
 $decision = Decision::fromRuntime($runtime);
-// @doctest id="d63c"
+// @doctest id="d319"
 ```
 
 The facade is immutable: `withInput()`, `withQuestions()`, `withModel()`, `withRetryPolicy()`, `withRequest()`, and the combined `with()` method return a copy.
@@ -92,7 +92,7 @@ $runtime = DecisionRuntime::fromConfig(
 $jev = $models->find('typesafe', 'jev-1.13.0');
 $jev->maxRequestTokens;           // 64000 planning ceiling
 $jev->maxStateAndQuestionTokens;  // 32000 planning ceiling
-// @doctest id="3fe4"
+// @doctest id="3920"
 ```
 
 `maxRequestTokens` budgets shared state plus all questions. The separate
@@ -114,7 +114,7 @@ $actual = $models->find('typesafe', $response->model());
 $cost = $actual->pricing === null
     ? null
     : (new FlatRateCostCalculator)->calculate($response->usage(), $actual->pricing);
-// @doctest id="77f1"
+// @doctest id="c9d6"
 ```
 
 The calculator returns `null` when a nonzero rate needs usage the provider did
@@ -141,7 +141,7 @@ $request = new DecisionRequest(
 );
 
 $pending = $runtime->create($request);
-// @doctest id="7c4d"
+// @doctest id="8890"
 ```
 
 `toArray()` serializes only the portable payload: input, typed questions, and optional model. Request IDs, retry policy, telemetry correlation, and an attached model profile are execution-envelope concerns and are intentionally not serialized. `DecisionRequest::fromArray()` restores the portable payload.
@@ -161,7 +161,7 @@ $policy = new DecisionRetryPolicy(
 );
 
 $pending = $decision->withRetryPolicy($policy)->create();
-// @doctest id="4eac"
+// @doctest id="40d3"
 ```
 
 The default retryable statuses are `408`, `429`, `500`, `502`, `503`, `504`, and `529`, plus timeout and network failures. Bounded `Retry-After` is honored by default. The Decision execution session owns retries, so do not add HTTP retry middleware around the same operation.
@@ -174,7 +174,7 @@ Register a specific listener or a wiretap on `DecisionRuntime`:
 $runtime
     ->onEvent(DecisionCompleted::class, $onCompleted)
     ->wiretap($observeEveryDecisionEvent);
-// @doctest id="4e8c"
+// @doctest id="2118"
 ```
 
 The event pairs are:
@@ -200,7 +200,7 @@ $drivers = DecisionDriverRegistry::default()
     ->withDriver('acme', AcmeDecisionDriver::class);
 
 $decision = Decision::fromConfig($config, drivers: $drivers);
-// @doctest id="4210"
+// @doctest id="d845"
 ```
 
 Class-string drivers receive `DecisionConfig`, `CanSendHttpRequests`, and the event dispatcher. A factory receives the same three arguments. Provider adapters should translate between the stable `DecisionRequest`/`DecisionResponse` domain and the provider wire format; application code should not depend on the adapter classes.

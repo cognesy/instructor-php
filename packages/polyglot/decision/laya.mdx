@@ -20,7 +20,7 @@ TYPED_DECISION_MODEL=laya-typed-decisions
 TYPED_DECISION_CHECKPOINT_REVISION=<exact-40-character-checkpoint-revision>
 TYPED_DECISION_HOST=127.0.0.1
 TYPED_DECISION_PORT=8091
-// @doctest id="2291"
+// @doctest id="5b33"
 ```
 
 Run `uv run td-lab serve`. Use that repository's README for installation,
@@ -35,14 +35,14 @@ Point the bundled preset at the already running service:
 ```dotenv
 LAYA_API_URL=http://127.0.0.1:8091
 LAYA_API_KEY=
-// @doctest id="facd"
+// @doctest id="8db3"
 ```
 
 ```php
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('laya');
-// @doctest id="1891"
+// @doctest id="e4fd"
 ```
 
 The default preset requests the explicit `laya-typed-decisions` route. Other
@@ -60,7 +60,7 @@ it as a typed auxiliary signal:
 
 ```php
 $probability = $answer->signals()->modelActionProbability();
-// @doctest id="aa5d"
+// @doctest id="4896"
 ```
 
 This value does not replace a Choice, threshold a Noul, change a Score, or grant

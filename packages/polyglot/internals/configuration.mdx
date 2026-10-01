@@ -47,7 +47,7 @@ $config = LLMConfig::fromArray([
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
-// @doctest id="138a"
+// @doctest id="9adb"
 ```
 
 ### Presets
@@ -63,7 +63,7 @@ You may also pass a custom base path:
 
 ```php
 $config = LLMConfig::fromPreset('my-preset', basePath: '/path/to/presets');
-// @doctest id="5fc0"
+// @doctest id="f31b"
 ```
 
 ### Overriding Values
@@ -73,7 +73,7 @@ Use `withOverrides()` to create a modified copy of an existing config:
 ```php
 $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
-// @doctest id="fcd6"
+// @doctest id="8241"
 ```
 
 `allowLossyFallback` is deliberately separate from provider `options`. It authorizes only a
@@ -95,7 +95,7 @@ use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 $profile = ModelCatalog::discover()->find('openai', 'gpt-5.6');
 $profile->limits->contextWindow;
 $profile->capabilities->jsonSchema;
-// @doctest id="bf8c"
+// @doctest id="d5da"
 ```
 
 `discover()` resolves application `config/llm/models` and packaged model directories through
@@ -148,7 +148,7 @@ $config = EmbeddingsConfig::fromArray([
 
 // From a DSN string
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-small');
-// @doctest id="cc5c"
+// @doctest id="c36b"
 ```
 
 Presets for embeddings are resolved from similar paths, under the `embed` config group:
@@ -164,7 +164,7 @@ Presets for embeddings are resolved from similar paths, under the `embed` config
 $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
 ]);
-// @doctest id="5f43"
+// @doctest id="8608"
 ```
 
 Request a provider-specific output width through request options, for example
@@ -194,7 +194,7 @@ use Cognesy\Polyglot\Decision\Config\DecisionConfig;
 
 $config = DecisionConfig::fromPreset('typesafe');
 $modified = $config->withOverrides(['model' => 'jev-latest']);
-// @doctest id="57f7"
+// @doctest id="68f2"
 ```
 
 Adapters compose validation explicitly: `assertRoutingIdentity()` checks the
@@ -232,7 +232,7 @@ $policy = new InferenceRetryPolicy(
 );
 
 $inference->withRetryPolicy($policy);
-// @doctest id="26ad"
+// @doctest id="df22"
 ```
 
 The retry delay uses exponential backoff: `baseDelayMs * 2^(attempt-1)`, capped at `maxDelayMs`. The `jitter` strategy adds randomness to avoid thundering herd problems:
@@ -255,7 +255,7 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
-// @doctest id="d728"
+// @doctest id="5c16"
 ```
 
 ### DecisionRetryPolicy
@@ -271,7 +271,7 @@ $decision->withRetryPolicy(new DecisionRetryPolicy(
     baseDelayMs: 250,
     maxDelayMs: 4000,
 ));
-// @doctest id="fac2"
+// @doctest id="31b8"
 ```
 
 The policy defaults to `408`, `429`, selected `5xx` statuses, `529`, timeout,
