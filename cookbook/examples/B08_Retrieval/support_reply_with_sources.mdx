@@ -1,0 +1,33 @@
+## Overview
+
+A fictional SaaS support workflow: index a policy corpus, select an approved
+knowledge set, retrieve bounded evidence, and draft a typed reply for review.
+The keyless default forces wrong-policy retrieval, checks context limits, skips
+generation when evidence is missing, and rejects invented source labels.
+
+Run from the repository root:
+
+```sh
+php examples/B08_Retrieval/SupportReplyWithSources/run.php
+php examples/B08_Retrieval/SupportReplyWithSources/run.php --live
+```
+
+`--live` uses OpenAI embeddings and generation on the same corpus. It requires
+configured credentials. Fixture vectors and responses prove mechanics only;
+the live run checks provider behavior separately. Neither mode sends a reply
+or issues a refund. See the adjacent README for checks and observed output.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+$loader->addPsr4('Examples\\Retrieval\\SupportReplyWithSources\\', __DIR__ . '/src/');
+require __DIR__ . '/proof.php';
+
+use Examples\Retrieval\SupportReplyWithSources\SupportReplyProof;
+
+SupportReplyProof::run(in_array('--live', $argv ?? [], true));
+?>
+```

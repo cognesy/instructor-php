@@ -712,7 +712,8 @@
             "group": "B08_Retrieval",
             "pages": [
                 "cookbook/examples/B08_Retrieval/retrieval_index_and_ask",
-                "cookbook/examples/B08_Retrieval/retrieval"
+                "cookbook/examples/B08_Retrieval/retrieval",
+                "cookbook/examples/B08_Retrieval/support_reply_with_sources"
             ]
         },
         {
