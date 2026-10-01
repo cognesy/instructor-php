@@ -1,0 +1,11 @@
+Unfiltered fixture top 2: archived-refund, enterprise-refund
+Approved fixture top 3: standard-refund, cancel-renewal, payment-errors
+Normal context: bytes=558; tokens=121; sources=2; omitted=1
+Typed fixture draft: ready_for_review; citations=S1, S2
+Your renewal was 5 days ago, so you can submit a refund request for billing review within the 7-day window. Approval depends on usage and billing checks [S1]. To stop the next renewal, choose Settings > Billing > Subscription > Cancel renewal. Access continues through the paid period; cancellation does not automatically refund this renewal [S2].
+Long-document context: bytes=220; tokens=60; sources=2; omitted=1
+Independent caps: bytes=80/80; tokens=10/10
+Missing approved corpus: insufficient_evidence; additional generation calls=0
+Typed S99 draft rejected: Unknown citation: S99.
+Known limit: an unsupported statement with an existing label passes membership checks.
+PASS: deterministic retrieval, prompt, budget, handoff, and citation checks.

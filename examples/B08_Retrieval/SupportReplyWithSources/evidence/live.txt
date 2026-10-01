@@ -1,0 +1,15 @@
+=== Live: text-embedding-3-small + gpt-4o-mini ===
+Live unfiltered top 3: archived-refund, cancel-renewal, standard-refund
+Live approved top 3: cancel-renewal, standard-refund, payment-errors
+Live context: bytes=558; tokens=121; sources=2; omitted=1
+{
+    "body": "To stop the next renewal for your Workspace Standard subscription, please open Settings > Billing > Subscription and choose Cancel renewal. Please note that cancellation will stop the next annual renewal, but you will continue to have access until the end of the current paid period [S1]. \n\nRegarding the refund, you may submit a refund request since it's within 7 calendar days of your renewal. However, please be aware that approval for a refund requires review from a billing specialist and isn't guaranteed [S2].",
+    "disposition": "ready_for_review",
+    "citations": [
+        "S1",
+        "S2"
+    ]
+}
+S1 -> cancel-renewal (2026-10)
+S2 -> standard-refund (2026-10)
+PASS: live retrieval and typed generation; factual support still requires review.

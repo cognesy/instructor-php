@@ -1,0 +1,116 @@
+=== RECORDED PROVIDER SUPPORT WORKFLOW ===
+
+Replaying recorded OpenAI embeddings and generation; no provider calls are made.
+
+=== 1. What the customer asks ===
+
+My annual subscription renewed five days ago. I no longer need it. Can I get a refund,
+and how do I stop the next renewal?
+
+The application supplies these trusted account facts:
+Product: Workspace. Plan: Standard annual. Renewal: 2026-09-26. Today: 2026-10-01.
+Renewal age: 5 calendar days. Usage and refund approval have not been checked.
+The account facts supply the 5-day renewal age; retrieval chooses the policy evidence.
+The reply must explain refund review and how to stop the next renewal.
+
+=== 2. Turn policy documents into searchable vectors ===
+
+Indexed 6 documents from 6 sources in 6 embedding batches.
+Each short policy stays in one piece. Its text becomes an embedding; its title,
+knowledge set, and version remain attached to the stored record.
+Store: InMemoryStore. Embedding model: text-embedding-3-small
+Embedding space: openai:text-embedding-3-small:v1
+
+=== 3. Similarity ranking and policy eligibility ===
+
+The question is embedded and compared with document vectors using cosine similarity:
+dot(question, document) / (length(question) * length(document)). Higher scores rank
+first; they are not probabilities of correctness.
+
+Search across the whole corpus:
+  1. Archived annual refunds | cosine 0.5969
+     archived-refund; different knowledge set: excluded from the approved search
+  2. Cancel the next renewal | cosine 0.5315
+     cancel-renewal; current Standard policy: eligible
+  3. Standard annual refund review | cosine 0.4589
+     standard-refund; current Standard policy: eligible
+
+Now PHP requires knowledge_set = workspace-standard:approved:2026-10
+The store filters eligibility before ranking. This excludes archived and Enterprise
+policies even if their text is similar.
+  1. Cancel the next renewal | cosine 0.5315
+     cancel-renewal; current Standard policy: eligible
+  2. Standard annual refund review | cosine 0.4589
+     standard-refund; current Standard policy: eligible
+  3. Troubleshoot declined payments | cosine 0.3022
+     payment-errors; current Standard policy: eligible
+
+=== 4. Build the evidence packet for generation ===
+
+Evidence usage: 558/2500 bytes; 121/650 local tokens; 2/2 sources.
+Excerpt cap: 1200 bytes per source. Omitted hits: 1.
+The normal packet keeps the first 2 policy hits and omits the third because maxEvidence
+is 2. Token counts use the bundled r50k_base tokenizer and cover evidence only; the full
+model prompt has additional inputs.
+
+Actual evidence passed to the model:
+[S1] CANCEL NEXT RENEWAL: For Workspace Standard, open Settings > Billing > Subscription
+and choose Cancel renewal. This stops the next annual renewal. Access continues until
+the end of the paid period. Cancellation does not automatically refund the latest
+renewal.
+
+[S2] STANDARD REFUND REVIEW: For Workspace Standard annual renewals, customers may
+submit a refund request within 7 calendar days of renewal. Approval requires a billing
+specialist to review usage and billing records. Support must not promise approval or
+claim that a refund has been issued.
+
+=== 5. Ask for a typed reply draft ===
+
+Using the recorded gpt-4o-mini response to the account facts, customer message, and
+evidence packet.
+ReplyDraft requires body, disposition, and citations. The instructions request source
+labels and forbid promises that a refund or cancellation has already happened.
+
+=== 6. Check the draft and present it for support review ===
+
+Disposition: ready_for_review
+Citation checks passed: every listed source exists and inline labels match the list.
+
+CUSTOMER-FACING REPLY DRAFT
+----------------------------------------
+To stop the next renewal for your Workspace Standard subscription, please open Settings
+> Billing > Subscription and choose Cancel renewal. Please note that cancellation will
+stop the next annual renewal, but you will continue to have access until the end of the
+current paid period [S1].
+
+Regarding the refund, you may submit a refund request since it's within 7 calendar days
+of your renewal. However, please be aware that approval for a refund requires review
+from a billing specialist and isn't guaranteed [S2].
+----------------------------------------
+
+Source references shown to the reviewer:
+  [S1] Cancel the next renewal (cancel-renewal, version 2026-10)
+  [S2] Standard annual refund review (standard-refund, version 2026-10)
+
+The application would offer this text to a support reviewer before sending. Billing
+still needs to review refund approval.
+This example performs no refund, cancellation, or email action.
+Citation membership does not establish that every statement is supported by its source.
+PASS: live retrieval and typed generation; the candidate passed citation checks.
+
+=== DETERMINISTIC BOUNDARY CHECKS ===
+
+These forced cases use fixture vectors and responses, make no provider calls, and test
+application mechanics.
+PASS: unfiltered fixture ranking chose archived/Enterprise policies; approved filtering
+admitted only current Standard documents into the prompt.
+PASS: repeating documents 30 times still yields 220/220 bytes, 60/60 local tokens, and
+2/2 sources. Every excerpt is at most 120 bytes; 1 hit is omitted.
+PASS: separate byte-only and token-only cases use 80/80 bytes and 10/10 local tokens.
+PASS: a missing approved corpus returns insufficient_evidence and makes 0 additional
+generation calls; PHP routes the request to human review.
+PASS: a typed draft claiming approval with [S99] is blocked. Unknown citation: S99.
+PASS: mismatched inline labels and drafts with no citations are also blocked.
+LIMIT: "Your refund has already been approved [S1]" passes citation membership because
+S1 exists. That claim is unsupported; factual review is still required.
+PASS: all deterministic retrieval, prompt, budget, handoff, and citation checks.

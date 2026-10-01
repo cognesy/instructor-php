@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EU5sVW9PoZl5oxtCk2CmXnH8B0bz7",
+  "object": "chat.completion",
+  "created": 1790841143,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"body\": \"To stop the next renewal for your Workspace Standard subscription, please open Settings > Billing > Subscription and choose Cancel renewal. Please note that cancellation will stop the next annual renewal, but you will continue to have access until the end of the current paid period [S1]. \\n\\nRegarding the refund, you may submit a refund request since it's within 7 calendar days of your renewal. However, please be aware that approval for a refund requires review from a billing specialist and isn't guaranteed [S2].\",\n    \"disposition\": \"ready_for_review\",\n    \"citations\": [\n        \"S1\",\n        \"S2\"\n    ]\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 574,
+    "completion_tokens": 136,
+    "total_tokens": 710,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_0865ad221d"
+}
