@@ -4,7 +4,7 @@ Configuration issues typically surface when Polyglot cannot find a preset file, 
 
 - `InvalidArgumentException` with "No preset directory found" or "Invalid configuration"
 - Unexpected driver or model being used
-- Type errors mentioning `maxTokens`, `dimensions`, or `maxInputs`
+- Type errors mentioning `maxTokens` or an unknown configuration field
 
 ## Preset File Location
 
@@ -28,7 +28,7 @@ If none of these directories exist, Polyglot throws an `InvalidArgumentException
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('my-custom-preset', basePath: '/app/config/llm');
-// @doctest id="bb05"
+// @doctest id="c87f"
 ```
 
 ## Required Preset Fields
@@ -42,7 +42,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-# @doctest id="0aee"
+# @doctest id="5ec2"
 ```
 
 The following fields are required or strongly recommended:
@@ -66,21 +66,24 @@ apiUrl: 'https://api.typesafe.ai/v1'
 apiKey: '${TYPESAFE_API_KEY}'
 endpoint: /systemone
 model: jev-latest
-# @doctest id="ffac"
+# @doctest id="a100"
 ```
 
 The default Decision preset name belongs in `config/sdm/default.yaml`:
 
 ```yaml
 defaultPreset: typesafe
-# @doctest id="a631"
+# @doctest id="1b69"
 ```
 
 ## Integer Field Validation
 
 The `maxTokens` field must be a valid integer. If it is provided as a numeric string in YAML, Polyglot coerces it automatically. Non-numeric strings and floats cause an `InvalidArgumentException`.
 
-For embeddings presets, the same rule applies to `dimensions` and `maxInputs`.
+Embedding `dimensions`, `defaultDimensions`, and `maxInputs` are no longer
+configuration fields. Remove them from presets and framework configuration.
+Use request options for a caller-selected dimension and an embedding model
+catalog for reviewed defaults and provider limits.
 
 ## Building Configuration Programmatically
 
@@ -105,7 +108,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="faaa"
+// @doctest id="b36a"
 ```
 
 You can also create a config from an associative array:
@@ -123,7 +126,7 @@ $config = LLMConfig::fromArray([
     'model' => 'claude-haiku-4-5-20251001',
     'maxTokens' => 1024,
 ]);
-// @doctest id="8987"
+// @doctest id="b3f4"
 ```
 
 ## Overriding Preset Values
@@ -143,7 +146,7 @@ $config = LLMConfig::fromPreset('openai')
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="6551"
+// @doctest id="075c"
 ```
 
 ## Verify a Configuration
@@ -164,7 +167,7 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo "Configuration error: " . $e->getMessage() . "\n";
 }
-// @doctest id="6464"
+// @doctest id="bf9a"
 ```
 
 ## Common Pitfalls

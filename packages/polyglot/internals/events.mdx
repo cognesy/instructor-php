@@ -26,7 +26,7 @@ $runtime = InferenceRuntime::fromConfig(
 )->onEvent(InferenceResponseCreated::class, function ($event): void {
     // Log or inspect the response
 });
-// @doctest id="b2a5"
+// @doctest id="2265"
 ```
 
 You can register multiple listeners for the same event class. An optional priority parameter controls the order (higher values run first):
@@ -34,7 +34,7 @@ You can register multiple listeners for the same event class. An optional priori
 ```php
 $runtime->onEvent(InferenceStarted::class, $highPriorityListener, priority: 10);
 $runtime->onEvent(InferenceStarted::class, $lowPriorityListener, priority: 0);
-// @doctest id="ea41"
+// @doctest id="20c7"
 ```
 
 ### Wiretap
@@ -45,7 +45,7 @@ Use `wiretap()` to receive all events regardless of type. This is useful for deb
 $runtime->wiretap(function ($event): void {
     echo get_class($event) . "\n";
 });
-// @doctest id="8da1"
+// @doctest id="7465"
 ```
 
 
@@ -117,7 +117,7 @@ The embeddings lifecycle dispatches a smaller set of events:
 |---|---|---|
 | `EmbeddingsDriverBuilt` | After the embeddings driver is created | driver class, config, HTTP client class |
 | `EmbeddingsRequested` | Before sending the embeddings request | request data |
-| `EmbeddingsResponseReceived` | After receiving the response | `data['model']`, `data['inputCount']`, `data['vectorCount']`, `data['dimensions']`, `data['usage']` |
+| `EmbeddingsResponseReceived` | After receiving the response | model, counts, dimensions, usage; optional `modelKey` and `modelCatalogVersion` |
 | `EmbeddingsFailed` | On failure | error details |
 
 
@@ -127,7 +127,7 @@ Decision exposes execution-level and attempt-level event pairs:
 
 | Event | When Dispatched | Key Data |
 |---|---|---|
-| `DecisionStarted` | Beginning of execution | request ID, execution ID, model, driver, and primitive count |
+| `DecisionStarted` | Beginning of execution | request ID, execution ID, model, driver, primitive count; optional model key and catalog version |
 | `DecisionCompleted` | Successful execution | attempt count, duration, model, driver, and usage |
 | `DecisionFailed` | Terminal failure | attempt count, duration, error type, and status code |
 | `DecisionAttemptStarted` | Beginning of an attempt | attempt ID, number, model, driver, and retry flag |
@@ -155,7 +155,7 @@ $runtime->onEvent(InferenceUsageReported::class, function ($event): void {
         'totalTokens' => $event->data['totalTokens'] ?? 0,
     ]);
 });
-// @doctest id="355a"
+// @doctest id="f509"
 ```
 
 ### Measuring Time-to-First-Chunk
@@ -166,7 +166,7 @@ use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 $runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkReceived $event): void {
     logger()->info("TTFC: {$event->timeToFirstChunkMs}ms for model {$event->model}");
 });
-// @doctest id="418e"
+// @doctest id="9ad1"
 ```
 
 ### Tracking Retry Attempts
@@ -183,7 +183,7 @@ $runtime->onEvent(InferenceAttemptFailed::class, function (InferenceAttemptFaile
         'httpStatus' => $event->data['httpStatusCode'] ?? null,
     ]);
 });
-// @doctest id="2e25"
+// @doctest id="c378"
 ```
 
 ### Monitoring Execution Outcomes
@@ -200,7 +200,7 @@ $runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event
         'durationMs' => $event->data['durationMs'] ?? 0,
     ]);
 });
-// @doctest id="5c07"
+// @doctest id="a5bb"
 ```
 
 
@@ -219,7 +219,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher(name: 'my-app');
 $runtime = InferenceRuntime::fromConfig($config, events: $events);
-// @doctest id="b754"
+// @doctest id="17d3"
 ```
 
 The same event dispatcher instance can be shared across inference, embeddings,
@@ -235,7 +235,7 @@ Gating is decided by `Cognesy\Events\Support\ListenerGate`, the single definitio
 
 ```php
 ListenerGate::wants($events, PartialInferenceDeltaCreated::class);
-// @doctest id="caba"
+// @doctest id="30f4"
 ```
 
 Two properties matter to anyone writing a dispatcher or a listener.

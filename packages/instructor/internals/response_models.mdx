@@ -20,7 +20,7 @@ $user = (new StructuredOutput())
         responseModel: User::class,
     )
     ->get();
-// @doctest id="1105"
+// @doctest id="2955"
 ```
 
 Using `User::class` gives your IDE full visibility for refactoring, autocompletion,
@@ -41,7 +41,7 @@ $result = (new StructuredOutput())
         responseModel: $user,
     )
     ->get();
-// @doctest id="f389"
+// @doctest id="aa84"
 ```
 
 Instructor inspects the class of the instance and generates the same schema it
@@ -66,7 +66,7 @@ $result = (new StructuredOutput())
         messages: 'Jason is 25 years old',
     )
     ->get();
-// @doctest id="8cb7"
+// @doctest id="b23a"
 ```
 
 > **Important:** `x-php-class` is optional. Include it only when the schema should
@@ -93,7 +93,7 @@ $age = (new StructuredOutput())
 $users = (new StructuredOutput())
     ->with(messages: $text, responseModel: Sequence::of(User::class))
     ->get();
-// @doctest id="774e"
+// @doctest id="212c"
 ```
 
 
@@ -121,7 +121,7 @@ $result = (new StructuredOutput())
     ->with(responseModel: Rating::class, messages: '...')
     ->intoSelfDeserializing(Scalar::integer('rating'))
     ->get();
-// @doctest id="6754"
+// @doctest id="ae58"
 ```
 
 > **Note:** A plain JSON Schema returns an associative array. A class or class-backed

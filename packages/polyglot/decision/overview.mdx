@@ -1,13 +1,27 @@
 Polyglot's `Decision` operation family evaluates application state against a closed set of typed questions. It is separate from chat inference: a decision returns `NoulAnswer`, `ChoiceAnswer`, and `ScoreAnswer` objects rather than generated text or an invented chat envelope.
 
-TypeSafe is the first provider. The domain and runtime contracts live in Polyglot, so callers depend on the stable Decision API rather than a provider-specific SDK.
+The domain and runtime contracts live in Polyglot, so callers depend on the
+stable Decision API rather than a provider-specific SDK. The bundled registry
+contains explicit `typesafe`, `classifier-dev`, `jeff`, and `laya` drivers; none
+is an automatic fallback for another.
 
 Use the rest of this section for the complete surface:
 
 - [Question design](questions) explains `Noul`, `Choice`, `Score`, and text versus structured state.
 - [Response handling](responses) covers typed answers, probability distributions, confidence, usage, and IDs.
 - [Configuration and runtime](runtime) covers presets, explicit wiring, pending execution, retries, events, and custom drivers.
+- [Provider evaluation](evaluation) defines primitive-specific quality, calibration, latency, failure, and review-policy evidence.
 - [Errors and testing](errors-testing) covers provider failures, validation failures, test seams, and the opt-in live test.
+
+| Provider | API boundary | Primitive semantics |
+| --- | --- | --- |
+| TypeSafe | System One | Native Choice, Noul, and Score |
+| classifier.dev | `items + dimensions` | Native Choice; projected Noul and Score |
+| Jeff | Self-hosted System One | Native primitives; Score requires temperature 1 |
+| Laya | External Typed Decision Lab (`laya-v1`) | Native primitives plus typed action-head signals |
+
+These are contract facts, not quality or calibration claims. Read the provider
+page and evaluate the exact returned model before selecting a preset.
 
 ## Configure TypeSafe
 
@@ -17,7 +31,7 @@ Set `TYPESAFE_API_KEY` in the environment. The bundled `typesafe` preset selects
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('typesafe');
-// @doctest id="e070"
+// @doctest id="8390"
 ```
 
 Application presets use the same precedence as inference and embeddings. Put an override in `config/sdm/default.yaml` and `config/sdm/presets/<name>.yaml`. Aggregate and split Composer installs discover the bundled files from `cognesy/instructor-php` and `cognesy/instructor-polyglot`, respectively.
@@ -70,7 +84,7 @@ $answers = Decision::using('typesafe')
 $billingProbability = $answers->noul('billing')->probability();
 $tone = $answers->choice('tone')->value();
 $urgency = $answers->score('urgency')->value();
-// @doctest id="a1bf"
+// @doctest id="d4c0"
 ```
 
 The typed accessors reject a missing question ID or the wrong answer kind. Choice and Score answers also expose `confidence()`, `probabilities()`, and, for Score, `legend()`.
@@ -99,7 +113,7 @@ $question = new Choice(
     options: $options,
     instructions: 'Which available route best fits this request?',
 );
-// @doctest id="7326"
+// @doctest id="fe2f"
 ```
 
 Numeric-looking IDs remain strings on the wire and in typed answers.
@@ -120,7 +134,7 @@ $instructions = JsonContent::object([
     'task' => 'Classify the support route.',
     'policy_version' => 3,
 ]);
-// @doctest id="b791"
+// @doctest id="1aed"
 ```
 
 `JsonContent::text()`, `object()`, and `list()` retain the root kind. Values are snapshotted, finite, and JSON-safe.
@@ -150,7 +164,7 @@ $requestId = $pending->request()->id()->toString();
 $executionId = $pending->executionId();
 $response = $pending->response();       // executes once
 $same = $pending->response();           // memoized; no second request
-// @doctest id="7cdb"
+// @doctest id="4774"
 ```
 
 `DecisionResponse` exposes `answers()`, `model()`, `usage()`, `responseData()`, and `providerRequestId()`.
@@ -188,7 +202,7 @@ $pending = Decision::using('typesafe')
         ),
     )
     ->create();
-// @doctest id="b069"
+// @doctest id="9fee"
 ```
 
 The Decision execution session is the single retry owner. It can retry transient transport failures and configured `408`, `429`, `5xx`, and `529` responses, honors bounded `Retry-After`, and memoizes both success and terminal failure. Do not add a second HTTP retry middleware for the same operation.
@@ -208,7 +222,7 @@ Ordinary tests never call TypeSafe. To run the bounded mixed-primitive smoke exp
 
 ```bash
 POLYGLOT_TYPESAFE_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/TypesafeLiveTest.php
-# @doctest id="afd1"
+# @doctest id="a5f2"
 ```
 
 The command resolves `TYPESAFE_API_KEY` through the existing environment loader. It fails when explicitly enabled without a key and prints only safe endpoint/model/count/usage evidence.

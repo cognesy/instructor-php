@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.12.0",
                 "release-notes/v2.11.0",
                 "release-notes/v2.10.1",
                 "release-notes/v2.10.0",
@@ -287,6 +288,11 @@
                         "packages/polyglot/decision/questions",
                         "packages/polyglot/decision/responses",
                         "packages/polyglot/decision/runtime",
+                        "packages/polyglot/decision/classifier-dev",
+                        "packages/polyglot/decision/jeff",
+                        "packages/polyglot/decision/laya",
+                        "packages/polyglot/decision/respan",
+                        "packages/polyglot/decision/evaluation",
                         "packages/polyglot/decision/errors-testing"
                     ]
                 },
@@ -435,6 +441,12 @@
                 "packages/laravel/testing",
                 "packages/laravel/advanced",
                 "packages/laravel/troubleshooting"
+            ]
+        },
+        {
+            "group": "Retrieval",
+            "pages": [
+                "packages/retrieval/overview"
             ]
         },
         {
@@ -606,11 +618,8 @@
                 "cookbook/examples/B02_LLMAdvanced/context_cache_llm",
                 "cookbook/examples/B02_LLMAdvanced/context_cache_llm_oai",
                 "cookbook/examples/B02_LLMAdvanced/llm_custom_config",
-                "cookbook/examples/B02_LLMAdvanced/custom_embeddings_config",
                 "cookbook/examples/B02_LLMAdvanced/custom_llm_driver",
                 "cookbook/examples/B02_LLMAdvanced/custom_llm_via_dsn",
-                "cookbook/examples/B02_LLMAdvanced/embed_utils",
-                "cookbook/examples/B02_LLMAdvanced/embeddings",
                 "cookbook/examples/B02_LLMAdvanced/http_client",
                 "cookbook/examples/B02_LLMAdvanced/openai_compatible_reasoning_content",
                 "cookbook/examples/B02_LLMAdvanced/parallel_calls",
@@ -683,7 +692,27 @@
                 "cookbook/examples/B06_Decisions/decision_primitives",
                 "cookbook/examples/B06_Decisions/decision_runtime",
                 "cookbook/examples/B06_Decisions/decision_dynamic_choices",
+                "cookbook/examples/B06_Decisions/decision_model_metadata",
+                "cookbook/examples/B06_Decisions/decision_model_pricing",
+                "cookbook/examples/B06_Decisions/decision_provider_evaluation",
                 "cookbook/examples/B06_Decisions/decision_structured_state"
+            ]
+        },
+        {
+            "group": "B07_Embeddings",
+            "pages": [
+                "cookbook/examples/B07_Embeddings/custom_embeddings_config",
+                "cookbook/examples/B07_Embeddings/embed_utils",
+                "cookbook/examples/B07_Embeddings/embeddings",
+                "cookbook/examples/B07_Embeddings/embedding_model_metadata",
+                "cookbook/examples/B07_Embeddings/embedding_model_pricing"
+            ]
+        },
+        {
+            "group": "B08_Retrieval",
+            "pages": [
+                "cookbook/examples/B08_Retrieval/retrieval_index_and_ask",
+                "cookbook/examples/B08_Retrieval/retrieval"
             ]
         },
         {

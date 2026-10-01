@@ -22,7 +22,7 @@ $text = Inference::using('openai')
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="5e7f"
+// @doctest id="c7b7"
 ```
 
 Options are merged additively -- calling `withOptions()` multiple times will merge the
@@ -41,7 +41,7 @@ $options = [
     'presence_penalty' => 0.0,    // Penalize repeated topics
     'stop' => ["\n\n", "User:"],  // Stop sequences
 ];
-// @doctest id="0ed2"
+// @doctest id="19fa"
 ```
 
 ## Dedicated Helpers Over Raw Options
@@ -79,7 +79,7 @@ $response = Inference::using('openai')
         'presence_penalty' => 0.3,
     ])
     ->get();
-// @doctest id="f343"
+// @doctest id="2806"
 ```
 
 ### Anthropic
@@ -93,8 +93,44 @@ $response = Inference::using('anthropic')
         'top_k' => 40,
     ])
     ->get();
-// @doctest id="0240"
+// @doctest id="3b4b"
 ```
+
+### Echo (persona)
+
+[Echo](https://echo.fulcrum.inc/dev/) writes in a named writer's voice. Every
+request needs a `persona` - the writer's name - sent as a top-level body field.
+Polyglot rejects a request without a non-empty `persona` before sending it.
+
+```php
+$response = Inference::using('echo')
+    ->withMessages(Messages::fromString('Explain GRPO in one paragraph.'))
+    ->withOptions(['persona' => 'Joan Didion'])
+    ->get();
+// @doctest id="2fdf"
+```
+
+To pin a default voice, set `options.persona` in an app-owned preset; a
+request-level `persona` overrides it:
+
+```yaml
+driver: echo
+apiUrl: 'https://echo.fulcrum.inc/api/v1'
+apiKey: '${ECHO_API_KEY}'
+endpoint: /chat/completions
+model: echo
+maxTokens: 20480
+options:
+  persona: 'Joan Didion'
+# @doctest id="64d5"
+```
+
+For a writer Echo does not know, paste a few of their writing samples into the
+message and pass their name as `persona`. Echo is stateless, so send the whole
+conversation on every turn. Reasoning is always on (`low` by default); request
+more with `withReasoning(ReasoningSelection::effort(ReasoningEffort::High))`.
+Higher efforts can take a minute or more, so prefer streaming and a generous
+HTTP timeout.
 
 ## Retry Policy
 
@@ -118,7 +154,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('Summarize this article.'))
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="23bc"
+// @doctest id="1096"
 ```
 
 The retry policy supports exponential backoff with configurable jitter and can also
@@ -150,7 +186,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
-// @doctest id="2c36"
+// @doctest id="9c0b"
 ```
 
 Available policies:
@@ -183,7 +219,7 @@ $base = Inference::using('openai')->withCachedContext(
 // Each call inherits the cached context automatically
 $response1 = $base->withMessages(Messages::fromString('Explain SOLID principles.'))->get();
 $response2 = $base->withMessages(Messages::fromString('What is the Repository pattern?'))->get();
-// @doctest id="6846"
+// @doctest id="c3b0"
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

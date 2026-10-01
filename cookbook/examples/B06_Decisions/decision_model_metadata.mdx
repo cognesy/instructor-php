@@ -1,0 +1,44 @@
+## Overview
+
+Read reviewed Jev limits by the exact `(driver, wire model)` route. The two token
+limits answer different planning questions: the whole request must fit its total
+budget, while the shared state plus each individual question must fit the
+state-and-question budget. They are planning ceilings, not automatic tokenizer
+enforcement.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Polyglot\Decision\Models\ModelCatalog;
+
+$models = ModelCatalog::discover();
+$jev = $models->find('typesafe', 'jev-1.13.0');
+
+echo "JEV MODEL FACTS\n";
+echo json_encode($jev->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)."\n\n";
+
+// Approximate counts supplied by application-owned token estimation.
+$stateTokens = 20_000;
+$questionTokens = array_fill(0, 10, 5_000);
+$wholeRequestFits = $jev->maxRequestTokens !== null
+    && $stateTokens + array_sum($questionTokens) <= $jev->maxRequestTokens;
+$everyPairFits = $jev->maxStateAndQuestionTokens !== null
+    && $stateTokens + max($questionTokens) <= $jev->maxStateAndQuestionTokens;
+
+echo 'Whole request fits: '.($wholeRequestFits ? 'yes' : 'no')."\n";
+echo 'Every state + question pair fits: '.($everyPairFits ? 'yes' : 'no')."\n";
+echo "Remediation: split the question batch; reducing one question is unnecessary.\n\n";
+
+$unknown = $models->find('typesafe', 'jev-preview');
+echo 'Unknown preview request limit: '.($unknown->maxRequestTokens ?? 'unknown')."\n";
+
+assert($jev->maxRequestTokens === 64_000);
+assert($jev->maxStateAndQuestionTokens === 32_000);
+assert($wholeRequestFits === false);
+assert($everyPairFits === true);
+assert($unknown->maxRequestTokens === null);
+?>
+```

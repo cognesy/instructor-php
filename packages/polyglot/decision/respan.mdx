@@ -1,0 +1,97 @@
+The `respan` driver connects Polyglot Decision to RESPAN's hosted
+[`POST /api/v1/scores`](https://www.respan.ai/docs/apis/respan-models/score-span-behaviors)
+endpoint. Span-01 evaluates plain-language behavior definitions against one
+conversation span and returns present, absent, and not-observable probabilities.
+
+## Configure the driver
+
+Set the RESPAN API key:
+
+```dotenv
+RESPAN_API_KEY=your-key
+// @doctest id="b4ef"
+```
+
+Then select the bundled preset:
+
+```php
+use Cognesy\Polyglot\Decision\Decision;
+
+$decision = Decision::using('respan');
+// @doctest id="7984"
+```
+
+The preset targets `https://api.respan.ai/api/v1/scores` with
+`span-01-free`. Override the model with `span-01-pro` when the organization has
+Span-01 access and sufficient credits.
+
+## Conversation input
+
+RESPAN requires an explicit conversation boundary. Pass a JSON object whose
+`input` list contains preceding messages and whose `output` object contains the
+single turn being judged:
+
+```php
+use Cognesy\Polyglot\Decision\Collections\Questions;
+use Cognesy\Polyglot\Decision\Data\JsonContent;
+use Cognesy\Polyglot\Decision\Questions\Noul;
+
+$answers = $decision
+    ->withInput(JsonContent::object([
+        'input' => [
+            ['role' => 'user', 'content' => 'My order is late again.'],
+        ],
+        'output' => [
+            'role' => 'assistant',
+            'content' => 'I am sorry. I will check the shipment now.',
+        ],
+    ]))
+    ->withQuestions(Questions::of(
+        new Noul('apology', 'The assistant apologizes for a problem.'),
+    ))
+    ->get();
+
+$answer = $answers->noul('apology');
+$present = $answer->probabilities()->positive();
+$absent = $answer->probabilities()->negative();
+$unknown = $answer->probabilities()->unknown();
+// @doctest id="cc21"
+```
+
+The adapter does not guess conversation turns from a string or unstructured
+list. Each message must have text `content`; `role` is optional but must be a
+non-empty string when present.
+
+## Primitive and answer semantics
+
+| Decision primitive | Span-01 representation | Capability |
+| --- | --- | --- |
+| Noul | One independent behavior definition | Native |
+| Choice | Not supported by this endpoint | Unsupported |
+| Score | Not supported by this endpoint | Unsupported |
+
+Noul instructions become the behavior definition. Optional true and false
+criteria are rendered as explicit `Present when` and `Absent when` guidance.
+RESPAN evaluates all behaviors independently against the same span.
+
+`NoulAnswer::probability()` remains the positive/present probability. The full
+`NoulProbabilities` value exposes positive, negative, and unknown values.
+`confidence()` is the greater of positive and negative; it never treats
+not-observable probability as evidence for absence.
+
+## Usage, identity, and failures
+
+- `usage.input_tokens` becomes `DecisionUsage::inputTokens()`.
+- Output tokens remain unknown because Span-01 does not generate output.
+- `X-Respan-Log-Id` becomes `DecisionResponse::providerRequestId()`.
+- HTTP 429 and transient dependency/service failures use the normal Decision
+  retry policy and preserve `Retry-After`.
+- Missing credentials, unavailable organization entitlement, and insufficient
+  pro credits are non-retryable and reported separately from invalid payloads.
+
+The bundled model records advertise zero pricing for `span-01-free` and
+`$0.02` per million input tokens for `span-01-pro`. No token ceiling is recorded
+because RESPAN does not publish a numeric limit.
+
+The initial driver deliberately does not send `respan_params`. Polyglot does not
+implicitly export telemetry identities or metadata as provider logging data.
