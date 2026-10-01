@@ -311,6 +311,7 @@ Polyglot includes built-in drivers for the following providers:
 | `cohere` | Cohere |
 | `groq` | Groq |
 | `deepseek` | DeepSeek |
+| `echo` | Echo by Fulcrum (persona voice writing) |
 | `fireworks` | Fireworks AI |
 | `openrouter` | OpenRouter |
 | `together` | Together AI |

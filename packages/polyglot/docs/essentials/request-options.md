@@ -97,6 +97,40 @@ $response = Inference::using('anthropic')
     ->get();
 ```
 
+### Echo (persona)
+
+[Echo](https://echo.fulcrum.inc/dev/) writes in a named writer's voice. Every
+request needs a `persona` - the writer's name - sent as a top-level body field.
+Polyglot rejects a request without a non-empty `persona` before sending it.
+
+```php
+$response = Inference::using('echo')
+    ->withMessages(Messages::fromString('Explain GRPO in one paragraph.'))
+    ->withOptions(['persona' => 'Joan Didion'])
+    ->get();
+```
+
+To pin a default voice, set `options.persona` in an app-owned preset; a
+request-level `persona` overrides it:
+
+```yaml
+driver: echo
+apiUrl: 'https://echo.fulcrum.inc/api/v1'
+apiKey: '${ECHO_API_KEY}'
+endpoint: /chat/completions
+model: echo
+maxTokens: 20480
+options:
+  persona: 'Joan Didion'
+```
+
+For a writer Echo does not know, paste a few of their writing samples into the
+message and pass their name as `persona`. Echo is stateless, so send the whole
+conversation on every turn. Reasoning is always on (`low` by default); request
+more with `withReasoning(ReasoningSelection::effort(ReasoningEffort::High))`.
+Higher efforts can take a minute or more, so prefer streaming and a generous
+HTTP timeout.
+
 ## Retry Policy
 
 Retry behavior is configured explicitly through `withRetryPolicy()` -- never place it

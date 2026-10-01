@@ -87,6 +87,21 @@ it('loads every Laya route with native primitive facts and explicit context limi
     }
 });
 
+it('loads RESPAN Noul-only capabilities and free and pro pricing', function (): void {
+    $catalog = ModelCatalog::discover();
+    $free = $catalog->find('respan', 'span-01-free');
+    $pro = $catalog->find('respan', 'span-01-pro');
+
+    expect($free->capabilities->choice)->toBe(DecisionPrimitiveSupport::Unsupported)
+        ->and($free->capabilities->noul)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($free->capabilities->score)->toBe(DecisionPrimitiveSupport::Unsupported)
+        ->and($free->pricing?->inputPerMToken)->toBe(0.0)
+        ->and($free->pricing?->outputPerMToken)->toBe(0.0)
+        ->and($free->maxRequestTokens)->toBeNull()
+        ->and($pro->pricing?->inputPerMToken)->toBe(0.02)
+        ->and($pro->pricing?->outputPerMToken)->toBe(0.0);
+});
+
 it('returns typed unknown facts for uncatalogued decision models', function (): void {
     $model = ModelCatalog::fromPaths($this->decisionModelRoot)->find('typesafe', 'jev-next');
 

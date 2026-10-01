@@ -63,7 +63,7 @@ it('resolves every bundled driver name to a declarative driver', function () {
     $names = $registry->driverNames();
 
     // Pins the table size so a silently dropped entry is a failure, not a smaller pass.
-    expect($names)->toHaveCount(29);
+    expect($names)->toHaveCount(30);
 
     $httpClient = (new HttpClientBuilder())->create();
     $events = new EventDispatcher();

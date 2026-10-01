@@ -28,6 +28,7 @@ final readonly class DecisionDriverRegistry implements CanProvideDecisionDrivers
             'classifier-dev' => 'Cognesy\\Polyglot\\Decision\\Drivers\\ClassifierDev\\ClassifierDevDriver',
             'jeff' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Jeff\\JeffDriver',
             'laya' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Laya\\LayaDriver',
+            'respan' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Respan\\RespanDriver',
             'typesafe' => 'Cognesy\\Polyglot\\Decision\\Drivers\\TypeSafe\\TypesafeDriver',
         ]);
     }

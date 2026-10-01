@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-use Cognesy\Polyglot\Decision\Answers\ChoiceAnswer;
 use Cognesy\Polyglot\Decision\Answers\AnswerSignals;
+use Cognesy\Polyglot\Decision\Answers\ChoiceAnswer;
 use Cognesy\Polyglot\Decision\Answers\NoulAnswer;
 use Cognesy\Polyglot\Decision\Answers\ScoreAnswer;
 use Cognesy\Polyglot\Decision\Collections\Answers;
 use Cognesy\Polyglot\Decision\Collections\ChoiceProbabilities;
+use Cognesy\Polyglot\Decision\Collections\NoulProbabilities;
 use Cognesy\Polyglot\Decision\Collections\ScoreLegend;
 use Cognesy\Polyglot\Decision\Collections\ScoreProbabilities;
 use Cognesy\Polyglot\Decision\Data\JsonContent;
@@ -98,6 +99,33 @@ it('round-trips typed answer signals and derives Noul confidence', function () {
         ->and($roundTrip->toArray())->toEqual($answers->toArray());
 });
 
+it('round-trips ternary Noul probabilities without treating unknown as negative', function () {
+    $probabilities = NoulProbabilities::of(
+        positive: 0.2,
+        negative: 0.3,
+        unknown: 0.5,
+    );
+    $answer = NoulAnswer::fromProbabilities('observable', $probabilities);
+    $roundTrip = NoulAnswer::fromArray($answer->toArray());
+
+    expect($answer->probability())->toBe(0.2)
+        ->and($answer->confidence())->toBe(0.3)
+        ->and($answer->probabilities()->positive())->toBe(0.2)
+        ->and($answer->probabilities()->negative())->toBe(0.3)
+        ->and($answer->probabilities()->unknown())->toBe(0.5)
+        ->and($answer->toArray())->toBe([
+            'id' => 'observable',
+            'type' => 'noul',
+            'probability' => 0.2,
+            'probabilities' => [
+                'positive' => 0.2,
+                'negative' => 0.3,
+                'unknown' => 0.5,
+            ],
+        ])
+        ->and($roundTrip->toArray())->toBe($answer->toArray());
+});
+
 it('omits empty signals and rejects malformed action probabilities', function () {
     expect((new NoulAnswer('q', 0.5))->toArray())->not->toHaveKey('signals')
         ->and(AnswerSignals::empty()->toArray())->toBe([])
@@ -127,6 +155,13 @@ it('rejects malformed ranges distributions and answer semantics', function () {
         ->toThrow(InvalidArgumentException::class, 'finite number')
         ->and(fn () => new NoulAnswer('q', 1.01))
         ->toThrow(InvalidArgumentException::class, 'between 0 and 1')
+        ->and(fn () => NoulProbabilities::of(0.2, 0.2, 0.2))
+        ->toThrow(InvalidArgumentException::class, 'sum to 1')
+        ->and(fn () => new NoulAnswer(
+            'q',
+            0.8,
+            probabilities: NoulProbabilities::of(0.7, 0.2, 0.1),
+        ))->toThrow(InvalidArgumentException::class, 'must match')
         ->and(fn () => ChoiceProbabilities::of(['a', 0.2], ['b', 0.2]))
         ->toThrow(InvalidArgumentException::class, 'sum to 1')
         ->and(fn () => new ChoiceAnswer(

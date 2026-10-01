@@ -1,0 +1,56 @@
+---
+title: 'v2.12.0'
+---
+
+v2.12.0 adds vector retrieval and structured decisions to InstructorPHP,
+expands exact-model metadata, and brings new Echo and RESPAN integrations. It
+also includes an embedding configuration cutover; review the upgrade notes
+before updating.
+
+## Retrieval and agent knowledge access
+
+- The new `cognesy/instructor-retrieval` package provides document processing,
+  vector storage, semantic search, bounded context assembly, and citations.
+  Bundled stores include in-memory, pgvector, Qdrant, Typesense, Meilisearch,
+  Weaviate, and Milvus.
+- Retrieval composes with Polyglot Embeddings and leaves answer generation to
+  the application, so callers control how evidence enters inference requests.
+- Agents can opt into bounded search and evidence-reading tools. Query, result,
+  context, and read sizes are policy-controlled. Evidence reads pass through
+  an application-owned authorization boundary.
+
+## Structured decisions and model metadata
+
+- Polyglot adds a typed Decision runtime for Noul, Choice, and Score questions.
+  Adapters cover Classifier.dev, Jeff, Laya, TypeSafe, and RESPAN.
+- Noul answers can carry positive, negative, and unknown probabilities. RESPAN
+  supports Noul questions and reports access failures separately from request
+  validation errors.
+- Exact Embedding and Decision model catalogs expose reviewed capabilities and
+  limits, with pricing where available. Examples show model metadata and cost
+  estimates.
+
+## Provider and integration updates
+
+- The Echo inference driver supports Fulcrum's persona-based writing API and
+  requires a non-empty `persona` option on each request or preset.
+- Embedding request model overrides now select the effective model for catalog
+  lookup and provider request construction. Missing provider token counts
+  remain unknown instead of being converted to zero.
+- The cURL transport negotiates HTTP/2 over TLS by default and handles interim
+  response headers before the final response.
+
+## Upgrade Notes
+
+- Embedding configuration no longer accepts `dimensions`, `defaultDimensions`,
+  or `maxInputs` in `EmbeddingsConfig`, DSNs, presets, or Laravel and Symfony
+  embedding connection configuration. Set a requested dimension in request
+  options, for example `withOptions(['dimensions' => 256])`. Inject an
+  Embedding model catalog into `EmbeddingsRuntime` when catalog-based
+  input-limit checks are required.
+- Embedding usage counts and totals can now be `null` when a provider omits
+  them, and embedding cost calculation can return `null`. Handle unknown usage
+  explicitly. Use `EmbeddingsUsage::zero()` for a known zero total; `none()`
+  represents unknown usage.
+- Add `ECHO_API_KEY` or `RESPAN_API_KEY` only for applications that use the
+  corresponding provider.

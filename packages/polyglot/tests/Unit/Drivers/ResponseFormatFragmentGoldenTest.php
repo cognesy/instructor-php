@@ -33,6 +33,7 @@ function rfGoldenBodyFormats(): array {
         'cerebras' => \Cognesy\Polyglot\Inference\Drivers\Cerebras\CerebrasBodyFormat::class,
         'cohere' => \Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2BodyFormat::class,
         'deepseek' => \Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekBodyFormat::class,
+        'echo' => \Cognesy\Polyglot\Inference\Drivers\Echo\EchoBodyFormat::class,
         'fireworks' => \Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksBodyFormat::class,
         'gemini-oai' => \Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIBodyFormat::class,
         'glm' => \Cognesy\Polyglot\Inference\Drivers\Glm\GlmBodyFormat::class,
@@ -103,6 +104,11 @@ function rfGoldenFragment(string $driver, string $bodyFormatClass, ResponseForma
         endpoint: '/chat/completions',
         model: 'test-model',
         driver: $driver,
+        // Echo rejects bodies without a persona before rendering anything else.
+        options: match ($driver) {
+            'echo' => ['persona' => 'Test Persona'],
+            default => [],
+        },
     );
     $bodyFormat = new $bodyFormatClass($config, new OpenAIMessageFormat());
 

@@ -140,6 +140,7 @@ Supported inference drivers:
 | `cerebras` | spec: `CerebrasBodyFormat` | Cerebras |
 | `cohere` | spec: `CohereV2BodyFormat` + `CohereV2RequestAdapter` | Cohere v2 |
 | `deepseek` | spec: `DeepseekBodyFormat` | DeepSeek V4; tools and JSON Output, with JSON Schema degraded to JSON object |
+| `echo` | spec: `EchoBodyFormat` + `OpenAICompatibleReasoningAdapter` | Echo by Fulcrum; requires `persona` option, keeps `max_tokens` |
 | `fireworks` | spec: `FireworksBodyFormat` | Fireworks AI |
 | `gemini` | spec: `GeminiBodyFormat` + `GeminiRequestAdapter` | Google Gemini native API |
 | `gemini-oai` | spec: `GeminiOAIBodyFormat` + `GeminiOAIRequestAdapter` | Gemini via OpenAI-compatible endpoint |

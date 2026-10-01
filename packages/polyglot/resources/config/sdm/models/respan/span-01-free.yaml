@@ -1,0 +1,17 @@
+# Sources reviewed 2026-09-26:
+# https://www.respan.ai/docs/documentation/span-01/concept
+# https://www.respan.ai/docs/apis/respan-models/score-span-behaviors
+# RESPAN exposes behavior detection with present, absent, and not-observable
+# probabilities. It does not expose arbitrary Choice or ordered Score questions.
+schemaVersion: 1
+version: '2026-09-26'
+profile:
+  driver: respan
+  model: span-01-free
+  capabilities:
+    choice: unsupported
+    noul: native
+    score: unsupported
+  pricing:
+    inputPerMToken: 0
+    outputPerMToken: 0

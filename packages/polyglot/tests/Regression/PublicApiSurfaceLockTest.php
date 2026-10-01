@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Decision\Answers\ScoreAnswer;
 use Cognesy\Polyglot\Decision\Collections\Answers;
 use Cognesy\Polyglot\Decision\Collections\ChoiceOptions;
 use Cognesy\Polyglot\Decision\Collections\ChoiceProbabilities;
+use Cognesy\Polyglot\Decision\Collections\NoulProbabilities;
 use Cognesy\Polyglot\Decision\Collections\Questions;
 use Cognesy\Polyglot\Decision\Collections\ScoreLegend;
 use Cognesy\Polyglot\Decision\Collections\ScoreLevels;
@@ -87,6 +88,7 @@ const POLYGLOT_TIER1_CLASSES = [
     Answers::class,
     ChoiceOptions::class,
     ChoiceProbabilities::class,
+    NoulProbabilities::class,
     ScoreLevels::class,
     ScoreProbabilities::class,
     ScoreLegend::class,

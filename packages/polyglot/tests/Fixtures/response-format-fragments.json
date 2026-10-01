@@ -164,6 +164,57 @@
     "deepseek/json_schema": {
         "error": "DeepSeek cannot render JSON Schema; request JSON Object explicitly or enable an evidenced lossy fallback before rendering."
     },
+    "echo/text": {
+        "type": "text"
+    },
+    "echo/json_object": {
+        "type": "json_object"
+    },
+    "echo/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "echo/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
     "fireworks/text": {
         "type": "text"
     },

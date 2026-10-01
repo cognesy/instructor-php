@@ -1,0 +1,16 @@
+# Sources reviewed 2026-09-26:
+# https://www.respan.ai/docs/documentation/span-01/concept
+# https://www.respan.ai/docs/apis/respan-models/score-span-behaviors
+# RESPAN documents $0.02 per million input tokens and free output for Span-01.
+schemaVersion: 1
+version: '2026-09-26'
+profile:
+  driver: respan
+  model: span-01-pro
+  capabilities:
+    choice: unsupported
+    noul: native
+    score: unsupported
+  pricing:
+    inputPerMToken: 0.02
+    outputPerMToken: 0

@@ -22,6 +22,7 @@ use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2ResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2UsageFormat;
 use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekResponseAdapter;
+use Cognesy\Polyglot\Inference\Drivers\Echo\EchoBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiMessageFormat;
@@ -177,6 +178,11 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
             'deepseek' => new InferenceDriverSpec(
                 bodyFormat: DeepseekBodyFormat::class,
                 responseAdapter: DeepseekResponseAdapter::class,
+                reasoningWireFormat: ReasoningWireFormat::NamedEffort,
+            ),
+            'echo' => new InferenceDriverSpec(
+                bodyFormat: EchoBodyFormat::class,
+                responseAdapter: OpenAICompatibleReasoningAdapter::class,
                 reasoningWireFormat: ReasoningWireFormat::NamedEffort,
             ),
             'fireworks' => new InferenceDriverSpec(bodyFormat: FireworksBodyFormat::class),

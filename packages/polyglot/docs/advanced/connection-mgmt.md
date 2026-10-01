@@ -74,6 +74,7 @@ Polyglot ships with the following driver types:
 | `cerebras` | Cerebras |
 | `cohere` | Cohere |
 | `deepseek` | DeepSeek |
+| `echo` | Echo by Fulcrum (persona voice writing) |
 | `fireworks` | Fireworks AI |
 | `glm` | GLM |
 | `groq` | Groq |

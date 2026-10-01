@@ -41,6 +41,11 @@ function driverGoldenResponseConfig(string $providerName): LLMConfig {
         endpoint: '/chat/completions',
         model: 'test-model',
         driver: $providerName,
+        // Echo rejects requests without a persona before any response is parsed.
+        options: match ($providerName) {
+            'echo' => ['persona' => 'Test Persona'],
+            default => [],
+        },
     );
 }
 

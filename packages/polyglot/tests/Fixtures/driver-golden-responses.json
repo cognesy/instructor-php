@@ -205,6 +205,44 @@
             }
         }
     },
+    "echo": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "Recalled the capital of France.",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
     "fireworks": {
         "discriminating": {
             "threw": null,

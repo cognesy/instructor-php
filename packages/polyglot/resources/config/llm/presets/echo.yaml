@@ -1,0 +1,6 @@
+driver: echo
+apiUrl: 'https://echo.fulcrum.inc/api/v1'
+apiKey: '${ECHO_API_KEY}'
+endpoint: /chat/completions
+model: echo
+maxTokens: 20480

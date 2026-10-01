@@ -41,6 +41,7 @@ The following providers have built-in presets:
 | Cohere | `cohere` |
 | DeepSeek | `deepseek` |
 | DeepSeek (Reasoning) | `deepseek-r` |
+| Echo (Fulcrum) | `echo` |
 | Fireworks | `fireworks` |
 | Google Gemini | `gemini` |
 | Gemini (OpenAI-compatible) | `gemini-oai` |

@@ -49,7 +49,8 @@ const DRIVER_GOLDEN_FIXTURE = __DIR__ . '/../../Fixtures/driver-golden-requests.
 /**
  * One config for every provider, so that any difference in the captured request is
  * attributable to the driver rather than to its configuration. Every field is fixed;
- * nothing is read from the environment.
+ * nothing is read from the environment. The single exception is Echo's `persona`: the
+ * provider rejects requests without it, so without one Echo would pin only its error.
  */
 function driverGoldenConfig(string $providerName): LLMConfig {
     return new LLMConfig(
@@ -66,7 +67,10 @@ function driverGoldenConfig(string $providerName): LLMConfig {
         model: 'test-model',
         maxTokens: 1024,
         driver: $providerName,
-        options: [],
+        options: match ($providerName) {
+            'echo' => ['persona' => 'Test Persona'],
+            default => [],
+        },
     );
 }
 
@@ -443,6 +447,7 @@ it('keeps the wire-equivalence classes of the providers exactly as they are', fu
         ['cerebras'],
         ['cohere'],
         ['deepseek'],
+        ['echo'],
         ['fireworks'],
         ['gemini'],
         ['gemini-oai'],

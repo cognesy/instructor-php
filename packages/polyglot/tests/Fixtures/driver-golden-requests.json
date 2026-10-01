@@ -2470,6 +2470,495 @@
             "error": null
         }
     },
+    "echo": {
+        "tools_and_schema": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false,
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "answer",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "text": {
+                                    "type": "string"
+                                },
+                                "score": {
+                                    "type": "integer"
+                                },
+                                "tags": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "text"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": false
+                        },
+                        "strict": true
+                    }
+                },
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_weather",
+                            "description": "Get the weather",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "city"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": "auto"
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "tools_and_schema_streamed": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": true,
+                "stream_options": {
+                    "include_usage": true
+                },
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "answer",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "text": {
+                                    "type": "string"
+                                },
+                                "score": {
+                                    "type": "integer"
+                                },
+                                "tags": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "text"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": false
+                        },
+                        "strict": true
+                    }
+                },
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_weather",
+                            "description": "Get the weather",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "city"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": "auto"
+            },
+            "method": "POST",
+            "options": {
+                "stream": true
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "schema_only": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false,
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "answer",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "text": {
+                                    "type": "string"
+                                },
+                                "score": {
+                                    "type": "integer"
+                                },
+                                "tags": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "text"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": false
+                        },
+                        "strict": true
+                    }
+                }
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "json_object": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false,
+                "thinking": true,
+                "response_format": {
+                    "type": "json_object"
+                }
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "text_format": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false,
+                "response_format": {
+                    "type": "text"
+                }
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "required_choice": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false,
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_weather",
+                            "description": "Get the weather",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "city"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": "required"
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "conversation": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "What is in this image?"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": "https://example.test/cat.png"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "content": "And what is the weather in NYC?"
+                    },
+                    {
+                        "role": "assistant",
+                        "tool_calls": [
+                            {
+                                "id": "call_1",
+                                "type": "function",
+                                "function": {
+                                    "name": "get_weather",
+                                    "arguments": "{\"city\":\"NYC\"}"
+                                }
+                            },
+                            {
+                                "id": "call_2",
+                                "type": "function",
+                                "function": {
+                                    "name": "get_weather",
+                                    "arguments": "{\"city\":\"Boston\"}"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": "call_1",
+                        "content": "{\"temp\":21}"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false,
+                "enable_thinking": true,
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_weather",
+                            "description": "Get the weather",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "city"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": {
+                    "type": "function",
+                    "function": {
+                        "name": "get_weather"
+                    }
+                }
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": null,
+            "error": null
+        },
+        "telemetry_correlated": {
+            "url": "https://api.example.test/v1/chat/completions",
+            "headers": {
+                "Authorization": "Bearer test-api-key",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"
+            },
+            "body": {
+                "model": "test-model",
+                "max_tokens": 1024,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are terse."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Say hi"
+                    }
+                ],
+                "persona": "Test Persona",
+                "temperature": 0,
+                "stream": false
+            },
+            "method": "POST",
+            "options": {
+                "stream": false
+            },
+            "telemetry": {
+                "root_operation_id": "golden-root-op",
+                "parent_operation_id": "golden-parent-op",
+                "session_id": "golden-session",
+                "user_id": "golden-user",
+                "conversation_id": "golden-conversation",
+                "request_id": "golden-request"
+            },
+            "error": null
+        }
+    },
     "fireworks": {
         "tools_and_schema": {
             "url": "https://api.example.test/v1/chat/completions",

@@ -7,9 +7,19 @@ use Cognesy\Config\EnvTemplate;
 use Cognesy\Config\Secrets\ArraySecretSource;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
+use Cognesy\Polyglot\Decision\Collections\ChoiceOptions;
+use Cognesy\Polyglot\Decision\Collections\Questions;
+use Cognesy\Polyglot\Decision\Collections\ScoreLevels;
 use Cognesy\Polyglot\Decision\Config\DecisionConfig;
+use Cognesy\Polyglot\Decision\Core\DecisionRequestPreflight;
+use Cognesy\Polyglot\Decision\Data\ChoiceOption;
+use Cognesy\Polyglot\Decision\Data\DecisionRequest;
 use Cognesy\Polyglot\Decision\Decision;
 use Cognesy\Polyglot\Decision\DecisionProvider;
+use Cognesy\Polyglot\Decision\Models\ModelCatalog as DecisionModelCatalog;
+use Cognesy\Polyglot\Decision\Questions\Choice;
+use Cognesy\Polyglot\Decision\Questions\Noul;
+use Cognesy\Polyglot\Decision\Questions\Score;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
@@ -132,6 +142,45 @@ it('discovers the bundled Laya preset with an operator-owned external service', 
     } finally {
         BasePath::set(getcwd() ?: $consumerRoot);
     }
+});
+
+it('discovers the bundled RESPAN preset with required bearer authentication', function () {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset('respan', template: new EnvTemplate(
+            new ArraySecretSource('test', ['RESPAN_API_KEY' => 'test-key']),
+        ));
+
+        expect($config->driver)->toBe('respan')
+            ->and($config->apiUrl)->toBe('https://api.respan.ai')
+            ->and($config->apiKey)->toBe('test-key')
+            ->and($config->endpoint)->toBe('/api/v1/scores')
+            ->and($config->model)->toBe('span-01-free');
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+});
+
+it('preflights RESPAN as Noul-only from its exact bundled model profile', function (): void {
+    $profile = DecisionModelCatalog::discover()->find('respan', 'span-01-free');
+    $request = static fn (Noul|Choice|Score $question): DecisionRequest => (new DecisionRequest(
+        input: 'state',
+        questions: Questions::of($question),
+        model: 'span-01-free',
+    ))->withModelProfile($profile);
+
+    DecisionRequestPreflight::assertSupported($request(new Noul('behavior', 'Behavior is present.')));
+
+    expect(fn () => DecisionRequestPreflight::assertSupported($request(new Choice(
+        'route',
+        ChoiceOptions::of(new ChoiceOption('a'), new ChoiceOption('b')),
+    ))))->toThrow(InvalidArgumentException::class, 'does not support Choice')
+        ->and(fn () => DecisionRequestPreflight::assertSupported($request(new Score(
+            'severity',
+            ScoreLevels::of('low', 'high'),
+        ))))->toThrow(InvalidArgumentException::class, 'does not support Score');
 });
 
 it('uses bundled default preset selectors for no-argument providers', function () {

@@ -17,6 +17,7 @@ final readonly class TellCredentialNames
         'cohere' => 'COHERE_API_KEY',
         'deepseek' => 'DEEPSEEK_API_KEY',
         'deepseek-r' => 'DEEPSEEK_API_KEY',
+        'echo' => 'ECHO_API_KEY',
         'fireworks' => 'FIREWORKS_API_KEY',
         'gemini' => 'GEMINI_API_KEY',
         'gemini-oai' => 'GEMINI_API_KEY',

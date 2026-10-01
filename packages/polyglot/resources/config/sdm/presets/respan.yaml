@@ -1,0 +1,6 @@
+---
+driver: respan
+apiUrl: 'https://api.respan.ai'
+apiKey: '${RESPAN_API_KEY}'
+endpoint: '/api/v1/scores'
+model: 'span-01-free'

@@ -257,9 +257,11 @@
         "toArray": "toArray(): array"
     },
     "Cognesy\\Polyglot\\Decision\\Answers\\NoulAnswer": {
-        "__construct": "__construct(string $questionId, float $probability, ?Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals $signals=): mixed",
+        "__construct": "__construct(string $questionId, float $probability, ?Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals $signals=, ?Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities $probabilities=): mixed",
         "confidence": "confidence(): float",
         "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Answers\\NoulAnswer",
+        "fromProbabilities": "static fromProbabilities(string $questionId, Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities $probabilities, ?Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals $signals=): Cognesy\\Polyglot\\Decision\\Answers\\NoulAnswer",
+        "probabilities": "probabilities(): Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities",
         "probability": "probability(): float",
         "questionId": "questionId(): string",
         "signals": "signals(): Cognesy\\Polyglot\\Decision\\Answers\\AnswerSignals",
@@ -345,6 +347,17 @@
         "of": "static of(array ...$probabilities=): Cognesy\\Polyglot\\Decision\\Collections\\ChoiceProbabilities",
         "probability": "probability(string $id): float",
         "toArray": "toArray(): array"
+    },
+    "Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities": {
+        "binary": "static binary(float $positive): Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities",
+        "confidence": "confidence(): float",
+        "fromArray": "static fromArray(array $data): Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities",
+        "isBinary": "isBinary(): bool",
+        "negative": "negative(): float",
+        "of": "static of(float $positive, float $negative, float $unknown): Cognesy\\Polyglot\\Decision\\Collections\\NoulProbabilities",
+        "positive": "positive(): float",
+        "toArray": "toArray(): array",
+        "unknown": "unknown(): float"
     },
     "Cognesy\\Polyglot\\Decision\\Collections\\ScoreLevels": {
         "all": "all(): array",
