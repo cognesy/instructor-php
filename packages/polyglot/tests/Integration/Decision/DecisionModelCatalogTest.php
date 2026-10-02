@@ -102,6 +102,31 @@ it('loads RESPAN Noul-only capabilities and free and pro pricing', function (): 
         ->and($pro->pricing?->outputPerMToken)->toBe(0.0);
 });
 
+it('loads Clef routes with native primitives, context window, and input pricing', function (): void {
+    $catalog = ModelCatalog::discover();
+
+    foreach (['clef' => 0.24, 'clef-flash' => 0.09] as $route => $price) {
+        $model = $catalog->find('clef', $route);
+        expect($model->maxRequestTokens)->toBe(65536)
+            ->and($model->capabilities->choice)->toBe(DecisionPrimitiveSupport::Native)
+            ->and($model->capabilities->noul)->toBe(DecisionPrimitiveSupport::Native)
+            ->and($model->capabilities->score)->toBe(DecisionPrimitiveSupport::Native)
+            ->and($model->pricing?->inputPerMToken)->toBe($price)
+            ->and($model->pricing?->outputPerMToken)->toBe(0.0);
+    }
+});
+
+it('loads the Perplexity decider with native primitives, input limit, and input pricing', function (): void {
+    $model = ModelCatalog::discover()->find('perplexity', 'pplx-decider-v1-27b');
+
+    expect($model->maxRequestTokens)->toBe(262143)
+        ->and($model->capabilities->choice)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($model->capabilities->noul)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($model->capabilities->score)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($model->pricing?->inputPerMToken)->toBe(0.04)
+        ->and($model->pricing?->outputPerMToken)->toBe(0.0);
+});
+
 it('returns typed unknown facts for uncatalogued decision models', function (): void {
     $model = ModelCatalog::fromPaths($this->decisionModelRoot)->find('typesafe', 'jev-next');
 

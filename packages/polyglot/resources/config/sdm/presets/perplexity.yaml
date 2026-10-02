@@ -1,0 +1,6 @@
+---
+driver: perplexity
+apiUrl: 'https://api.perplexity.ai'
+apiKey: '${PERPLEXITY_API_KEY}'
+endpoint: '/v1/decisions'
+model: 'pplx-decider-v1-27b'

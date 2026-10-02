@@ -1,0 +1,19 @@
+# Sources reviewed 2026-10-01:
+# https://developers.cloudflare.com/workers-ai/models/clef-flash/index.md
+# https://developers.cloudflare.com/workers-ai/models/clef-flash/schema-input.json
+# https://developers.cloudflare.com/workers-ai/models/clef-flash/schema-output.json
+# Cloudflare-hosted 9B System One decision model with a 65,536-token context
+# window. Pricing is $0.09 per million input tokens; output is not billed.
+schemaVersion: 1
+version: '2026-10-01'
+profile:
+  driver: clef
+  model: clef-flash
+  maxRequestTokens: 65536
+  capabilities:
+    choice: native
+    noul: native
+    score: native
+  pricing:
+    inputPerMToken: 0.09
+    outputPerMToken: 0

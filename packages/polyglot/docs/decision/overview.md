@@ -9,7 +9,7 @@ Polyglot's `Decision` operation family evaluates application state against a clo
 
 The domain and runtime contracts live in Polyglot, so callers depend on the
 stable Decision API rather than a provider-specific SDK. The bundled registry
-contains explicit `typesafe`, `classifier-dev`, `jeff`, and `laya` drivers; none
+contains explicit `typesafe`, `classifier-dev`, `clef`, `jeff`, `laya`, `perplexity`, and `respan` drivers; none
 is an automatic fallback for another.
 
 Use the rest of this section for the complete surface:
@@ -24,8 +24,10 @@ Use the rest of this section for the complete surface:
 | --- | --- | --- |
 | TypeSafe | System One | Native Choice, Noul, and Score |
 | classifier.dev | `items + dimensions` | Native Choice; projected Noul and Score |
+| Cloudflare Clef | System One on Workers AI | Native Choice, Noul, and Score |
 | Jeff | Self-hosted System One | Native primitives; Score requires temperature 1 |
 | Laya | External Typed Decision Lab (`laya-v1`) | Native primitives plus typed action-head signals |
+| Perplexity | System One (`/v1/decisions`) | Native Choice, Noul, and Score |
 
 These are contract facts, not quality or calibration claims. Read the provider
 page and evaluate the exact returned model before selecting a preset.

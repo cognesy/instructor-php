@@ -1,0 +1,19 @@
+# Sources reviewed 2026-10-01:
+# https://developers.cloudflare.com/workers-ai/models/clef/index.md
+# https://developers.cloudflare.com/workers-ai/models/clef/schema-input.json
+# https://developers.cloudflare.com/workers-ai/models/clef/schema-output.json
+# Cloudflare-hosted 27B System One decision model with a 65,536-token context
+# window. Pricing is $0.24 per million input tokens; output is not billed.
+schemaVersion: 1
+version: '2026-10-01'
+profile:
+  driver: clef
+  model: clef
+  maxRequestTokens: 65536
+  capabilities:
+    choice: native
+    noul: native
+    score: native
+  pricing:
+    inputPerMToken: 0.24
+    outputPerMToken: 0

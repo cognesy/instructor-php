@@ -5,8 +5,10 @@ order:
   - responses
   - runtime
   - classifier-dev
+  - clef
   - jeff
   - laya
+  - perplexity
   - respan
   - evaluation
   - errors-testing

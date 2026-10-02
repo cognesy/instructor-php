@@ -163,6 +163,44 @@ it('discovers the bundled RESPAN preset with required bearer authentication', fu
     }
 });
 
+it('discovers the bundled Clef presets on Cloudflare Workers AI', function (string $preset) {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset($preset, template: new EnvTemplate(
+            new ArraySecretSource('test', ['CLOUDFLARE_ACCOUNT_ID' => 'acct', 'CLOUDFLARE_API_TOKEN' => 'test-key']),
+        ));
+
+        expect($config->driver)->toBe('clef')
+            ->and($config->apiUrl)->toBe('https://api.cloudflare.com/client/v4/accounts/acct/ai')
+            ->and($config->apiKey)->toBe('test-key')
+            ->and($config->endpoint)->toBe('/run/@cf/cloudflare/{model}')
+            ->and($config->model)->toBe($preset);
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+})->with(['clef', 'clef-flash']);
+
+it('discovers the bundled Perplexity decisions preset', function () {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset('perplexity', template: new EnvTemplate(
+            new ArraySecretSource('test', ['PERPLEXITY_API_KEY' => 'test-key']),
+        ));
+
+        expect($config->driver)->toBe('perplexity')
+            ->and($config->apiUrl)->toBe('https://api.perplexity.ai')
+            ->and($config->apiKey)->toBe('test-key')
+            ->and($config->endpoint)->toBe('/v1/decisions')
+            ->and($config->model)->toBe('pplx-decider-v1-27b');
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+});
+
 it('preflights RESPAN as Noul-only from its exact bundled model profile', function (): void {
     $profile = DecisionModelCatalog::discover()->find('respan', 'span-01-free');
     $request = static fn (Noul|Choice|Score $question): DecisionRequest => (new DecisionRequest(

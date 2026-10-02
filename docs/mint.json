@@ -289,8 +289,10 @@
                         "packages/polyglot/decision/responses",
                         "packages/polyglot/decision/runtime",
                         "packages/polyglot/decision/classifier-dev",
+                        "packages/polyglot/decision/clef",
                         "packages/polyglot/decision/jeff",
                         "packages/polyglot/decision/laya",
+                        "packages/polyglot/decision/perplexity",
                         "packages/polyglot/decision/respan",
                         "packages/polyglot/decision/evaluation",
                         "packages/polyglot/decision/errors-testing"

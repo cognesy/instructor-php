@@ -1,0 +1,19 @@
+# Sources reviewed 2026-10-01:
+# https://docs.perplexity.ai/docs/decisions/quickstart.md
+# https://docs.perplexity.ai/api-reference/decisions-post.md
+# Perplexity Decisions API speaks System One. Input must stay under 262,144
+# tokens across state, images, and questions. Pricing is $0.04 per million
+# input tokens; output tokens are free.
+schemaVersion: 1
+version: '2026-10-01'
+profile:
+  driver: perplexity
+  model: pplx-decider-v1-27b
+  maxRequestTokens: 262143
+  capabilities:
+    choice: native
+    noul: native
+    score: native
+  pricing:
+    inputPerMToken: 0.04
+    outputPerMToken: 0
