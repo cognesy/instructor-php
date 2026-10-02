@@ -1,0 +1,61 @@
+The `perplexity` driver connects Polyglot Decision to Perplexity's hosted
+[Decisions API](https://docs.perplexity.ai/docs/decisions/quickstart)
+(`POST https://api.perplexity.ai/v1/decisions`). It speaks the System One
+protocol: a state plus a map of typed `noul`, `choice`, and `score` questions
+in, one probability distribution per question out.
+
+| Model | Input limit | Input price |
+| --- | --- | --- |
+| `pplx-decider-v1-27b` | under 262,144 tokens | $0.04 per M tokens |
+
+Output tokens are free.
+
+## Configure the driver
+
+Set a Perplexity API key:
+
+```dotenv
+PERPLEXITY_API_KEY=your-key
+// @doctest id="ea06"
+```
+
+Then select the bundled preset:
+
+```php
+use Cognesy\Polyglot\Decision\Decision;
+
+$decision = Decision::using('perplexity');
+// @doctest id="2bfa"
+```
+
+The preset targets `https://api.perplexity.ai/v1/decisions` with
+`pplx-decider-v1-27b`, the only model the API serves.
+
+## Protocol notes
+
+- A Noul question needs instructions, criteria, or both. The driver rejects a
+  Noul with neither before sending. Choice and Score questions may omit
+  instructions.
+- Perplexity accepts 1 to 128 questions per request, 1 to 255 Choice options,
+  and up to 10 Score levels. Text, object, and list state keep their System
+  One shape.
+- The `x-request-id` response header becomes the provider request ID.
+- Probabilities sum to about 1; the adapter checks sums and
+  probability-weighted scores with a 0.01 tolerance. Identical requests can
+  differ in the second decimal place, so set thresholds with some margin.
+- Image parts in `state` are not exposed by the Decision API.
+
+HTTP 401 and 403 map to authentication errors, 429 to rate limits (with
+`Retry-After`), 408 and 5xx (including the roughly one-minute 504 timeout) to
+retriable transient errors, and other 4xx responses such as 400 and 413 to
+invalid requests. A non-JSON body, such as an HTML gateway page, fails closed.
+
+## Live smoke
+
+```bash
+POLYGLOT_PERPLEXITY_LIVE=1 vendor/bin/pest packages/polyglot/tests/Integration/PerplexityLiveTest.php
+# @doctest id="e21c"
+```
+
+The test runs one mixed Noul, Choice, and Score decision through the bundled
+preset and needs `PERPLEXITY_API_KEY` in the environment or the repository `.env`.

@@ -12,7 +12,7 @@ is a preset name that maps to your environment variables:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="4ee8"
+// @doctest id="e61b"
 ```
 
 You can also create a `StructuredOutput` directly from a preset:
@@ -23,7 +23,7 @@ use Cognesy\Instructor\StructuredOutput;
 $result = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28.', responseModel: Person::class)
     ->get();
-// @doctest id="eccf"
+// @doctest id="aea8"
 ```
 
 Provider configuration covers connection details: API keys, base URLs, default model
@@ -45,7 +45,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )
     ->withMaxRetries(3)
     ->withOutputMode(OutputMode::Tools);
-// @doctest id="22db"
+// @doctest id="1c00"
 ```
 
 ### Runtime Settings
@@ -81,7 +81,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai'),
     structuredConfig: $config,
 );
-// @doctest id="a166"
+// @doctest id="2929"
 ```
 
 `StructuredOutputConfig` includes settings for:
@@ -112,7 +112,7 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="d1d9"
+// @doctest id="a4b4"
 ```
 
 ### Request Methods
@@ -150,7 +150,7 @@ $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
 $runtime->wiretap(function ($event) {
     logger()->debug(get_class($event));
 });
-// @doctest id="435a"
+// @doctest id="db2d"
 ```
 
 
@@ -175,7 +175,7 @@ $summary = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text2, responseModel: Summary::class)
     ->get();
-// @doctest id="172f"
+// @doctest id="1255"
 ```
 
 This keeps configuration centralized and each request minimal.

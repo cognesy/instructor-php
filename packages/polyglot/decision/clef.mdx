@@ -1,0 +1,68 @@
+The `clef` driver connects Polyglot Decision to Cloudflare's hosted
+[Clef](https://developers.cloudflare.com/workers-ai/models/clef/) and
+[Clef-flash](https://developers.cloudflare.com/workers-ai/models/clef-flash/)
+decision models on Workers AI. Both speak the System One protocol: a state
+plus a map of typed `noul`, `choice`, and `score` questions in, one
+probability distribution per question out.
+
+| Model | Size | Context window | Input price |
+| --- | --- | --- | --- |
+| `clef` | 27B | 65,536 tokens | $0.24 per M tokens |
+| `clef-flash` | 9B | 65,536 tokens | $0.09 per M tokens |
+
+Output tokens are not billed.
+
+## Configure the driver
+
+Set the Cloudflare account ID and an API token with Workers AI access:
+
+```dotenv
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_API_TOKEN=your-token
+// @doctest id="1058"
+```
+
+Then select one of the bundled presets:
+
+```php
+use Cognesy\Polyglot\Decision\Decision;
+
+$decision = Decision::using('clef');       // @cf/cloudflare/clef
+$decision = Decision::using('clef-flash'); // @cf/cloudflare/clef-flash
+// @doctest id="e694"
+```
+
+Both presets target
+`https://api.cloudflare.com/client/v4/accounts/{account}/ai` with the endpoint
+`/run/@cf/cloudflare/{model}`. The driver substitutes the effective model into
+`{model}`, so a per-request model override changes both the URL route and the
+`model` field of the body.
+
+## Protocol notes
+
+- Every question needs instructions. The driver rejects a question without
+  them before sending the request.
+- Clef accepts 1 to 64 questions, 2 to 255 Choice options, and 2 to 10 Score
+  levels. Text, object, and list state keep their System One shape.
+- Cloudflare wraps results in a `{result, success, errors, messages}`
+  envelope. The adapter unwraps it, fails closed when `success` is not `true`,
+  and also accepts an unwrapped System One body.
+- The `cf-ray` response header becomes the provider request ID.
+- Probabilities are returned rounded to four decimals, so the adapter checks
+  distribution sums and probability-weighted scores with a 0.02 tolerance.
+- The optional Clef `images` extension is not exposed by the Decision API.
+
+HTTP 401 and 403 map to authentication errors, 429 to rate limits, 408 and 5xx
+to retriable transient errors, and other 4xx responses to invalid requests.
+The first request to a cold model can take close to a minute, so allow a
+generous request timeout.
+
+## Live smoke
+
+```bash
+POLYGLOT_CLEF_LIVE=1 vendor/bin/pest packages/polyglot/tests/Integration/ClefLiveTest.php
+# @doctest id="08bd"
+```
+
+The test runs one mixed Noul, Choice, and Score decision against both presets
+and needs `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` in the environment.

@@ -2,7 +2,7 @@ Polyglot's `Decision` operation family evaluates application state against a clo
 
 The domain and runtime contracts live in Polyglot, so callers depend on the
 stable Decision API rather than a provider-specific SDK. The bundled registry
-contains explicit `typesafe`, `classifier-dev`, `jeff`, and `laya` drivers; none
+contains explicit `typesafe`, `classifier-dev`, `clef`, `jeff`, `laya`, `perplexity`, and `respan` drivers; none
 is an automatic fallback for another.
 
 Use the rest of this section for the complete surface:
@@ -17,8 +17,10 @@ Use the rest of this section for the complete surface:
 | --- | --- | --- |
 | TypeSafe | System One | Native Choice, Noul, and Score |
 | classifier.dev | `items + dimensions` | Native Choice; projected Noul and Score |
+| Cloudflare Clef | System One on Workers AI | Native Choice, Noul, and Score |
 | Jeff | Self-hosted System One | Native primitives; Score requires temperature 1 |
 | Laya | External Typed Decision Lab (`laya-v1`) | Native primitives plus typed action-head signals |
+| Perplexity | System One (`/v1/decisions`) | Native Choice, Noul, and Score |
 
 These are contract facts, not quality or calibration claims. Read the provider
 page and evaluate the exact returned model before selecting a preset.
@@ -31,7 +33,7 @@ Set `TYPESAFE_API_KEY` in the environment. The bundled `typesafe` preset selects
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('typesafe');
-// @doctest id="109f"
+// @doctest id="7ab8"
 ```
 
 Application presets use the same precedence as inference and embeddings. Put an override in `config/sdm/default.yaml` and `config/sdm/presets/<name>.yaml`. Aggregate and split Composer installs discover the bundled files from `cognesy/instructor-php` and `cognesy/instructor-polyglot`, respectively.
@@ -84,7 +86,7 @@ $answers = Decision::using('typesafe')
 $billingProbability = $answers->noul('billing')->probability();
 $tone = $answers->choice('tone')->value();
 $urgency = $answers->score('urgency')->value();
-// @doctest id="f113"
+// @doctest id="c51d"
 ```
 
 The typed accessors reject a missing question ID or the wrong answer kind. Choice and Score answers also expose `confidence()`, `probabilities()`, and, for Score, `legend()`.
@@ -113,7 +115,7 @@ $question = new Choice(
     options: $options,
     instructions: 'Which available route best fits this request?',
 );
-// @doctest id="3ca7"
+// @doctest id="709d"
 ```
 
 Numeric-looking IDs remain strings on the wire and in typed answers.
@@ -134,7 +136,7 @@ $instructions = JsonContent::object([
     'task' => 'Classify the support route.',
     'policy_version' => 3,
 ]);
-// @doctest id="5a26"
+// @doctest id="b8b3"
 ```
 
 `JsonContent::text()`, `object()`, and `list()` retain the root kind. Values are snapshotted, finite, and JSON-safe.
@@ -164,7 +166,7 @@ $requestId = $pending->request()->id()->toString();
 $executionId = $pending->executionId();
 $response = $pending->response();       // executes once
 $same = $pending->response();           // memoized; no second request
-// @doctest id="038d"
+// @doctest id="a6c3"
 ```
 
 `DecisionResponse` exposes `answers()`, `model()`, `usage()`, `responseData()`, and `providerRequestId()`.
@@ -202,7 +204,7 @@ $pending = Decision::using('typesafe')
         ),
     )
     ->create();
-// @doctest id="c4c2"
+// @doctest id="580c"
 ```
 
 The Decision execution session is the single retry owner. It can retry transient transport failures and configured `408`, `429`, `5xx`, and `529` responses, honors bounded `Retry-After`, and memoizes both success and terminal failure. Do not add a second HTTP retry middleware for the same operation.
@@ -222,7 +224,7 @@ Ordinary tests never call TypeSafe. To run the bounded mixed-primitive smoke exp
 
 ```bash
 POLYGLOT_TYPESAFE_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/TypesafeLiveTest.php
-# @doctest id="a69c"
+# @doctest id="7aa9"
 ```
 
 The command resolves `TYPESAFE_API_KEY` through the existing environment loader. It fails when explicitly enabled without a key and prints only safe endpoint/model/count/usage evidence.
