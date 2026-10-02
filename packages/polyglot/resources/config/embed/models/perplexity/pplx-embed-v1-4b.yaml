@@ -1,0 +1,16 @@
+# Sources reviewed 2026-10-01:
+# https://docs.perplexity.ai/docs/embeddings/quickstart.md
+# https://docs.perplexity.ai/docs/embeddings/standard-embeddings.md
+# Embeddings are returned as unnormalized base64 int8 values; compare them by
+# cosine similarity. Matryoshka dimensions range from 128 to 2560.
+schemaVersion: 1
+version: '2026-10-01'
+profile:
+  driver: perplexity
+  model: pplx-embed-v1-4b
+  maxInputs: 512
+  maxInputTokens: 32000
+  maxRequestTokens: 120000
+  defaultDimensions: 2560
+  pricing:
+    inputPerMToken: 0.03

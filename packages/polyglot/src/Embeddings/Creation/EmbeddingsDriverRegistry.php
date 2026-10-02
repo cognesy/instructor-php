@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Embeddings\Drivers\Cohere\CohereDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\Gemini\GeminiDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\Jina\JinaDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Perplexity\PerplexityDriver;
 use InvalidArgumentException;
 use Override;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -37,6 +38,7 @@ final class EmbeddingsDriverRegistry implements CanProvideEmbeddingsDrivers
             'mistral' => OpenAIDriver::class,
             'openai' => OpenAIDriver::class,
             'ollama' => OpenAIDriver::class,
+            'perplexity' => PerplexityDriver::class,
         ]);
     }
 

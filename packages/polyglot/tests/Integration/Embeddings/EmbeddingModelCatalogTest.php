@@ -48,6 +48,22 @@ it('loads the bundled OpenAI embedding model facts', function (): void {
         ->and($model->catalogVersion)->toBe('2026-09-18');
 });
 
+it('loads the bundled Perplexity embedding model facts', function (string $route, int $maxInputs, ?int $maxRequestTokens, int $dimensions, float $price): void {
+    $model = ModelCatalog::discover()->find('perplexity', $route);
+
+    expect($model->maxInputs)->toBe($maxInputs)
+        ->and($model->maxInputTokens)->toBe(32000)
+        ->and($model->maxRequestTokens)->toBe($maxRequestTokens)
+        ->and($model->defaultDimensions)->toBe($dimensions)
+        ->and($model->pricing?->inputPerMToken)->toBe($price)
+        ->and($model->catalogVersion)->toBe('2026-10-01');
+})->with([
+    ['pplx-embed-v1-0.6b', 512, 120000, 1024, 0.004],
+    ['pplx-embed-v1-4b', 512, 120000, 2560, 0.03],
+    ['pplx-embed-context-v1-0.6b', 16000, null, 1024, 0.008],
+    ['pplx-embed-context-v1-4b', 16000, null, 2560, 0.05],
+]);
+
 it('returns a typed unknown model for a missing exact route', function (): void {
     $model = ModelCatalog::fromPaths($this->embeddingModelRoot)->find('custom', 'new');
 

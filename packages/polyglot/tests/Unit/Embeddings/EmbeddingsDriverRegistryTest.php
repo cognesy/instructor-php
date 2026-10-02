@@ -85,7 +85,7 @@ it('resolves every bundled driver name to a real driver', function () {
 
     // Order and count are both pinned: fromArray() is about to stop folding the wither, and a
     // silently dropped or reordered entry would otherwise read as a smaller pass.
-    expect($names)->toBe(['azure', 'cohere', 'gemini', 'jina', 'mistral', 'openai', 'ollama']);
+    expect($names)->toBe(['azure', 'cohere', 'gemini', 'jina', 'mistral', 'openai', 'ollama', 'perplexity']);
 
     $httpClient = (new HttpClientBuilder())->create();
     $events = new EventDispatcher();

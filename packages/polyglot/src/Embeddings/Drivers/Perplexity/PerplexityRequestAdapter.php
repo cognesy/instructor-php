@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Cognesy\Polyglot\Embeddings\Drivers\Perplexity;
+
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Contracts\CanMapRequestBody;
+use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+
+class PerplexityRequestAdapter implements EmbedRequestAdapter
+{
+    public function __construct(
+        protected EmbeddingsConfig $config,
+        protected CanMapRequestBody $bodyFormat,
+    ) {}
+
+    #[\Override]
+    public function toHttpClientRequest(EmbeddingsRequest $request): HttpRequest
+    {
+        return new HttpRequest(
+            url: $this->endpointUrl($request->model() ?: $this->config->model),
+            method: 'POST',
+            headers: [
+                'Authorization' => "Bearer {$this->config->apiKey}",
+                'Content-Type' => 'application/json; charset=utf-8',
+            ],
+            body: $this->bodyFormat->toRequestBody($request),
+            options: [],
+        );
+    }
+
+    private function endpointUrl(string $model): string
+    {
+        $endpoint = match (true) {
+            PerplexityModels::isContextualized($model) => PerplexityModels::CONTEXTUALIZED_ENDPOINT,
+            default => $this->config->endpoint,
+        };
+
+        return rtrim($this->config->apiUrl, '/').'/'.ltrim($endpoint, '/');
+    }
+}

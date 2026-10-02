@@ -112,8 +112,35 @@ Polyglot ships with presets for the following providers:
 | `jina` | Jina | (configured per preset) | (varies) |
 | `mistral` | OpenAI-compatible | (configured per preset) | (varies) |
 | `ollama` | OpenAI-compatible | (configured per preset) | (varies) |
+| `perplexity` | Perplexity | `pplx-embed-v1-0.6b` | 1024 |
+| `perplexity-context` | Perplexity | `pplx-embed-context-v1-0.6b` | 1024 |
 
 > **Note:** Mistral and Ollama use the OpenAI-compatible driver, since their APIs follow the same format.
+
+### Perplexity
+
+The `perplexity` driver reads `PERPLEXITY_API_KEY` and supports
+`pplx-embed-v1-0.6b`, `pplx-embed-v1-4b`, and the contextualized
+`pplx-embed-context-v1-0.6b` and `pplx-embed-context-v1-4b` models.
+
+- Perplexity returns base64 signed int8 embeddings. The driver decodes them
+  into float vectors in the range -128 to 127. They are not normalized, so
+  compare them with cosine similarity rather than dot product or L2 distance.
+- Only the default `base64_int8` encoding is supported; `base64_binary` is
+  rejected. Pass `['dimensions' => 256]` (128 up to the model maximum) through
+  `withOptions()` to request shorter Matryoshka vectors.
+- Contextualized models use `/contextualizedembeddings`. All inputs of one
+  request are sent as the chunks of a single document, and vectors come back
+  in chunk order. Embed each document in its own request, and embed queries
+  with the same contextualized model.
+- Standard models accept up to 512 inputs and 120,000 tokens per request; each
+  input must stay under 32K tokens.
+
+```php
+$chunks = Embeddings::using('perplexity-context')
+    ->withInputs(['First paragraph...', 'Second paragraph...'])
+    ->vectors();
+```
 
 ## Custom Driver Registration
 

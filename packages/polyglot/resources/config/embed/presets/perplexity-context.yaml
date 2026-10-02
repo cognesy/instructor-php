@@ -1,0 +1,5 @@
+driver: perplexity
+apiUrl: 'https://api.perplexity.ai/v1'
+apiKey: '${PERPLEXITY_API_KEY}'
+endpoint: /embeddings
+model: pplx-embed-context-v1-0.6b
