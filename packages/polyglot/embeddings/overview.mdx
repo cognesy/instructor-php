@@ -62,7 +62,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a custom runtime (full control over driver and events)
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="af3a"
+// @doctest id="131a"
 ```
 
 `EmbeddingsConfig` owns connection and route selection. Model facts such as
@@ -136,7 +136,7 @@ The `perplexity` driver reads `PERPLEXITY_API_KEY` and supports
 $chunks = Embeddings::using('perplexity-context')
     ->withInputs(['First paragraph...', 'Second paragraph...'])
     ->vectors();
-// @doctest id="8b6c"
+// @doctest id="bc0e"
 ```
 
 ## Custom Driver Registration
@@ -158,7 +158,7 @@ $registry = EmbeddingsDriverRegistry::default()
     ->withDriver('custom-provider', function ($config, $httpClient, $events) {
         return new CustomEmbeddingsDriver($config, $httpClient, $events);
     });
-// @doctest id="10e9"
+// @doctest id="c423"
 ```
 
 Your custom driver must implement the `CanHandleVectorization` contract. Its `handle()` method

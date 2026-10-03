@@ -28,7 +28,7 @@ $profile = ModelCatalog::discover()->find('qwen', 'qwen3.8-max');
 if ($profile->capabilities->jsonSchema === SupportStatus::Supported) {
     // This exact route supports native JSON Schema.
 }
-// @doctest id="b279"
+// @doctest id="6646"
 ```
 
 `find()` never guesses by provider or model-family pattern. A missing pair returns a
@@ -57,7 +57,7 @@ $runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
 
 $first = Inference::fromRuntime($runtime)->withMessages($messages)->create();
 $second = Inference::fromRuntime($runtime)->withMessages($otherMessages)->create();
-// @doctest id="d337"
+// @doctest id="0438"
 ```
 
 Pass a catalog only when the application wants local capability enforcement, metadata, or facts
@@ -72,7 +72,7 @@ $catalog = ModelCatalog::discover()->overlay(
 );
 
 $runtime = InferenceRuntime::fromConfig($config, models: $catalog);
-// @doctest id="feb1"
+// @doctest id="8d13"
 ```
 
 With this explicit composition, `InferenceRuntime` resolves the exact profile after applying a
@@ -97,7 +97,7 @@ $decisionRuntime = DecisionRuntime::fromConfig(
     $decisionConfig,
     models: DecisionModels::discover(),
 );
-// @doctest id="0658"
+// @doctest id="174b"
 ```
 
 The effective request model is resolved before lookup. A request-level override
@@ -123,7 +123,7 @@ $decision->maxStateAndQuestionTokens;  // ?int
 $decision->capabilities->choice;       // DecisionPrimitiveSupport
 $decision->capabilities->noul;         // DecisionPrimitiveSupport
 $decision->capabilities->score;        // DecisionPrimitiveSupport
-// @doctest id="8492"
+// @doctest id="8bcb"
 ```
 
 `discover()` resolves domain-specific model directories through the same application,
@@ -187,7 +187,7 @@ profile:
   capabilities:
     streaming: supported
   source: project
-# @doctest id="4ade"
+# @doctest id="43b4"
 ```
 
 Embedding and Decision records use the same strict envelope under
@@ -208,7 +208,7 @@ profile:
     choice: native
     noul: projected
     score: projected
-# @doctest id="b195"
+# @doctest id="e176"
 ```
 
 Decision primitive support accepts `native`, `projected`, `unsupported`, and
@@ -272,7 +272,7 @@ The packaged record directory is generated offline from source and override file
 packages/polyglot/bin/instructor-catalog build
 packages/polyglot/bin/instructor-catalog check
 packages/polyglot/bin/instructor-catalog validate
-# @doctest id="8571"
+# @doctest id="fd71"
 ```
 
 These commands do not fetch provider APIs. Updating upstream facts is an explicit source-review
@@ -295,7 +295,7 @@ source diff directly in Git, then rebuild the deterministic runtime records:
 just models-build
 just models-check
 just models-validate
-# @doctest id="abae"
+# @doctest id="9131"
 ```
 
 All three commands are offline. Build validates both inputs before changing output, writes readable

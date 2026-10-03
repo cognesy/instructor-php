@@ -18,7 +18,7 @@ $response = Embeddings::using('openai')
     ->get();
 
 $vectors = $response->toValuesArray();
-// @doctest id="e468"
+// @doctest id="a91c"
 ```
 
 Provider input limits are exact-model facts, not connection preset settings.
@@ -31,7 +31,7 @@ use Cognesy\Polyglot\Embeddings\Models\ModelCatalog;
 
 $model = ModelCatalog::discover()->find('openai', 'text-embedding-3-small');
 $batchSize = min(100, $model->maxInputs ?? 100);
-// @doctest id="24c3"
+// @doctest id="b210"
 ```
 
 Applications still own chunking and may choose a smaller operational batch.
@@ -70,7 +70,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
 }
 
 echo "Processed " . count($vectors) . " embeddings in total.\n";
-// @doctest id="53e1"
+// @doctest id="ec1e"
 ```
 
 ## Retry Policies
@@ -93,7 +93,7 @@ $response = Embeddings::using('openai')
         retryOnStatus: [408, 429, 500, 502, 503, 504],
     ))
     ->get();
-// @doctest id="bcac"
+// @doctest id="f28c"
 ```
 
 ### Retry Policy Parameters
@@ -203,7 +203,7 @@ class CachedEmbeddings
         return md5($text . serialize($options));
     }
 }
-// @doctest id="458b"
+// @doctest id="a3f8"
 ```
 
 Usage:
@@ -224,7 +224,7 @@ $vectors = $cached->embedMany([
     'What is machine learning?',  // cached
     'How do neural networks work?', // API call
 ]);
-// @doctest id="37d4"
+// @doctest id="0c5a"
 ```
 
 > **Tip:** For persistent caching across requests, replace the in-memory array with Redis, Memcached, or a database-backed store.
@@ -263,7 +263,7 @@ $compact = Embeddings::using('openai')
 
 echo "Full: " . count($full->values()) . " dimensions\n";
 echo "Compact: " . count($compact->values()) . " dimensions\n";
-// @doctest id="8942"
+// @doctest id="d317"
 ```
 
 ## Best Practices
@@ -287,7 +287,7 @@ $response = Embeddings::using('openai')
 
 $usage = $response->usage();
 echo "Tokens used: " . $usage->total() . "\n";
-// @doctest id="9810"
+// @doctest id="827f"
 ```
 
 **Match dimensions to your storage.** If you are storing millions of vectors, reducing dimensions from 3072 to 256 can cut storage costs by over 90% with only modest quality loss.
