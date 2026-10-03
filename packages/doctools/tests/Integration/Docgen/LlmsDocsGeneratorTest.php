@@ -126,6 +126,74 @@ describe('LlmsDocsGenerator', function () {
             expect($result->message)->toMatch('/\d+(\.\d+)?\s*(B|KB|MB)/');
         });
 
+        it('renders absolute links when the prefix is a URL', function () {
+            $generator = new LlmsDocsGenerator(linkPrefix: 'https://example.com/llms/');
+            $outputPath = $this->tempDir . '/llms.txt';
+            $generator->generateIndex([['Main' => [['Overview' => 'index.md']]]], $outputPath);
+
+            expect(file_get_contents($outputPath))->toContain('- [Overview](https://example.com/llms/index.md)');
+        });
+
+        it('qualifies nested group headings with their parent path', function () {
+            $navigation = [
+                ['Packages' => [
+                    ['Instructor' => [
+                        ['Introduction' => 'packages/instructor/intro.md'],
+                        ['Concepts' => [
+                            ['Overview' => 'packages/instructor/concepts/overview.md'],
+                        ]],
+                    ]],
+                ]],
+            ];
+
+            $outputPath = $this->tempDir . '/llms.txt';
+            $this->generator->generateIndex($navigation, $outputPath);
+
+            $content = file_get_contents($outputPath);
+            expect($content)->toContain("### Instructor\n\n- [Introduction](/llms/packages/instructor/intro.md)");
+            expect($content)->toContain("### Instructor / Concepts\n\n- [Overview](/llms/packages/instructor/concepts/overview.md)");
+        });
+
+        it('moves optional groups into a trailing Optional section', function () {
+            $generator = new LlmsDocsGenerator(linkPrefix: '/llms', optionalSections: ['Release Notes']);
+            $navigation = [
+                ['Main' => [
+                    ['Overview' => 'index.md'],
+                    ['Release Notes' => [
+                        ['v1.0.0' => 'release-notes/v1.0.0.md'],
+                    ]],
+                ]],
+                ['Cookbook' => [
+                    ['Basics' => 'cookbook/basics.md'],
+                ]],
+            ];
+
+            $outputPath = $this->tempDir . '/llms.txt';
+            $generator->generateIndex($navigation, $outputPath);
+
+            $content = file_get_contents($outputPath);
+            expect($content)->toEndWith("## Optional\n\n### Release Notes\n\n- [v1.0.0](/llms/release-notes/v1.0.0.md)\n\n");
+            expect(strpos($content, '## Cookbook'))->toBeLessThan(strpos($content, '## Optional'));
+            expect(substr_count($content, 'release-notes/v1.0.0.md'))->toBe(1);
+        });
+
+        it('appends frontmatter descriptions as link notes', function () {
+            mkdir($this->tempDir . '/source', 0755, true);
+            file_put_contents($this->tempDir . '/source/quickstart.md', "---\ntitle: Quickstart\ndescription: 'Extract data in under 5 minutes. It''s quick.'\n---\n\n# Quickstart\n");
+            file_put_contents($this->tempDir . '/source/plain.md', "# Plain\n\ndescription: not frontmatter\n");
+
+            $outputPath = $this->tempDir . '/llms.txt';
+            $this->generator->generateIndex(
+                [['Main' => [['Quickstart' => 'quickstart.md'], ['Plain' => 'plain.md']]]],
+                $outputPath,
+                $this->tempDir . '/source',
+            );
+
+            $content = file_get_contents($outputPath);
+            expect($content)->toContain("- [Quickstart](/llms/quickstart.md): Extract data in under 5 minutes. It's quick.\n");
+            expect($content)->toContain("- [Plain](/llms/plain.md)\n");
+        });
+
     });
 
     describe('mirrorSourceTree', function () {
@@ -278,6 +346,7 @@ MD);
             expect($content)->toContain('================================================================================');
             expect($content)->toContain('FILE: index.md');
             expect($content)->toContain('FILE: features.md');
+            expect($content)->toContain("FILE: index.md\nSOURCE: /llms/index.md\n");
         });
 
         it('excludes patterns', function () {

@@ -78,7 +78,7 @@ describe('GenerateLlmsCommand', function () {
 
         $content = file_get_contents($llmsPath);
         expect($content)->toContain('# Instructor for PHP');
-        expect($content)->toContain('(/llms/index.md)');
+        expect($content)->toContain('(https://instructorphp.com/llms/index.md)');
         expect(file_exists($this->tempDir . '/llms/llms/index.md'))->toBeTrue();
     });
 

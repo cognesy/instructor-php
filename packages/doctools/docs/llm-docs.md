@@ -56,27 +56,27 @@ instructor-php/
 composer docs gen:llms
 
 # Generate only the index file
-composer docs gen:llms --index-only
+composer docs -- gen:llms --index-only
 
 # Generate only the full file
-composer docs gen:llms --full-only
+composer docs -- gen:llms --full-only
 ```
 
 ### With Deployment
 
 ```bash
 # Generate and deploy to website (configured in config/docs.yaml)
-composer docs gen:llms --deploy
+composer docs -- gen:llms --deploy
 
 # Deploy to custom target
-composer docs gen:llms --deploy --target=/path/to/website/public
+composer docs -- gen:llms --deploy --target=/path/to/website/public
 ```
 
 ### Combined with MkDocs
 
 ```bash
 # Generate MkDocs first, then LLM docs (to builds/build-llms/)
-composer docs gen:mkdocs --with-llms
+composer docs -- gen:mkdocs --with-llms
 ```
 
 **Note:** `--with-llms` does NOT deploy to the website. It only generates files in `builds/build-llms/`.
@@ -87,7 +87,7 @@ composer docs gen:mkdocs --with-llms
 
 ```bash
 # Regenerate MkDocs and LLM docs
-composer docs gen:mkdocs --with-llms
+composer docs -- gen:mkdocs --with-llms
 
 # Files are now in builds/build-llms/
 ls builds/build-llms/llms*.txt
@@ -97,19 +97,19 @@ ls builds/build-llms/llms*.txt
 
 ```bash
 # Option 1: Two-step process
-composer docs gen:mkdocs --with-llms
-composer docs gen:llms --deploy
+composer docs -- gen:mkdocs --with-llms
+composer docs -- gen:llms --deploy
 
 # Option 2: Generate fresh and deploy
-composer docs gen:llms --deploy
+composer docs -- gen:llms --deploy
 ```
 
 ### CI/CD Pipeline
 
 ```bash
 # In your deployment script:
-composer docs gen:mkdocs --with-llms
-composer docs gen:llms --deploy --target=/var/www/html/public
+composer docs -- gen:mkdocs --with-llms
+composer docs -- gen:llms --deploy --target=/var/www/html/public
 ```
 
 ## Output Files
@@ -124,22 +124,32 @@ A markdown index file with links to all documentation:
 > Structured data extraction in PHP, powered by LLMs.
 
 ## Main
-- [Overview](/llms/index.md)
-- [Getting Started](/llms/getting-started.md)
-- [Features](/llms/features.md)
+- [Overview](https://instructorphp.com/llms/index.md)
+- [Getting Started](https://instructorphp.com/llms/getting-started.md)
 
 ## Packages
-- [Overview](/llms/packages/index.md)
+- [Overview](https://instructorphp.com/llms/packages/index.md)
 
 ### Instructor
-- [Introduction](/llms/packages/instructor/introduction.md)
-- [Quickstart](/llms/packages/instructor/quickstart.md)
+- [Quickstart](https://instructorphp.com/llms/packages/instructor/quickstart.md): Extract structured data from LLM responses in under 5 minutes.
 ...
 
-## Cookbook
-- [Introduction](cookbook/introduction.md)
+### Instructor / Concepts
+- [Overview](https://instructorphp.com/llms/packages/instructor/concepts/overview.md)
+...
+
+## Optional
+
+### Release Notes
+- [Overview](https://instructorphp.com/llms/release-notes/versions.md)
 ...
 ```
+
+Index rules (per [llmstxt.org](https://llmstxt.org/)):
+- Links are absolute when `link_prefix` is a URL, so they resolve when the file is fetched on its own
+- A page's frontmatter `description` becomes the link note (`[name](url): note`)
+- Nested groups become H3 headings carrying their parent path (`Instructor / Concepts`)
+- Groups listed in `optional_sections` move to a trailing `## Optional` section, which agents may skip
 
 ### llms-full.txt
 
@@ -154,6 +164,7 @@ This file contains the complete documentation...
 
 ================================================================================
 FILE: index.md
+SOURCE: https://instructorphp.com/llms/index.md
 ================================================================================
 
 # Welcome
@@ -171,7 +182,7 @@ FILE: getting-started.md
 Features:
 - YAML frontmatter is stripped
 - Files are ordered according to navigation structure
-- Clear separators between files
+- Clear separators between files, each with the page's `SOURCE` URL
 - Token estimate included in generation output
 - Release notes excluded by default (configurable)
 
@@ -187,8 +198,8 @@ llms:
   # Output directory for generated artifacts
   target: './builds/build-llms'
 
-  # Prefix used in llms.txt links
-  link_prefix: '/llms'
+  # Prefix used in llms.txt links (absolute URL recommended)
+  link_prefix: 'https://instructorphp.com/llms'
 
   # Subdirectory that holds linked markdown and assets
   content_dir: 'llms'
@@ -203,6 +214,10 @@ llms:
   # Sections to exclude from llms-full.txt (saves tokens)
   exclude_sections:
     - 'release-notes/'
+
+  # Navigation groups moved to the trailing "## Optional" section of llms.txt
+  optional_sections:
+    - 'Release Notes'
 
   # Deployment settings
   deploy:
@@ -224,6 +239,7 @@ llms:
 | `full_file` | `llms-full.txt` | Filename for concatenated docs |
 | `project_description` | (see config) | Description in file headers |
 | `exclude_sections` | `['release-notes/']` | Patterns to exclude from full file |
+| `optional_sections` | `['Release Notes']` | Navigation groups moved to `## Optional` in `llms.txt` |
 | `deploy.target` | `''` | Deployment target directory |
 | `deploy.docs_folder` | `llms` | Subfolder for linked markdown and assets |
 

@@ -20,6 +20,7 @@ class LlmsDocsGenerator
         private string $projectName = 'Instructor for PHP',
         private string $projectDescription = 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
         private string $linkPrefix = '/llms',
+        private array $optionalSections = [],
     ) {}
 
     /**
@@ -27,14 +28,15 @@ class LlmsDocsGenerator
      *
      * @param array $navigation MkDocs navigation array from NavigationBuilder
      * @param string $outputPath Path to write llms.txt
+     * @param string|null $sourceDir Markdown source dir; frontmatter descriptions become link notes
      * @return GenerationResult
      */
-    public function generateIndex(array $navigation, string $outputPath): GenerationResult
+    public function generateIndex(array $navigation, string $outputPath, ?string $sourceDir = null): GenerationResult
     {
         $startTime = microtime(true);
 
         try {
-            $content = $this->renderIndex($navigation);
+            $content = $this->renderIndex($navigation, $sourceDir);
 
             $dir = dirname($outputPath);
             if (!is_dir($dir)) {
@@ -111,6 +113,7 @@ class LlmsDocsGenerator
                 // Add file section
                 $content .= self::FILE_SEPARATOR;
                 $content .= "FILE: {$relativePath}\n";
+                $content .= "SOURCE: " . $this->prefixPath($relativePath) . "\n";
                 $content .= self::FILE_SEPARATOR;
                 $content .= "\n" . trim($fileContent) . "\n";
 
@@ -222,52 +225,122 @@ class LlmsDocsGenerator
 
     /**
      * Render the llms.txt index content.
+     *
+     * Each top-level navigation section becomes an H2 file list. Groups listed in
+     * $optionalSections are moved to a trailing "## Optional" section, which the
+     * llms.txt standard reserves for links an agent can skip.
      */
-    private function renderIndex(array $navigation): string
+    private function renderIndex(array $navigation, ?string $sourceDir): string
     {
         $output = "# {$this->projectName}\n\n";
         $output .= "> {$this->projectDescription}\n\n";
+        $optional = [];
 
         foreach ($navigation as $section) {
             foreach ($section as $sectionTitle => $items) {
+                if ($this->isOptional($sectionTitle)) {
+                    $optional[] = [$sectionTitle => $items];
+                    continue;
+                }
+                $kept = array_values(array_filter($items, fn(array $item): bool => !$this->isOptionalGroup($item)));
+                $optional = [...$optional, ...array_values(array_filter($items, fn(array $item): bool => $this->isOptionalGroup($item)))];
                 $output .= "## {$sectionTitle}\n\n";
-                $output .= $this->renderNavItems($items, 0);
+                $output .= ltrim($this->renderNavItems($kept, [], $sourceDir), "\n");
                 $output .= "\n";
             }
+        }
+
+        if ($optional !== []) {
+            $output .= "## Optional\n\n";
+            $output .= ltrim($this->renderNavItems($optional, [], $sourceDir), "\n");
+            $output .= "\n";
         }
 
         return $output;
     }
 
     /**
-     * Recursively render navigation items as markdown links.
+     * Render navigation items as markdown links. Nested groups become H3 headings
+     * carrying their full path (e.g. "Instructor / Concepts"), so every list stays
+     * flat and attributable to its parent.
+     *
+     * @param string[] $trail
      */
-    private function renderNavItems(array $items, int $depth): string
+    private function renderNavItems(array $items, array $trail, ?string $sourceDir): string
     {
-        $output = '';
-        $indent = str_repeat('  ', $depth);
+        $links = '';
+        $groups = '';
 
         foreach ($items as $item) {
             foreach ($item as $title => $value) {
-                if (is_string($value)) {
-                    // It's a file path - render as link
-                    $output .= "{$indent}- [{$title}](" . $this->prefixPath($value) . ")\n";
-                } elseif (is_array($value)) {
-                    // It's a nested group
-                    if ($depth === 0) {
-                        // First level nesting - use ### header
-                        $output .= "\n### {$title}\n\n";
-                        $output .= $this->renderNavItems($value, 0);
-                    } else {
-                        // Deeper nesting - use bold label
-                        $output .= "{$indent}- **{$title}**\n";
-                        $output .= $this->renderNavItems($value, $depth + 1);
-                    }
-                }
+                $links .= match (true) {
+                    is_string($value) => $this->renderLink((string) $title, $value, $sourceDir),
+                    default => '',
+                };
+                $groups .= match (true) {
+                    is_array($value) => $this->renderGroup([...$trail, (string) $title], $value, $sourceDir),
+                    default => '',
+                };
             }
         }
 
-        return $output;
+        return $links . $groups;
+    }
+
+    /** @param string[] $trail */
+    private function renderGroup(array $trail, array $items, ?string $sourceDir): string
+    {
+        return "\n### " . implode(' / ', $trail) . "\n\n" . $this->renderNavItems($items, $trail, $sourceDir);
+    }
+
+    private function renderLink(string $title, string $path, ?string $sourceDir): string
+    {
+        $description = $this->description($path, $sourceDir);
+
+        return match ($description) {
+            '' => "- [{$title}](" . $this->prefixPath($path) . ")\n",
+            default => "- [{$title}](" . $this->prefixPath($path) . "): {$description}\n",
+        };
+    }
+
+    private function description(string $path, ?string $sourceDir): string
+    {
+        $fullPath = rtrim($sourceDir ?? '', '/') . '/' . ltrim($path, '/');
+        $content = match (true) {
+            $sourceDir === null, !is_file($fullPath) => '',
+            default => (string) file_get_contents($fullPath),
+        };
+        $matched = preg_match('/^(?:\xEF\xBB\xBF)?---\r?\n(.*?)\r?\n---\r?\n/s', $content, $frontmatter) === 1
+            && preg_match('/^description:\s*(.+)$/m', $frontmatter[1], $line) === 1;
+
+        return match ($matched) {
+            true => $this->unquote(trim($line[1])),
+            false => '',
+        };
+    }
+
+    private function unquote(string $value): string
+    {
+        $quote = $value[0] ?? '';
+        $unquoted = match (true) {
+            strlen($value) < 2, !in_array($quote, ["'", '"'], true), !str_ends_with($value, $quote) => $value,
+            $quote === "'" => str_replace("''", "'", substr($value, 1, -1)),
+            default => stripcslashes(substr($value, 1, -1)),
+        };
+
+        return trim((string) preg_replace('/\s+/', ' ', $unquoted));
+    }
+
+    private function isOptional(string $title): bool
+    {
+        return in_array($title, $this->optionalSections, true);
+    }
+
+    private function isOptionalGroup(array $item): bool
+    {
+        $title = (string) array_key_first($item);
+
+        return is_array($item[$title] ?? null) && $this->isOptional($title);
     }
 
     private function prefixPath(string $path): string

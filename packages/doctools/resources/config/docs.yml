@@ -75,18 +75,21 @@ llms:
   enabled: true
   # Output directory for generated LLM artifacts
   target: './builds/build-llms'
-  # Prefix used in llms.txt links (root-relative on the target host)
-  link_prefix: '/llms'
+  # Prefix used in llms.txt links; absolute so links resolve when the file is fetched out of context
+  link_prefix: 'https://instructorphp.com/llms'
   # Subdirectory inside the target which will contain markdown and assets
   content_dir: 'llms'
   # Output filenames
   index_file: 'llms.txt'
   full_file: 'llms-full.txt'
   # Project description for LLM docs header
-  project_description: 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.'
+  project_description: 'The complete AI toolkit for PHP: call 25+ LLM providers through one API with Polyglot (inference, embeddings, and typed decision models), turn responses into validated PHP objects with Instructor, build tool-using agents with Agents, and orchestrate CLI coding agents with AgentCtrl.'
   # Sections to exclude from llms-full.txt (to save tokens)
   exclude_sections:
     - 'release-notes/'
+  # Navigation groups moved to the trailing "## Optional" section of llms.txt
+  optional_sections:
+    - 'Release Notes'
   # Deployment to website
   deploy:
     # Target directory (empty = no deployment, relative to project root)

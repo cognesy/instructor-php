@@ -36,6 +36,12 @@ docs-mkdocs:
 docs-llms:
     composer docs gen:llms
 
+# Regenerate MkDocs sources, then generate and deploy LLM docs to ../instructor-www/public.
+[group('docs'), doc('Generate LLM docs and deploy to the website')]
+docs-llms-deploy:
+    composer docs gen:mkdocs
+    composer docs -- gen:llms --deploy
+
 # Generate example documentation.
 [group('docs'), doc('Generate example docs')]
 docs-examples:

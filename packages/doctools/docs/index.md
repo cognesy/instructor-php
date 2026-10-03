@@ -25,13 +25,13 @@ composer docs gen:mintlify
 composer docs gen:mkdocs
 
 # Generate MkDocs + LLM docs together
-composer docs gen:mkdocs --with-llms
+composer docs -- gen:mkdocs --with-llms
 
 # Generate LLM-friendly documentation
 composer docs gen:llms
 
 # Generate and deploy LLM docs to website
-composer docs gen:llms --deploy
+composer docs -- gen:llms --deploy
 ```
 
 ## Documentation Structure

@@ -3,6 +3,7 @@
 namespace Cognesy\Doctools\Docgen\Commands;
 
 use Cognesy\Config\BasePath;
+use Cognesy\Doctools\Docgen\CheatsheetDiscovery;
 use Cognesy\Doctools\Docgen\Data\DocsConfig;
 use Cognesy\Doctools\Docgen\LlmsDocsGenerator;
 use Cognesy\Doctools\Docgen\NavigationBuilder;
@@ -101,6 +102,7 @@ class GenerateLlmsCommand extends Command
             projectName: $this->config->mainTitle,
             projectDescription: $this->config->llmsProjectDescription,
             linkPrefix: $this->config->llmsLinkPrefix,
+            optionalSections: $this->config->llmsOptionalSections,
         );
 
         $hasErrors = false;
@@ -109,7 +111,7 @@ class GenerateLlmsCommand extends Command
         if (!$fullOnly) {
             $this->write('  Generating ' . $this->config->llmsIndexFile . '... ', [Color::DARK_GRAY]);
             $indexPath = $this->llmsTargetDir . '/' . $this->config->llmsIndexFile;
-            $indexResult = $generator->generateIndex($navigation, $indexPath);
+            $indexResult = $generator->generateIndex($navigation, $indexPath, $this->mkdocsTargetDir);
 
             if ($indexResult->isSuccess()) {
                 $this->writeln($indexResult->message, [Color::GREEN]);
@@ -197,7 +199,13 @@ class GenerateLlmsCommand extends Command
         $exampleGroups = $this->examples->getExampleGroups();
         $releaseNotes = $this->scanReleaseNotes();
 
-        return $this->navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes);
+        $cheatsheets = (new CheatsheetDiscovery(
+            sourcePattern: $this->config->cheatsheetsSourcePattern,
+            internal: $this->config->packageInternal,
+            order: $this->config->packageOrder,
+        ))->discover();
+
+        return $this->navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes, $cheatsheets);
     }
 
     private function scanReleaseNotes(): array
@@ -276,8 +284,8 @@ class GenerateLlmsCommand extends Command
             // Count files to deploy
             $mdFiles = $this->countMarkdownFiles($this->llmsContentPath());
 
-            // Copy machine-readable markdown and assets
-            $this->copyDocsFolder($this->llmsContentPath(), $docsTarget);
+            // Mirror machine-readable markdown and assets, dropping pages that no longer exist
+            (new LlmsDocsGenerator())->mirrorSourceTree($this->llmsContentPath(), $docsTarget);
 
             $this->writeln("    → {$docsTarget}/ ({$mdFiles} files)", [Color::GREEN]);
         }
@@ -309,41 +317,6 @@ class GenerateLlmsCommand extends Command
     private function writeln(string $message, string|array|null $color = null): void
     {
         $this->output->writeln(Cli::str($message, $color));
-    }
-
-    private function copyDocsFolder(string $source, string $target): void
-    {
-        if (!is_dir($target)) {
-            mkdir($target, 0755, true);
-        }
-
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        foreach ($iterator as $item) {
-            $relativePath = substr($item->getPathname(), strlen($source) + 1);
-
-            // Skip llms.txt and llms-full.txt
-            if (in_array(basename($relativePath), [$this->config->llmsIndexFile, $this->config->llmsFullFile])) {
-                continue;
-            }
-
-            $targetPath = $target . '/' . $relativePath;
-
-            if ($item->isDir()) {
-                if (!is_dir($targetPath)) {
-                    mkdir($targetPath, 0755, true);
-                }
-            } else {
-                $targetDir = dirname($targetPath);
-                if (!is_dir($targetDir)) {
-                    mkdir($targetDir, 0755, true);
-                }
-                copy($item->getPathname(), $targetPath);
-            }
-        }
     }
 
     private function llmsContentPath(): string

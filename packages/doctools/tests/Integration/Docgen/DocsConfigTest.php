@@ -22,6 +22,7 @@ describe('DocsConfig', function () {
             expect($config->llmsEnabled)->toBeTrue();
             expect($config->llmsTarget)->toBe('./builds/build-llms');
             expect($config->llmsLinkPrefix)->toBe('/llms');
+            expect($config->llmsOptionalSections)->toBe(['Release Notes']);
             expect($config->llmsContentDir)->toBe('llms');
             expect($config->llmsIndexFile)->toBe('llms.txt');
             expect($config->llmsFullFile)->toBe('llms-full.txt');
@@ -40,7 +41,8 @@ describe('DocsConfig', function () {
 
             expect($config->llmsEnabled)->toBeTrue();
             expect($config->llmsTarget)->toBe('./builds/build-llms');
-            expect($config->llmsLinkPrefix)->toBe('/llms');
+            expect($config->llmsLinkPrefix)->toBe('https://instructorphp.com/llms');
+            expect($config->llmsOptionalSections)->toBe(['Release Notes']);
             expect($config->llmsContentDir)->toBe('llms');
             expect($config->llmsIndexFile)->toBe('llms.txt');
             expect($config->llmsFullFile)->toBe('llms-full.txt');
@@ -75,6 +77,7 @@ YAML;
                 expect($config->llmsEnabled)->toBeTrue();
                 expect($config->llmsTarget)->toBe('./builds/build-llms');
                 expect($config->llmsLinkPrefix)->toBe('/llms');
+                expect($config->llmsOptionalSections)->toBe(['Release Notes']);
                 expect($config->llmsContentDir)->toBe('llms');
                 expect($config->llmsIndexFile)->toBe('llms.txt');
                 expect($config->llmsFullFile)->toBe('llms-full.txt');
