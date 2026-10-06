@@ -28,8 +28,8 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-utils": "^2.12",
-    "cognesy/instructor-templates": "^2.12"
+    "cognesy/instructor-utils": "^2.13",
+    "cognesy/instructor-templates": "^2.13"
   },
   "require-dev": {
     "pestphp/pest": "^4.0"
