@@ -174,3 +174,7 @@ tasks.json
 research/
 .actrc
 /research/
+
+# local tool state
+/.cloudflare/
+/.wb/
