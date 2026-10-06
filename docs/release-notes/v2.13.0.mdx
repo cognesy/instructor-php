@@ -1,0 +1,29 @@
+---
+title: 'v2.13.0'
+---
+
+v2.13.0 expands Polyglot Decision with three new hosted providers and updates
+the documentation index and model inventory.
+
+## Decision providers
+
+- Polyglot Decision adds a Fastino GLiDE driver (`fastino` preset, model
+  `fastino/GLiDE`). It answers Noul, Choice, and Score questions with up to 255
+  Choice options or Score levels and a 40,000-token limit per state plus one
+  question. Cold-model `425` responses are retried after the documented 60
+  second wait.
+- Cloudflare Clef and Perplexity Decision drivers are now bundled.
+- Polyglot Embeddings adds a Perplexity driver.
+- The model catalog documentation lists every bundled Decision model with its
+  limits and pricing, including Fastino at $0.15 per million input tokens.
+
+## Documentation
+
+- `llms.txt` is now spec-compliant, with absolute links.
+- The Decision provider evaluation example can run the `fastino` preset.
+
+## Upgrade Notes
+
+- Set `FASTINO_API_KEY` only for applications that use the Fastino preset.
+- Fastino recommends a read timeout of at least 300 seconds; see the Fastino
+  guide for warming-aware HTTP client and retry settings.
