@@ -27,6 +27,7 @@ final readonly class DecisionDriverRegistry implements CanProvideDecisionDrivers
         return new self([
             'classifier-dev' => 'Cognesy\\Polyglot\\Decision\\Drivers\\ClassifierDev\\ClassifierDevDriver',
             'clef' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Clef\\ClefDriver',
+            'fastino' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Fastino\\FastinoDriver',
             'jeff' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Jeff\\JeffDriver',
             'laya' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Laya\\LayaDriver',
             'perplexity' => 'Cognesy\\Polyglot\\Decision\\Drivers\\Perplexity\\PerplexityDriver',

@@ -1,0 +1,5 @@
+driver: fastino
+apiUrl: 'https://api.fastino.ai/v1'
+apiKey: '${FASTINO_API_KEY}'
+endpoint: '/systemone'
+model: 'fastino/GLiDE'

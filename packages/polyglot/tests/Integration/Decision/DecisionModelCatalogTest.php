@@ -127,6 +127,22 @@ it('loads the Perplexity decider with native primitives, input limit, and input 
         ->and($model->pricing?->outputPerMToken)->toBe(0.0);
 });
 
+it('loads the Fastino GLiDE record from its encoded path with per-question limit and input pricing', function (): void {
+    $model = ModelCatalog::discover()->find('fastino', 'fastino/GLiDE');
+    $cost = (new FlatRateCostCalculator)->calculate(new DecisionUsage(inputTokens: 2_000_000, outputTokens: 500), $model->pricing);
+
+    expect(ModelCatalog::relativePath('fastino', 'fastino/GLiDE'))->toBe('fastino/fastino%2FGLiDE.yaml')
+        ->and($model->model)->toBe('fastino/GLiDE')
+        ->and($model->maxRequestTokens)->toBeNull()
+        ->and($model->maxStateAndQuestionTokens)->toBe(40000)
+        ->and($model->capabilities->choice)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($model->capabilities->noul)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($model->capabilities->score)->toBe(DecisionPrimitiveSupport::Native)
+        ->and($model->pricing?->inputPerMToken)->toBe(0.15)
+        ->and($model->pricing?->outputPerMToken)->toBe(0.0)
+        ->and($cost?->total)->toEqualWithDelta(0.30, 0.0000001);
+});
+
 it('returns typed unknown facts for uncatalogued decision models', function (): void {
     $model = ModelCatalog::fromPaths($this->decisionModelRoot)->find('typesafe', 'jev-next');
 

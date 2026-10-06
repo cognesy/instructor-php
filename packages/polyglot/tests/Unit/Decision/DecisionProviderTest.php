@@ -50,7 +50,7 @@ it('registers bundled Decision drivers and supports explicit driver factories', 
         ->and($registry->has('jeff'))->toBeTrue()
         ->and($registry->has('laya'))->toBeTrue()
         ->and($registry->has('typesafe'))->toBeTrue()
-        ->and($registry->driverNames())->toBe(['classifier-dev', 'clef', 'jeff', 'laya', 'perplexity', 'respan', 'typesafe', 'test'])
+        ->and($registry->driverNames())->toBe(['classifier-dev', 'clef', 'fastino', 'jeff', 'laya', 'perplexity', 'respan', 'typesafe', 'test'])
         ->and($registry->makeDriver('test', new DecisionConfig, $http, new EventDispatcher))->toBe($driver)
         ->and($registry->withoutDriver('typesafe')->has('typesafe'))->toBeFalse()
         ->and(fn () => $registry->makeDriver('missing', new DecisionConfig, $http, new EventDispatcher))

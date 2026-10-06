@@ -213,10 +213,30 @@ Decision primitive support accepts `native`, `projected`, `unsupported`, and
 `unknown`. Unknown fields are omitted from serialization; an uncatalogued route
 therefore remains executable.
 
-The bundled Decision records cover `typesafe/{jev-1.13.0,jev-latest}`,
-`classifier-dev/fast`, `jeff/gliformer-large-v1`, and
-`laya/{laya,laya-multilingual,laya-typed-decisions}`. `jev-latest` is an
-independently reviewed snapshot, not a dynamic alias resolver. Pin an exact
+The bundled Decision records, under `resources/config/sdm/models/`, are listed
+below. Prices are USD per million tokens; `—` means the fact is unknown and
+left out of the record.
+
+| Driver | Model | Record file | Request limit | State + question limit | Input | Output |
+| --- | --- | --- | --- | --- | --- | --- |
+| `classifier-dev` | `fast` | `classifier-dev/fast.yaml` | — | — | — | — |
+| `clef` | `clef` | `clef/clef.yaml` | 65,536 | — | 0.24 | 0 |
+| `clef` | `clef-flash` | `clef/clef-flash.yaml` | 65,536 | — | 0.09 | 0 |
+| `fastino` | `fastino/GLiDE` | `fastino/fastino%2FGLiDE.yaml` | — | 40,000 | 0.15 | 0 |
+| `jeff` | `gliformer-large-v1` | `jeff/gliformer-large-v1.yaml` | — | — | — | — |
+| `laya` | `laya` | `laya/laya.yaml` | — | 512 | — | — |
+| `laya` | `laya-multilingual` | `laya/laya-multilingual.yaml` | — | 1,024 | — | — |
+| `laya` | `laya-typed-decisions` | `laya/laya-typed-decisions.yaml` | — | 1,024 | — | — |
+| `perplexity` | `pplx-decider-v1-27b` | `perplexity/pplx-decider-v1-27b.yaml` | 262,143 | — | 0.04 | 0 |
+| `respan` | `span-01-free` | `respan/span-01-free.yaml` | — | — | 0 | 0 |
+| `respan` | `span-01-pro` | `respan/span-01-pro.yaml` | — | — | 0.02 | 0 |
+| `typesafe` | `jev-1.13.0` | `typesafe/jev-1.13.0.yaml` | 64,000 | 32,000 | 0.042 | 0 |
+| `typesafe` | `jev-latest` | `typesafe/jev-latest.yaml` | 64,000 | 32,000 | 0.042 | 0 |
+
+`jev-latest` is an independently reviewed snapshot, not a dynamic alias
+resolver. Fastino's limit is per rendered state plus one question; its
+reported input usage sums internal passes, so no whole-request limit is
+recorded. Pin an exact
 returned model or self-hosted revision when stable planning facts matter.
 
 The path is `<encoded-driver>/<encoded-model>.yaml`, with each component encoded using

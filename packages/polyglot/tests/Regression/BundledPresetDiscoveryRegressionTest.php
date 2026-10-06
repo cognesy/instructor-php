@@ -201,6 +201,25 @@ it('discovers the bundled Perplexity decisions preset', function () {
     }
 });
 
+it('discovers the bundled Fastino GLiDE preset', function () {
+    $consumerRoot = polyglotPresetDiscoveryConsumerRoot();
+    BasePath::set($consumerRoot);
+
+    try {
+        $config = DecisionConfig::fromPreset('fastino', template: new EnvTemplate(
+            new ArraySecretSource('test', ['FASTINO_API_KEY' => 'test-key']),
+        ));
+
+        expect($config->driver)->toBe('fastino')
+            ->and($config->apiUrl)->toBe('https://api.fastino.ai/v1')
+            ->and($config->apiKey)->toBe('test-key')
+            ->and($config->endpoint)->toBe('/systemone')
+            ->and($config->model)->toBe('fastino/GLiDE');
+    } finally {
+        BasePath::set(getcwd() ?: $consumerRoot);
+    }
+});
+
 it('preflights RESPAN as Noul-only from its exact bundled model profile', function (): void {
     $profile = DecisionModelCatalog::discover()->find('respan', 'span-01-free');
     $request = static fn (Noul|Choice|Score $question): DecisionRequest => (new DecisionRequest(

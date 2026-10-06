@@ -290,6 +290,7 @@
                         "packages/polyglot/decision/runtime",
                         "packages/polyglot/decision/classifier-dev",
                         "packages/polyglot/decision/clef",
+                        "packages/polyglot/decision/fastino",
                         "packages/polyglot/decision/jeff",
                         "packages/polyglot/decision/laya",
                         "packages/polyglot/decision/perplexity",

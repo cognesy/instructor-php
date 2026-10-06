@@ -38,6 +38,7 @@ echo $message->content()->toString();
 - `packages/polyglot/docs/decision/runtime.md`
 - `packages/polyglot/docs/decision/classifier-dev.md`
 - `packages/polyglot/docs/decision/clef.md`
+- `packages/polyglot/docs/decision/fastino.md`
 - `packages/polyglot/docs/decision/jeff.md`
 - `packages/polyglot/docs/decision/laya.md`
 - `packages/polyglot/docs/decision/perplexity.md`

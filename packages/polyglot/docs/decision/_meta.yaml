@@ -6,6 +6,7 @@ order:
   - runtime
   - classifier-dev
   - clef
+  - fastino
   - jeff
   - laya
   - perplexity

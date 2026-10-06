@@ -10,6 +10,7 @@ tags:
   - 'classifier-dev'
   - 'jeff'
   - 'laya'
+  - 'fastino'
 ---
 ## Overview
 
@@ -26,6 +27,10 @@ Execute the evaluator with a bundled preset name:
 ```bash
 php examples/B06_Decisions/ProviderEvaluation/evaluate.php classifier-dev
 ```
+
+Other bundled presets work the same way, for example `fastino` with
+`FASTINO_API_KEY` set. A cold GLiDE model can make the first case slow or
+retried; see the Fastino guide for warming-aware timeouts and retries.
 
 ## Example
 

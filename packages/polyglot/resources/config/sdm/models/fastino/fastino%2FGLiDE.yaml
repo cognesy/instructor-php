@@ -1,0 +1,21 @@
+# Sources reviewed 2026-10-06:
+# https://docs.fastino.ai/concepts/models.md
+# https://docs.fastino.ai/pricing.md
+# https://docs.fastino.ai/inference/systemone.md
+# Fastino GLiDE speaks System One. Each rendered prompt (state plus one
+# question) must fit 40,000 tokens; reported input usage sums internal passes
+# across questions, so no whole-request ceiling is recorded. Pricing is $0.15
+# per million input tokens; output tokens are reported but free.
+schemaVersion: 1
+version: '2026-10-06'
+profile:
+  driver: fastino
+  model: fastino/GLiDE
+  maxStateAndQuestionTokens: 40000
+  capabilities:
+    choice: native
+    noul: native
+    score: native
+  pricing:
+    inputPerMToken: 0.15
+    outputPerMToken: 0

@@ -20,7 +20,10 @@ final readonly class SystemOneRequestEncoder
         | JSON_UNESCAPED_UNICODE
         | JSON_PRESERVE_ZERO_FRACTION;
 
-    public function __construct(private string $provider = 'System One') {}
+    public function __construct(
+        private string $provider = 'System One',
+        private int $maxScoreLevels = 10,
+    ) {}
 
     public function encode(DecisionRequest $request, string $model): string
     {
@@ -88,8 +91,10 @@ final readonly class SystemOneRequestEncoder
 
     private function scoreBody(Score $question): stdClass
     {
-        if ($question->levels()->count() > 10) {
-            throw new InvalidArgumentException("{$this->provider} Score supports between 2 and 10 levels.");
+        if ($question->levels()->count() > $this->maxScoreLevels) {
+            throw new InvalidArgumentException(
+                "{$this->provider} Score supports between 2 and {$this->maxScoreLevels} levels.",
+            );
         }
         $body = $this->baseQuestionBody('score', $question->instructions()?->value());
         $body->criteria = $question->levels()->toArray();
