@@ -33,7 +33,7 @@ $provider = LLMProvider::fromArray([
 
 // Default (OpenAI with gpt-4.1-nano)
 $provider = LLMProvider::new();
-// @doctest id="18d7"
+// @doctest id="1d88"
 ```
 
 ### Customizing a Provider
@@ -51,7 +51,7 @@ $provider = $provider->withLLMConfig($newConfig);
 
 // Inject an explicit driver (bypasses the driver factory)
 $provider = $provider->withDriver($customDriver);
-// @doctest id="4132"
+// @doctest id="2016"
 ```
 
 When an explicit driver is set, the runtime uses it directly instead of building one from the config. This is useful for testing or for providers that need custom initialization.
@@ -92,7 +92,7 @@ $provider = EmbeddingsProvider::fromArray([
     'endpoint' => '/embeddings',
     'model' => 'text-embedding-3-small',
 ]);
-// @doctest id="bb97"
+// @doctest id="b2e4"
 ```
 
 Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut for presets. Use `Embeddings::using(...)` or construct the config explicitly.
@@ -103,7 +103,7 @@ Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut
 $provider = EmbeddingsProvider::fromArray([...])
     ->withConfigOverrides(['model' => 'text-embedding-3-large'])
     ->withDriver($customDriver);
-// @doctest id="70c7"
+// @doctest id="dd0e"
 ```
 
 Output dimensions are request options, not provider configuration. Set them on
@@ -175,7 +175,7 @@ $registry = InferenceDriverRegistry::default()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $runtime = InferenceRuntime::fromConfig($config, drivers: $registry);
-// @doctest id="4b7b"
+// @doctest id="13e9"
 ```
 
 A custom driver can be registered as a class name (must accept `LLMConfig`, `CanSendHttpRequests`, and `CanHandleEvents` in its constructor) or as a callable factory:
@@ -184,14 +184,14 @@ A custom driver can be registered as a class name (must accept `LLMConfig`, `Can
 $registry = $registry->withDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyCustomDriver($config, $httpClient, $events);
 });
-// @doctest id="782e"
+// @doctest id="29eb"
 ```
 
 You can also remove drivers from the registry:
 
 ```php
 $registry = $registry->withoutDriver('openai-compatible');
-// @doctest id="337c"
+// @doctest id="bdf6"
 ```
 
 ### Embeddings Driver Registry
@@ -207,7 +207,7 @@ $registry = EmbeddingsDriverRegistry::default()
     ->withDriver('my-provider', MyEmbeddingsDriver::class);
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
-// @doctest id="c51a"
+// @doctest id="7d48"
 ```
 
 Or with a factory callable:
@@ -216,7 +216,7 @@ Or with a factory callable:
 $registry = $registry->withDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyEmbeddingsDriver($config, $httpClient, $events);
 });
-// @doctest id="2eee"
+// @doctest id="9e57"
 ```
 
 `InferenceDriverRegistry`, `EmbeddingsDriverRegistry`, and
@@ -275,5 +275,5 @@ The driver contract `CanProcessInferenceRequest` also includes a `capabilities()
 ```php
 $driver->capabilities()->supportsStreaming;
 $driver->capabilities('deepseek-v4-pro')->supportsToolCalling();
-// @doctest id="b731"
+// @doctest id="730a"
 ```

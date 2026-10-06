@@ -28,7 +28,7 @@ $profile = ModelCatalog::discover()->find('qwen', 'qwen3.8-max');
 if ($profile->capabilities->jsonSchema === SupportStatus::Supported) {
     // This exact route supports native JSON Schema.
 }
-// @doctest id="6646"
+// @doctest id="df29"
 ```
 
 `find()` never guesses by provider or model-family pattern. A missing pair returns a
@@ -57,7 +57,7 @@ $runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
 
 $first = Inference::fromRuntime($runtime)->withMessages($messages)->create();
 $second = Inference::fromRuntime($runtime)->withMessages($otherMessages)->create();
-// @doctest id="0438"
+// @doctest id="bb91"
 ```
 
 Pass a catalog only when the application wants local capability enforcement, metadata, or facts
@@ -72,7 +72,7 @@ $catalog = ModelCatalog::discover()->overlay(
 );
 
 $runtime = InferenceRuntime::fromConfig($config, models: $catalog);
-// @doctest id="8d13"
+// @doctest id="c4d0"
 ```
 
 With this explicit composition, `InferenceRuntime` resolves the exact profile after applying a
@@ -97,7 +97,7 @@ $decisionRuntime = DecisionRuntime::fromConfig(
     $decisionConfig,
     models: DecisionModels::discover(),
 );
-// @doctest id="174b"
+// @doctest id="2460"
 ```
 
 The effective request model is resolved before lookup. A request-level override
@@ -123,7 +123,7 @@ $decision->maxStateAndQuestionTokens;  // ?int
 $decision->capabilities->choice;       // DecisionPrimitiveSupport
 $decision->capabilities->noul;         // DecisionPrimitiveSupport
 $decision->capabilities->score;        // DecisionPrimitiveSupport
-// @doctest id="8bcb"
+// @doctest id="7ca0"
 ```
 
 `discover()` resolves domain-specific model directories through the same application,
@@ -187,7 +187,7 @@ profile:
   capabilities:
     streaming: supported
   source: project
-# @doctest id="43b4"
+# @doctest id="c6de"
 ```
 
 Embedding and Decision records use the same strict envelope under
@@ -208,17 +208,37 @@ profile:
     choice: native
     noul: projected
     score: projected
-# @doctest id="e176"
+# @doctest id="6e9f"
 ```
 
 Decision primitive support accepts `native`, `projected`, `unsupported`, and
 `unknown`. Unknown fields are omitted from serialization; an uncatalogued route
 therefore remains executable.
 
-The bundled Decision records cover `typesafe/{jev-1.13.0,jev-latest}`,
-`classifier-dev/fast`, `jeff/gliformer-large-v1`, and
-`laya/{laya,laya-multilingual,laya-typed-decisions}`. `jev-latest` is an
-independently reviewed snapshot, not a dynamic alias resolver. Pin an exact
+The bundled Decision records, under `resources/config/sdm/models/`, are listed
+below. Prices are USD per million tokens; `—` means the fact is unknown and
+left out of the record.
+
+| Driver | Model | Record file | Request limit | State + question limit | Input | Output |
+| --- | --- | --- | --- | --- | --- | --- |
+| `classifier-dev` | `fast` | `classifier-dev/fast.yaml` | — | — | — | — |
+| `clef` | `clef` | `clef/clef.yaml` | 65,536 | — | 0.24 | 0 |
+| `clef` | `clef-flash` | `clef/clef-flash.yaml` | 65,536 | — | 0.09 | 0 |
+| `fastino` | `fastino/GLiDE` | `fastino/fastino%2FGLiDE.yaml` | — | 40,000 | 0.15 | 0 |
+| `jeff` | `gliformer-large-v1` | `jeff/gliformer-large-v1.yaml` | — | — | — | — |
+| `laya` | `laya` | `laya/laya.yaml` | — | 512 | — | — |
+| `laya` | `laya-multilingual` | `laya/laya-multilingual.yaml` | — | 1,024 | — | — |
+| `laya` | `laya-typed-decisions` | `laya/laya-typed-decisions.yaml` | — | 1,024 | — | — |
+| `perplexity` | `pplx-decider-v1-27b` | `perplexity/pplx-decider-v1-27b.yaml` | 262,143 | — | 0.04 | 0 |
+| `respan` | `span-01-free` | `respan/span-01-free.yaml` | — | — | 0 | 0 |
+| `respan` | `span-01-pro` | `respan/span-01-pro.yaml` | — | — | 0.02 | 0 |
+| `typesafe` | `jev-1.13.0` | `typesafe/jev-1.13.0.yaml` | 64,000 | 32,000 | 0.042 | 0 |
+| `typesafe` | `jev-latest` | `typesafe/jev-latest.yaml` | 64,000 | 32,000 | 0.042 | 0 |
+
+`jev-latest` is an independently reviewed snapshot, not a dynamic alias
+resolver. Fastino's limit is per rendered state plus one question; its
+reported input usage sums internal passes, so no whole-request limit is
+recorded. Pin an exact
 returned model or self-hosted revision when stable planning facts matter.
 
 The path is `<encoded-driver>/<encoded-model>.yaml`, with each component encoded using
@@ -272,7 +292,7 @@ The packaged record directory is generated offline from source and override file
 packages/polyglot/bin/instructor-catalog build
 packages/polyglot/bin/instructor-catalog check
 packages/polyglot/bin/instructor-catalog validate
-# @doctest id="fd71"
+# @doctest id="da33"
 ```
 
 These commands do not fetch provider APIs. Updating upstream facts is an explicit source-review
@@ -295,7 +315,7 @@ source diff directly in Git, then rebuild the deterministic runtime records:
 just models-build
 just models-check
 just models-validate
-# @doctest id="9131"
+# @doctest id="8029"
 ```
 
 All three commands are offline. Build validates both inputs before changing output, writes readable

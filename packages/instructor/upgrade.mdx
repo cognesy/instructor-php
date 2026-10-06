@@ -19,7 +19,7 @@ $config = (new StructuredOutputConfigBuilder())
 $config = (new StructuredOutputConfig())
     ->withOutputMode(OutputMode::Json)
     ->withMaxRetries(2);
-// @doctest id="a71d"
+// @doctest id="e77c"
 ```
 
 The builder's `withConfig($defaults)` seed has no replacement: start the chain from that config
@@ -33,7 +33,7 @@ failures always fail the attempt, and `defaultToStdClass` was superseded by per-
 
 ```php
 $config = $config->with(throwOnTransformationFailure: true);
-// @doctest id="9ec7"
+// @doctest id="e36c"
 ```
 
 One semantic difference to check: the builder's `create()` merged `modePromptClasses` into the
@@ -44,7 +44,7 @@ the remaining modes to keep their defaults, merge explicitly:
 
 ```php
 $config = $config->withModePromptClasses([...$config->modePromptClasses(), ...$overrides]);
-// @doctest id="340e"
+// @doctest id="1194"
 ```
 
 In `cognesy/instructor-agents`, `StructuredOutputPolicy::withConfigBuilder()` is accordingly
@@ -88,7 +88,7 @@ $result = (new StructuredOutput)
     ->get();
 
 // array<string, mixed>
-// @doctest id="f41f"
+// @doctest id="7b3d"
 ```
 
 Use `x-php-class` in the schema or `intoInstanceOf()` to request class hydration. Use
@@ -103,7 +103,7 @@ $result = (new StructuredOutput)
     ->get();
 
 $data = $result->toArray();
-// @doctest id="bf7d"
+// @doctest id="6b88"
 ```
 
 Remove workarounds that expected plain schemas to return `Structure`, including
@@ -139,7 +139,7 @@ import `Cognesy\Dynamic` classes directly must declare their own dependency:
 
 ```bash
 composer require cognesy/instructor-dynamic:^2.5
-# @doctest id="fa48"
+# @doctest id="8d79"
 ```
 
 ## 2.0-era API overview

@@ -418,6 +418,7 @@ Bundled Decision presets are explicit:
 | `typesafe` | Native Choice, Noul, and Score |
 | `classifier-dev` | Native Choice; projected Noul and Score |
 | `clef`, `clef-flash` | Native Choice, Noul, and Score on Cloudflare Workers AI |
+| `fastino` | Native Choice, Noul, and Score via `fastino/GLiDE`; set a 300 s timeout |
 | `jeff` | Native primitives; Score requires `JEFF_TEMPERATURE=1` |
 | `laya` | Native primitives plus typed `modelActionProbability` signals |
 | `perplexity` | Native Choice, Noul, and Score via `pplx-decider-v1-27b` |
@@ -443,7 +444,7 @@ Deterministic test seams:
 - `POLYGLOT_TYPESAFE_LIVE=1`
   - opts into the bounded TypeSafe integration smoke
 - `POLYGLOT_CLASSIFIER_DEV_LIVE=1`, `POLYGLOT_CLEF_LIVE=1`,
-  `POLYGLOT_JEFF_LIVE=1`, `POLYGLOT_LAYA_LIVE=1`, and
+  `POLYGLOT_FASTINO_LIVE=1`, `POLYGLOT_JEFF_LIVE=1`, `POLYGLOT_LAYA_LIVE=1`, and
   `POLYGLOT_PERPLEXITY_LIVE=1`
   - opt into the corresponding bounded provider smoke
 - ordinary test runs remain offline and do not require credentials, Python,

@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.13.0",
                 "release-notes/v2.12.0",
                 "release-notes/v2.11.0",
                 "release-notes/v2.10.1",
@@ -290,6 +291,7 @@
                         "packages/polyglot/decision/runtime",
                         "packages/polyglot/decision/classifier-dev",
                         "packages/polyglot/decision/clef",
+                        "packages/polyglot/decision/fastino",
                         "packages/polyglot/decision/jeff",
                         "packages/polyglot/decision/laya",
                         "packages/polyglot/decision/perplexity",
