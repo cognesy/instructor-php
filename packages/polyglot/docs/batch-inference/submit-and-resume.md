@@ -1,0 +1,65 @@
+---
+title: Submit and Resume Batch Jobs
+description: Prepare keyed inference requests and retain a reference for another process.
+---
+
+Each `BatchItem` has a caller-owned key and a canonical `InferenceRequest`.
+The key is the stable identity used to reconcile an outcome with an application
+record. It is independent of the request UUID and of any response UUID that a
+decoder creates later.
+
+```php
+<?php
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\Collections\BatchItems;
+use Cognesy\Polyglot\BatchInference\Data\BatchItem;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+
+$batches = BatchInference::using('openai');
+$job = $batches->submit(BatchItems::of(
+    BatchItem::of('row-1', new InferenceRequest(messages: Messages::fromString('A'))),
+    BatchItem::of('row-2', new InferenceRequest(messages: Messages::fromString('B'))),
+));
+
+$json = json_encode($job->reference()->toArray(), JSON_THROW_ON_ERROR);
+// Write $json to durable application storage before this process exits.
+```
+
+For large inputs, `BatchItems::fromIterable($producer)` consumes the producer
+once and spools JSONL to a protected temporary file. Submission rejects an
+empty set, duplicate or invalid keys, streaming requests, and unsupported
+per-request retry/cache policies before creating a provider job. The preset
+model is applied to requests without an explicit model. Provider constraints
+such as one model per job remain provider-specific.
+
+`$batches->capabilities()->inputModes()` exposes file/inline modes and the
+minimum and maximum item counts, byte sizes, and record sizes enforced by the
+adapter. These are admission limits, not a guarantee that a model or account is
+batch eligible.
+One `submit()` call creates one remote job; the library does not silently split
+or fall back to synchronous inference.
+
+In a later PHP process, reconstruct the same provider connection and hydrate
+the reference:
+
+```php
+<?php
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\Data\BatchReference;
+
+$batches = BatchInference::using('openai');
+$reference = BatchReference::fromArray(json_decode($json, true, flags: JSON_THROW_ON_ERROR));
+$job = $batches->retrieve($reference);
+```
+
+The reference contains the opaque provider ID, provider/account scope, route,
+result codec, and when necessary a key manifest. It contains no API key or
+original prompts. Store it alongside the connection name and your own job
+record. A reference from a different provider, region, workspace, or route
+cannot be reused against an incompatible connection.
+
+File upload and job creation are separate remote actions. A returned job means
+the provider acknowledged a job resource; later validation may still fail.
+See [errors and testing](errors-and-testing.md) for uncertain submissions and
+[status](status-and-cancellation.md) for later observations.

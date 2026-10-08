@@ -1,0 +1,11 @@
+{
+  "sources": [
+    "https://ai.google.dev/gemini-api/docs/batch-api",
+    "https://ai.google.dev/api/batch-api"
+  ],
+  "reviewed_at": "2026-10-08",
+  "classification": "documented-shape-synthetic-values",
+  "operations": ["inline-create", "resumable-upload", "file-create", "retrieve", "cancel", "inline-results", "file-results", "list"],
+  "notes": "REST returns Operation resources named batches/{id}; cancellation can acknowledge with an empty object. Inline REST metadata.key is returned with each result. The guide says file results carry keys, while the REST reference says responsesFile contains plain responses in input order. Fixtures cover both keyed and ordinal file records; locally submitted references persist an explicit ordered manifest. file-failed.json and file-expired.json are synthetic no-output operation cases based on the documented BATCH_STATE enum, not live observations.",
+  "liveObservation": "Separate file and inline jobs completed with two keyed successes each. Native operation states used BATCH_STATE_*; failed-item and cancellation-race paths remain synthetic."
+}

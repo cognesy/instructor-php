@@ -1,0 +1,12 @@
+{
+  "sources": [
+    "https://www.alibabacloud.com/help/en/model-studio/batch-inference",
+    "https://www.alibabacloud.com/help/en/model-studio/batch-interfaces-compatible-with-openai/",
+    "https://www.alibabacloud.com/help/en/model-studio/openai-file-interface"
+  ],
+  "reviewed_at": "2026-10-08",
+  "classification": "documented-shape-synthetic-values",
+  "operations": ["upload", "create", "retrieve", "cancel", "results", "list"],
+  "notes": "The specific Batch File API documents a 6 MB line limit and 500 MB file limit; the summary page says 1 MB per line. The adapter uses the specific API's 6 MB bound pending live qualification of that disputed range. Singapore's documented model list is enforced. Beijing model eligibility remains provider-evaluated for models not known locally. Expired-with-artifacts and failed-without-artifacts fixtures are synthetic variants of documented status and optional artifact fields, not captured provider responses.",
+  "liveObservation": "A Singapore qwen-turbo batch completed with two keyed successes."
+}

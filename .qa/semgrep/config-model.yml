@@ -65,6 +65,7 @@ rules:
         - "/packages/polyglot/src/Decision/DecisionProvider.php"
         - "/packages/polyglot/src/Inference/Inference.php"
         - "/packages/polyglot/src/Inference/LLMProvider.php"
+        - "/packages/polyglot/src/BatchInference/BatchInference.php"
     pattern-regex: "public\\s+static\\s+function\\s+using\\s*\\(\\s*\\??string\\s+\\$[A-Za-z_][A-Za-z0-9_]*"
 
   - id: global-config-no-with-config-mutators-in-core-runtime

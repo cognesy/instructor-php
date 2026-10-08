@@ -1,0 +1,1 @@
+{"id":"job_timeout","status":"TIMEOUT_EXCEEDED","endpoint":"/v1/chat/completions","model":"mistral-test","input_files":["file-input"],"total_requests":2,"succeeded_requests":1,"failed_requests":1,"output_file":"file-output","error_file":"file-error"}

@@ -1,0 +1,10 @@
+{
+  "reviewedAt": "2026-10-08",
+  "sourceUrl": "https://docs.mistral.ai/studio/batch-processing",
+  "apiReferenceUrl": "https://docs.mistral.ai/api/endpoint/batch",
+  "outputShapeEvidence": "https://github.com/mistralai/client-python/issues/159",
+  "kind": "synthetic fixtures based on documented batch envelopes",
+  "operations": ["upload", "create-file", "create-inline", "retrieve", "cancel", "results", "list"],
+  "liveObservation": "Separate file and inline jobs each completed with two keyed successes. The inline job also advertised an output file containing duplicate rows; the adapter reads inline output once.",
+  "notes": "job-timeout-artifacts.json and job-timeout-no-artifacts.json are synthetic TIMEOUT_EXCEEDED status and optional-artifact cases based on the Mistral batch API schema, not live observations. job-cancelled-artifacts.json is a synthetic terminal-cancellation variant with retained output. job-inline-completed.json is a synthetic inline output envelope for fresh-process key correlation."
+}

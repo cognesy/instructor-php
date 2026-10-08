@@ -1,0 +1,1 @@
+{"id":"batch_req_response","custom_id":"response-item","response":{"status_code":200,"request_id":"req_response","body":{"id":"resp_test","status":"completed","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Response API output"}]}],"usage":{"input_tokens":4,"output_tokens":3}}},"error":null}

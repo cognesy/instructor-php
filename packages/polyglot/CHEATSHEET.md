@@ -22,6 +22,27 @@ $embeddings = new Embeddings();
 $decision = new Decision();
 ```
 
+## Native Batch Jobs (Experimental)
+
+```php
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\Collections\BatchItems;
+use Cognesy\Polyglot\BatchInference\Data\BatchItem;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Messages\Messages;
+
+$batches = BatchInference::using('mistral');
+$job = $batches->submit(BatchItems::of(
+    BatchItem::of('row-1', new InferenceRequest(messages: Messages::fromString('Summarize this.'))),
+));
+$saved = $job->reference()->toArray();
+```
+
+Persist `$saved`, reconstruct it with `BatchReference::fromArray()` in a
+later process, then call `retrieve()`, `results()`, `cancel()`, or
+`listJobs()` explicitly. See `docs/batch-inference/overview.md` for the
+asynchronous lifecycle and provider capabilities.
+
 ## Inference Quick Start
 
 Use a preset for the normal path:

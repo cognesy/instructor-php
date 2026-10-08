@@ -1,0 +1,17 @@
+{
+  "reviewedAt": "2026-10-08",
+  "sources": [
+    "https://docs.fireworks.ai/guides/batch-inference",
+    "https://docs.fireworks.ai/api-reference/create-dataset",
+    "https://docs.fireworks.ai/api-reference/upload-dataset-files",
+    "https://docs.fireworks.ai/api-reference/create-batch-inference-job",
+    "https://docs.fireworks.ai/api-reference/get-batch-inference-job",
+    "https://docs.fireworks.ai/api-reference/list-batch-inference-jobs",
+    "https://docs.fireworks.ai/api-reference/get-dataset-download-endpoint"
+  ],
+  "classification": "documented control-plane shapes with synthetic test values",
+  "operations": ["create-dataset", "upload-dataset", "create-job", "get-job", "list-jobs"],
+  "liveObservation": "Account reads, dataset creation/upload and later READY read succeeded; job creation was rejected because the account needs a payment method.",
+  "unqualified": ["success/error JSONL record envelope", "typed result decoder", "cancellation semantics"],
+  "notes": "The documented DELETE operation is not used for cancellation. No synthetic output row is presented as a live Fireworks response."
+}

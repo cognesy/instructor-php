@@ -1,0 +1,83 @@
+---
+title: 'Choose provider batch options'
+docname: 'batch_inference_provider_options'
+id: 'b906'
+tags:
+  - 'batch-inference'
+  - 'provider-options'
+  - 'mistral'
+  - 'gemini'
+  - 'qwen'
+  - 'offline'
+---
+## Overview
+
+Provider settings have typed options. Input modes and enforced limits can be
+inspected before preparing a job. Qwen's Singapore model restriction rejects
+an unlisted model before uploading bytes.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\BatchRuntime;
+use Cognesy\Polyglot\BatchInference\Collections\BatchItems;
+use Cognesy\Polyglot\BatchInference\Config\BatchConfig;
+use Cognesy\Polyglot\BatchInference\Config\GeminiBatchOptions;
+use Cognesy\Polyglot\BatchInference\Config\MistralBatchOptions;
+use Cognesy\Polyglot\BatchInference\Config\QwenBatchOptions;
+use Cognesy\Polyglot\BatchInference\Contracts\CanUploadBatchFile;
+use Cognesy\Polyglot\BatchInference\Data\BatchItem;
+use Cognesy\Polyglot\BatchInference\Enums\BatchInputKind;
+use Cognesy\Polyglot\BatchInference\Enums\GeminiBatchInputMode;
+use Cognesy\Polyglot\BatchInference\Enums\MistralBatchInputMode;
+use Cognesy\Polyglot\BatchInference\Transport\BatchFileUpload;
+use Cognesy\Polyglot\BatchInference\Transport\BatchFileUploadResponse;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Messages\Messages;
+
+$mistral = new MistralBatchOptions(MistralBatchInputMode::Inline, timeoutHours: 24);
+$gemini = new GeminiBatchOptions(GeminiBatchInputMode::File, displayName: 'nightly');
+$qwen = new QwenBatchOptions(completionWindow: '48h', taskName: 'nightly');
+if ($mistral->provider() !== 'mistral' || $gemini->provider() !== 'gemini'
+    || $qwen->provider() !== 'qwen') {
+    throw new RuntimeException('Provider options lost their owner.');
+}
+
+$llm = new LLMConfig(
+    apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+    apiKey: 'offline-test', endpoint: '/chat/completions',
+    model: 'qwen3.8-max', driver: 'qwen',
+);
+$uploader = new class implements CanUploadBatchFile {
+    public int $calls = 0;
+    public function upload(BatchFileUpload $request): BatchFileUploadResponse
+    {
+        $this->calls++;
+        throw new LogicException('An ineligible model must not reach upload.');
+    }
+};
+$batches = BatchInference::fromRuntime(BatchRuntime::fromConfig(
+    BatchConfig::fromLLMConfig($llm), uploader: $uploader,
+));
+if ($batches->capabilities()->inputMode(BatchInputKind::File)?->enforcedMaxRecordBytes() !== 6000000) {
+    throw new RuntimeException('Qwen file limit was not exposed.');
+}
+$items = BatchItems::of(BatchItem::of('row-1', new InferenceRequest(
+    messages: Messages::fromString('A'),
+)));
+try {
+    $batches->submit($items);
+    throw new RuntimeException('Expected Qwen model admission to fail.');
+} catch (InvalidArgumentException $error) {
+    if ($uploader->calls !== 0) {
+        throw new RuntimeException('Qwen uploaded before validating the model.');
+    }
+}
+echo "Typed options validated; ineligible Qwen model rejected before upload\n";
+?>
+```

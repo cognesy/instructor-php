@@ -1,0 +1,15 @@
+{
+  "reviewedAt": "2026-10-08",
+  "sources": [
+    "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_CreateModelInvocationJob.html",
+    "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_GetModelInvocationJob.html",
+    "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_StopModelInvocationJob.html",
+    "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_ListModelInvocationJobs.html",
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference-results.html"
+  ],
+  "classification": "AWS SDK mock responses and synthetic model output based on documented InvokeModel shapes",
+  "operations": ["create", "get", "stop", "list", "s3-upload", "s3-download"],
+  "modelFamily": "Claude 3 Haiku InvokeModel only",
+  "liveObservation": "No AWS account credentials, service role or input/output buckets were available for authenticated qualification.",
+  "unqualified": ["authenticated AWS lifecycle", "other model families", "Converse invocation type"]
+}

@@ -1,0 +1,1 @@
+{"id":"batch_req_1","custom_id":"item-ok","response":{"status_code":200,"request_id":"req_1","body":{"id":"chatcmpl_test","object":"chat.completion","created":1791400000,"model":"gpt-batch-test","choices":[{"index":0,"message":{"role":"assistant","content":"Hello!"},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":2,"total_tokens":7}}},"error":null}

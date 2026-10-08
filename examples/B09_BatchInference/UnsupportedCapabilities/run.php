@@ -1,0 +1,53 @@
+---
+title: 'Handle unsupported batch capabilities'
+docname: 'batch_inference_unsupported'
+id: 'b907'
+tags:
+  - 'batch-inference'
+  - 'unsupported'
+  - 'deepseek'
+  - 'fireworks'
+  - 'offline'
+---
+## Overview
+
+Direct DeepSeek currently has no native batch driver. Cancellation is an
+optional capability; a provider without a documented cancel operation must
+reject it before HTTP. Fireworks exposes deletion, which is not cancellation.
+This keyless example uses the same capability guard that such a driver uses.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require __DIR__.'/../Support/DemoBatch.php';
+
+use Cognesy\Polyglot\BatchInference\Config\BatchConfig;
+use Cognesy\Polyglot\BatchInference\Exceptions\UnsupportedBatchOperation;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Examples\BatchInference\Support\DemoBatch;
+
+$directDeepSeekRejected = false;
+try {
+    BatchConfig::fromLLMConfig(new LLMConfig(
+        apiUrl: 'https://api.deepseek.com', model: 'deepseek-chat', driver: 'deepseek',
+    ));
+} catch (InvalidArgumentException $error) {
+    $directDeepSeekRejected = true;
+}
+
+$batches = DemoBatch::client(canCancel: false);
+$cancelRejected = false;
+try {
+    $batches->cancel(DemoBatch::reference());
+} catch (UnsupportedBatchOperation $error) {
+    $cancelRejected = true;
+}
+
+if (!$directDeepSeekRejected || !$cancelRejected || $batches->capabilities()->canCancel()) {
+    throw new RuntimeException('Unsupported batch capability was not rejected.');
+}
+echo "Direct DeepSeek batch and unsupported cancellation rejected locally\n";
+?>
+```

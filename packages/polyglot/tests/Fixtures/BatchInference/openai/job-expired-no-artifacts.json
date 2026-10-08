@@ -1,0 +1,1 @@
+{"id":"batch_expired_without_artifacts","status":"expired","endpoint":"/v1/chat/completions","request_counts":{"total":2,"completed":0,"failed":2},"output_file_id":null,"error_file_id":null}

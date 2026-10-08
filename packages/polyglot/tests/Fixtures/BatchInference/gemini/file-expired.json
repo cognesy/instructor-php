@@ -1,0 +1,1 @@
+{"name":"batches/gemini-expired","metadata":{"model":"models/gemini-2.5-flash-lite","state":"BATCH_STATE_EXPIRED","batchStats":{"requestCount":"2","successfulRequestCount":"0","failedRequestCount":"0","pendingRequestCount":"2"}},"done":true}

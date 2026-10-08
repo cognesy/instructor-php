@@ -1,0 +1,1 @@
+{"id":"batch_together_test","endpoint":"/v1/chat/completions","status":"COMPLETED","input_file_id":"file_together_input","output_file_id":"file_together_output","error_file_id":"file_together_error","progress":100}

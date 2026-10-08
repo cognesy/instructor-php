@@ -1,0 +1,1 @@
+{"name":"batches/gemini-failed","metadata":{"model":"models/gemini-2.5-flash-lite","state":"BATCH_STATE_FAILED","batchStats":{"requestCount":"2","successfulRequestCount":"0","failedRequestCount":"2"}},"done":true,"error":{"code":3,"message":"Invalid batch input."}}

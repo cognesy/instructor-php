@@ -1,0 +1,47 @@
+---
+title: 'Resume a batch in another PHP process'
+docname: 'batch_inference_resume'
+id: 'b902'
+tags:
+  - 'batch-inference'
+  - 'resume'
+  - 'offline'
+---
+## Overview
+
+Only the serialized reference crosses the process boundary. The child builds
+a fresh client and reads outcomes without the original requests.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require __DIR__.'/../Support/DemoBatch.php';
+
+use Examples\BatchInference\Support\DemoBatch;
+
+$submitted = DemoBatch::client()->submit(DemoBatch::items());
+$worker = __DIR__.'/resume.php';
+$process = proc_open([PHP_BINARY, $worker], [
+    0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w'],
+], $pipes);
+if ($process === false) {
+    throw new RuntimeException('Could not start batch resume worker.');
+}
+fwrite($pipes[0], json_encode($submitted->reference()->toArray(), JSON_THROW_ON_ERROR));
+fclose($pipes[0]);
+$output = stream_get_contents($pipes[1]);
+$error = stream_get_contents($pipes[2]);
+fclose($pipes[1]);
+fclose($pipes[2]);
+if (proc_close($process) !== 0) {
+    throw new RuntimeException('Batch resume worker failed: '.$error);
+}
+$result = json_decode($output, true, flags: JSON_THROW_ON_ERROR);
+if ($result['status'] !== 'completed' || $result['keys'] !== ['row-1', 'row-2']) {
+    throw new RuntimeException('Batch reference did not survive process restart.');
+}
+echo "Resumed {$result['id']} with two keyed outcomes\n";
+?>
+```

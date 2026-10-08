@@ -1,0 +1,1 @@
+{"results":[{"batch_request_id":"xai-ok","batch_result":{"response":{"chat_get_completion":{"id":"chatcmpl-xai-1","object":"chat.completion","created":1791367200,"model":"grok-4.3","choices":[{"index":0,"message":{"role":"assistant","content":"Hello from xAI"},"finish_reason":"stop"}],"usage":{"prompt_tokens":4,"completion_tokens":4,"total_tokens":8}}}}}],"pagination_token":null}

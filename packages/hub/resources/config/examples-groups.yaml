@@ -77,6 +77,11 @@ groups:
             path: B05_LLMExtras
           - source: root
             path: B05_LLMExtras
+      - id: batch_inference
+        title: Batch Inference
+        include:
+          - source: root
+            path: B09_BatchInference
   - id: http_client
     title: HTTP Client
     subgroups:

@@ -1,0 +1,35 @@
+---
+title: List Batch Jobs
+description: Page through jobs in the configured provider and account scope.
+---
+
+`listJobs()` reads one page. Pass its opaque cursor back with the same limit and
+connection to continue. A cursor from another provider, workspace, or page
+size is rejected before HTTP.
+
+```php
+<?php
+$cursor = null;
+do {
+    $page = $batches->listJobs(limit: 50, cursor: $cursor);
+    foreach ($page->jobs() as $job) {
+        echo $job->reference()->id()->toString()."\n";
+    }
+    $cursor = $page->nextCursor();
+} while ($cursor !== null);
+```
+
+Providers use different pagination contracts. OpenAI and Qwen use an
+after-ID style, xAI and Gemini use tokens, Mistral uses page numbers, and
+Groq exposes `paging.next_cursor`. Together's documented list operation has
+no continuation token, and its requested limit is advisory. Fireworks uses
+`pageToken` with an account-scoped `pageSize` of at most 200. The cursor hides
+these differences but does not guarantee a stable snapshot while remote jobs
+change.
+
+A listed job may have been created outside Polyglot. Its reference can lack
+the original expected item count or Gemini ordinal key manifest. An open xAI
+container found through listing remains nonterminal when drained. A listed
+job with an unsupported inference endpoint may be inspectable by status but
+cannot be decoded as a typed `InferenceResponse`; `results()` rejects the
+unsupported codec. Listing never imports credentials or local input records.

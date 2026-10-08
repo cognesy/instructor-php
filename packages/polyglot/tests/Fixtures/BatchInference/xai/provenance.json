@@ -1,0 +1,9 @@
+{
+  "source": "https://docs.x.ai/developers/advanced-api-usage/batch-api",
+  "api_reference": "https://docs.x.ai/developers/rest-api-reference/inference/batches",
+  "reviewed_at": "2026-10-08",
+  "classification": "documented-shape-synthetic-values",
+  "operations": ["upload", "create", "retrieve", "cancel", "results", "list"],
+  "notes": "The guide documents input_file_id on create and sealed JSONL file jobs, but the older REST create schema lists only name. Result errors and pagination values are synthetic. Expired-result and distant-future unexpired timestamps are synthetic test variants; the guide says results are inaccessible after expiration.",
+  "liveObservation": "A sealed grok-4.3 file job completed with two keyed successes; failed-item and mutable imported-job behavior remain synthetic."
+}

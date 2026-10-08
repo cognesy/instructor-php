@@ -1,0 +1,2 @@
+{"candidates":[{"content":{"role":"model","parts":[{"text":"First ordinal result"}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":5,"candidatesTokenCount":4,"totalTokenCount":9}}
+{"code":3,"message":"Second ordinal error"}

@@ -1,0 +1,1 @@
+{"id":"msgbatch_archived","type":"message_batch","processing_status":"ended","request_counts":{"processing":0,"succeeded":1,"errored":0,"canceled":0,"expired":0},"ended_at":"2026-09-01T10:00:00Z","results_url":null,"archived_at":"2026-10-01T10:00:00Z"}

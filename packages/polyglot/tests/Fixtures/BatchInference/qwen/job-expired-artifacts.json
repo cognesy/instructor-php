@@ -1,0 +1,1 @@
+{"id":"batch_qwen_expired","object":"batch","endpoint":"/v1/chat/completions","status":"expired","input_file_id":"file_qwen_input","output_file_id":"file_qwen_output","error_file_id":"file_qwen_error","request_counts":{"total":2,"completed":1,"failed":1}}

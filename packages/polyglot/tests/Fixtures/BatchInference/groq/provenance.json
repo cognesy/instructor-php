@@ -1,0 +1,9 @@
+{
+  "source": "https://console.groq.com/docs/batch",
+  "api_reference": "https://console.groq.com/docs/api-reference",
+  "reviewed_at": "2026-10-08",
+  "classification": "documented-shape-synthetic-values",
+  "operations": ["upload", "create", "retrieve", "cancel", "results", "list"],
+  "notes": "List uses paging.next_cursor and cursor query. The API reference permits a 100 MB input file while the guide states 200 MB; this adapter uses the conservative 100 MB bound. A list page-size parameter is not documented. job-expired-artifacts.json is synthetic, based on the guide's expired-job result retention contract. job-failed-validation.json uses a documented top-level errors list with synthetic values.",
+  "liveObservation": "The available account rejected batch file upload with HTTP 403 not_available_for_plan; no job was created."
+}

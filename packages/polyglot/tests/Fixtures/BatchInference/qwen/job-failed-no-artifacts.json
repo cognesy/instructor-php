@@ -1,0 +1,1 @@
+{"id":"batch_qwen_failed","object":"batch","endpoint":"/v1/chat/completions","status":"failed","input_file_id":"file_qwen_input","output_file_id":null,"error_file_id":null,"errors":{"data":[{"code":"input_file_invalid","message":"Input validation failed."}]},"request_counts":{"total":2,"completed":0,"failed":0}}

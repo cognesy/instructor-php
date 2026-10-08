@@ -1,0 +1,1 @@
+{"data":[{"id":"msgbatch_test","type":"message_batch","processing_status":"ended","request_counts":{"processing":0,"succeeded":1,"errored":0,"canceled":0,"expired":1},"results_url":"https://api.anthropic.com/v1/messages/batches/msgbatch_test/results","archived_at":null}],"has_more":true,"last_id":"msgbatch_test"}

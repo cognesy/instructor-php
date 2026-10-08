@@ -1,0 +1,1 @@
+{"custom_id":"together-ok","response":{"status_code":200,"body":{"choices":[{"index":0,"message":{"role":"assistant","content":"Hello from Together"},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":4,"total_tokens":9}}}}

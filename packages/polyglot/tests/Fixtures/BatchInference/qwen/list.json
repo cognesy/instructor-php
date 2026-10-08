@@ -1,0 +1,1 @@
+{"object":"list","data":[{"id":"batch_qwen_test","endpoint":"/v1/chat/completions","status":"completed","output_file_id":"file_qwen_output","error_file_id":"file_qwen_error","request_counts":{"total":2,"completed":1,"failed":1}}],"first_id":"batch_qwen_test","last_id":"batch_qwen_test","has_more":true}

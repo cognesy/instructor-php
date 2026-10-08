@@ -1,0 +1,1 @@
+{"id":"msgbatch_cancelled","type":"message_batch","processing_status":"ended","request_counts":{"processing":0,"succeeded":1,"errored":0,"canceled":1,"expired":0},"cancel_initiated_at":"2026-10-08T10:00:00Z","ended_at":"2026-10-08T10:01:00Z","results_url":"https://api.anthropic.com/v1/messages/batches/msgbatch_cancelled/results","archived_at":null}

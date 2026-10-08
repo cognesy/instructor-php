@@ -1,0 +1,1 @@
+{"id":"batch_test","status":"failed","endpoint":"/v1/chat/completions","errors":{"data":[{"code":"invalid_json_line","message":"Input line failed validation."}]},"request_counts":{"total":2,"completed":0,"failed":0}}

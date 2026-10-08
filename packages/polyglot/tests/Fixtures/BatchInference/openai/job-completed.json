@@ -1,0 +1,1 @@
+{"id":"batch_test","status":"completed","endpoint":"/v1/chat/completions","request_counts":{"total":2,"completed":1,"failed":1},"output_file_id":"file-output","error_file_id":"file-error"}

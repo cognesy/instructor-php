@@ -1,0 +1,9 @@
+{
+  "reviewedAt": "2026-10-08",
+  "sourceUrl": "https://platform.claude.com/docs/en/build-with-claude/batch-processing",
+  "apiReferenceUrl": "https://platform.claude.com/docs/en/api/messages/batches",
+  "kind": "synthetic wire fixtures based on documented Message Batches envelopes",
+  "operations": ["create", "retrieve", "cancel", "results", "list"],
+  "liveObservation": "A Message Batches job ended with two keyed successes; cancellation and failed-item paths remain synthetic.",
+  "notes": "job-ended-cancelled.json and results-cancelled.jsonl are synthetic cancellation cases based on Anthropic's ended-after-cancellation and per-item result contract. job-ended-archived.json is a synthetic post-retention case; none of these were observed live."
+}

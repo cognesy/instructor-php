@@ -1,0 +1,125 @@
+---
+title: Batch Providers
+description: Provider operations, input forms, options, and model eligibility boundaries.
+---
+
+Native batch availability is separate from model, region, and account
+eligibility. A provider can expose an API while rejecting a particular model.
+The current adapters use the following control planes; deterministic fixtures
+cover their wire lifecycles, while authenticated qualification remains
+provider-specific.
+
+| Connection / codec | Input | Cancel | List | Partial results | Qualification note |
+| --- | --- | --- | --- | --- | --- |
+| OpenAI Chat and Responses | JSONL file | Yes | Yes | No | Chat submit/results/cancel qualified live; Responses codec has deterministic coverage. |
+| Anthropic Messages | Inline request set | Yes | Yes | No | Live job completed with two keyed successes; item errors, cancellation, and expiry remain distinct. |
+| Mistral Chat | File or inline | Yes | Yes | No | Both modes returned keyed live outcomes; inline output can mirror the output file. |
+| Gemini native | File or inline | Yes | Yes | No | Both modes returned keyed live outcomes; operation API uses `BATCH_STATE_*`. |
+| Qwen / Model Studio | JSONL file | Yes | Yes | No | Singapore `qwen-turbo` returned keyed live outcomes; region/model eligibility still matters. |
+| xAI / Grok Chat | Sealed JSONL file | Yes | Yes | Yes | Sealed file path returned keyed live outcomes; failed-item envelope remains unqualified. |
+| Groq Chat | JSONL file | Yes | Yes | No | The configured account returned `not_available_for_plan` at file upload. |
+| Together Chat | JSONL file | Yes | Yes | No | Live job accepted and still validating; listing has no documented continuation cursor. |
+| Fireworks control plane | JSONL dataset | No | Yes | No | Explicitly composed adapter supports submit/status/list; typed results remain unsupported pending a real output-record sample. |
+| Bedrock Claude 3 Haiku | S3 JSONL file | Yes | Yes | No | Optional AWS SDK transport, service role and buckets; 100-record minimum. |
+
+Fireworks uses an explicit `FireworksBatchDriver` with `LLMConfig`,
+`FireworksBatchSettings(accountId: ...)`, `BatchHttpTransport`, and
+`CanUploadBatchFile`. Wrap it in `BatchRuntime` to use the common facade. The
+driver creates and uploads an account-scoped dataset before creating the job;
+the job request names a dedicated output dataset. Its saved reference can
+resume status reads in another process. A failed job creation reports the
+input dataset, proposed output dataset, and job resource names. The inspected
+public documentation does not define its complete output-record envelope, so
+`results()` raises `UnsupportedBatchOperation` before HTTP and job snapshots
+report `BatchResultsAvailability::Unsupported`. The documented DELETE
+operation is not treated as cancellation. The Fireworks key available for
+qualification created and uploaded a dataset, but job creation returned a
+payment-method-required error. The direct
+DeepSeek API has no native batch contract in the inspected public API; hosted
+DeepSeek models may be batched through an eligible host such as Model Studio.
+
+`capabilities()->canReadResults()` is false for Fireworks until its result
+record codec is qualified; it is true for drivers that decode typed item
+outcomes.
+
+Choose provider options explicitly where they affect the native job:
+
+```php
+<?php
+use Cognesy\Polyglot\BatchInference\Config\GeminiBatchOptions;
+use Cognesy\Polyglot\BatchInference\Config\MistralBatchOptions;
+use Cognesy\Polyglot\BatchInference\Config\QwenBatchOptions;
+use Cognesy\Polyglot\BatchInference\Enums\GeminiBatchInputMode;
+use Cognesy\Polyglot\BatchInference\Enums\MistralBatchInputMode;
+
+$mistralOptions = new MistralBatchOptions(MistralBatchInputMode::Inline, timeoutHours: 24);
+$geminiOptions = new GeminiBatchOptions(GeminiBatchInputMode::File, displayName: 'nightly');
+$qwenOptions = new QwenBatchOptions(completionWindow: '48h', taskName: 'nightly');
+
+$job = $batches->submit($items, $mistralOptions); // use a Mistral connection
+```
+
+OpenAI uses `OpenAIBatchOptions`, Groq uses `GroqBatchOptions`, and xAI uses
+`XAIBatchOptions`. Options from a different provider are rejected before
+submission. `capabilities()->inputModes()` reports the adapter's enforced
+item/byte/record limits for each supported form. These limits do not certify
+that a model is batch-enabled.
+
+Bedrock uses its own AWS control plane and S3 rather than an LLM API-key
+preset. Install `aws/aws-sdk-php` in the consuming application, configure AWS
+credentials through its normal SDK provider chain, and provision a Bedrock
+service role plus input and output buckets. Compose it explicitly:
+
+```php
+<?php
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\BatchRuntime;
+use Cognesy\Polyglot\BatchInference\Config\BedrockBatchOptions;
+use Cognesy\Polyglot\BatchInference\Config\BedrockBatchSettings;
+use Cognesy\Polyglot\BatchInference\Drivers\Bedrock\BedrockBatchDriver;
+use Cognesy\Polyglot\BatchInference\Transport\AwsSdk\BedrockBatchSdkTransport;
+
+$settings = new BedrockBatchSettings(
+    region: 'us-east-1',
+    roleArn: 'arn:aws:iam::123456789012:role/BedrockBatchRole',
+    inputBucket: 'my-batch-input',
+    outputBucket: 'my-batch-output',
+);
+$driver = new BedrockBatchDriver($settings, BedrockBatchSdkTransport::forRegion($settings->region()));
+$batches = BatchInference::fromRuntime(new BatchRuntime($driver));
+$job = $batches->submit($items, new BedrockBatchOptions(timeoutHours: 48));
+```
+
+The current Bedrock codec supports only the Claude 3 Haiku `InvokeModel`
+Messages body. It rejects tools, structured output and reasoning requests. The
+100-record minimum and 100,000-record adapter cap are surfaced through
+`capabilities()->inputModes()`. AWS account, region and model quotas can impose
+additional limits. Output records preserve `recordId`, model output or error,
+and S3 provenance. Bedrock SDK requests are covered by deterministic mocks;
+this adapter has not been run against an authenticated AWS account.
+`retrieve()` reports result availability as pending until `results()` checks
+the job-specific S3 output prefix; completion alone does not prove retained
+objects exist.
+
+When Mistral returns `outputs` inline alongside an `output_file`, the adapter
+uses the inline rows and does not replay their file duplicates. It can still
+read a separate error file and skips any keyed row already delivered inline.
+
+For Qwen, the reference binds the selected Beijing or Singapore control-plane
+URL. The Singapore `qwen` preset's current default model is not in the
+documented Singapore batch list; select a listed batch model or an eligible
+Beijing connection. Qwen also requires homogeneous models and thinking mode
+within an input file. The specific API reference permits a 6 MB JSONL line,
+while its summary page says 1 MB; live qualification is still needed for the
+disputed range.
+
+Source contracts: [OpenAI](https://developers.openai.com/api/docs/guides/batch),
+[Anthropic](https://platform.claude.com/docs/en/api/messages/batches/create),
+[Mistral](https://docs.mistral.ai/studio/batch-processing),
+[Gemini](https://ai.google.dev/gemini-api/docs/batch-api),
+[Qwen](https://www.alibabacloud.com/help/en/model-studio/batch-inference),
+[xAI](https://docs.x.ai/developers/advanced-api-usage/batch-api),
+[Groq](https://console.groq.com/docs/batch),
+[Together](https://docs.together.ai/docs/inference/batch/overview), and
+[Fireworks](https://docs.fireworks.ai/guides/batch-inference), and
+[Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html).

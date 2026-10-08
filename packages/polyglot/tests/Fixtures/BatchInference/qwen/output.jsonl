@@ -1,0 +1,1 @@
+{"id":"batch_qwen_req_1","custom_id":"qwen-ok","response":{"status_code":200,"body":{"choices":[{"index":0,"message":{"role":"assistant","content":"Hello from Qwen","reasoning_content":"First reason."},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":4,"total_tokens":9}}},"error":null}

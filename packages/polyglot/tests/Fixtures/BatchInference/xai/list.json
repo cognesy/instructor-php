@@ -1,0 +1,1 @@
+{"batches":[{"batch_id":"batch_open","name":"open","create_time":"2026-10-07T10:00:00Z","cancel_time":null,"state":{"num_requests":1,"num_pending":0,"num_success":1,"num_error":0,"num_cancelled":0}}],"pagination_token":"xai-job-next"}

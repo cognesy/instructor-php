@@ -231,6 +231,7 @@
         "ext-fileinfo": "*",
         "ext-libxml": "*",
         "ext-xmlreader": "*",
+        "aws/aws-sdk-php": "^3.0",
         "cebe/markdown": "^1.2",
         "eftec/bladeone": "^4.16",
         "guzzlehttp/guzzle": "^7.0",

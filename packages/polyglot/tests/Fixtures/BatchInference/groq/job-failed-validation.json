@@ -1,0 +1,1 @@
+{"id":"batch_groq_failed","object":"batch","endpoint":"/v1/chat/completions","status":"failed","input_file_id":"file_groq_input","output_file_id":null,"error_file_id":null,"errors":[{"code":"invalid_method","message":"Invalid value for method.","param":"method","line":1}],"request_counts":{"total":0,"completed":0,"failed":0}}

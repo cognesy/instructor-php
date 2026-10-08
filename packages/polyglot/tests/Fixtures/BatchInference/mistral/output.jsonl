@@ -1,0 +1,1 @@
+{"id":"batch_req_1","custom_id":"item-ok","response":{"status_code":200,"body":{"id":"chatcmpl_test","object":"chat.completion","model":"mistral-test","choices":[{"index":0,"finish_reason":"stop","message":{"role":"assistant","content":"Bonjour!"}}],"usage":{"prompt_tokens":4,"completion_tokens":2,"total_tokens":6}}},"error":null}

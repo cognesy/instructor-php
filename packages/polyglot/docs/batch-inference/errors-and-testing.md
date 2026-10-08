@@ -1,0 +1,65 @@
+---
+title: Batch Errors and Testing
+description: Handle uncertain submissions, safe retries, and deterministic batch tests.
+---
+
+Batch submission can have multiple remote stages. A file can upload
+successfully while job creation fails or its acknowledgement is lost.
+`BatchSubmissionException` exposes `stage()`, `certainty()`, and known
+`artifactIds()`. `MayHaveSucceeded` means the request could have been accepted;
+do not blindly submit the same job again. Reconcile with provider-side jobs or
+the recorded artifact ID before deciding what to do.
+
+```php
+<?php
+use Cognesy\Polyglot\BatchInference\Exceptions\BatchSubmissionException;
+
+try {
+    $job = $batches->submit($items);
+} catch (BatchSubmissionException $error) {
+    $stage = $error->stage();
+    $certainty = $error->certainty();
+    $knownArtifacts = $error->artifactIds();
+    // Persist these facts for manual or provider-specific reconciliation.
+}
+```
+
+Bounded read retries apply to safe GET operations for transient network,
+timeout, rate-limit, or server failures. Authentication and invalid-request
+responses are not retried. POST creation/cancellation is never retried by this
+policy. If a result stream fails after delivering bytes, it is not replayed;
+retain outcomes already processed by their caller keys and request a new
+snapshot when appropriate. `BatchReadRetryPolicy` and the delay seam can be
+injected into `BatchHttpTransport` for deterministic tests.
+
+`BatchCancellationException` carries the saved reference and mutation
+certainty. A lost response or HTTP 408 can mean cancellation was accepted;
+retrieve the job again before deciding whether to retry. An explicit 4xx
+rejection, other than HTTP 408, is reported as `Rejected`. The live runner
+prints these fields without exposing credentials or result text.
+
+For offline application tests, construct a `BatchRuntime` with an injected
+`ScriptedBatchDriver` or injected HTTP/upload transports. This exercises the
+same `BatchInference` facade without credentials. Provider fixtures are
+separate from normalized expectations and record whether their values are
+documented-shape synthetic values or authenticated observations. Ordinary
+HTTP recording does not cover the contained libcurl uploader.
+
+The package tests include a real loopback multipart receiver and a separate
+PHP-process reference-resume test. The large-payload proof is run from the
+repository root with:
+
+```sh
+php packages/polyglot/tests/Support/BatchInference/verify-memory.php
+```
+
+It prepares more than 200 MB of keyed JSONL, uploads it to a loopback
+receiver, and reads it through the streaming result transport under a 64 MiB
+worker memory limit. This tests payload memory separately from the key-index
+bound; a batch with very many short keys still needs memory proportional to
+its key index.
+
+Authenticated probes are opt-in and use a tiny provider-valid job. Save the
+reference after submit and run status, results, cancellation, and listing as
+separate explicit actions. A pending status at the end of a local observation
+window remains pending evidence, not a failed or completed qualification.

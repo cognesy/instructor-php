@@ -1,0 +1,2 @@
+{"custom_id":"item-ok","result":{"type":"succeeded","message":{"id":"msg_test","type":"message","role":"assistant","content":[{"type":"text","text":"Hi!"}],"model":"claude-test","stop_reason":"end_turn","usage":{"input_tokens":5,"output_tokens":2}}}}
+{"custom_id":"item-expired","result":{"type":"expired"}}

@@ -1,0 +1,30 @@
+---
+title: Batch Internals and Removal
+description: Understand the isolated batch module, transport ownership, and reversal boundary.
+---
+
+All production batch code lives under
+`packages/polyglot/src/BatchInference/` in the
+`Cognesy\Polyglot\BatchInference` namespace. Dependencies point outward to
+existing `InferenceRequest`, `InferenceResponse`, message/body translators,
+and shared HTTP contracts. Normal inference and shared HTTP production code
+do not import the batch module or branch on its presence.
+
+Preparation validates and spools one fixed input set. A provider driver owns
+the upload/create/status/cancel/results/list wire protocol and result codec.
+The batch transport owns the file upload mechanism that shared `HttpRequest`
+does not provide. Results frame JSONL incrementally and retain native record
+provenance. The public facade is opt-in; it installs no service provider,
+global alias, or boot hook.
+
+The batch-owned source, tests, fixtures, documentation, and examples form the
+removable feature subtree. A removal rehearsal must also delete the dedicated
+navigation and README/CHEATSHEET discovery entries, then regenerate docs in
+an independent copy. Removing local PHP code does not stop remote jobs or
+delete provider files. Applications should retain the native provider IDs in
+their saved references before removing the integration.
+
+Bedrock remains optional: its AWS SDK transport is composed explicitly, and
+the SDK is only a Composer suggestion for consumers. Fireworks deletion is
+deliberately separate from cancellation. The detailed ownership ledger and
+independent removal procedure are recorded in the local research plan.

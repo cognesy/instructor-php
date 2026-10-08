@@ -1,0 +1,8 @@
+{
+  "reviewedAt": "2026-10-08",
+  "sourceUrl": "https://developers.openai.com/api/docs/guides/batch",
+  "kind": "synthetic wire fixtures based on documented Batch API envelopes",
+  "operations": ["upload", "create", "retrieve", "cancel", "results", "list"],
+  "notes": "job-validation-failed.json is a synthetic post-acceptance validation failure; the error code and message are test values. job-expired-artifacts.json and job-expired-no-artifacts.json are synthetic retention cases based on the guide's Batch expiration section, not live observations.",
+  "liveObservation": "A Chat Completions job completed with two keyed successes; a separate cancelled job emitted unkeyed batch_cancelled error rows. Responses codec remains fixture-only."
+}

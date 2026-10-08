@@ -43,7 +43,8 @@
     "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
-    "cognesy/instructor-addons": "Provided extra optional capabilities like evals, tool use, etc."
+    "cognesy/instructor-addons": "Provided extra optional capabilities like evals, tool use, etc.",
+    "aws/aws-sdk-php": "Required only for the optional Amazon Bedrock batch inference transport."
   },
   "config": {
     "allow-plugins": {

@@ -1,0 +1,13 @@
+{
+  "sources": [
+    "https://docs.together.ai/docs/inference/batch/overview",
+    "https://docs.together.ai/docs/inference/batch/tutorial",
+    "https://docs.together.ai/docs/inference/batch/manage",
+    "https://github.com/togethercomputer/together-typescript/blob/main/src/resources/batches.ts"
+  ],
+  "reviewed_at": "2026-10-08",
+  "classification": "documented-shape-synthetic-values",
+  "operations": ["upload", "create", "retrieve", "cancel", "results", "list"],
+  "notes": "Create wraps the job. List returns a JSON array without documented pagination. A 24h completion window is fixed. Progress is a percentage; normalized item counts remain unknown. job-completed-no-artifacts.json is a synthetic post-retention scenario based on the documented seven-day file window. job-expired-no-artifacts.json is a synthetic native EXPIRED time-limit status with optional artifacts absent.",
+  "liveObservation": "A job was accepted and remained VALIDATING on the latest read-only poll; final output is not yet qualified."
+}

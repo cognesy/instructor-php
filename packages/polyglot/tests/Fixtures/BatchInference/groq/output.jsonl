@@ -1,0 +1,1 @@
+{"id":"batch_req_groq_1","custom_id":"groq-ok","response":{"status_code":200,"request_id":"req_groq_1","body":{"id":"completion_groq_1","model":"llama-3.1-8b-instant","choices":[{"index":0,"message":{"role":"assistant","content":"Hello from Groq"},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":4,"total_tokens":9}}},"error":null}

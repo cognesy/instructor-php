@@ -1,0 +1,1 @@
+{"batch_id":"batch_xai_test","name":"test-xai","create_time":"2025-10-07T10:00:00Z","expire_time":"2025-10-08T10:00:00Z","cancel_time":null,"state":{"num_requests":2,"num_pending":2,"num_success":0,"num_error":0,"num_cancelled":0}}

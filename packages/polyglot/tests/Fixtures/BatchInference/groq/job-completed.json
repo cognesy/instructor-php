@@ -1,0 +1,1 @@
+{"id":"batch_groq_test","object":"batch","endpoint":"/v1/chat/completions","status":"completed","input_file_id":"file_groq_input","output_file_id":"file_groq_output","error_file_id":"file_groq_error","request_counts":{"total":2,"completed":1,"failed":1}}

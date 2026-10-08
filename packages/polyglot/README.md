@@ -2,11 +2,16 @@
 
 Unified LLM connectivity layer for InstructorPHP.
 
-It provides three operation facades:
+It provides three established operation facades:
 
 - `Inference` for chat/completion responses
 - `Embeddings` for vector generation
 - `Decision` for typed structured decisions (`Noul`, `Choice`, and `Score`)
+
+An experimental, opt-in `BatchInference` facade submits provider-native
+asynchronous jobs and resumes them from a saved reference. See the
+[batch inference guide](docs/batch-inference/overview.md) for submission,
+status, cancellation, results, listing, and provider limitations.
 
 ## Example
 
