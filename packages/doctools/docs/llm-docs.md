@@ -147,7 +147,7 @@ A markdown index file with links to all documentation:
 
 Index rules (per [llmstxt.org](https://llmstxt.org/)):
 - Links are absolute when `link_prefix` is a URL, so they resolve when the file is fetched on its own
-- A page's frontmatter `description` becomes the link note (`[name](url): note`)
+- A page's frontmatter `description` becomes the descriptive note shown after its generated link
 - Nested groups become H3 headings carrying their parent path (`Instructor / Concepts`)
 - Groups listed in `optional_sections` move to a trailing `## Optional` section, which agents may skip
 

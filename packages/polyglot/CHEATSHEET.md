@@ -22,7 +22,7 @@ $embeddings = new Embeddings();
 $decision = new Decision();
 ```
 
-## Native Batch Jobs (Experimental)
+## Native Batch Jobs (Early Access)
 
 ```php
 use Cognesy\Polyglot\BatchInference\BatchInference;

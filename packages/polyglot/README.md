@@ -8,8 +8,9 @@ It provides three established operation facades:
 - `Embeddings` for vector generation
 - `Decision` for typed structured decisions (`Noul`, `Choice`, and `Score`)
 
-An experimental, opt-in `BatchInference` facade submits provider-native
-asynchronous jobs and resumes them from a saved reference. See the
+An opt-in `BatchInference` facade is available as an early access feature. It
+submits provider-native asynchronous jobs and resumes them from a saved
+reference. See the
 [batch inference guide](docs/batch-inference/overview.md) for submission,
 status, cancellation, results, listing, and provider limitations.
 

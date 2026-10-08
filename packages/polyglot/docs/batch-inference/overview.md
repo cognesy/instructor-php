@@ -3,7 +3,7 @@ title: Batch Inference
 description: Submit native provider batch jobs and resume their asynchronous lifecycle.
 ---
 
-`Cognesy\Polyglot\BatchInference\BatchInference` is an experimental, opt-in
+`Cognesy\Polyglot\BatchInference\BatchInference` is an opt-in early access
 facade for provider-native batch jobs. Submission returns an observed job and a
 durable reference. The provider processes requests later. Your application
 decides when to check status, read outcomes, or request cancellation. None of
