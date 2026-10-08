@@ -34,7 +34,7 @@ Set `TYPESAFE_API_KEY` in the environment. The bundled `typesafe` preset selects
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('typesafe');
-// @doctest id="e40a"
+// @doctest id="1da8"
 ```
 
 Application presets use the same precedence as inference and embeddings. Put an override in `config/sdm/default.yaml` and `config/sdm/presets/<name>.yaml`. Aggregate and split Composer installs discover the bundled files from `cognesy/instructor-php` and `cognesy/instructor-polyglot`, respectively.
@@ -87,7 +87,7 @@ $answers = Decision::using('typesafe')
 $billingProbability = $answers->noul('billing')->probability();
 $tone = $answers->choice('tone')->value();
 $urgency = $answers->score('urgency')->value();
-// @doctest id="191b"
+// @doctest id="d63b"
 ```
 
 The typed accessors reject a missing question ID or the wrong answer kind. Choice and Score answers also expose `confidence()`, `probabilities()`, and, for Score, `legend()`.
@@ -116,7 +116,7 @@ $question = new Choice(
     options: $options,
     instructions: 'Which available route best fits this request?',
 );
-// @doctest id="78a7"
+// @doctest id="6a01"
 ```
 
 Numeric-looking IDs remain strings on the wire and in typed answers.
@@ -137,7 +137,7 @@ $instructions = JsonContent::object([
     'task' => 'Classify the support route.',
     'policy_version' => 3,
 ]);
-// @doctest id="4681"
+// @doctest id="d018"
 ```
 
 `JsonContent::text()`, `object()`, and `list()` retain the root kind. Values are snapshotted, finite, and JSON-safe.
@@ -167,7 +167,7 @@ $requestId = $pending->request()->id()->toString();
 $executionId = $pending->executionId();
 $response = $pending->response();       // executes once
 $same = $pending->response();           // memoized; no second request
-// @doctest id="4c66"
+// @doctest id="7474"
 ```
 
 `DecisionResponse` exposes `answers()`, `model()`, `usage()`, `responseData()`, and `providerRequestId()`.
@@ -205,7 +205,7 @@ $pending = Decision::using('typesafe')
         ),
     )
     ->create();
-// @doctest id="8cdc"
+// @doctest id="1fda"
 ```
 
 The Decision execution session is the single retry owner. It can retry transient transport failures and configured `408`, `429`, `5xx`, and `529` responses, honors bounded `Retry-After`, and memoizes both success and terminal failure. Do not add a second HTTP retry middleware for the same operation.
@@ -225,7 +225,7 @@ Ordinary tests never call TypeSafe. To run the bounded mixed-primitive smoke exp
 
 ```bash
 POLYGLOT_TYPESAFE_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/TypesafeLiveTest.php
-# @doctest id="cc29"
+# @doctest id="a58a"
 ```
 
 The command resolves `TYPESAFE_API_KEY` through the existing environment loader. It fails when explicitly enabled without a key and prints only safe endpoint/model/count/usage evidence.

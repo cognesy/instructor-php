@@ -27,7 +27,7 @@ $embedding = EmbeddingModels::discover()
     ->find('openai', 'text-embedding-3-small');
 $decision = DecisionModels::discover()
     ->find('typesafe', 'jev-1.13.0');
-// @doctest id="9f92"
+// @doctest id="8a8b"
 ```
 
 This is also a clean configuration cutover. Remove `dimensions`, the
@@ -45,7 +45,7 @@ $runtime = EmbeddingsRuntime::fromConfig(
     $config,
     models: EmbeddingModels::discover(),
 );
-// @doctest id="35eb"
+// @doctest id="842e"
 ```
 
 Without `models:`, embedding requests perform no catalog I/O or catalog-based
@@ -100,7 +100,7 @@ $reasoning = ModelCatalog::discover()
     ->find($driver, $model)
     ->capabilities
     ->reasoning;
-// @doctest id="a64b"
+// @doctest id="2ce8"
 ```
 
 Typed reasoning does not require a catalog merely to be requested. Missing or unknown facts make no
@@ -128,7 +128,7 @@ extends `BaseInferenceRequestDriver`:
 
 ```php
 final class MyDriver extends BaseInferenceRequestDriver { /* override one method */ }
-// @doctest id="3093"
+// @doctest id="bd6c"
 ```
 
 `LLMConfig::fromArray()` hydrates the fields owned by `LLMConfig` and ignores unrelated input
@@ -175,7 +175,7 @@ $registry = InferenceDriverRegistry::default()->withDriver(
         driverClass: MyDriver::class,
     ),
 );
-// @doctest id="07d0"
+// @doctest id="afdd"
 ```
 
 If you only changed the wire format, no subclass is needed — pass your own `bodyFormat`,
@@ -227,7 +227,7 @@ updated together with the v2.7 package upgrade.
 - public function handle(EmbeddingsRequest $request): HttpResponse;
 - public function fromData(array $data): ?EmbeddingsResponse;
 + public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
-// @doctest id="6ea0"
+// @doctest id="9f9c"
 ```
 
 Move HTTP response decoding and adaptation into `handle()`. The separate `fromData()` method
@@ -266,7 +266,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="adeb"
+// @doctest id="261d"
 ```
 
 ## After
@@ -282,7 +282,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('Return JSON.'))
     ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="e20b"
+// @doctest id="d481"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.

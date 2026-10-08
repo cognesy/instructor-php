@@ -16,7 +16,7 @@ Set a Perplexity API key:
 
 ```dotenv
 PERPLEXITY_API_KEY=your-key
-// @doctest id="cc0d"
+// @doctest id="f4fb"
 ```
 
 Then select the bundled preset:
@@ -25,7 +25,7 @@ Then select the bundled preset:
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('perplexity');
-// @doctest id="9a6b"
+// @doctest id="8e48"
 ```
 
 The preset targets `https://api.perplexity.ai/v1/decisions` with
@@ -54,7 +54,7 @@ invalid requests. A non-JSON body, such as an HTML gateway page, fails closed.
 
 ```bash
 POLYGLOT_PERPLEXITY_LIVE=1 vendor/bin/pest packages/polyglot/tests/Integration/PerplexityLiveTest.php
-# @doctest id="ea7c"
+# @doctest id="c6ac"
 ```
 
 The test runs one mixed Noul, Choice, and Score decision through the bundled
