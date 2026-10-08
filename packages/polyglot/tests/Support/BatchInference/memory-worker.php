@@ -17,7 +17,7 @@ use Cognesy\Polyglot\BatchInference\Transport\BatchHttpTransport;
 use Cognesy\Polyglot\BatchInference\Transport\CurlBatchFileUploader;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
-require dirname(__DIR__, 5).'/vendor/autoload.php';
+require __DIR__.'/autoload.php';
 
 final class MemoryProofHttp implements CanSendHttpRequests, CanHandleHttpRequest
 {

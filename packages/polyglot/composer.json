@@ -28,13 +28,15 @@
     "cognesy/instructor-utils": "^2.14"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest",
-    "mockery/mockery": "^1.6",
+    "aws/aws-sdk-php": "^3.0",
+    "guzzlehttp/psr7": "^2.0",
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
+    "mockery/mockery": "^1.6",
     "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
     "vimeo/psalm": "^6.0"
   },
   "scripts": {

@@ -11,7 +11,7 @@ use Cognesy\Polyglot\BatchInference\Config\BatchConfig;
 use Cognesy\Polyglot\BatchInference\Data\BatchReference;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-require dirname(__DIR__, 5).'/vendor/autoload.php';
+require __DIR__.'/autoload.php';
 
 final class ModeResumeHttp implements CanSendHttpRequests, CanHandleHttpRequest
 {

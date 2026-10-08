@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require dirname(__DIR__, 5).'/vendor/autoload.php';
+require __DIR__.'/autoload.php';
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\BatchInference\Collections\BatchItems;

@@ -331,6 +331,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
+          extensions: curl
           tools: composer
 
       - name: Verify the released package set matches the split matrix

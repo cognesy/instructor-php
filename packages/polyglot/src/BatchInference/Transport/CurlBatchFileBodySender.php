@@ -38,12 +38,15 @@ final readonly class CurlBatchFileBodySender implements CanSendBatchFileBody
             $headers[] = "{$name}: {$value}";
         }
         $body = '';
+        $inputSizeOption = defined('CURLOPT_INFILESIZE_LARGE')
+            ? (int) constant('CURLOPT_INFILESIZE_LARGE')
+            : CURLOPT_INFILESIZE;
         try {
             curl_setopt_array($handle, [
                 CURLOPT_UPLOAD => true,
                 CURLOPT_CUSTOMREQUEST => $request->method(),
                 CURLOPT_INFILE => $file,
-                CURLOPT_INFILESIZE_LARGE => filesize($request->path()),
+                $inputSizeOption => filesize($request->path()),
                 CURLOPT_HTTPHEADER => $headers,
                 CURLOPT_CONNECTTIMEOUT => $this->connectTimeoutSeconds,
                 CURLOPT_TIMEOUT => $this->requestTimeoutSeconds,
