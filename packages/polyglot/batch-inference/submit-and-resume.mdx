@@ -19,7 +19,7 @@ $job = $batches->submit(BatchItems::of(
 
 $json = json_encode($job->reference()->toArray(), JSON_THROW_ON_ERROR);
 // Write $json to durable application storage before this process exits.
-// @doctest id="b308"
+// @doctest id="75fb"
 ```
 
 For large inputs, `BatchItems::fromIterable($producer)` consumes the producer
@@ -47,7 +47,7 @@ use Cognesy\Polyglot\BatchInference\Data\BatchReference;
 $batches = BatchInference::using('openai');
 $reference = BatchReference::fromArray(json_decode($json, true, flags: JSON_THROW_ON_ERROR));
 $job = $batches->retrieve($reference);
-// @doctest id="e950"
+// @doctest id="c942"
 ```
 
 The reference contains the opaque provider ID, provider/account scope, route,

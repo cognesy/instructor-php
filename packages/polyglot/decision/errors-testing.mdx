@@ -25,7 +25,7 @@ try {
         // Reject or repair the request.
     }
 }
-// @doctest id="69e8"
+// @doctest id="d8aa"
 ```
 
 Construction and local invariant failures use `InvalidArgumentException`. Examples include empty question IDs, duplicate IDs, an executable request with no questions, a Choice with no options, a Score with fewer than two levels, unsupported JSON values, and incomplete configuration.
@@ -56,7 +56,7 @@ $runtime = new DecisionRuntime(
 $answers = Decision::fromRuntime($runtime)
     ->with(input: 'test state', questions: $questions)
     ->get();
-// @doctest id="46c9"
+// @doctest id="27fc"
 ```
 
 For adapter tests, pass the configured mock client through `DecisionRuntime::fromConfig(..., httpClient: $httpClient)`. No ordinary unit or feature test should require provider credentials, network access, Python, model weights, or special hardware.
@@ -70,7 +70,7 @@ POLYGLOT_TYPESAFE_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration
 POLYGLOT_CLASSIFIER_DEV_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/ClassifierDevLiveTest.php
 POLYGLOT_JEFF_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/JeffLiveTest.php
 POLYGLOT_LAYA_LIVE=1 php vendor/bin/pest packages/polyglot/tests/Integration/LayaLiveTest.php
-# @doctest id="c6d2"
+# @doctest id="f1ba"
 ```
 
 Each test is skipped unless explicitly enabled. TypeSafe requires its API key;

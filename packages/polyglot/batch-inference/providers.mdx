@@ -52,7 +52,7 @@ $geminiOptions = new GeminiBatchOptions(GeminiBatchInputMode::File, displayName:
 $qwenOptions = new QwenBatchOptions(completionWindow: '48h', taskName: 'nightly');
 
 $job = $batches->submit($items, $mistralOptions); // use a Mistral connection
-// @doctest id="a6b9"
+// @doctest id="d6a7"
 ```
 
 OpenAI uses `OpenAIBatchOptions`, Groq uses `GroqBatchOptions`, and xAI uses
@@ -84,7 +84,7 @@ $settings = new BedrockBatchSettings(
 $driver = new BedrockBatchDriver($settings, BedrockBatchSdkTransport::forRegion($settings->region()));
 $batches = BatchInference::fromRuntime(new BatchRuntime($driver));
 $job = $batches->submit($items, new BedrockBatchOptions(timeoutHours: 48));
-// @doctest id="2ace"
+// @doctest id="5bee"
 ```
 
 The current Bedrock codec supports only the Claude 3 Haiku `InvokeModel`
