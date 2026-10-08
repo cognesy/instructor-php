@@ -12,7 +12,7 @@ $native = $job->providerStatus();         // provider-facing status when availab
 $counts = $job->progress();               // unknown counters remain null
 $availability = $job->resultsAvailability();
 $observedAt = $job->observedAt();
-// @doctest id="fd63"
+// @doctest id="2998"
 ```
 
 Status and result readiness are separate. `Completed` does not mean every
@@ -38,7 +38,7 @@ if ($receipt->acknowledged()) {
     // Store the acknowledgement; check status again later.
 }
 $later = $batches->retrieve($reference);
-// @doctest id="2bf1"
+// @doctest id="9ffc"
 ```
 
 `BatchCancellation` records acknowledgement, any observed terminal evidence,
