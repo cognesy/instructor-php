@@ -4,7 +4,7 @@
 This monorepo contains a set of dev-friendly, framework agnostic components offering 4 main capabilities:
 
 - **Instructor for PHP** - structured data extraction in PHP - powered by LLMs, designed for simplicity, transparency, and control; supports custom LLM output processors (not just JSON),
-- **Polyglot for PHP** - unified inference, embeddings, and typed decision APIs - write code once, deploy with providers such as OpenAI, Anthropic, Gemini, Ollama, and TypeSafe; you can write your own drivers,
+- **Polyglot for PHP** - unified inference, asynchronous batch inference (Early Access), embeddings, and typed decision APIs - write code once, deploy with providers such as OpenAI, Anthropic, Gemini, Ollama, and TypeSafe; you can write your own drivers,
 - **Retrieval for PHP** - vector storage, document indexing, semantic search, and bounded evidence context for RAG,
 - **Agent SDK for PHP** - lightweight but powerful agent SDK, supports custom tools, lifecycle hooks, subagents, context management, custom stop / continuation criteria, observability via events, packaged capabilities, agent templates, session management, and more.
 
@@ -57,6 +57,33 @@ $text = Inference::using('openai')
 ```
 
 Detailed docs: [packages/polyglot/docs/](packages/polyglot/docs/)
+
+### Batch inference (Early Access)
+
+Purpose: submit requests to provider-native asynchronous batch APIs.
+Benefit: process many requests in the background, then check status and fetch results
+through one API, with cancellation and job listing where supported.
+
+```php
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\Collections\BatchItems;
+use Cognesy\Polyglot\BatchInference\Data\BatchItem;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+
+$batches = BatchInference::using('mistral');
+$job = $batches->submit(BatchItems::of(
+    BatchItem::of('summary-1', new InferenceRequest(
+        messages: Messages::fromString('Summarize this document.'),
+    )),
+));
+
+$reference = $job->reference(); // persist $reference->toArray() to resume later
+$job = $batches->retrieve($reference); // check status when needed
+```
+
+Detailed docs: [BatchInference API](packages/polyglot/docs/batch-inference/overview.md) and
+[provider capabilities](packages/polyglot/docs/batch-inference/providers.md).
 
 ### Embeddings
 
