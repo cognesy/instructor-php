@@ -13,7 +13,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString('What is the single responsibility principle?'))
     ->get();
-// @doctest id="044e"
+// @doctest id="6bfc"
 ```
 
 The `get()` method returns the assistant `Message`. Use
@@ -48,7 +48,7 @@ $response = Inference::using('openai')
 $response = Inference::using('anthropic')
     ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
-// @doctest id="1ff1"
+// @doctest id="741c"
 ```
 
 ## Using the `with()` Method
@@ -67,7 +67,7 @@ $response = Inference::using('openai')
         options: ['temperature' => 0.3],
     )
     ->get();
-// @doctest id="6a31"
+// @doctest id="edad"
 ```
 
 ## Streaming Text Responses
@@ -87,7 +87,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->messageChunks->textDelta();
 }
-// @doctest id="bb79"
+// @doctest id="8a64"
 ```
 
 Each delta contains ordered `messageChunks`; `textDelta()` projects the next text
@@ -111,5 +111,5 @@ $message = $response->message();
 $text = $message->content()->toString();
 $usage = $response->usage();
 $reason = $response->finishReason();
-// @doctest id="1953"
+// @doctest id="1961"
 ```

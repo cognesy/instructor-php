@@ -22,7 +22,7 @@ $text = Inference::using('openai')
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="5ddb"
+// @doctest id="eadc"
 ```
 
 Options are merged additively -- calling `withOptions()` multiple times will merge the
@@ -41,7 +41,7 @@ $options = [
     'presence_penalty' => 0.0,    // Penalize repeated topics
     'stop' => ["\n\n", "User:"],  // Stop sequences
 ];
-// @doctest id="5896"
+// @doctest id="e231"
 ```
 
 ## Dedicated Helpers Over Raw Options
@@ -79,7 +79,7 @@ $response = Inference::using('openai')
         'presence_penalty' => 0.3,
     ])
     ->get();
-// @doctest id="6a4e"
+// @doctest id="d641"
 ```
 
 ### Anthropic
@@ -93,7 +93,7 @@ $response = Inference::using('anthropic')
         'top_k' => 40,
     ])
     ->get();
-// @doctest id="a53a"
+// @doctest id="7b48"
 ```
 
 ### Echo (persona)
@@ -107,7 +107,7 @@ $response = Inference::using('echo')
     ->withMessages(Messages::fromString('Explain GRPO in one paragraph.'))
     ->withOptions(['persona' => 'Joan Didion'])
     ->get();
-// @doctest id="3f5d"
+// @doctest id="62de"
 ```
 
 To pin a default voice, set `options.persona` in an app-owned preset; a
@@ -122,7 +122,7 @@ model: echo
 maxTokens: 20480
 options:
   persona: 'Joan Didion'
-# @doctest id="6843"
+# @doctest id="fcb1"
 ```
 
 For a writer Echo does not know, paste a few of their writing samples into the
@@ -154,7 +154,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('Summarize this article.'))
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="285c"
+// @doctest id="9ae3"
 ```
 
 The retry policy supports exponential backoff with configurable jitter and can also
@@ -186,7 +186,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
-// @doctest id="39fa"
+// @doctest id="45bf"
 ```
 
 Available policies:
@@ -219,7 +219,7 @@ $base = Inference::using('openai')->withCachedContext(
 // Each call inherits the cached context automatically
 $response1 = $base->withMessages(Messages::fromString('Explain SOLID principles.'))->get();
 $response2 = $base->withMessages(Messages::fromString('What is the Repository pattern?'))->get();
-// @doctest id="acca"
+// @doctest id="e061"
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

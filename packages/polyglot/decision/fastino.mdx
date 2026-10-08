@@ -18,7 +18,7 @@ Set a Fastino API key:
 
 ```dotenv
 FASTINO_API_KEY=your-key
-// @doctest id="b0b3"
+// @doctest id="0498"
 ```
 
 Then select the bundled preset:
@@ -27,7 +27,7 @@ Then select the bundled preset:
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('fastino');
-// @doctest id="da31"
+// @doctest id="a305"
 ```
 
 The preset targets `https://api.fastino.ai/v1/systemone` with `fastino/GLiDE`
@@ -60,7 +60,7 @@ $answers = Decision::fromRuntime($runtime)
     ->withRetryPolicy(new DecisionRetryPolicy(maxAttempts: 3, maxDelayMs: 65000))
     ->with(input: $ticket, questions: $questions)
     ->get();
-// @doctest id="7745"
+// @doctest id="332e"
 ```
 
 A `425` without a `Retry-After` header waits 60 seconds; a header is honored up
@@ -85,7 +85,7 @@ check the direction separately:
 $refund = $answers->noul('refund');
 $approve = $refund->probability() >= 0.5
     && abs(2 * $refund->probability() - 1) >= 0.6;
-// @doctest id="f17c"
+// @doctest id="9323"
 ```
 
 `ScoreAnswer::value()` is GLiDE's probability-weighted `expected_level`. The
@@ -117,7 +117,7 @@ requests. A non-JSON body fails closed.
 
 ```bash
 POLYGLOT_FASTINO_LIVE=1 vendor/bin/pest packages/polyglot/tests/Integration/FastinoLiveTest.php
-# @doctest id="9047"
+# @doctest id="2120"
 ```
 
 The test runs one mixed Noul, Choice, and Score decision through the bundled
