@@ -1,0 +1,49 @@
+`Cognesy\Polyglot\BatchInference\BatchInference` is an experimental, opt-in
+facade for provider-native batch jobs. Submission returns an observed job and a
+durable reference. The provider processes requests later. Your application
+decides when to check status, read outcomes, or request cancellation. None of
+these operations waits for remote inference to finish.
+
+```php
+<?php
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\BatchInference\BatchInference;
+use Cognesy\Polyglot\BatchInference\Collections\BatchItems;
+use Cognesy\Polyglot\BatchInference\Data\BatchItem;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+
+$batches = BatchInference::using('mistral');
+$job = $batches->submit(BatchItems::of(
+    BatchItem::of('document-101', new InferenceRequest(
+        messages: Messages::fromString('Summarize this document.'),
+    )),
+));
+
+$savedReference = $job->reference()->toArray(); // persist in application storage
+// @doctest id="965d"
+```
+
+| Operation | Return type | I/O behavior |
+| --- | --- | --- |
+| `submit($items, $options)` | `BatchJob` | Prepares one fixed input set, uploads if needed, creates one remote job, returns its first snapshot. |
+| `retrieve($reference)` | `BatchJob` | Reads one fresh provider status snapshot. |
+| `cancel($reference)` | `BatchCancellation` | Sends a request to stop processing where supported; acknowledgement is not a terminal result. |
+| `results($reference)` | `BatchResults` | Checks availability, then exposes a lazy, one-pass stream of outcomes. |
+| `listJobs($limit, $cursor)` | `BatchJobPage` | Reads one account/workspace page with an opaque continuation cursor. |
+
+`BatchJob` accessors are pure: calling `status()`, `progress()`, or
+`resultsAvailability()` does not poll. A completed job may contain failed
+items. An in-progress xAI job may already have partial results. Use
+`capabilities()` to inspect cancellation, listing, typed result reading, partial-result support,
+input modes, and enforced input limits before submission. Some providers also
+publish a minimum item count.
+
+The native drivers currently cover OpenAI Chat Completions and Responses,
+Anthropic, Mistral, Gemini, Qwen, xAI/Grok, Groq, and Together. Each driver
+has separate wire encoding and status mapping. Public documentation alone
+does not qualify every model or account for batch processing; review
+[provider details](providers) before submitting paid work.
+
+Next: [submit and resume](submit-and-resume),
+[status and cancellation](status-and-cancellation), and
+[results](results).

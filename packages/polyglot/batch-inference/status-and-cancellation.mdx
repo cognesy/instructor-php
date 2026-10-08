@@ -1,0 +1,56 @@
+`retrieve()` makes one provider read and returns a new immutable `BatchJob`.
+The previous job does not change. An application can schedule another read
+later; there is no implicit polling loop or local timeout that cancels remote
+work.
+
+```php
+<?php
+$job = $batches->retrieve($reference);
+
+$status = $job->status();                 // normalized BatchStatus
+$native = $job->providerStatus();         // provider-facing status when available
+$counts = $job->progress();               // unknown counters remain null
+$availability = $job->resultsAvailability();
+$observedAt = $job->observedAt();
+// @doctest id="c8b5"
+```
+
+Status and result readiness are separate. `Completed` does not mean every
+item succeeded; `Failed`, `Cancelled`, and `Expired` jobs may retain outcomes.
+Result availability states are `Pending`, `Partial`, `Final`, `Unavailable`, and
+`Unsupported`. The last means this adapter has no qualified typed result
+decoder; it does not assert that the provider has no output files. A snapshot
+can expose an unknown status rather than inventing
+a terminal state from incomplete provider counters.
+
+xAI illustrates why closure facts matter: a newly created sealed-file job may
+show zero requests and zero pending while it ingests the file. Its saved
+reference carries the expected count and fixed-input fact. A job imported
+from xAI listing may be an open container that accepts more requests, so zero
+pending alone never proves that it is complete.
+
+When cancellation is supported, call it explicitly:
+
+```php
+<?php
+$receipt = $batches->cancel($reference);
+if ($receipt->acknowledged()) {
+    // Store the acknowledgement; check status again later.
+}
+$later = $batches->retrieve($reference);
+// @doctest id="7581"
+```
+
+`BatchCancellation` records acknowledgement, any observed terminal evidence,
+and a provider status when one was supplied. A request can race ordinary
+completion; outputs completed before cancellation remain useful. Gemini may
+return an empty acknowledgement, so the receipt cannot assert a cancelled
+state from the response body. If cancellation is unsupported, the facade
+throws `UnsupportedBatchOperation` before HTTP. Fireworks deletion is not a
+cancellation operation.
+
+If the cancellation response is lost, `cancel()` throws
+`BatchCancellationException`. Its `reference()` identifies the job and
+`certainty()` is `MayHaveSucceeded`; retrieve that job before deciding whether
+to issue another cancellation request. An explicit 4xx rejection is reported as
+`Rejected` (except HTTP 408, whose outcome is uncertain).

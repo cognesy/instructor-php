@@ -1,0 +1,61 @@
+`results()` observes readiness and returns `BatchResults`. Call
+`isAvailable()` before iterating. Its `items()` traversal is lazy and one-pass;
+a second traversal of the same object throws. Request another `results()`
+snapshot for a later read.
+Fireworks' explicit control-plane adapter currently reports `Unsupported` and
+throws before fetching result files because its output-record codec is not yet
+qualified.
+
+```php
+<?php
+$results = $batches->results($reference);
+if (!$results->isAvailable()) {
+    // Pending or unavailable: inspect availability() and unavailableReason().
+    return;
+}
+
+foreach ($results->items() as $item) {
+    $key = $item->key();
+    if ($key === null) {
+        // A provider emitted an uncorrelated failure; inspect provenance().
+        continue;
+    }
+    if ($item->result()->isSuccess()) {
+        $response = $item->result()->unwrap(); // canonical InferenceResponse
+        // Upsert the application outcome by $key.
+    } else {
+        $failure = $item->result()->error(); // BatchItemFailure
+        // Persist kind(), code(), and message() for this key.
+    }
+}
+// @doctest id="2a5a"
+```
+
+One provider job can finish normally with mixed successes and failures.
+Output and error artifacts are both traversed. A provider error, cancellation,
+or expiry of one item does not abort unrelated items. A corrupt or truncated
+artifact is a transport/decoding failure and stops traversal; outcomes already
+delivered to your loop remain available in application storage.
+An empty inline response container is not a result artifact: readiness remains
+`Pending` while processing and becomes `Unavailable` if the job ends without
+another output source.
+
+OpenAI can emit cancellation errors with `custom_id: null`. Their `key()` is
+`null`; the native record remains in `provenance()`. Do not assign such rows to
+an input key without separate evidence.
+
+`BatchItemResult::provenance()` retains the native record, artifact identity,
+and any native record ID. A synthetic envelope used to reuse an existing
+`InferenceResponse` decoder is marked as such; it does not claim that a live
+HTTP inference call occurred for each row.
+
+xAI can publish partial pages before a job finishes. A later `results()` call
+may return keys seen earlier. Upsert by the caller key, not by a decoded
+response UUID, and do not treat an exhausted current page as proof that no
+future outcomes will appear. A final result snapshot likewise does not prove
+that every expected key has a retained artifact; reconcile with the saved
+expected count and job progress. Provider retention can make artifacts
+unavailable after execution has ended. For xAI, `expire_time` (or
+`expires_at`) marks the point after which results are no longer accessible;
+a completed job can therefore report `Unavailable` without changing its
+execution status.

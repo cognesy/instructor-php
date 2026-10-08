@@ -9,6 +9,7 @@ order:
   - essentials
   - modes
   - streaming
+  - batch-inference
   - embeddings
   - decision
   - advanced

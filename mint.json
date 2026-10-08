@@ -275,6 +275,19 @@
                     ]
                 },
                 {
+                    "group": "Batch Inference",
+                    "pages": [
+                        "packages/polyglot/batch-inference/overview",
+                        "packages/polyglot/batch-inference/submit-and-resume",
+                        "packages/polyglot/batch-inference/status-and-cancellation",
+                        "packages/polyglot/batch-inference/results",
+                        "packages/polyglot/batch-inference/list-jobs",
+                        "packages/polyglot/batch-inference/providers",
+                        "packages/polyglot/batch-inference/errors-and-testing",
+                        "packages/polyglot/batch-inference/internals-and-removal"
+                    ]
+                },
+                {
                     "group": "Embeddings",
                     "pages": [
                         "packages/polyglot/embeddings/overview",
@@ -718,6 +731,19 @@
                 "cookbook/examples/B08_Retrieval/retrieval_index_and_ask",
                 "cookbook/examples/B08_Retrieval/retrieval",
                 "cookbook/examples/B08_Retrieval/support_reply_with_sources"
+            ]
+        },
+        {
+            "group": "B09_BatchInference",
+            "pages": [
+                "cookbook/examples/B09_BatchInference/batch_inference_lifecycle",
+                "cookbook/examples/B09_BatchInference/batch_inference_cancel",
+                "cookbook/examples/B09_BatchInference/batch_inference_list_jobs",
+                "cookbook/examples/B09_BatchInference/batch_inference_live",
+                "cookbook/examples/B09_BatchInference/batch_inference_partial_results",
+                "cookbook/examples/B09_BatchInference/batch_inference_provider_options",
+                "cookbook/examples/B09_BatchInference/batch_inference_resume",
+                "cookbook/examples/B09_BatchInference/batch_inference_unsupported"
             ]
         },
         {
