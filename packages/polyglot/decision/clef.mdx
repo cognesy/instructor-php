@@ -19,7 +19,7 @@ Set the Cloudflare account ID and an API token with Workers AI access:
 ```dotenv
 CLOUDFLARE_ACCOUNT_ID=your-account-id
 CLOUDFLARE_API_TOKEN=your-token
-// @doctest id="805a"
+// @doctest id="4612"
 ```
 
 Then select one of the bundled presets:
@@ -29,7 +29,7 @@ use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('clef');       // @cf/cloudflare/clef
 $decision = Decision::using('clef-flash'); // @cf/cloudflare/clef-flash
-// @doctest id="c9f5"
+// @doctest id="3584"
 ```
 
 Both presets target
@@ -61,7 +61,7 @@ generous request timeout.
 
 ```bash
 POLYGLOT_CLEF_LIVE=1 vendor/bin/pest packages/polyglot/tests/Integration/ClefLiveTest.php
-# @doctest id="322c"
+# @doctest id="2f12"
 ```
 
 The test runs one mixed Noul, Choice, and Score decision against both presets

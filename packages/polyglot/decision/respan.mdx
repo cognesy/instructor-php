@@ -9,7 +9,7 @@ Set the RESPAN API key:
 
 ```dotenv
 RESPAN_API_KEY=your-key
-// @doctest id="d414"
+// @doctest id="b855"
 ```
 
 Then select the bundled preset:
@@ -18,7 +18,7 @@ Then select the bundled preset:
 use Cognesy\Polyglot\Decision\Decision;
 
 $decision = Decision::using('respan');
-// @doctest id="9932"
+// @doctest id="1878"
 ```
 
 The preset targets `https://api.respan.ai/api/v1/scores` with
@@ -55,7 +55,7 @@ $answer = $answers->noul('apology');
 $present = $answer->probabilities()->positive();
 $absent = $answer->probabilities()->negative();
 $unknown = $answer->probabilities()->unknown();
-// @doctest id="14df"
+// @doctest id="4d79"
 ```
 
 The adapter does not guess conversation turns from a string or unstructured
