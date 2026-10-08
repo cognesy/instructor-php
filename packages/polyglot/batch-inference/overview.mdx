@@ -1,4 +1,4 @@
-`Cognesy\Polyglot\BatchInference\BatchInference` is an experimental, opt-in
+`Cognesy\Polyglot\BatchInference\BatchInference` is an opt-in early access
 facade for provider-native batch jobs. Submission returns an observed job and a
 durable reference. The provider processes requests later. Your application
 decides when to check status, read outcomes, or request cancellation. None of
@@ -20,7 +20,7 @@ $job = $batches->submit(BatchItems::of(
 ));
 
 $savedReference = $job->reference()->toArray(); // persist in application storage
-// @doctest id="965d"
+// @doctest id="0d66"
 ```
 
 | Operation | Return type | I/O behavior |

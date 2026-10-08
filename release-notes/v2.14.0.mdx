@@ -1,0 +1,23 @@
+v2.14.0 adds native asynchronous batch inference to Polyglot. BatchInference is
+an **early access** feature for applications that want to submit provider batch
+jobs and process their results separately from request submission.
+
+## Polyglot BatchInference (Early Access)
+
+The new opt-in `BatchInference` facade supports provider-native job submission,
+status retrieval, cancellation where available, result streaming, and remote
+job listing. Applications can persist a job reference and resume work in a
+later process. Results retain caller keys and expose per-item outcomes as they
+become available.
+
+Provider APIs differ in their supported operations, input modes, and model
+eligibility. See the [BatchInference guide](/polyglot/batch-inference/overview)
+and [provider capability table](/polyglot/batch-inference/providers) before
+choosing a provider. The examples include deterministic offline runs and
+explicit commands for live jobs.
+
+## Upgrade Notes
+
+Existing inference, embeddings, and decision APIs require no changes.
+BatchInference is opt-in. The optional Amazon Bedrock transport requires
+`aws/aws-sdk-php`; other Polyglot providers do not require it.
