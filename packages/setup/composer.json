@@ -25,8 +25,8 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-config": "^2.13",
-    "cognesy/instructor-utils": "^2.13",
+    "cognesy/instructor-config": "^2.14",
+    "cognesy/instructor-utils": "^2.14",
     "symfony/console": "^7.1",
     "symfony/filesystem": "^7.1"
   },
