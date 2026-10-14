@@ -1,61 +1,58 @@
-Instructor for PHP is a lightweight library that makes it easy to get structured outputs from Large Language Models (LLMs). Built on top of modern PHP 8.3+ features, it provides a simple, type-safe way to work with AI models.
+# Instructor for PHP
 
-## Key Features
+InstructorPHP is a modular AI toolkit for PHP 8.3 and later. Use a package on its
+own or combine packages according to your application's needs.
 
-- **Type Safety**: Full PHP 8.3+ type system support with strict typing
-- **Multiple LLM Support**: Works with OpenAI, Anthropic, Gemini, Cohere, and more
-- **Validation**: Built-in validation with custom rules and LLM-powered validation
-- **Streaming**: Real-time partial object updates for better UX
-- **Function Calling**: Native support for LLM function/tool calling
-- **Zero Dependencies**: Clean, lightweight implementation
+## Choose a package
 
-## Quick Example
+- **[Polyglot](https://docs.instructorphp.com/packages/polyglot/overview)** provides LLM inference, embeddings, streaming, and typed decision models through a shared PHP API.
+- **[Instructor](https://docs.instructorphp.com/packages/instructor/introduction)** extracts validated PHP objects from LLM responses.
+- **[Agents](https://docs.instructorphp.com/packages/agents/01-introduction)** provides an agent loop with tools, state, and execution controls.
+- **[AgentCtrl](https://docs.instructorphp.com/packages/agent-ctrl/1-overview)** orchestrates coding-agent CLIs from PHP.
+
+Install the complete toolkit:
+
+```bash
+composer require cognesy/instructor-php
+```
+
+For structured extraction alone, install `cognesy/instructor-struct`. See the
+[Instructor quickstart](https://docs.instructorphp.com/packages/instructor/quickstart)
+for the standalone setup.
+
+## First structured extraction
+
+Set `OPENAI_API_KEY` in your environment, then run:
 
 ```php
 <?php
+require __DIR__ . '/vendor/autoload.php';
+
 use Cognesy\Instructor\StructuredOutput;
 
 class Person {
     public string $name;
     public int $age;
-    public string $occupation;
 }
 
-$text = "Extract: Jason is 25 years old and works as a software engineer.";
-
-$person = (new StructuredOutput)
-    ->withResponseClass(Person::class)
-    ->withMessages($text)
+$person = StructuredOutput::using('openai')
+    ->with(
+        messages: 'Jason is 28 years old.',
+        responseModel: Person::class,
+    )
     ->get();
 
-echo $person->name; // "Jason"
-echo $person->age;  // 25
-echo $person->occupation; // "software engineer"
+echo $person->name;
+echo $person->age;
 ```
 
-## Getting Started
+Credentials and model availability depend on your provider. Keep secrets outside
+source code and check the documentation for the version installed by Composer.
 
-Choose your path:
+## Documentation and community
 
-- **[Quick Start](/packages/instructor/quickstart)** - Get up and running in 5 minutes
-- **[Setup Guide](/packages/instructor/setup)** - Detailed installation and configuration
-- **[Cookbook](/cookbook/introduction)** - Practical examples and recipes
-
-## Architecture
-
-This project consists of several modular packages:
-
-- **[Instructor](/packages/instructor/introduction)** - Main structured output library
-- **[Polyglot](/packages/polyglot/overview)** - Low-level LLM abstraction layer
-- **[HTTP Client](/packages/http/1-overview)** - Flexible HTTP client for API calls
-- **[HTTP Pool](/packages/http/6-pooling)** - Concurrent request execution for fan-out workloads
-
-## Community
-
-- **GitHub**: [cognesy/instructor-php](https://github.com/cognesy/instructor-php)
-- **Issues**: [Report bugs or request features](https://github.com/cognesy/instructor-php/issues)
-- **Discussions**: [Join the conversation](https://github.com/cognesy/instructor-php/discussions)
-
----
-
-*Instructor for PHP - Making AI outputs predictable and type-safe.*
+- [Canonical documentation](https://docs.instructorphp.com/): Package guides and API usage.
+- [Agent starting guide](https://instructorphp.com/llms.txt): A concise guide to useful Markdown pages.
+- [Complete Markdown catalog](https://instructorphp.com/llms-index.txt): All generated documentation links.
+- [Articles](https://instructorphp.com/articles): Tutorials and implementation guidance.
+- [GitHub](https://github.com/cognesy/instructor-php): Source, issues, discussions, and releases.
