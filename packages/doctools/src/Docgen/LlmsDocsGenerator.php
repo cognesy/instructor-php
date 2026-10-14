@@ -109,6 +109,7 @@ class LlmsDocsGenerator
 
                 // Strip YAML frontmatter
                 $fileContent = $this->stripFrontmatter($fileContent);
+                $fileContent = (new MarkdownLinkResolver($sourceDir, $this->linkPrefix))->rewrite($fileContent, $relativePath);
 
                 // Add file section
                 $content .= self::FILE_SEPARATOR;
@@ -204,7 +205,12 @@ class LlmsDocsGenerator
                     mkdir($targetDir, 0755, true);
                 }
 
-                copy($item->getPathname(), $targetPath);
+                match ($item->getExtension()) {
+                    'md' => file_put_contents($targetPath, (new MarkdownLinkResolver($sourceDir, $this->linkPrefix))->rewrite(
+                        (string) file_get_contents($item->getPathname()), $relativePath,
+                    )),
+                    default => copy($item->getPathname(), $targetPath),
+                };
                 $filesCreated++;
             }
 

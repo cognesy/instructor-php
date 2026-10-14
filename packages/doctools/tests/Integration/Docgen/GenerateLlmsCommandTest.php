@@ -67,13 +67,13 @@ afterEach(function () {
 
 describe('GenerateLlmsCommand', function () {
 
-    it('generates llms.txt file', function () {
+    it('generates the configured navigation catalog', function () {
         $commandTester = new CommandTester($this->command);
         $commandTester->execute(['--index-only' => true]);
 
         expect($commandTester->getStatusCode())->toBe(0);
 
-        $llmsPath = $this->tempDir . '/llms/llms.txt';
+        $llmsPath = $this->tempDir . '/llms/llms-index.txt';
         expect(file_exists($llmsPath))->toBeTrue();
 
         $content = file_get_contents($llmsPath);
@@ -104,7 +104,7 @@ describe('GenerateLlmsCommand', function () {
 
         expect($commandTester->getStatusCode())->toBe(0);
 
-        expect(file_exists($this->tempDir . '/llms/llms.txt'))->toBeTrue();
+        expect(file_exists($this->tempDir . '/llms/llms-index.txt'))->toBeTrue();
         expect(file_exists($this->tempDir . '/llms/llms-full.txt'))->toBeTrue();
         expect(file_exists($this->tempDir . '/llms/llms/index.md'))->toBeTrue();
     });
@@ -114,6 +114,22 @@ describe('GenerateLlmsCommand', function () {
         $commandTester->execute([]);
 
         expect($commandTester->getStatusCode())->toBe(0);
+    });
+
+    it('deploys the catalog and markdown without replacing the website agent entry point', function () {
+        $target = $this->tempDir . '/website';
+        mkdir($target);
+        $entryPoint = "# Curated website guide\n\n> Start here.\n";
+        file_put_contents($target . '/llms.txt', $entryPoint);
+
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--deploy' => true, '--target' => $target]);
+
+        expect($commandTester->getStatusCode())->toBe(0);
+        expect(file_get_contents($target . '/llms.txt'))->toBe($entryPoint);
+        expect(file_exists($target . '/llms-index.txt'))->toBeTrue();
+        expect(file_exists($target . '/llms-full.txt'))->toBeTrue();
+        expect(file_exists($target . '/llms/index.md'))->toBeTrue();
     });
 
 });

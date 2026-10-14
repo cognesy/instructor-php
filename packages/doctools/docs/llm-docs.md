@@ -7,6 +7,18 @@ Doctor can generate documentation optimized for LLM consumption, following the [
 
 ## Overview
 
+For the InstructorPHP website, the concise `/llms.txt` entry point is authored in
+`../instructor-www/public/llms.txt`. The current generator configuration publishes
+the exhaustive navigation catalog as `/llms-index.txt`, alongside
+`/llms-full.txt` and the `/llms/` Markdown mirror. This keeps regeneration from
+overwriting the curated entry point. The generic examples below use the default
+index filename `llms.txt`; the actual settings live in
+`packages/doctools/resources/config/docs.yml`.
+
+From the repository root, `just docs-llms-deploy` regenerates MkDocs before
+copying the artifacts to the local website checkout. It does not publish the
+website to its production server.
+
 Two files are generated:
 
 | File | Purpose | Typical Size |
@@ -264,6 +276,13 @@ The deployment:
 1. Copies `llms.txt` and `llms-full.txt` to the target root
 2. Copies linked markdown files and assets to `llms/` subfolder
 3. Preserves directory structure
+
+Local inline links in mirrored Markdown and the full bundle resolve to absolute
+URLs under the configured `link_prefix`. Existing extensionless paths are
+resolved to their `.md` files, root-relative documentation links stay inside the
+mirror, and queries and fragments are preserved. External links and code
+examples remain unchanged. A target that does not exist in the source tree is
+left unchanged and must be corrected in the source documentation.
 
 ## API
 

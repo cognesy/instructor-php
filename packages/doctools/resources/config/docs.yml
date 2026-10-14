@@ -80,7 +80,9 @@ llms:
   # Subdirectory inside the target which will contain markdown and assets
   content_dir: 'llms'
   # Output filenames
-  index_file: 'llms.txt'
+  # The website owns the concise /llms.txt entry point. Keep the full generated
+  # navigation catalog separate so refreshing docs cannot overwrite that guide.
+  index_file: 'llms-index.txt'
   full_file: 'llms-full.txt'
   # Project description for LLM docs header
   project_description: 'The complete AI toolkit for PHP: call 25+ LLM providers through one API with Polyglot (inference, embeddings, and typed decision models), turn responses into validated PHP objects with Instructor, build tool-using agents with Agents, and orchestrate CLI coding agents with AgentCtrl.'

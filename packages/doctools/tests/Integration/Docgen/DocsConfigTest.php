@@ -44,7 +44,7 @@ describe('DocsConfig', function () {
             expect($config->llmsLinkPrefix)->toBe('https://instructorphp.com/llms');
             expect($config->llmsOptionalSections)->toBe(['Release Notes']);
             expect($config->llmsContentDir)->toBe('llms');
-            expect($config->llmsIndexFile)->toBe('llms.txt');
+            expect($config->llmsIndexFile)->toBe('llms-index.txt');
             expect($config->llmsFullFile)->toBe('llms-full.txt');
             expect($config->llmsExcludeSections)->toContain('release-notes/');
             expect($config->llmsDeployTarget)->toBe('../instructor-www/public');

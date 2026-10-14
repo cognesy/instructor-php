@@ -31,6 +31,54 @@ afterEach(function () {
 
 describe('LlmsDocsGenerator', function () {
 
+    it('resolves local links in mirrored markdown and the full bundle without changing code or external URLs', function () {
+        $source = $this->tempDir . '/source';
+        mkdir($source . '/guide', 0755, true);
+        mkdir($source . '/images');
+        file_put_contents($source . '/guide/setup.md', '# Setup');
+        file_put_contents($source . '/images/logo.png', 'image bytes');
+        file_put_contents($source . '/index.md', <<<'MD'
+# Home
+
+[Relative](guide/setup#install)
+[Root](/guide/setup.md?view=raw#install)
+[Missing](guide/missing)
+[External](https://example.com/guide/setup)
+[Protocol relative](//example.com/guide/setup)
+![Logo](/images/logo.png)
+`[Inline example](guide/setup)`
+
+```php
+[Code example](guide/setup)
+```
+MD);
+        file_put_contents($source . '/guide/start.md', '[Sibling](setup) [Parent](../index.md)');
+        $generator = new LlmsDocsGenerator(linkPrefix: 'https://example.test/llms');
+
+        expect($generator->mirrorSourceTree($source, $this->tempDir . '/mirror')->isSuccess())->toBeTrue();
+        expect($generator->generateFull(
+            [['Main' => [['Home' => 'index.md'], ['Start' => 'guide/start.md']]]],
+            $source,
+            $this->tempDir . '/full.txt',
+        )->isSuccess())->toBeTrue();
+
+        foreach ([$this->tempDir . '/mirror/index.md', $this->tempDir . '/full.txt'] as $file) {
+            expect(file_get_contents($file))
+                ->toContain('[Relative](https://example.test/llms/guide/setup.md#install)')
+                ->toContain('[Root](https://example.test/llms/guide/setup.md?view=raw#install)')
+                ->toContain('![Logo](https://example.test/llms/images/logo.png)')
+                ->toContain('[Missing](guide/missing)')
+                ->toContain('[External](https://example.com/guide/setup)')
+                ->toContain('[Protocol relative](//example.com/guide/setup)')
+                ->toContain('`[Inline example](guide/setup)`')
+                ->toContain("```php\n[Code example](guide/setup)\n```");
+        }
+
+        expect(file_get_contents($this->tempDir . '/mirror/guide/start.md'))
+            ->toContain('[Sibling](https://example.test/llms/guide/setup.md)')
+            ->toContain('[Parent](https://example.test/llms/index.md)');
+    });
+
     describe('generateIndex', function () {
 
         it('generates valid llms.txt with header', function () {
