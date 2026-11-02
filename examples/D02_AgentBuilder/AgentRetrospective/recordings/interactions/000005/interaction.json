@@ -1,0 +1,76 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 5,
+    "fingerprint": "953e0a61d15cb49575fce9bdc610ce053a0d475d91d44511e03196a5c2b2fa12",
+    "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": {
+            "x-api-key": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "accept": "application/json",
+            "anthropic-version": "2023-06-01",
+            "anthropic-beta": "prompt-caching-2024-07-31"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 5689,
+            "sha256": "b158747069f9944e3bd042b3013f5a34d9a248354dddb72fd9f3e1767455147c"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 02 Nov 2026 18:19:48 GMT"
+            ],
+            "content-type": [
+                "application/json"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "request-id": [
+                "req_011CgeZdRqSu5ZVvmjgMjvoA"
+            ],
+            "traceresponse": [
+                "00-2dbc2b412ff9b2d1100c54d4dc2959c3-61241b15d91acd91-01"
+            ],
+            "anthropic-organization-id": [
+                "03d89e5a-78a9-42ee-95c6-d9b595403b39"
+            ],
+            "anthropic-workspace-id": [
+                "wrkspc_016uuDNbsrrUgokrF5qV5bFK"
+            ],
+            "vary": [
+                "Accept-Encoding"
+            ],
+            "content-security-policy": [
+                "default-src 'none'; frame-ancestors 'none'"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "server-timing": [
+                "x-originResponse;dur=3534"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "x-robots-tag": [
+                "none"
+            ],
+            "cf-ray": [
+                "a5452632af81c3f6-WAW"
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 896,
+            "sha256": "069f71be24f19a0fad6930ff4328daf9feb1babcfa75b21aa620b31cc9852a33"
+        }
+    }
+}

@@ -52,6 +52,7 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
 
 // Track rewinds for observability
 $rewindLog = [];
@@ -64,8 +65,56 @@ $logger = new AgentEventConsoleObserver(
     showToolArgs: true,
 );
 
-// Configure working directory — point at the Instructor codebase root (so `bd` works)
-$workDir = dirname(__DIR__, 3);
+// Isolated workspace with a small, deterministic `bd` issue-tracker CLI.
+// The agent runs arbitrary bash, so it never gets the real repository or the real `bd`:
+// PATH is limited to the stub and system binaries, and the environment is not inherited.
+$workDir = sys_get_temp_dir() . '/instructor-retrospective-demo';
+@mkdir($workDir . '/bin', 0777, true);
+file_put_contents($workDir . '/bin/bd', <<<'BASH'
+#!/bin/sh
+ISSUES='demo-7  open    P1  Retry failed webhook deliveries
+demo-6  open    P2  Add CSV export to reports
+demo-5  closed  P2  Fix timezone in daily digest
+demo-4  open    P3  Document rate limits
+demo-3  open    P2  Paginate audit log API
+demo-2  open    P1  Rotate leaked staging token
+demo-1  closed  P3  Initial project setup'
+case "$1 $2" in
+  "--help "|"help "|" ")
+    echo "bd - lightweight issue tracker"
+    echo "Usage: bd <command> [flags]"
+    echo "Commands:"
+    echo "  list     List issues (see: bd list --help)"
+    echo "  show     Show one issue: bd show <id>"
+    exit 0 ;;
+  "list --help")
+    echo "Usage: bd list [--status open|closed] [--limit N]"
+    echo "Lists issues, most recent first."
+    exit 0 ;;
+esac
+if [ "$1" = "show" ]; then
+  echo "$ISSUES" | grep "^$2 " || { echo "Error: issue '$2' not found" >&2; exit 1; }
+  exit 0
+fi
+if [ "$1" != "list" ]; then
+  echo "Error: unknown command \"$1\". Run 'bd --help' for usage." >&2
+  exit 1
+fi
+shift
+STATUS=""; LIMIT=50
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --status) STATUS="$2"; shift 2 ;;
+    --limit) LIMIT="$2"; shift 2 ;;
+    *) echo "Error: unknown flag \"$1\". Run 'bd list --help' for usage." >&2; exit 1 ;;
+  esac
+done
+echo "$ISSUES" | grep -- "$STATUS" | head -n "$LIMIT"
+BASH);
+chmod($workDir . '/bin/bd', 0755);
+$bashPolicy = ExecutionPolicy::in($workDir)
+    ->withTimeout(30)
+    ->withEnv(['PATH' => $workDir . '/bin:/usr/bin:/bin', 'HOME' => $workDir], inherit: false);
 
 // Build agent with bash + retrospective capabilities
 // Note: The system prompt gives NO instructions about `bd` — the agent must explore it.
@@ -102,7 +151,7 @@ $agent = AgentBuilder::base()
         Answering directly after exploration without rewinding is a workflow violation.
         SYSTEM,
     ))
-    ->withCapability(new UseBash(baseDir: $workDir))
+    ->withCapability(new UseBash(policy: $bashPolicy))
     ->withCapability(new UseExecutionRetrospective(
         policy: new RetrospectivePolicy(
             maxRewinds: 1,
@@ -146,7 +195,7 @@ $agent = AgentBuilder::base()
 // Phase 4 (step 6): With clean context, agent one-shots `bd list` and responds
 // ~6 steps total, but context is clean after rewind
 $question = <<<'QUESTION'
-List the 5 most recent open issues tracked in this project.
+List the 5 most recent open issues using the `bd` CLI.
 I believe the command is `bd issues --open --limit 5`.
 QUESTION;
 

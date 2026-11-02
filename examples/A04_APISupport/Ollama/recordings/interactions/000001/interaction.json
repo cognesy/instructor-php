@@ -1,0 +1,41 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "2c812bb79fb9f24381fa79ef45ef8d32a8c27591c97ea403befe4f86243b4ccd",
+    "request": {
+        "method": "POST",
+        "url": "http://localhost:11434/v1/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 1884,
+            "sha256": "313ef56fd587965f7612b75e3d563f1c03396235eac510bea7da5f94215013fa"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": [
+                "application/json"
+            ],
+            "Date": [
+                "Mon, 02 Nov 2026 18:18:07 GMT"
+            ],
+            "Content-Length": [
+                "641"
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 641,
+            "sha256": "c8a6a0c187368805bcc37bf31826abee73098049766d607e954e958421cbdd94"
+        }
+    }
+}

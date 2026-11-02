@@ -1,0 +1,66 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "4e30c65ef9aa27a92849c8bae177c1cb4a7fee5dbbf58fbd12f48380b7962519",
+    "request": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 2488,
+            "sha256": "6015c1381048613d7f712300c4a297219035cc6942da2fb0aceab3452aab184a"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 02 Nov 2026 18:17:45 GMT"
+            ],
+            "content-type": [
+                "application/json"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "x-generation-id": [
+                "gen-1793643465-MvfOhyzBiiCL4jXtjHaX"
+            ],
+            "access-control-expose-headers": [
+                "X-Generation-Id,X-Provider-Name,request-id,cf-ray"
+            ],
+            "set-cookie": "[REDACTED]",
+            "permissions-policy": [
+                "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")"
+            ],
+            "referrer-policy": [
+                "no-referrer, strict-origin-when-cross-origin"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "cf-ray": [
+                "a545234abd76c290-WAW"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 963,
+            "sha256": "ceb09501f253cf80f7208601efec3fb427406d0dcbb7e3b9d0391c210fb0802a"
+        }
+    }
+}

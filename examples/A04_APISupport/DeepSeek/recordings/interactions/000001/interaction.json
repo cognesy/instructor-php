@@ -1,0 +1,69 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "463407e2f6b9e04ce8630b453aee542171985b13e75fe6d68edfadb01a283d98",
+    "request": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 1629,
+            "sha256": "4da2bcdd94532e65d3642980609e5a45ca231bd6a93737f7dd98d7882b5e433a"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application/json"
+            ],
+            "date": [
+                "Mon, 02 Nov 2026 18:13:25 GMT"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "elb"
+            ],
+            "vary": [
+                "accept-encoding",
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-credentials": [
+                "true"
+            ],
+            "x-ds-trace-id": [
+                "669be4410aa57b99069943897aaade4c"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 2bebfbc64bcb50521d0ec109d1d4b544.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P4"
+            ],
+            "x-amz-cf-id": [
+                "al5HjWKVLQUMEX_XTenMbwJ0cxy9UYUo9Rtfg_EWlENlpKcgcp5dIQ=="
+            ]
+        },
+        "streamed": false,
+        "payload": {
+            "type": "body",
+            "file": "response.body",
+            "bytes": 883,
+            "sha256": "4e949e2a6d3de3d2c891301b34eb1672305fa6de3196f744fe0505a3b52fb71b"
+        }
+    }
+}

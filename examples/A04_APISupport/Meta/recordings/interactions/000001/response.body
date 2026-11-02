@@ -1,0 +1,5 @@
+
+         
+
+         
+{"id":"gen-1793643465-MvfOhyzBiiCL4jXtjHaX","object":"chat.completion","created":1793643465,"model":"meta-llama/llama-3.3-70b-instruct","provider":"DeepInfra","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\"age\":25,\"name\":\"Jason\",\"username\":\"jxnlco\",\"role\":\"admin\",\"hobbies\":[\"playing football\",\"reading books\"]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":434,"completion_tokens":30,"total_tokens":464,"cost":0.00005247,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.000053,"upstream_inference_prompt_cost":0.0000434,"upstream_inference_completions_cost":0.0000096},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

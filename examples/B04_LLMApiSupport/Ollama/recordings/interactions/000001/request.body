@@ -1,0 +1,1 @@
+{"model":"gpt-oss:20b","messages":[{"role":"user","content":"What is the capital of France"}],"max_completion_tokens":64}

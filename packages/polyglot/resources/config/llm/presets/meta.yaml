@@ -2,5 +2,5 @@ driver: meta
 apiUrl: 'https://openrouter.ai/api/v1'
 apiKey: '${OPENROUTER_API_KEY}'
 endpoint: /chat/completions
-model: 'meta-llama/llama-3.3-70b-instruct:free'
+model: 'meta-llama/llama-3.3-70b-instruct'
 maxTokens: 1024
