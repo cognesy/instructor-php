@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"system","content":"You are a YAML-defined math assistant. Be concise.\n"},{"role":"user","content":"What is 7 multiplied by 8?"}],"max_completion_tokens":1024}

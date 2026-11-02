@@ -64,7 +64,7 @@ $request = new HttpRequest(
     url: 'https://api.openai.com/v1/chat/completions',
     method: 'POST',
     headers: ['Authorization' => 'Bearer ...', 'Content-Type' => 'application/json'],
-    body: ['model' => 'gpt-4.1-nano', 'messages' => [...]],
+    body: ['model' => 'gpt-6-luna', 'messages' => [...]],
     options: ['stream' => true],
 );
 

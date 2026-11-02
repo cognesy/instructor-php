@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"Summarize why observability matters for LLM applications in exactly 3 bullet points."}],"max_completion_tokens":180}

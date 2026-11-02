@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-Efmy0WyJ17QIBLZBKJuVqEbLU6c01",
+  "object": "chat.completion",
+  "created": 1793628384,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "AI’s future will depend less on capability alone and more on whether we make systems dependable, secure, and genuinely useful in everyday work. Keep experimenting, measure real outcomes, and scale what earns trust. - Marcus",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 681,
+    "completion_tokens": 69,
+    "total_tokens": 750,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 18,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

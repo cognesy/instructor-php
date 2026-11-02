@@ -29,7 +29,7 @@ use Cognesy\Utils\Str;
 $httpClient = HttpClient::default();
 
 $openAiApiKey = (string) Env::get('OPENAI_API_KEY', '');
-$dsn = "driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,apiKey={$openAiApiKey},model=gpt-4.1-nano";
+$dsn = "driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,apiKey={$openAiApiKey},model=gpt-6-luna";
 
 $answer = Inference::fromRuntime(InferenceRuntime::fromConfig(
     config: LLMConfig::fromArray(Dsn::fromString($dsn)->toArray()),

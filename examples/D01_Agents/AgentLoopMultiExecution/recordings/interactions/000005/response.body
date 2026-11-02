@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-Efmxt5ecFvuwdAUkvWR59QP1EvHrw",
+  "object": "chat.completion",
+  "created": 1793628377,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "It’s best described as a **PHP library ecosystem**: the Composer package exposes reusable components under `Cognesy\\...` namespaces and supports PSR-4 autoloading, rather than defining a standalone application. It may include integrations for frameworks such as Laravel and Symfony, but those don’t make the project itself a framework.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 777,
+    "completion_tokens": 70,
+    "total_tokens": 847,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

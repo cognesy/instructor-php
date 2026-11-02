@@ -36,7 +36,7 @@ $provider = LLMProvider::fromArray([
     'model' => 'claude-sonnet-4-20250514',
 ]);
 
-// Default (OpenAI with gpt-4.1-nano)
+// Default (OpenAI with gpt-6-luna)
 $provider = LLMProvider::new();
 ```
 

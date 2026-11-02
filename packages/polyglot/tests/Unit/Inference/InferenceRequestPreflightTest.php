@@ -189,3 +189,44 @@ it('records explicitly enabled lossy reasoning mappings', function () {
         'reason' => 'The supplied reasoning effort mapping is lossy.',
     ]]);
 });
+
+it('rejects tools with enabled reasoning when the exact offering forbids the combination', function (
+    array $reasoning,
+    ?ReasoningSelection $selection,
+) {
+    $request = preflightRequest(
+        ['toolsWithReasoning' => 'unsupported', 'reasoning' => $reasoning],
+        new InferenceRequest(tools: preflightTools(), reasoning: $selection),
+    );
+
+    expect(fn () => (new InferenceRequestPreflight())->apply($request))
+        ->toThrow(InvalidArgumentException::class, 'tools with enabled reasoning');
+})->with([
+    'explicit effort' => [
+        ['selections' => ['disabled', 'effort'], 'efforts' => [['requested' => 'low', 'provider' => 'low'], ['requested' => 'high', 'provider' => 'high']], 'default' => 'enabled'],
+        ReasoningSelection::effort(ReasoningEffort::High),
+    ],
+    'default reasoning that cannot be disabled' => [
+        ['selections' => ['effort'], 'efforts' => [['requested' => 'low', 'provider' => 'low'], ['requested' => 'high', 'provider' => 'high']], 'default' => 'enabled'],
+        null,
+    ],
+]);
+
+it('allows tools when reasoning is disabled or the combination is supported', function (
+    string $status,
+    ?ReasoningSelection $selection,
+) {
+    $request = preflightRequest(
+        [
+            'toolsWithReasoning' => $status,
+            'reasoning' => ['selections' => ['disabled', 'effort'], 'efforts' => [['requested' => 'low', 'provider' => 'low'], ['requested' => 'high', 'provider' => 'high']], 'default' => 'enabled'],
+        ],
+        new InferenceRequest(tools: preflightTools(), reasoning: $selection),
+    );
+
+    expect((new InferenceRequestPreflight())->apply($request)->hasTools())->toBeTrue();
+})->with([
+    'default reasoning the driver can disable' => ['unsupported', null],
+    'explicitly disabled reasoning' => ['unsupported', ReasoningSelection::disabled()],
+    'supported combination' => ['supported', ReasoningSelection::effort(ReasoningEffort::High)],
+]);

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmz7Yfs4p9T7Oxx8ABVQYY5JPF4s",
+  "object": "chat.completion",
+  "created": 1793628453,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_roebOqIC6Et6z0Tp6m8g1Jdw",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"analysis\":[\"House price in 2023: $80,000\",\"House price in 2024: $100,000\",\"Increase = $100,000 - $80,000 = $20,000\"],\"correct_answer\":20000}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 342,
+    "completion_tokens": 64,
+    "total_tokens": 406,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzFP6nIHW32JIiPiJMMydbQXt70",
+  "object": "chat.completion",
+  "created": 1793628461,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_8pmkNgwLPE93CPGENEqZrX2P",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The environmental change favors one end of the trait range (greater height), so taller individuals survive and reproduce more. This is directional selection.\",\"correct_answer\":\"A\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 279,
+    "completion_tokens": 51,
+    "total_tokens": 330,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

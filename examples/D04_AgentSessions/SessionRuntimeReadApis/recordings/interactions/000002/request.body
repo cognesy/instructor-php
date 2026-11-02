@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"system","content":"You are two."},{"role":"user","content":"Say one sentence about session two."}],"max_completion_tokens":1024}

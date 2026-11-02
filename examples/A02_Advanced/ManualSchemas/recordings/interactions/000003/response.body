@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmwt0JGAZs1dG4xST33Zcx9wmLOm",
+  "object": "chat.completion",
+  "created": 1793628315,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_nqiHkeEr73p2Q8EeGx5ucM7x",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"product\":\"Laptop\",\"quantity\":2,\"price\":999.99,\"inStock\":true}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 219,
+    "completion_tokens": 33,
+    "total_tokens": 252,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

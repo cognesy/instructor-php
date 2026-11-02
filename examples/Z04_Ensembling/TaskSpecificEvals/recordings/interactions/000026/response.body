@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn86CHxgNrsNbuiBMxcZCp7Kf0bE",
+  "object": "chat.completion",
+  "created": 1793629010,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_VqhjI3v7jPsMbtsAtqgfPFNQ",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The statement acknowledges that someone sometimes feels distracted. It is neutral and does not clearly express happiness, anger, or sadness; among the required labels, sadness is the closest mild negative emotional tone.\",\"label\":\"Sadness\",\"confidence\":\"Uncertain\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 248,
+    "completion_tokens": 67,
+    "total_tokens": 315,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

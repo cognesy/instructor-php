@@ -46,12 +46,12 @@ $config = LLMConfig::fromArray([
     'apiUrl' => 'https://api.openai.com/v1',
     'apiKey' => getenv('OPENAI_API_KEY'),
     'endpoint' => '/chat/completions',
-    'model' => 'gpt-4.1-nano',
+    'model' => 'gpt-6-luna',
     'maxTokens' => 2048,
 ]);
 
 // From a DSN string
-$config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
+$config = LLMConfig::fromDsn('openai://model=gpt-6-luna&maxTokens=2048');
 ```
 
 ### Presets

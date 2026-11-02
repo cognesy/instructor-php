@@ -17,7 +17,7 @@ The lifecycle begins when the application builds an `InferenceRequest` through t
 ```php
 $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('Explain PHP generics.'))
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMaxTokens(1024);
 ```
 

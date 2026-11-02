@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"Identify the testing framework and cite the shortest evidence fragments.\n\ncomposer.json:\n\"test\": \"@php .\/vendor\/bin\/pest --compact\"\n\"pestphp\/pest\": \"^4.2\"\n\nphpunit.xml:\nxsi:noNamespaceSchemaLocation=\"https:\/\/schema.phpunit.de\/10.3\/phpunit.xsd\""}],"max_completion_tokens":1024}

@@ -52,7 +52,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Messages\Messages;
 
 $message = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Say hello in one sentence.'))
     ->get();
 
@@ -65,7 +65,7 @@ Get parsed JSON:
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 
 $data = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withResponseFormat(ResponseFormat::jsonObject())
     ->withMessages(Messages::fromString('Return JSON with key "ok".'))
     ->asJsonData();
@@ -103,7 +103,7 @@ use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $inference = Inference::using('openai')
     ->withMessages($messages)           // Messages
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMaxTokens(800)
     ->withTools($tools)                 // ToolDefinitions
     ->withToolChoice(ToolChoice::auto())
@@ -125,7 +125,7 @@ Single-call variant:
 ```php
 $inference = Inference::using('openai')->with(
     messages: $messages,           // ?Messages
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     tools: $tools,                 // ?ToolDefinitions
     toolChoice: ToolChoice::auto(),
     responseFormat: $responseFormat, // ?ResponseFormat
@@ -141,7 +141,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 $request = new InferenceRequest(
     messages: Messages::fromString('Hello'),
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
 );
 
 $pending = Inference::using('openai')
@@ -262,7 +262,7 @@ $runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 $runtime = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
 
 $provider = LLMProvider::using('openai')
-    ->withConfigOverrides(['model' => 'gpt-4.1-nano'])
+    ->withConfigOverrides(['model' => 'gpt-6-luna'])
     ->withModel('gpt-4.1-mini');
 ```
 

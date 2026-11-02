@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzUaceWjIm7FBloVJLsNW8Lcc39",
+  "object": "chat.completion",
+  "created": 1793628476,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_DDWbA9SrXZ52YGzYSNtW1mMV",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":[\"Start with 200 baked.\",\"Subtract morning sales: 200 - 93 = 107.\",\"Subtract afternoon sales: 107 - 39 = 68 sold inventory remains.\",\"Add the 6 returned: 68 + 6 = 74.\"],\"answer\":74}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 242,
+    "completion_tokens": 74,
+    "total_tokens": 316,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

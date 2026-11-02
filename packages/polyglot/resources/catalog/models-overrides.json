@@ -234,7 +234,8 @@
             }
           ],
           "default": "enabled"
-        }
+        },
+        "toolsWithReasoning": "unsupported"
       },
       "source": "hand-authored"
     },
@@ -271,7 +272,8 @@
             }
           ],
           "default": "enabled"
-        }
+        },
+        "toolsWithReasoning": "supported"
       },
       "source": "hand-authored"
     },

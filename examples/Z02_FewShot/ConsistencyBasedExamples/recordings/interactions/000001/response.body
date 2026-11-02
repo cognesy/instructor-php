@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyywmmONSbKjtCEE84nqzH5hvgP",
+  "object": "chat.completion",
+  "created": 1793628444,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_fMNwxgf12TeRoGJFWA7F7UNi",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"content\":\"The text is a pangram: “The quick brown fox jumps over the lazy dog” contains every letter of the English alphabet at least once.\",\"confidence\":0.99}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 203,
+    "completion_tokens": 51,
+    "total_tokens": 254,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

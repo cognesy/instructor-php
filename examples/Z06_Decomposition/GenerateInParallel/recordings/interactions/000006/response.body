@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn004SjPcPm4J8rWamGAy2ENxyZn",
+  "object": "chat.completion",
+  "created": 1793628508,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_ZI2U25wYh8PZ2PoAWAQkCxhp",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"response\":\"5. Memorable recent moments\\nOne unforgettable evening, I watched the sun melt into the Pacific while live ukulele music drifted across the beach. Later, a spontaneous conversation with local residents turned the trip’s highlights into stories I’ll carry home.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 309,
+    "completion_tokens": 67,
+    "total_tokens": 376,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

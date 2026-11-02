@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxAsNrRUQd4lvU465AVfzkpzOLW",
+  "object": "chat.completion",
+  "created": 1793628332,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"meetingDate\": \"2024-01-15T16:00:00\",\n  \"tasks\": [\n    {\n      \"title\": \"Research alternative transcription APIs\",\n      \"description\": \"Evaluate alternatives to the current API and provide a comparison before the meeting at 12:00.\",\n      \"dueDate\": \"2024-01-20T12:00:00\",\n      \"owner\": \"dev\",\n      \"status\": \"pending\"\n    },\n    {\n      \"title\": \"Update the product roadmap\",\n      \"description\": \"Revise the product roadmap, including the planned real-time transcription feature.\",\n      \"dueDate\": \"2024-01-18\",\n      \"owner\": \"pm\",\n      \"status\": \"pending\"\n    },\n    {\n      \"title\": \"Review the summary view UI\",\n      \"description\": \"Review the ready-for-review UI for the summary view.\",\n      \"dueDate\": \"2024-01-16T10:00:00\",\n      \"owner\": \"pm\",\n      \"status\": \"pending\"\n    }\n  ]\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 555,
+    "completion_tokens": 343,
+    "total_tokens": 898,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 108,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

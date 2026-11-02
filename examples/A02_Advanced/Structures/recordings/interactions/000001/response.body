@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmwv1WbloGFZsBFrOi94Ky822Zln",
+  "object": "chat.completion",
+  "created": 1793628317,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_420fWkWbrOEJbW6vzMKa96BC",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"name\":\"Jane Doe\",\"age\":25,\"gender\":\"female\",\"address\":{\"city\":\"Springfield\",\"zip\":\"50210\"},\"role\":\"manager\",\"favourite_books\":[{\"title\":\"The Lord of the Rings\",\"author\":\"JRR Tolkien\"},{\"title\":\"The Hobbit\",\"author\":\"JRR Tolkien\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 353,
+    "completion_tokens": 75,
+    "total_tokens": 428,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

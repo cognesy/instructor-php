@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzNtrB55J2lNUh5meNIuw6Qu7uM",
+  "object": "chat.completion",
+  "created": 1793628469,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_IcENADCzB8w5kMPnHUi0F4OG",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"result\":{\"intermediate_reasoning\":\"Identify a reliable peak deadlift estimate for Arnold Schwarzenegger, compare it with adult black rhinoceros mass, and distinguish lifting an equivalent load from lifting an actual rhino. Arnold’s commonly reported best deadlift is about 710 lb (322 kg), though historical strength figures vary. Adult black rhinos typically weigh roughly 1,760–3,080 lb (800–1,400 kg), around 2.5–4.3 times that load. Thus, he could not deadlift a typical adult black rhino; the animal is not a manageable stationary barbell load and would exceed the reported lift substantially.\",\"correct_answer\":\"Arnold Schwarzenegger’s reported peak deadlift was about 710 lb (322 kg). An adult black rhinoceros typically weighs about 1,760–3,080 lb (800–1,400 kg), so it weighs roughly 2.5–4.3 times as much. He could not deadlift an adult black rhino: even an equivalent, evenly distributed barbell load would far exceed his reported maximum, and an actual rhino would be an impractical, unsafe, and moving load.\"}}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 269,
+    "completion_tokens": 255,
+    "total_tokens": 524,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

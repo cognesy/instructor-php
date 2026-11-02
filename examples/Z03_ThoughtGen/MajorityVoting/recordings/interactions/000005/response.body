@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzJh45JSQ6pv1zYbml5V5oRnFhb",
+  "object": "chat.completion",
+  "created": 1793628465,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_OALACVSQA2FP6kIKOkqIwOad",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The environment favors one extreme of the trait—greater height—so taller giraffes survive and reproduce more successfully. This is directional selection.\",\"correct_answer\":\"A\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 279,
+    "completion_tokens": 51,
+    "total_tokens": 330,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

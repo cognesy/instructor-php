@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzkCm4p7sBFWmtvjJurOxmJSJL7",
+  "object": "chat.completion",
+  "created": 1793628492,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_TILu8GMQgsp1wTpRbr0LyxrN",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"program_code\":\"<?php\\nfunction solver() {\\n    // A 20% profit means the selling price is 120% of the cost price.\\n    $sellingPrice = 360;\\n    $profitRate = 0.20;\\n    $costPrice = $sellingPrice / (1 + $profitRate);\\n    return 'The cost price is Rs.' . number_format($costPrice, 2, '.', '');\\n}\\nreturn solver();\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 317,
+    "completion_tokens": 113,
+    "total_tokens": 430,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

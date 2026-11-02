@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyrBmTzeHzctpbAQbkosfnPys8n",
+  "object": "chat.completion",
+  "created": 1793628437,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_DproCQGNJa0hmki7A8I39pQ5",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"list\":[{\"name\":\"Lemonade\",\"country\":\"United States\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.lemonade.com\",\"description\":\"Product Hunt featured this digital insurer, which uses AI and automation to streamline renters, homeowners, life, and pet coverage.\"},{\"name\":\"Root Insurance\",\"country\":\"United States\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.joinroot.com\",\"description\":\"Product Hunt featured Root’s app-based auto insurer, which uses driving data to personalize car insurance pricing.\"},{\"name\":\"Hippo\",\"country\":\"United States\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.hippo.com\",\"description\":\"Product Hunt featured this home-insurance company, known for pairing digital policy management with smart-home tools.\"},{\"name\":\"Metromile\",\"country\":\"United States\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.metromile.com\",\"description\":\"Featured on Product Hunt, Metromile pioneered pay-per-mile auto insurance for drivers seeking usage-based coverage.\"},{\"name\":\"Alan\",\"country\":\"France\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://alan.com\",\"description\":\"Product Hunt featured this French digital health insurer, which combines online coverage management with employee wellness services.\"},{\"name\":\"Getsafe\",\"country\":\"Germany\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.getsafe.com\",\"description\":\"Product Hunt featured Getsafe’s mobile-first insurance platform, offering digital policies and claims handling across European markets.\"},{\"name\":\"Zego\",\"country\":\"United Kingdom\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.zego.com\",\"description\":\"Product Hunt featured this UK insurtech, which offers flexible commercial vehicle insurance for drivers and businesses.\"},{\"name\":\"PolicyMe\",\"country\":\"Canada\",\"industry\":\"Insurtech\",\"websiteUrl\":\"https://www.policyme.com\",\"description\":\"Product Hunt featured PolicyMe’s online life-insurance platform, built to make comparing and buying coverage more straightforward.\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 246,
+    "completion_tokens": 416,
+    "total_tokens": 662,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

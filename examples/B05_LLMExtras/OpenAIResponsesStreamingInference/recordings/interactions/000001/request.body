@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"Describe the history of Paris in exactly 3 sentences."}]}],"max_output_tokens":256,"stream":true}

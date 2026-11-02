@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmz9EY6LbiTEXwcIRkiwTqxQ722M",
+  "object": "chat.completion",
+  "created": 1793628455,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_6Ehzqf6NVB7ERWYAHf1ENxbt",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The context asks how many pages James writes in a year. He writes 3 pages to each of 2 friends, twice a week: 3 × 2 × 2 = 12 pages per week. Assuming 52 weeks per year, 12 × 52 = 624 pages.\",\"correct_answer\":\"James writes 624 pages in a year (assuming 52 weeks per year).\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 420,
+    "completion_tokens": 99,
+    "total_tokens": 519,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmx3rd9lxpE5hLPpssFWjcL4kuSm",
+  "object": "chat.completion",
+  "created": 1793628325,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_kCwuPINaCvsYt9VDAYurmlvC",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"name\":\"Apple Inc.\",\"industry\":\"Technology\",\"foundedYear\":1976,\"products\":[\"iPhone\",\"iPad\",\"Mac\",\"Apple Watch\"]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 232,
+    "completion_tokens": 44,
+    "total_tokens": 276,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

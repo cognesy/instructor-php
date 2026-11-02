@@ -5,6 +5,7 @@ profile:
   model: gpt-5.6
   status: supported
   capabilities:
+    toolsWithReasoning: supported
     reasoning:
       selections:
         - disabled

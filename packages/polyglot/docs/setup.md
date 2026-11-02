@@ -133,13 +133,19 @@ driver: openai
 apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
-model: gpt-4.1-nano
+model: gpt-6-luna
 maxTokens: 1024
 ```
 
 The `driver` field determines which Polyglot driver handles the request.
 The `apiKey` value supports `${ENV_VAR}` interpolation so secrets never
 appear in plain text.
+
+Reasoning-by-default OpenAI models such as `gpt-6-luna` accept function tools on
+`/chat/completions` only with `reasoning_effort: none`. The `openai` driver adds it
+automatically for tool calls when the exact bundled model record marks
+`toolsWithReasoning: unsupported` and reasoning can be disabled; non-reasoning models such as `gpt-4o-mini` are
+sent without the field. See [Reasoning](essentials/reasoning) for details.
 
 #### Embeddings Preset Example
 
@@ -204,7 +210,7 @@ $inference = Inference::fromConfig(new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     maxTokens: 2048,
 ));
 
@@ -286,7 +292,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
 $config = LLMConfig::fromDsn(
-    'driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,model=gpt-4.1-nano'
+    'driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,model=gpt-6-luna'
 );
 
 $inference = Inference::fromConfig($config);

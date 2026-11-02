@@ -129,6 +129,7 @@ it('rejects invalid branch values and unsupported models before fake inference',
         ->toThrow(InvalidArgumentException::class, 'low, medium, high')
         ->and(fn () => $tell->run(
             TellRequest::prompt('Do not call the driver.')
+                ->model('gpt-4o-mini')
                 ->reasoningEffort(ReasoningEffort::Low),
         ))
         ->toThrow(InvalidArgumentException::class, 'not supported');

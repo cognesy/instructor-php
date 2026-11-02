@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmypvwjLlYakMZlsPCTleo0LNcfO",
+  "object": "chat.completion",
+  "created": 1793628435,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_lv32Iz6Paf6EJDiyXcjbwuYR",
+            "type": "function",
+            "function": {
+              "name": "bash",
+              "arguments": "{\"command\":\"rg -n \\\"Agent SDK for PHP|Laravel Package|SubagentSpawning|SubagentSpawned|subagentId|prompt|parentOperationId|RuntimeEventBridge|AgentsTelemetryProjector\\\" README.md packages/agents/src/Events/SubagentSpawning.php packages/agents/src/Events/SubagentCompleted.php examples/D05_AgentTroubleshooting/SubagentTelemetryLangfuse/run.php examples/D05_AgentTroubleshooting/SubagentTelemetryLogfire/run.php\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15395,
+    "completion_tokens": 111,
+    "total_tokens": 15506,
+    "prompt_tokens_details": {
+      "cached_tokens": 9592,
+      "cache_write_tokens": 5800,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

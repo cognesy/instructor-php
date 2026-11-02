@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzGlzMYHzbBY2Z9FubNkbu21byf",
+  "object": "chat.completion",
+  "created": 1793628462,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_TtOeSiSoh9qEIZ0jgbteuTiP",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"queries\":[\"Arnold Schwarzenegger peak strength maximum deadlift record or estimated deadlift in his prime\",\"Adult black rhinoceros typical body mass range\",\"Compare Arnold Schwarzenegger peak deadlift to adult black rhinoceros weight; clarify whether lift feasible\"]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 65,
+    "total_tokens": 295,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -54,7 +54,7 @@ instance, so you can safely branch from a shared configuration:
 ```php
 $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
-    ->withModel('gpt-4.1-nano');
+    ->withModel('gpt-6-luna');
 ```
 
 ### Tools and Response Format
@@ -95,7 +95,7 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 
 $inference = Inference::using('openai')->with(
     messages: Messages::fromString('Hello'),
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     toolChoice: ToolChoice::auto(),
     responseFormat: ResponseFormat::text(),
     options: ['temperature' => 0.7],
@@ -133,7 +133,7 @@ use Cognesy\Messages\Messages;
 
 $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('What is PHP?'))
-    ->withModel('gpt-4.1-nano');
+    ->withModel('gpt-6-luna');
 
 // Complete assistant message
 $message = $inference->get();

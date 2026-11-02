@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"Answer in one sentence: what is the capital of France?"}],"max_completion_tokens":48}

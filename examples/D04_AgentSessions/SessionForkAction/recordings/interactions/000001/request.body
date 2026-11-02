@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"system","content":"You are a travel planner. Answer in one short sentence."},{"role":"user","content":"Suggest 3 attractions in Paris."}],"max_completion_tokens":1024}

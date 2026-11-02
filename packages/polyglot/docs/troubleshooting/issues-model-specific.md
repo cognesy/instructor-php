@@ -24,7 +24,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Correct: exact model identifier
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
@@ -68,7 +68,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Step 1: Test plain text output
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->get();
 
@@ -76,7 +76,7 @@ echo $text; // Verify this works first
 
 // Step 2: Then add tools back
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withTools($myTools)
     ->get();
@@ -104,13 +104,13 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Test non-streaming first
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Write a haiku.'))
     ->get();
 
 // Then test streaming
 $stream = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Write a haiku.'))
     ->stream();
 
@@ -156,7 +156,7 @@ function withFallback(array $models, string $prompt): string {
 
 // Try capable models first, then fall back to simpler ones
 $response = withFallback(
-    ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano'],
+    ['gpt-5.6', 'gpt-6-luna'],
     'Explain general relativity.',
 );
 ```

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmx87FMjyQ3CGxEWw332jq8JUmza",
+  "object": "chat.completion",
+  "created": 1793628330,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_hNgtLDV3DIy8Zex2KJFQDUO4",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"title\":\"Introduction to PHP 8.4\",\"author\":\"Jane Doe\",\"wordCount\":1500,\"tags\":[\"php\",\"tutorial\",\"programming\"]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 234,
+    "completion_tokens": 45,
+    "total_tokens": 279,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

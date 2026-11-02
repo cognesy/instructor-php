@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn7mBx6g9gE2n3tfQ2ieTCj9s9am",
+  "object": "chat.completion",
+  "created": 1793628990,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_xDdbDX8EmKAqx5VDiHOhqsQw",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The user describes feeling giddy and elegant in a perfectly fitted pencil skirt, expressing positive excitement and pleasure. This is Happy.\",\"label\":\"Happy\",\"confidence\":\"Highly Confident\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 253,
+    "completion_tokens": 54,
+    "total_tokens": 307,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyPnB5VnBzECjLRmJt7ozyFGCCe",
+  "object": "chat.completion",
+  "created": 1793628409,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_k6UOOLIluH2Lve31WQ3PxC5i",
+            "type": "function",
+            "function": {
+              "name": "spawn_subagent",
+              "arguments": "{\"subagent\":\"reviewer\",\"context\":\"fresh\",\"prompt\":\"Review packages/agents/src/Capability/SelfCritique/UseSelfCritique.php. Identify behavior, design, and any bugs or concerns. Provide concise findings with file/line references; if no issues, say so.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1284,
+    "completion_tokens": 72,
+    "total_tokens": 1356,
+    "prompt_tokens_details": {
+      "cached_tokens": 1065,
+      "cache_write_tokens": 216,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

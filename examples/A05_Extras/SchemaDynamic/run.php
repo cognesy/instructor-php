@@ -42,7 +42,7 @@ $data = (new StructuredOutput($runtime))
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France? \
         Respond with JSON data.']])
     ->withResponseJsonSchema($city->toJsonSchema())
-    ->withOptions(['max_tokens' => 64])
+    ->withOptions(['max_tokens' => 1024])
     ->get();
 
 echo "USER: What is capital of France\n";

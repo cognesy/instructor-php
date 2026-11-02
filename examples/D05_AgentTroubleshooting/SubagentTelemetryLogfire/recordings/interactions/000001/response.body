@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmydRG8naLO2y2J2MPl7yS6E8dSf",
+  "object": "chat.completion",
+  "created": 1793628423,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_gL46FhHQ6RSYs0rf8GlKh6L2",
+            "type": "function",
+            "function": {
+              "name": "spawn_subagent",
+              "arguments": "{\"subagent\":\"repo_inspector\",\"context\":\"fresh\",\"prompt\":\"Inspect the repository. You must use bash at least 3 separate times and do not combine commands with && or ;. Run each as a separate bash call, exactly: (1) pwd (2) ls examples/D05_AgentTroubleshooting (3) rg -n \\\"UseSubagents|SpawnSubagentTool|SubagentSpawning\\\" packages/agents/src/Capability/Subagent/*.php packages/agents/src/Events/Subagent*.php. Then investigate enough to answer: what kind of repository this is, where agent telemetry examples live, and what the subagent telemetry path records. Return concise evidence.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 577,
+    "completion_tokens": 152,
+    "total_tokens": 729,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

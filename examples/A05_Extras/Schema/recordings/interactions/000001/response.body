@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmx8mF9QLeGF1MAuz8NF7mYIqE0f",
+  "object": "chat.completion",
+  "created": 1793628330,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_72LZJc8MFla3lBtV7USKFkhS",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"name\":\"Paris\",\"population\":2102650,\"founded\":-52}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 194,
+    "completion_tokens": 30,
+    "total_tokens": 224,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

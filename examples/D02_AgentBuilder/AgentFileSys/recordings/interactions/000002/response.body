@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxvMVgwFzCKTEwqnnIcJHVZo502",
+  "object": "chat.completion",
+  "created": 1793628379,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "1. **Project:** `cognesy/instructor-php`\n2. **PHP required:** `^8.3|^8.4|^8.5`\n3. **First 5 dependencies:**\n   - `ext-ctype`\n   - `adbario/php-dot-notation`\n   - `aimeos/map`\n   - `gioni06/gpt3-tokenizer`\n   - `helgesverre/toon`",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 4443,
+    "completion_tokens": 97,
+    "total_tokens": 4540,
+    "prompt_tokens_details": {
+      "cached_tokens": 4440,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"What is capital of France? \\\n           Respond with JSON data containing name\", population and year of founding. \\\n           Example: {\"name\": \"Berlin\", \"population\": 3700000, \"founded\": 1237}"}],"max_completion_tokens":1024,"response_format":{"type":"json_object"}}

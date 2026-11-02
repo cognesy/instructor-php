@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyrqiJh4WGcWk9NRxnWcUtSxsKg",
+  "object": "chat.completion",
+  "created": 1793628437,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_3Ov17hnN13jz9v2rMRmqCcpM",
+            "type": "function",
+            "function": {
+              "name": "bash",
+              "arguments": "{\"command\":\"rg -n \\\"UseBash|BashTool\\\" README.md packages/agents/src/Capability/Bash/UseBash.php\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 870,
+    "completion_tokens": 43,
+    "total_tokens": 913,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

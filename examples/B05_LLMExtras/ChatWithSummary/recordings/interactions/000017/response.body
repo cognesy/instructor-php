@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmyDL99skeQRprKQGzMhtW00RJ0U",
+  "object": "chat.completion",
+  "created": 1793628397,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "### Instructor for PHP sales guidance\n\n- **Approach:** Be a curious challenger. Connect the cost of unreliable LLM outputs to the prospect’s actual workflow, then guide them toward a measurable next step.\n- **Discovery and demo:** Ask for a real malformed LLM response, explore the rework or risk it caused, and demonstrate how Instructor for PHP handles that specific case with structured validation and retry feedback.\n- **Avoid:** Generic demos, assuming validation is the main pain, or claiming retries solve every failure. Confirm the library fits the prospect’s case and quantify the impact where possible.\n- **Useful discovery question:** “Where do LLM outputs break, what rework or risk does that create, how do you handle it today, and what result would make a pilot worthwhile?”\n- **Objections:** Acknowledge the concern, ask what’s behind it, relate it to a relevant cost or risk, and propose a small test using the prospect’s own example.\n- **Tailor the message:** Emphasize schema and retry control for PHP developers, less manual review for operations teams, and reliability at scale for product leaders.\n- **Example next step:** Test a real support-summary response and measure whether validation and retries reduce cleanup work.\n\n### Product reference\n\nInstructor for PHP is a framework-agnostic PHP library for extracting validated, structured data from LLM outputs. It supports text, chat, and image inputs; class-based or dynamic schemas; validation and retries; streaming, embeddings, context caching, and observability. Its unified API supports providers including OpenAI, Anthropic, Google, Cohere, Groq, Mistral, and Ollama. Setup commonly uses Composer, a PHP response class, and `StructuredOutput`; Symfony validation and customization are also supported. Example use cases include document processing, support automation, and analysis.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 507,
+    "completion_tokens": 414,
+    "total_tokens": 921,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 34,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

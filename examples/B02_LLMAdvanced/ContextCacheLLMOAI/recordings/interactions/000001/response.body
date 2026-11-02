@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxG9JZ79urcojQrsmbb5bHbKwoO",
+  "object": "chat.completion",
+  "created": 1793628338,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "### Pitch\n\nBuild AI-powered lead workflows in PHP without stitching together brittle prompt logic and provider-specific APIs. Instructor PHP turns inbound messages and prospect data into validated CRM-ready records; Polyglot lets you switch LLM providers; and Retrieval and Agents help qualify leads, ground responses in your sales playbook, and automate follow-up workflows.\n\n### Lead-gen problems it can solve\n\n- **Messy lead intake:** Extract names, company details, needs, and contact information from forms, emails, and chat into typed, validated records.\n- **Inconsistent qualification:** Classify intent, fit, urgency, and buying signals with structured decisions your routing logic can use.\n- **Slow enrichment at scale:** Run asynchronous batch inference over large prospect lists for classification, summarization, or tailored outreach preparation.\n- **Generic or off-brand responses:** Ground lead replies and sales-assist workflows in product docs, pricing, and approved messaging using retrieval.\n- **Manual sales handoffs:** Use agents and custom tools to automate steps such as lead triage, CRM updates, and escalation—while keeping control of the workflow.\n- **Provider lock-in:** Test and switch among supported LLM providers through a unified PHP API.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5039,
+    "completion_tokens": 310,
+    "total_tokens": 5349,
+    "prompt_tokens_details": {
+      "cached_tokens": 5036,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 61,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

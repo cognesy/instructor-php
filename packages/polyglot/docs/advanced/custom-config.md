@@ -28,7 +28,7 @@ endpoint: /chat/completions
 metadata:
   organization: ''
   project: ''
-model: gpt-4.1-nano
+model: gpt-6-luna
 maxTokens: 1024
 ```
 
@@ -80,7 +80,7 @@ $config = new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     maxTokens: 2048,
 );
 
@@ -112,7 +112,7 @@ $config = LLMConfig::fromArray([
     'apiUrl' => 'https://api.openai.com/v1',
     'apiKey' => $apiKeyFromDatabase,
     'endpoint' => '/chat/completions',
-    'model' => 'gpt-4.1-nano',
+    'model' => 'gpt-6-luna',
     'maxTokens' => 1024,
 ]);
 ```
@@ -184,7 +184,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
-$config = LLMConfig::fromDsn('openai://api.openai.com/v1?model=gpt-4.1-nano&apiKey=sk-...');
+$config = LLMConfig::fromDsn('openai://api.openai.com/v1?model=gpt-6-luna&apiKey=sk-...');
 
 $response = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello!'))
@@ -328,7 +328,7 @@ driver: openai-compatible
 apiUrl: 'https://my-proxy.example.com/v1'
 apiKey: '${MY_PROXY_API_KEY}'
 endpoint: /chat/completions
-model: gpt-4.1-nano
+model: gpt-6-luna
 maxTokens: 2048
 ```
 

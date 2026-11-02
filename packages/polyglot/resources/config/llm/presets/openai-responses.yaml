@@ -5,5 +5,5 @@ endpoint: /responses
 metadata:
   organization: ''
   project: ''
-model: gpt-5.4-mini
+model: gpt-6-luna
 maxTokens: 1024

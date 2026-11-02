@@ -45,7 +45,7 @@ $text = Inference::using('openai')
             ['role' => 'system', 'content' => 'Answer briefly.'],
             ['role' => 'user', 'content' => 'What is CQRS?'],
         ]),
-        model: 'gpt-4.1-nano',
+        model: 'gpt-6-luna',
         options: ['temperature' => 0.2],
     )
     ->get();
@@ -91,7 +91,7 @@ $response = Inference::using('anthropic')
 Each helper returns a new immutable instance, so you can safely branch from a shared base:
 
 ```php
-$base = Inference::using('openai')->withModel('gpt-4.1-nano');
+$base = Inference::using('openai')->withModel('gpt-6-luna');
 
 $creative = $base->withOptions(['temperature' => 0.9]);
 $precise  = $base->withOptions(['temperature' => 0.0]);
@@ -131,7 +131,7 @@ $messages = (new Messages)
     ]);
 
 $response = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages($messages)
     ->get();
 ```
@@ -195,7 +195,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $request = new InferenceRequest(
     messages: Messages::fromString('Return one deployment tip.'),
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     options: ['temperature' => 0],
 );
 

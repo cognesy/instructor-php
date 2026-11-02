@@ -2,7 +2,7 @@
     "schema": "instructor-http-interaction",
     "version": 1,
     "sequence": 4,
-    "fingerprint": "f796ee654f3684fb2ababd3a69cc159b7c5a88c73984ba21d3bb65a3054fdb6a",
+    "fingerprint": "36a43f00e821298a69e2b106ffb5c64c06fc81b7becf79fb75d718022ecce958",
     "request": {
         "method": "POST",
         "url": "https://api.openai.com/v1/chat/completions",
@@ -13,24 +13,24 @@
         },
         "body": {
             "file": "request.body",
-            "bytes": 12841,
-            "sha256": "1f08e14470909e9564a5d597dbb2da852c53ba2a16e21cbbd75b2054aca22173"
+            "bytes": 50013,
+            "sha256": "1a31502c677110696401689f973b31bdf7675ad5153cc01f97a1cef5e0394bdb"
         }
     },
     "response": {
         "statusCode": 200,
         "headers": {
             "date": [
-                "Fri, 11 Sep 2026 06:49:00 GMT"
+                "Mon, 02 Nov 2026 14:13:19 GMT"
             ],
             "content-type": [
                 "application/json"
             ],
             "content-length": [
-                "1207"
+                "1251"
             ],
             "cf-ray": [
-                "a394badd3884effb-WAW"
+                "a543bd330d768174-WAW"
             ],
             "cf-cache-status": [
                 "DYNAMIC"
@@ -53,7 +53,7 @@
                 "cognesy"
             ],
             "openai-processing-ms": [
-                "548"
+                "1500"
             ],
             "openai-project": [
                 "proj_iphboLfDqANcHJl7rS8cw8NT"
@@ -65,25 +65,25 @@
                 "v0.1"
             ],
             "x-ratelimit-limit-requests": [
-                "5000"
+                "10000"
             ],
             "x-ratelimit-limit-tokens": [
-                "4000000"
+                "10000000"
             ],
             "x-ratelimit-remaining-requests": [
-                "4999"
+                "9999"
             ],
             "x-ratelimit-remaining-tokens": [
-                "3998463"
+                "9990116"
             ],
             "x-ratelimit-reset-requests": [
-                "12ms"
+                "6ms"
             ],
             "x-ratelimit-reset-tokens": [
-                "23ms"
+                "59ms"
             ],
             "x-request-id": [
-                "req_0f7537325d0b409eb362ee175c6a5b33"
+                "req_0cd1416acfe240229d9e254c764c9740"
             ],
             "set-cookie": "[REDACTED]",
             "alt-svc": [
@@ -94,8 +94,8 @@
         "payload": {
             "type": "body",
             "file": "response.body",
-            "bytes": 1207,
-            "sha256": "bac7aea0322cacb6c53ac253fc3086d9d7e5d1dd628b77f4781aa05b7f829c31"
+            "bytes": 1251,
+            "sha256": "19a1f787e903dfe5b7219b522ed88ff8aeb9702452d6cf2a9262b9c4921cf190"
         }
     }
 }

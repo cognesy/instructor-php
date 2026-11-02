@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmyVar23qRM9azWNXvWxW6Ko6NYA",
+  "object": "chat.completion",
+  "created": 1793628415,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "### `UseTools.php`\nAdds the configured tools to the agent’s existing tools. No concrete bug was identified. One point to confirm: duplicate-tool behavior depends on `Tools::merge()`—whether it replaces, rejects, or preserves duplicates.\n\n### `UseFileTools.php`\nRegisters read, write, and edit tools using the configured base directory. The main security consideration is whether those tools prevent path traversal and symlink escapes; this capability alone does not show that protection. It also accepts `baseDir` without validation or normalization, which may make invalid or relative paths behave unexpectedly.\n\n### `UseSelfCritique.php`\nRegisters a self-critique hook after each step. Potential concerns: `maxIterations` accepts zero or negative values, and repeated configuration could add duplicate hooks if registration does not deduplicate them. Neither is necessarily a bug if the hook validates the limit and repeated configuration is not expected.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1496,
+    "completion_tokens": 185,
+    "total_tokens": 1681,
+    "prompt_tokens_details": {
+      "cached_tokens": 1281,
+      "cache_write_tokens": 212,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

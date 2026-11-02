@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn7zymrxfAfOWeUyppftd30JgTJ9",
+  "object": "chat.completion",
+  "created": 1793629003,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_hYrPidJaJV8CH23jf4ZuPeto",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The user describes feeling irritated and rejected. Irritation is an expression of anger, and there is no clear indication that sadness is the primary emotion.\",\"label\":\"Angry\",\"confidence\":\"Confident\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 256,
+    "completion_tokens": 58,
+    "total_tokens": 314,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

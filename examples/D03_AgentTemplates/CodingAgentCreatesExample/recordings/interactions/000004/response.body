@@ -1,8 +1,8 @@
 {
-  "id": "chatcmpl-EMpMBDc9K3xLJzdnl60ICEVJpf7U1",
+  "id": "chatcmpl-Efn4gakWz13qRa0dX5PV8sAem9Hwd",
   "object": "chat.completion",
-  "created": 1789109339,
-  "model": "gpt-5.4-mini-2026-03-17",
+  "created": 1793628798,
+  "model": "gpt-6-luna",
   "choices": [
     {
       "index": 0,
@@ -11,11 +11,11 @@
         "content": null,
         "tool_calls": [
           {
-            "id": "call_zsargq7KygVQFuxi3h1HfoZX",
+            "id": "call_O0snfo19rBAhcPICYZi26fRq",
             "type": "function",
             "function": {
               "name": "bash",
-              "arguments": "{\"command\":\"php -l /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php && php /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\",\"timeout_ms\":120000}"
+              "arguments": "{\"command\":\"php -l /tmp/instructor-php/agent-test/20261102-141309-e2565b/run.php && php -d zend.assertions=1 -d assert.exception=1 /tmp/instructor-php/agent-test/20261102-141309-e2565b/run.php\"}"
             }
           }
         ],
@@ -26,11 +26,12 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 2881,
-    "completion_tokens": 71,
-    "total_tokens": 2952,
+    "prompt_tokens": 11845,
+    "completion_tokens": 78,
+    "total_tokens": 11923,
     "prompt_tokens_details": {
-      "cached_tokens": 2304,
+      "cached_tokens": 11444,
+      "cache_write_tokens": 398,
       "audio_tokens": 0
     },
     "completion_tokens_details": {

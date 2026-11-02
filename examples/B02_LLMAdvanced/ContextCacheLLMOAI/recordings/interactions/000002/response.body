@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxMbQaJZw1k5aLJxGq0mamJVj17",
+  "object": "chat.completion",
+  "created": 1793628344,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "### Pitch\n\nInstructor PHP helps insurance technology teams turn unstructured documents and customer communications into validated, typed data—then use that data in provider-flexible AI workflows built for existing PHP systems. Apply it to claims intake, underwriting, policy servicing, and knowledge retrieval, with validation, retry controls, bounded evidence context, and observable agent workflows.\n\n### Insurance problems it can help solve\n\n- **Claims intake:** Extract loss details, dates, parties, and requested actions from FNOL narratives, emails, and supporting documents.\n- **Underwriting triage:** Structure submission information and flag missing fields for human review.\n- **Policy servicing:** Classify and route requests such as address changes, coverage questions, and cancellations.\n- **Claims knowledge retrieval:** Find relevant policy wording and claims guidance, with bounded evidence context to support an answer.\n- **Operational automation:** Coordinate repetitive workflows with configurable tools and stop conditions, while keeping humans in the review loop.\n- **Technology flexibility:** Integrate through PHP and switch among supported LLM providers without rewriting application-level inference code.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5036,
+    "completion_tokens": 277,
+    "total_tokens": 5313,
+    "prompt_tokens_details": {
+      "cached_tokens": 5033,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 57,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

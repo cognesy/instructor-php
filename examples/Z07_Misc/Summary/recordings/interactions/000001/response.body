@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn09Bzobrua00tEbIns5CBt6jS8I",
+  "object": "chat.completion",
+  "created": 1793628517,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_xZ7tS68F31dNlUB3cyc4rHTF",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"summary\":\"The Acme Insurance SalesTech CRM project is RED due to Alfatech’s delayed document production system, pushing the ecommerce track by two sprints. SysCorp is adding resources to mitigate the delay, but missing customer test data may affect stabilization unless provided by month-end; the customer insists on keeping the release date. SalesTech cannot confirm SysCorp’s assessment because of missed calls and no response to leadership escalation. The policy track is GREEN after resolving Integration Proxy connectivity on August 30, 2021, and the production deployment plan finalized August 15 is awaiting customer approval.\",\"keywords\":[\"Acme Insurance\",\"SalesTech CRM\",\"Alfatech delay\",\"ecommerce track\",\"test data\"]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 521,
+    "completion_tokens": 155,
+    "total_tokens": 676,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

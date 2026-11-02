@@ -1,0 +1,45 @@
+{
+  "id": "chatcmpl-Efmx4ko7Px7RTIR1ONTE5L3ZVs8mY",
+  "object": "chat.completion",
+  "created": 1793628326,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_RGr8A8D9YQtwLlrE8C2pW7CP",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"vendor\":{\"name\":\"Geo Restaurant\",\"address\":\"300 72th Street, Miami Beach, FL 33141\",\"phone\":\"305-864-5586\"},\"items\":[{\"name\":\"Ferrari Carano\",\"quantity\":1,\"price\":47.00},{\"name\":\"Insalate Cesare\",\"quantity\":1,\"price\":7.50},{\"name\":\"Caprese with prosciutto\",\"quantity\":1,\"price\":9.50},{\"name\":\"FISH SPEC\",\"quantity\":1,\"price\":25.95},{\"name\":\"Spinach Ricotta Ravioli\",\"quantity\":1,\"price\":15.95},{\"name\":\"Seafood Pasta\",\"quantity\":1,\"price\":19.95},{\"name\":\"Ossobuco\",\"quantity\":1,\"price\":29.95}],\"subtotal\":155.80,\"tax\":14.02,\"tip\":5.00,\"total\":169.82}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 425,
+    "completion_tokens": 197,
+    "total_tokens": 622,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

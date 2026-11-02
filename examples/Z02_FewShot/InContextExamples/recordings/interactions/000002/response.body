@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmz1LRDOa0WQKTqOd82z7HdyTLwp",
+  "object": "chat.completion",
+  "created": 1793628447,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_E7Dzbfu58PKNfQ1zuuGVhLLt",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"list\":[{\"review\":\"The movie was hard to follow, and losing track of half the plot made it a frustrating experience.\",\"sentiment\":\"negative\"},{\"review\":\"Despite a few impressive moments, the story was so confusing that I couldn’t stay engaged.\",\"sentiment\":\"negative\"},{\"review\":\"I struggled to understand what was happening for much of the film, which made it disappointing overall.\",\"sentiment\":\"negative\"},{\"review\":\"The plot was needlessly convoluted, and I left feeling more confused than impressed.\",\"sentiment\":\"negative\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 232,
+    "completion_tokens": 120,
+    "total_tokens": 352,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

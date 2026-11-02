@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzIOgli76rU5zHI7Y6XEAbwnn1u",
+  "object": "chat.completion",
+  "created": 1793628464,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_tzBeekJjsObB6u8BYOvZjLjJ",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"result\":{\"intermediate_reasoning\":\"The question asks for Arnold Schwarzenegger’s peak deadlift. Publicly repeated accounts commonly cite a 675 lb (about 306 kg) deadlift, but this is not a well-documented official powerlifting record; present it as a reported lift rather than a verified competition maximum.\",\"correct_answer\":\"Arnold Schwarzenegger is commonly credited with a deadlift of about 675 lb (306 kg) during his bodybuilding prime. Treat this as a reported gym lift, not a verified official meet record; a reliably documented maximum is difficult to establish.\"}}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 267,
+    "completion_tokens": 131,
+    "total_tokens": 398,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

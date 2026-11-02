@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzL2cieltPC2fq8p2xOzYHBc6Bf",
+  "object": "chat.completion",
+  "created": 1793628467,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_FJnsgYRcBFjgx7MdK1PGhezP",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"result\":{\"intermediate_reasoning\":\"Identify the typical adult body-mass range for the black rhinoceros (Diceros bicornis), expressed in kilograms and optionally pounds.\",\"correct_answer\":\"Adult black rhinoceroses typically weigh about 800–1,400 kg (1,760–3,090 lb).\"}}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 259,
+    "completion_tokens": 78,
+    "total_tokens": 337,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

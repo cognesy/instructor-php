@@ -1,14 +1,14 @@
 {
-  "id": "chatcmpl-EMpMG8ZAHZqYQWMGpT7W9hM1l8cbD",
+  "id": "chatcmpl-Efn4q3nOeCGXmak5JWFWfd7IdM6tO",
   "object": "chat.completion",
-  "created": 1789109344,
-  "model": "gpt-5.4-mini-2026-03-17",
+  "created": 1793628808,
+  "model": "gpt-6-luna",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Generated file: /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\n\nFinal verification command:\nphp -l /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php && php /tmp/instructor-php/agent-test/20260911-064856-e1911b/run.php\n\nPassed: yes\n\nFinal output included:\nExample status: verified",
+        "content": "Created `/tmp/instructor-php/agent-test/20261102-141309-e2565b/run.php` with typed action-item extraction and assertions for Alex, the rollout checklist, and the date.\n\nFinal verification command: `php -l /tmp/instructor-php/agent-test/20261102-141309-e2565b/run.php && php -d zend.assertions=1 -d assert.exception=1 /tmp/instructor-php/agent-test/20261102-141309-e2565b/run.php`\n\nPassed: syntax validation and execution succeeded; assertions passed and output included `Example status: verified`.",
         "refusal": null,
         "annotations": []
       },
@@ -16,11 +16,12 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 3369,
-    "completion_tokens": 95,
-    "total_tokens": 3464,
+    "prompt_tokens": 12386,
+    "completion_tokens": 132,
+    "total_tokens": 12518,
     "prompt_tokens_details": {
-      "cached_tokens": 2816,
+      "cached_tokens": 12168,
+      "cache_write_tokens": 215,
       "audio_tokens": 0
     },
     "completion_tokens_details": {

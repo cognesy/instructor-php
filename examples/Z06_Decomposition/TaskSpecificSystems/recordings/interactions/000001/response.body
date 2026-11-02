@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzuBPxTBEN2wTw7Oa2MM2twxKYD",
+  "object": "chat.completion",
+  "created": 1793628502,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_jkh1vExtGPzFjI5OsAuH5eM1",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"list\":[{\"id\":1,\"rationale\":[\"Start with 3 cars in the parking lot.\"],\"dependencies\":[],\"eval_string\":\"$initial_cars = 3;\"},{\"id\":2,\"rationale\":[\"Add the first 2 cars that arrive to the initial number.\"],\"dependencies\":[1],\"eval_string\":\"$after_first_arrival = $initial_cars + 2;\"},{\"id\":3,\"rationale\":[\"Add the additional 2 cars to get the final total.\"],\"dependencies\":[2],\"eval_string\":\"$answer = $after_first_arrival + 2;\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 468,
+    "completion_tokens": 134,
+    "total_tokens": 602,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

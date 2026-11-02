@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmwxQWcmQ6k5ZSkpvMUfdjfftxnC",
+  "object": "chat.completion",
+  "created": 1793628319,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"name\": \"Instructor for PHP\",\n  \"targetAudience\": \"Owners and developers at boutique CMS consulting firms who build, extend, and modernize content platforms for clients, especially teams working with PHP, Laravel, or Symfony.\",\n  \"technologies\": [\n    \"PHP\",\n    \"Composer\",\n    \"OpenAI and other LLM providers\",\n    \"Polyglot unified inference API\",\n    \"Symfony Validator\",\n    \"Laravel integration\",\n    \"Symfony integration\",\n    \"Vector stores including in-memory, Qdrant, and Pgvector\"\n  ],\n  \"features\": [\n    \"Extract structured, typed data from text, images, and chat messages\",\n    \"Validate generated data and retry requests when results fail validation\",\n    \"Connect to multiple LLM providers through a unified API\",\n    \"Generate embeddings and retrieve relevant content for search and RAG\",\n    \"Build tool-using agents with tools, hooks, context management, and session support\",\n    \"Support synchronous, streaming, and early-access asynchronous batch inference\",\n    \"Integrate with Laravel and Symfony, or use the components without a framework\",\n    \"Customize output processing, prompts, schemas, and provider drivers\"\n  ],\n  \"applications\": [\n    \"Turn unstructured client content into consistent CMS fields, such as summaries, authors, dates, and categories\",\n    \"Assist content migration by extracting and mapping information from legacy pages or documents\",\n    \"Classify, tag, and enrich editorial content for publishing workflows\",\n    \"Build semantic search and evidence-backed content discovery for client websites\",\n    \"Prototype AI editorial assistants that answer questions or perform tasks using approved tools\",\n    \"Automate content review and structured data capture while validating results before they enter a CMS\"\n  ],\n  \"description\": \"Instructor for PHP is a framework-agnostic toolkit for adding dependable AI capabilities to PHP applications. For a boutique CMS consultancy, it can help turn client requirements into practical features—such as structured content extraction, editorial enrichment, semantic search, and tool-assisted workflows—without tying the implementation to one LLM provider or framework. Typed response models, validation, and retries help reduce brittle parsing and give teams more control over the data they pass into client content systems. It provides reusable building blocks rather than a CMS-specific product, so consultants can adapt them to each client's platform and workflow.\",\n  \"code\": \"```php\\nuse Cognesy\\\\Instructor\\\\StructuredOutput;\\nuse Symfony\\\\Component\\\\Validator\\\\Constraints as Assert;\\n\\nfinal class ArticleMetadata\\n{\\n    #[Assert\\\\NotBlank]\\n    public string $title;\\n\\n    #[Assert\\\\Length(max: 180)]\\n    public string $summary;\\n\\n    /** @var string[] */\\n    public array $tags;\\n}\\n\\n$source = 'A client article about restoring a historic townhouse in Bath...';\\n\\n$metadata = StructuredOutput::using('openai')\\n    ->with(\\n        messages: \\\"Extract CMS-ready metadata from this article:\\\\n\\\\n{$source}\\\",\\n        responseModel: ArticleMetadata::class,\\n    )\\n    ->get();\\n\\n// Validate and map the typed result into your CMS publishing workflow.\\n```\\n\"\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5747,
+    "completion_tokens": 749,
+    "total_tokens": 6496,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 5744,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 74,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

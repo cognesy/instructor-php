@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzqAyDk60v45dzXFD8xc6syZw0W",
+  "object": "chat.completion",
+  "created": 1793628498,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_I6krJKKR4baocDGzcCVUv8u6",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"response\":\"1. Opening trip snapshot: My recent trip to Hawaii felt like stepping into a postcard, with warm island breezes, vivid sunsets, and the sound of waves setting the pace. From the moment I arrived, I knew this journey would be about more than scenery—it was a chance to connect with the islands’ culture and spirit.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 309,
+    "completion_tokens": 83,
+    "total_tokens": 392,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

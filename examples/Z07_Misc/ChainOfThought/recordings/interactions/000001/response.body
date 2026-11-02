@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn02u2MAyQA9cieB05zuQBs81br3",
+  "object": "chat.completion",
+  "created": 1793628510,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_yY3bSLBIx8pQn3YroOPilTfW",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"reasoning\":\"The statement says that in 2019 he is a manager, and he had been working there for 5 years. Subtracting 5 years from 2019 gives 2014 as the employment start year.\",\"yearOfEmployment\":2014}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 216,
+    "completion_tokens": 68,
+    "total_tokens": 284,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

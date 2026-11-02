@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmy8dOv2DoVbJMakIZjG0DTvjHXl",
+  "object": "chat.completion",
+  "created": 1793628392,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_9FqllL4y8hSF3xo1dtcDoPS3",
+            "type": "function",
+            "function": {
+              "name": "structured_output",
+              "arguments": "{\"input\":\"Hey, I just got off the phone with a potential client. Here are the details:\\n\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\nThey're based in San Francisco, California, USA. You can reach him at\\njohn.smith@techcorp.io or call him at +1-555-0123.\\n\\nHe's interested in our enterprise plan and wants a demo next week.\",\"schema\":\"lead\",\"store_as\":\"current_lead\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 688,
+    "completion_tokens": 115,
+    "total_tokens": 803,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

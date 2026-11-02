@@ -27,7 +27,7 @@ driver: openai
 apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
-model: gpt-4.1-nano
+model: gpt-6-luna
 metadata:
   organization: 'org-your-organization-id'
   project: 'proj-your-project-id'

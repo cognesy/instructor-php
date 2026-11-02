@@ -1,0 +1,101 @@
+{
+    "schema": "instructor-http-interaction",
+    "version": 1,
+    "sequence": 1,
+    "fingerprint": "98fbb1e8c8dceb7b18052259992f007e5a3de4d217cae74f91a9632b71fa1ba9",
+    "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json"
+        },
+        "body": {
+            "file": "request.body",
+            "bytes": 1054,
+            "sha256": "735256cc3efd9838e6498011d0781df3292cbd9b479d0425af59b56fda449907"
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "statusCode": 200,
+            "headers": {
+                "date": [
+                    "Mon, 02 Nov 2026 14:05:17 GMT"
+                ],
+                "content-type": [
+                    "text/event-stream; charset=utf-8"
+                ],
+                "cf-ray": [
+                    "a543b1755a2b7a60-WAW"
+                ],
+                "cf-cache-status": [
+                    "DYNAMIC"
+                ],
+                "server": [
+                    "cloudflare"
+                ],
+                "strict-transport-security": [
+                    "max-age=31536000; includeSubDomains; preload"
+                ],
+                "x-content-type-options": [
+                    "nosniff"
+                ],
+                "access-control-expose-headers": [
+                    "X-Request-ID",
+                    "CF-Ray",
+                    "CF-Ray"
+                ],
+                "openai-organization": [
+                    "cognesy"
+                ],
+                "openai-processing-ms": [
+                    "701"
+                ],
+                "openai-project": [
+                    "proj_iphboLfDqANcHJl7rS8cw8NT"
+                ],
+                "openai-version": [
+                    "2020-10-01"
+                ],
+                "x-openai-proxy-wasm": [
+                    "v0.1"
+                ],
+                "x-ratelimit-limit-requests": [
+                    "10000"
+                ],
+                "x-ratelimit-limit-tokens": [
+                    "10000000"
+                ],
+                "x-ratelimit-remaining-requests": [
+                    "9999"
+                ],
+                "x-ratelimit-remaining-tokens": [
+                    "9999911"
+                ],
+                "x-ratelimit-reset-requests": [
+                    "6ms"
+                ],
+                "x-ratelimit-reset-tokens": [
+                    "0s"
+                ],
+                "x-request-id": [
+                    "req_54ff0d2bce084cdf90b5a439afe6c1f9"
+                ],
+                "set-cookie": "[REDACTED]",
+                "alt-svc": [
+                    "h3=\":443\"; ma=86400"
+                ]
+            }
+        },
+        "streamed": true,
+        "payload": {
+            "type": "chunks",
+            "file": "response.chunks.ndjson",
+            "bytes": 13430,
+            "sha256": "19541e76a4496cdf0c3f7cb1ff173078c0758be372840e89700967132528e58c"
+        }
+    }
+}

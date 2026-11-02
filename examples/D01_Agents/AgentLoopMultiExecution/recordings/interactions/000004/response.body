@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxrKfDImNAaoOgEqTN76v8WvPVv",
+  "object": "chat.completion",
+  "created": 1793628375,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Yes. `composer.json` defines PSR-4 autoloading under `autoload.psr-4`. The namespace prefixes are:\n\n`Cognesy\\Addons\\`, `Cognesy\\Agents\\`, `Cognesy\\AgentCtrl\\`, `Cognesy\\Auxiliary\\`, `Cognesy\\Config\\`, `Cognesy\\Dynamic\\`, `Cognesy\\Events\\`, `Cognesy\\Http\\`, `Cognesy\\HttpPool\\`, `Cognesy\\InstructorHub\\`, `Cognesy\\Instructor\\`, `Cognesy\\Instructor\\Laravel\\`, `Cognesy\\Logging\\`, `Cognesy\\Messages\\`, `Cognesy\\Metrics\\`, `Cognesy\\Pipeline\\`, `Cognesy\\Polyglot\\`, `Cognesy\\Retrieval\\`, `Cognesy\\Sandbox\\`, `Cognesy\\Schema\\`, `Cognesy\\Setup\\`, `Cognesy\\Stream\\`, `Cognesy\\Instructor\\Symfony\\`, `Cognesy\\Tell\\`, `Cognesy\\Template\\`, `Cognesy\\Telemetry\\`, `Cognesy\\Utils\\`, and `Cognesy\\Xprompt\\`.\n\nThe `Cognesy\\Instructor\\` prefix maps to two source directories: `packages/instructor/src/` and `packages/contracts/src/`.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3865,
+    "completion_tokens": 294,
+    "total_tokens": 4159,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 3862,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

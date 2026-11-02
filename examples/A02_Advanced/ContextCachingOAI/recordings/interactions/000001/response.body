@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmwkAcMSU3TrsSUYTpnseiBNwvfs",
+  "object": "chat.completion",
+  "created": 1793628306,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "```json\n{\n  \"name\": \"Instructor for PHP\",\n  \"targetAudience\": \"Property and casualty insurance CIOs, enterprise architects, and technology leaders evaluating practical ways to integrate generative AI into claims, underwriting, and policy operations using PHP systems.\",\n  \"technologies\": [\n    \"PHP\",\n    \"Large language models (LLMs)\",\n    \"Polyglot unified inference API\",\n    \"OpenAI, Anthropic, Google Gemini, Azure OpenAI, Mistral, and other LLM providers\",\n    \"Ollama for local models\",\n    \"Symfony Validator\",\n    \"Laravel\",\n    \"Symfony\",\n    \"Vector stores including Qdrant and Pgvector\"\n  ],\n  \"features\": [\n    \"Extract typed, structured data from text, chat messages, and images\",\n    \"Validate model output and retry when results fail validation\",\n    \"Use JSON, JSON Schema, tool calling, or prompt-based output modes\",\n    \"Switch supported LLM providers through a unified inference API\",\n    \"Generate embeddings and retrieve relevant evidence for RAG workflows\",\n    \"Build tool-using agents with lifecycle hooks, context management, and observability\",\n    \"Run synchronous, streaming, and provider-native batch inference\",\n    \"Integrate with Laravel, Symfony, or framework-agnostic PHP applications\"\n  ],\n  \"applications\": [\n    \"Extract and normalize first notice of loss (FNOL) details from claimant narratives, emails, or documents\",\n    \"Triage claims by loss type, urgency, coverage questions, or missing information\",\n    \"Turn underwriting submissions into validated data for review and downstream systems\",\n    \"Help adjusters retrieve relevant policy language and claims-handling guidance\",\n    \"Route policy-service requests and identify the information needed to resolve them\",\n    \"Summarize claim files and correspondence for human review\",\n    \"Prototype AI workflows against different model providers before selecting a deployment approach\"\n  ],\n  \"description\": \"Instructor for PHP is a set of framework-agnostic building blocks for adding LLM capabilities to PHP applications. For P&C insurance technology teams, it helps address a common integration challenge: model responses are often unstructured, inconsistent, and difficult to safely pass into core workflows. The toolkit can transform narrative or document-based inputs into typed PHP data, validate the results, and retry when they do not meet requirements. Its inference, retrieval, and agent components also support provider choice and workflow experimentation. It is an integration toolkit rather than a prebuilt insurance system; insurers can use it to develop human-reviewed capabilities that fit their existing PHP applications and operational controls.\",\n  \"code\": \"```php\\n<?php\\n\\nuse Cognesy\\\\Instructor\\\\StructuredOutput;\\nuse Symfony\\\\Component\\\\Validator\\\\Constraints as Assert;\\n\\nfinal class ClaimIntake\\n{\\n    public string $claimantName;\\n\\n    public string $lossDate;\\n\\n    public string $lossType;\\n\\n    #[Assert\\\\Length(max: 1000)]\\n    public string $lossDescription;\\n\\n    /** @var string[] */\\n    public array $missingInformation;\\n}\\n\\n$intake = (new StructuredOutput)\\n    ->withResponseClass(ClaimIntake::class)\\n    ->withMessages(\\n        'Extract the reported claim details. Do not infer unknown facts. '\\n        . 'List information that appears to be missing. '\\n        . 'Narrative: A driver says their car was rear-ended yesterday '\\n        . 'and asks how to start a claim. Their name and exact loss date '\\n        . 'were not included.'\\n    )\\n    ->get();\\n\\n// Review the extracted, validated fields before routing or writing them\\n// to a claims system.\\necho $intake->lossType;\\n```\"\n}\n```",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5771,
+    "completion_tokens": 925,
+    "total_tokens": 6696,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 5768,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 133,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

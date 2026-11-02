@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxgX8q785ZZZtWlbs3PuHqA2pFJ",
+  "object": "chat.completion",
+  "created": 1793628364,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Adopt a curious challenger mindset: lead with a useful insight about the cost of unreliable LLM outputs, tailor it to their workflow, and guide the conversation toward a measurable next step.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 502,
+    "completion_tokens": 80,
+    "total_tokens": 582,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 34,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmy4VjRzguI2NI5hd97nNLUZtl2A",
+  "object": "chat.completion",
+  "created": 1793628388,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "## Staged plan (analysis only executed)\n\n1. **Analysis (now; read-only):** Locate planning-related implementation and configuration, then inspect its public interfaces/defaults and nearby tests/examples. Find existing docs conventions and choose the best documentation location. Capture evidence for purpose, options, and a realistic usage example.\n2. **Draft (later):** Prepare a focused documentation outline in the chosen location, covering purpose, configuration, and one example; avoid duplicating existing material.\n3. **Review (later):** Verify names/defaults against implementation, match repository style, check links and example accuracy, then request review. No writing or edits occur in this run.\n\nI’ll now perform only step 1.",
+        "tool_calls": [
+          {
+            "id": "call_Uu7xHh6OGwDaFiqZSouAOSF5",
+            "type": "function",
+            "function": {
+              "name": "search_files",
+              "arguments": "{\"patterns\":[\"**/*plan*\",\"**/*Planning*\",\"**/*planning*\",\"**/AGENTS.md\",\"docs/**/*.md\",\"skills/**/*\",\"**/*planner*\"]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1449,
+    "completion_tokens": 199,
+    "total_tokens": 1648,
+    "prompt_tokens_details": {
+      "cached_tokens": 1107,
+      "cache_write_tokens": 339,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -48,7 +48,10 @@ different effective effort; typed requests reject that mapping by default.
 
 ## Optional request-scoped resolution
 
-Ordinary inference does not discover, load, or consult a model catalog. Compose the runtime once
+Ordinary inference does not discover, load, or consult a model catalog. The one exception is the
+native `openai` Chat Completions driver, which reads the exact bundled record for a tool-calling
+request to read its `toolsWithReasoning` fact and decide whether OpenAI requires
+`reasoning_effort: none` (see Reasoning). Compose the runtime once
 per service or worker and reuse it across isolated inference objects:
 
 ```php

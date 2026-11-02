@@ -1,8 +1,8 @@
 {
-  "id": "chatcmpl-EMpM8eG81UambAzS4uDT317Wq5vfA",
+  "id": "chatcmpl-Efn4YLHFTwZkupBBf8nVRYJzJB7FN",
   "object": "chat.completion",
-  "created": 1789109336,
-  "model": "gpt-5.4-mini-2026-03-17",
+  "created": 1793628790,
+  "model": "gpt-6-luna",
   "choices": [
     {
       "index": 0,
@@ -11,11 +11,11 @@
         "content": null,
         "tool_calls": [
           {
-            "id": "call_d1L9DOtazb22vqp9IW0kUoXu",
+            "id": "call_BdKgqZQzfEwW9AFfr8ZGj9qZ",
             "type": "function",
             "function": {
               "name": "read",
-              "arguments": "{\"path\":\"/Users/ddebowczyk/projects/_instructor/instructor-php/examples/A01_Basics/Basic/run.php\",\"offset\":0,\"limit\":400,\"max_bytes\":40000}"
+              "arguments": "{\"path\":\"/Users/ddebowczyk/projects/_instructor/instructor-php/examples/A01_Basics/Basic/run.php\",\"limit\":400,\"max_bytes\":60000}"
             }
           }
         ],
@@ -26,11 +26,12 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 1640,
-    "completion_tokens": 54,
-    "total_tokens": 1694,
+    "prompt_tokens": 1757,
+    "completion_tokens": 50,
+    "total_tokens": 1807,
     "prompt_tokens_details": {
-      "cached_tokens": 0,
+      "cached_tokens": 1041,
+      "cache_write_tokens": 713,
       "audio_tokens": 0
     },
     "completion_tokens_details": {

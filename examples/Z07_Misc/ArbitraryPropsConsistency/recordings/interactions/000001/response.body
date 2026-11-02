@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzzLc47HDdb3MtXsgqRqE8SgMOA",
+  "object": "chat.completion",
+  "created": 1793628507,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_FBQcXpPxs1Ti9fpCNuPyAc66",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"users\":[{\"id\":1,\"key\":\"name\",\"value\":\"Jason\"},{\"id\":1,\"key\":\"age\",\"value\":\"25\"},{\"id\":1,\"key\":\"occupation\",\"value\":\"Python programmer\"},{\"id\":2,\"key\":\"name\",\"value\":\"Amanda\"},{\"id\":2,\"key\":\"occupation\",\"value\":\"UX designer\"},{\"id\":3,\"key\":\"name\",\"value\":\"John\"},{\"id\":3,\"key\":\"age\",\"value\":\"40\"},{\"id\":3,\"key\":\"occupation\",\"value\":\"CEO\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 242,
+    "completion_tokens": 116,
+    "total_tokens": 358,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

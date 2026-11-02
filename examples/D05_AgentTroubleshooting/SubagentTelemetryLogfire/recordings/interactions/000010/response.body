@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmyvNmVnGNfMxHOZqfOFyifYii3B",
+  "object": "chat.completion",
+  "created": 1793628441,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "- **Repository:** A PHP agent SDK with a first-party Laravel package.\n- **Telemetry examples:** `examples/D05_AgentTroubleshooting/`, including Langfuse and Logfire examples for agents and subagents.\n- **Subagent telemetry:** Records subagent spawn and completion events. Spawn data includes parent IDs, subagent name, prompt, and nesting depth; completion includes the subagent ID. Examples bridge parent/child events to telemetry projectors.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 901,
+    "completion_tokens": 96,
+    "total_tokens": 997,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -4,6 +4,10 @@ namespace Cognesy\Polyglot\Inference\Models;
 
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningCapabilities;
 
+/**
+ * Exact route facts. `toolsWithReasoning` says whether function tools can be combined with
+ * enabled reasoning on this route; `unsupported` means tool calls need reasoning disabled.
+ */
 final readonly class ModelCapabilities
 {
     public ReasoningCapabilities $reasoning;
@@ -15,6 +19,7 @@ final readonly class ModelCapabilities
         public SupportStatus $jsonObject = SupportStatus::Unknown,
         public SupportStatus $jsonSchema = SupportStatus::Unknown,
         public SupportStatus $responseFormatWithTools = SupportStatus::Unknown,
+        public SupportStatus $toolsWithReasoning = SupportStatus::Unknown,
         ?ReasoningCapabilities $reasoning = null,
     ) {
         $this->reasoning = $reasoning ?? ReasoningCapabilities::unknown();
@@ -23,7 +28,7 @@ final readonly class ModelCapabilities
     public static function fromArray(array $data): self {
         ModelRecordFields::validate($data, [
             'streaming', 'tools', 'toolChoice', 'jsonObject', 'jsonSchema',
-            'responseFormatWithTools', 'reasoning',
+            'responseFormatWithTools', 'toolsWithReasoning', 'reasoning',
         ], 'capabilities');
         return new self(
             streaming: SupportStatus::fromMixed($data['streaming'] ?? null),
@@ -34,6 +39,7 @@ final readonly class ModelCapabilities
             responseFormatWithTools: SupportStatus::fromMixed(
                 $data['responseFormatWithTools'] ?? null,
             ),
+            toolsWithReasoning: SupportStatus::fromMixed($data['toolsWithReasoning'] ?? null),
             reasoning: ReasoningCapabilities::fromArray(ModelRecordFields::object($data, 'reasoning', 'capabilities')),
         );
     }
@@ -47,6 +53,7 @@ final readonly class ModelCapabilities
             'jsonObject' => $this->jsonObject->value,
             'jsonSchema' => $this->jsonSchema->value,
             'responseFormatWithTools' => $this->responseFormatWithTools->value,
+            'toolsWithReasoning' => $this->toolsWithReasoning->value,
         ], static fn (string $status): bool => $status !== SupportStatus::Unknown->value);
         $reasoning = $this->reasoning->toArray();
 

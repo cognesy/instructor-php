@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-Efn4ciOVdr3UNnP9rbSUiACxdiVyY",
+  "object": "chat.completion",
+  "created": 1793628794,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "There are **35 files** in the current directory:\n\n`.actrc`, `.env`, `.env-dist`, `.gitattributes`, `.gitignore`, `.phpactor.json`, `.phpunit.result.cache`, `.semgrepignore`, `ADDING-PACKAGE.md`, `AGENTS.md`, `CONTENTS.md`, `CONTRIBUTING.md`, `Doxyfile`, `LICENSE`, `PACKAGES.md`, `QUALITY.md`, `README.md`, `composer.json`, `composer.lock`, `composer.phar`, `justfile`, `mago.toml`, `package-config-enhanced.example.json`, `package-config.example.json`, `packages.json`, `phpbench.json`, `phpstan-baseline.neon`, `phpstan-unused.neon`, `phpstan.neon`, `phpstan.neon.dist`, `phpunit.xml`, `psalm.xml`, `pyproject.toml`, `pyrightconfig.json`, `uv.lock`.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 588,
+    "completion_tokens": 195,
+    "total_tokens": 783,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

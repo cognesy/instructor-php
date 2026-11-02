@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmymOwfIbYESV37lQUgYbV207eXg",
+  "object": "chat.completion",
+  "created": 1793628432,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_9v9cah1fSa17NKtiYyVtHAOv",
+            "type": "function",
+            "function": {
+              "name": "bash",
+              "arguments": "{\"command\":\"rg -n \\\"subagent|telemetry|Langfuse|Logfire\\\" README.md CONTENTS.md packages/agents/src/Capability/Subagent/SpawnSubagentTool.php packages/agents/src/Events/SubagentSpawning.php examples/D05_AgentTroubleshooting\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1032,
+    "completion_tokens": 71,
+    "total_tokens": 1103,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1029,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn07UiwidSZqL3RkwzR73sccExkb",
+  "object": "chat.completion",
+  "created": 1793628515,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_1ndE92WzhVTSbMUpx8AEZ81p",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"name\":\"Jason\",\"age\":28,\"role\":{\"instructions\":\"Identify and restate Jason's role based on the provided description, using an appropriate title.\",\"description\":\"Head of Apex Software, responsible for driving the company's growth.\",\"title\":\"Head of Apex Software\"} }"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 258,
+    "completion_tokens": 66,
+    "total_tokens": 324,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

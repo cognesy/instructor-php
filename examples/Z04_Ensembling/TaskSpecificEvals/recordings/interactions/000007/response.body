@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn7qnyrID6v6JaFaiuwtVYDlLPlZ",
+  "object": "chat.completion",
+  "created": 1793628994,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_81K6TzkZbh9FC4WVNRvEL7Ts",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The user expresses a practical desire to feel dough to ensure it is perfect, with no clear emotional valence beyond neutral/positive enthusiasm. Among the required categories, Happy is the closest fit.\",\"label\":\"Happy\",\"confidence\":\"Somewhat Confident\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 256,
+    "completion_tokens": 68,
+    "total_tokens": 324,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -29,6 +29,7 @@ final readonly class InferenceRequestPreflight
         $this->assertAvailable($request->hasTools(), $capabilities->tools, 'tools', $request);
         $this->assertAvailable($request->hasToolChoice(), $capabilities->toolChoice, 'tool choice', $request);
         $this->assertResponseFormatWithTools($request);
+        $this->assertToolsWithReasoning($request);
 
         return $this->applyResponseFormat($request);
     }
@@ -42,6 +43,25 @@ final readonly class InferenceRequestPreflight
         }
 
         throw new InvalidArgumentException($this->message('response format with tools', $request));
+    }
+
+    private function assertToolsWithReasoning(InferenceRequest $request): void {
+        $capabilities = $request->modelProfile()?->capabilities;
+        if (!$request->hasTools() || $capabilities?->toolsWithReasoning !== SupportStatus::Unsupported) {
+            return;
+        }
+
+        $selection = $request->reasoning();
+        $reasoningEnabled = match (true) {
+            $selection->kind === ReasoningSelectionKind::Disabled => false,
+            !$selection->isDefault() => true,
+            default => !$capabilities->reasoning->supports(ReasoningSelection::disabled()),
+        };
+        if (!$reasoningEnabled) {
+            return;
+        }
+
+        throw new InvalidArgumentException($this->message('tools with enabled reasoning', $request));
     }
 
     private function applyResponseFormat(InferenceRequest $request): InferenceRequest {

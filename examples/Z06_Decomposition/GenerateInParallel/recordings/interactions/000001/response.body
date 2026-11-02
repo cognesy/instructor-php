@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmznhOq3ooiRwjWND36jl4IGLMul",
+  "object": "chat.completion",
+  "created": 1793628495,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_ynWF1FkEMU3y9HEu6cQFqCBW",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"points\":[{\"index\":1,\"description\":\"Opening trip snapshot\"},{\"index\":2,\"description\":\"Island and cultural immersion\"},{\"index\":3,\"description\":\"Local food and traditions\"},{\"index\":4,\"description\":\"Must-see natural attractions\"},{\"index\":5,\"description\":\"Memorable recent moments\"},{\"index\":6,\"description\":\"Travel tips and reflection\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 317,
+    "completion_tokens": 83,
+    "total_tokens": 400,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

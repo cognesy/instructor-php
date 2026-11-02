@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"system","content":"You are concise and precise."},{"role":"user","content":"What is the capital of France?"}],"max_completion_tokens":1024}

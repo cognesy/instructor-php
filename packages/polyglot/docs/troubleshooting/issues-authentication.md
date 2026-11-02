@@ -114,7 +114,7 @@ $inference = Inference::fromConfig(new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: 'sk-your-key-here',
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
 ));
 
 $text = $inference->withMessages(Messages::fromString('Hello'))->get();

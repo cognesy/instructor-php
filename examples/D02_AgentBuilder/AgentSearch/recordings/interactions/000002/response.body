@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmy4z73NNWJyrmwLnHAkXthUsaPM",
+  "object": "chat.completion",
+  "created": 1793628388,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_yky6SgLKTZue65ppBHgGl6Uk",
+            "type": "function",
+            "function": {
+              "name": "spawn_subagent",
+              "arguments": "{\"subagent\":\"reader\",\"prompt\":\"Read these files and briefly describe what each tool does based on code: packages/agents/src/Capability/File/EditFileTool.php, ListDirTool.php, ReadFileTool.php, SearchFilesTool.php, WriteFileTool.php. Mention key behavior/constraints.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1277,
+    "completion_tokens": 74,
+    "total_tokens": 1351,
+    "prompt_tokens_details": {
+      "cached_tokens": 1274,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

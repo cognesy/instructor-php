@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"Use city_fact and answer with one short fact about Paris."}],"parallel_tool_calls":false,"max_completion_tokens":1024,"tools":[{"type":"function","function":{"name":"city_fact","description":"Returns one city fact","parameters":{"type":"object","properties":{}}}}],"tool_choice":"auto","reasoning_effort":"none"}

@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"What are the three primary colors? Answer in one sentence."}],"max_completion_tokens":1024}

@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxpMZMlsY0CYCK0VhyZEtYRdInH",
+  "object": "chat.completion",
+  "created": 1793628373,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Public funding should support foundational research, shared infrastructure, and high-risk areas that may not offer immediate commercial returns, such as safety, security, and evaluation. It can also broaden access through open datasets and compute, while requiring transparent governance and measurable public benefit. - Marcus",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 530,
+    "completion_tokens": 80,
+    "total_tokens": 610,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 18,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

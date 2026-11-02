@@ -63,7 +63,7 @@ $configSource = new CustomConfigSource([
                 'apiUrl' => 'https://api.openai.com/v1',
                 'apiKey' => (string) Env::get('OPENAI_API_KEY', ''),
                 'endpoint' => '/chat/completions',
-                'model' => 'gpt-4.1-nano',
+                'model' => 'gpt-6-luna',
                 'maxTokens' => 256,
             ],
         ],

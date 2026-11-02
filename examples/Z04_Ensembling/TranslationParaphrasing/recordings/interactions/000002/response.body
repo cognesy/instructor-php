@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmzfr3st0TFGkggbHNPCwprZpLsf",
+  "object": "chat.completion",
+  "created": 1793628487,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_1HhHBqvwHMPdswzCi1wsoz3i",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"translation\":\"Explain how photosynthesis works to a 10-year-old.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 220,
+    "completion_tokens": 29,
+    "total_tokens": 249,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

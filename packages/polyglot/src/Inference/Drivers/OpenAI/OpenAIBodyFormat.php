@@ -45,10 +45,25 @@ class OpenAIBodyFormat implements CanMapRequestBody
             $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return RequestPayload::filterEmptyValues($requestBody);
+        return RequestPayload::filterEmptyValues($this->applyToolReasoning($request, $requestBody));
     }
 
     // PROVIDER VARIATION HOOKS ///////////////////////////////
+
+    /**
+     * Native OpenAI only: reasoning-by-default models need reasoning disabled for
+     * function tools on Chat Completions. Subclasses serve other wire protocols.
+     *
+     * @param array<string,mixed> $requestBody
+     * @return array<string,mixed>
+     */
+    protected function applyToolReasoning(InferenceRequest $request, array $requestBody): array
+    {
+        return match ($this->config->driver) {
+            'openai' => (new OpenAIToolReasoningPolicy())->apply($request, $requestBody),
+            default => $requestBody,
+        };
+    }
 
     /**
      * Filter/adjust merged request options before they land in the body.

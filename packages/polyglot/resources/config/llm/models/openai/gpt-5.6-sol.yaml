@@ -1,0 +1,33 @@
+schemaVersion: 1
+version: '2026-09-11'
+profile:
+  driver: openai
+  model: gpt-5.6-sol
+  status: supported
+  limits:
+    contextWindow: 1050000
+    maxOutput: 128000
+  modalities:
+    inputText: supported
+    inputImage: supported
+    inputAudio: unsupported
+    outputText: supported
+  capabilities:
+    toolsWithReasoning: unsupported
+    reasoning:
+      selections:
+        - disabled
+        - effort
+      efforts:
+        - requested: low
+          provider: low
+        - requested: medium
+          provider: medium
+        - requested: high
+          provider: high
+        - requested: xhigh
+          provider: xhigh
+        - requested: max
+          provider: max
+      default: enabled
+  source: upstream-reviewed

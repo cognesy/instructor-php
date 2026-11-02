@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"system","content":"You are a travel planner. Answer in one short sentence."},{"role":"user","content":"Suggest 3 attractions in Paris."},{"role":"assistant","content":"Visit the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral."},{"role":"user","content":"Now add one luxury dining recommendation."}],"max_completion_tokens":1024}

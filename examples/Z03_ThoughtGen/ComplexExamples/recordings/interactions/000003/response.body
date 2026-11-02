@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzBF4ipzjoDQrAs8wJjJcNvn8Vn",
+  "object": "chat.completion",
+  "created": 1793628457,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_Li0onDb53cKqmt80QxWoiRlH",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"reasoning\":[{\"step\":1,\"subquestion\":\"How many loaves remained after the bakery's sales?\",\"procedure\":\"Subtract the 93 morning sales and 39 afternoon sales from the 200 loaves baked: 200 - 93 - 39.\",\"result\":\"68 loaves\"},{\"step\":2,\"subquestion\":\"How should the 6 returned unsold loaves affect the total left?\",\"procedure\":\"The 6 returned loaves are added back to the remaining loaves: 68 + 6.\",\"result\":\"74 loaves\"}],\"correct_answer\":74}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 294,
+    "completion_tokens": 131,
+    "total_tokens": 425,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

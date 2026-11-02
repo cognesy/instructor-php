@@ -39,7 +39,7 @@ $runtime = InferenceRuntime::fromConfig(
         apiUrl: 'https://api.openai.com/v1',
         apiKey: (string) getenv('OPENAI_API_KEY'),
         endpoint: '/chat/completions',
-        model: 'gpt-4.1-nano',
+        model: 'gpt-6-luna',
     ),
     httpClient: $httpClient,
 );

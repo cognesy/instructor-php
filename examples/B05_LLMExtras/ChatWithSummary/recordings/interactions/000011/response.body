@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxvpXOq1sjrBCQUAa1AOVEoW1sF",
+  "object": "chat.completion",
+  "created": 1793628379,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Ask: “Where do LLM outputs break in your workflow, what rework or risk does that create, how do you handle it today, and what measurable result would make a pilot worthwhile?”",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 538,
+    "completion_tokens": 80,
+    "total_tokens": 618,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 32,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

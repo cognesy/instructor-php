@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn7xGCSjyfyjLnqwhAom6dvZeVCA",
+  "object": "chat.completion",
+  "created": 1793629001,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_1mXojOKkVudqS7YTkMnrYSxR",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The speaker expresses frustration and uses profanity while wanting to discard an object. The dominant emotion is anger.\",\"label\":\"Angry\",\"confidence\":\"Confident\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 255,
+    "completion_tokens": 49,
+    "total_tokens": 304,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

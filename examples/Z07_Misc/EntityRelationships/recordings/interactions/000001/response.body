@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn06zi23oeFYcMjHSXCysdjt0Odt",
+  "object": "chat.completion",
+  "created": 1793628514,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_fuse32At99FJVKFGrASBWaAc",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"users\":[{\"id\":1,\"name\":\"Jason\",\"age\":25,\"role\":\"Python programmer on the Apex website\",\"coworkers\":[2,3]},{\"id\":2,\"name\":\"Amanda\",\"role\":\"Contractor working with Jason on the Apex website\",\"coworkers\":[1]},{\"id\":3,\"name\":\"John\",\"age\":40,\"role\":\"CEO; Jason reports to him\",\"coworkers\":[1]}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 284,
+    "completion_tokens": 102,
+    "total_tokens": 386,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

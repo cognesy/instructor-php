@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn7uwI9nPEem2CqiXNjkQwIxcDji",
+  "object": "chat.completion",
+  "created": 1793628998,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_aBZ9E4kDqF97t0p053H92CEl",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":\"The statement says the speaker did not feel very embarrassed, suggesting a calm or mildly positive/neutral emotional tone rather than anger or sadness. Of the available labels, Happy is the closest fit.\",\"label\":\"Happy\",\"confidence\":\"Somewhat Confident\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 244,
+    "completion_tokens": 68,
+    "total_tokens": 312,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

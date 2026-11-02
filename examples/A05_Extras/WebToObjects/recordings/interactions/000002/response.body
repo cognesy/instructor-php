@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxFwUYL8M4tVpAk8Y3meKF05LgI",
+  "object": "chat.completion",
+  "created": 1793628337,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"name\": \"Blue River Software\",\n  \"location\": \"Austin, TX\",\n  \"description\": \"API integrations and SaaS product development in Laravel.\",\n  \"minProjectBudget\": 25000,\n  \"companySize\": \"50 - 249\",\n  \"websiteUrl\": \"https://blueriver.dev\",\n  \"clients\": [\n    \"Umbrella Corp\",\n    \"Hooli\"\n  ]\n}",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 332,
+    "completion_tokens": 153,
+    "total_tokens": 485,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 54,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

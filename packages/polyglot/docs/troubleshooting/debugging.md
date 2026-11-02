@@ -22,7 +22,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
 ))->wiretap(function ($event): void {
     echo get_class($event) . PHP_EOL;
 });

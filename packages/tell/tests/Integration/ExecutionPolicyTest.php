@@ -103,7 +103,7 @@ it('loads project and user policy defaults into effective branch configuration',
     ])->and($payload['connectionResolution'])->toMatchArray([
         'connection' => 'openai',
         'provider' => 'openai',
-        'model' => 'gpt-5.4-mini',
+        'model' => 'gpt-6-luna',
         'connectionSource' => 'bundled',
         'modelSource' => 'preset',
     ]);

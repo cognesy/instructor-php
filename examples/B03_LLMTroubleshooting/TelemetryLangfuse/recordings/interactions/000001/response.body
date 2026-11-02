@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxKgAkxUR9heA59JdohN5JT6oBk",
+  "object": "chat.completion",
+  "created": 1793628342,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "- **Debug unpredictable behavior:** Trace prompts, model outputs, tool calls, and errors to find where a workflow went wrong.\n- **Measure quality and safety:** Track accuracy, groundedness, refusals, and harmful outputs to catch issues and regressions.\n- **Control cost and performance:** Monitor latency, token usage, and failures to optimize spend and reliability as usage scales.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 24,
+    "completion_tokens": 135,
+    "total_tokens": 159,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 51,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

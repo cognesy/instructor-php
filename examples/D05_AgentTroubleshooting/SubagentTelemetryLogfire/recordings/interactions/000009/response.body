@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmysGZ9icGEHQMCwqwyavlgb57N9",
+  "object": "chat.completion",
+  "created": 1793628438,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "- **Repository:** A PHP project with an Agent SDK and first-party Laravel package; the README lists subagents and event observability among the SDK’s features. (`README.md:9,13`)\n- **Examples:** Agent telemetry examples live in `examples/D05_AgentTroubleshooting/`: `TelemetryLangfuse`, `TelemetryLogfire`, `SubagentTelemetryLangfuse`, and `SubagentTelemetryLogfire`. (directory listing)\n- **Subagent telemetry:** `SpawnSubagentTool` emits spawn and completion events, and the examples bridge parent/child events through `RuntimeEventBridge` and `AgentsTelemetryProjector`. The spawn event includes parent IDs, subagent name, prompt, and nesting depth; completion includes the subagent ID. (source and example matches)",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 16487,
+    "completion_tokens": 163,
+    "total_tokens": 16650,
+    "prompt_tokens_details": {
+      "cached_tokens": 15392,
+      "cache_write_tokens": 1092,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

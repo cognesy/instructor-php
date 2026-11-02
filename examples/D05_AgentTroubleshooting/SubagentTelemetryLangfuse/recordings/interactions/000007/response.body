@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmymEJDdWTV7SdsmoWAbPIKR9VrC",
+  "object": "chat.completion",
+  "created": 1793628432,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "- A PHP monorepo with an agents package and examples.\n- Agent telemetry examples live in `examples/D05_AgentTroubleshooting`.\n- Subagent telemetry records spawning events, including subagent identity and nesting depth, and attaches telemetry context to events.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2390,
+    "completion_tokens": 55,
+    "total_tokens": 2445,
+    "prompt_tokens_details": {
+      "cached_tokens": 1050,
+      "cache_write_tokens": 1337,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

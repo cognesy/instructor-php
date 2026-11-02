@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmyp6ucFgq1hcRR9MOzdFf94Sxmi",
+  "object": "chat.completion",
+  "created": 1793628435,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_d3XLt7DyVYNVpSxeqXPwht7f",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"rephrasedQuestion\":\"What does the word “object” mean? Please explain its general meaning and note that its meaning can vary by context, such as everyday language, grammar, or programming.\",\"answer\":\"An object is generally a thing that can be perceived or thought about. In everyday use, it usually means a physical item, such as a chair or a stone. In grammar, an object is a word or phrase that receives or is affected by a verb’s action (for example, “the ball” in “She kicked the ball”). In programming, an object is a unit that combines data with operations or behaviors that work on that data.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 204,
+    "completion_tokens": 145,
+    "total_tokens": 349,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

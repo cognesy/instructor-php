@@ -59,8 +59,8 @@ echo "  Output: {$usage->outputTokens}\n\n";
 // 2. Calculate cost
 $calculator = new FlatRateCostCalculator();
 $pricing = InferencePricing::fromArray([
-    'input'  => 0.2,  // gpt-4.1-nano
-    'output' => 0.8,
+    'input'  => 0.10, // gpt-6-luna
+    'output' => 0.50,
 ]);
 
 $cost = $calculator->calculate($usage, $pricing);

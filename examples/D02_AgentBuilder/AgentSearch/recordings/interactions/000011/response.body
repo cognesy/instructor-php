@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmySmEPi2kITNa5fWT4bxUePXo3I",
+  "object": "chat.completion",
+  "created": 1793628412,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "- **`EditFileTool`** — Replaces an exact string in an existing file. By default, the match must occur exactly once; set `replace_all=true` to replace every occurrence. It rejects an empty `old_string`, identical old/new strings, and NUL-containing paths. The edit is streamed to a temporary file beside the original and committed atomically; if there’s no match, an ambiguous match, an I/O problem, or the source changes during editing, it leaves the original unchanged. It uses a sandbox policy allowing reads and writes under the configured base directory.\n\n- **`ListDirTool`** — Lists a directory’s immediate entries, excluding `.` and `..`. Relative paths are resolved against its configured base directory. Entries are sorted with directories first, then case-insensitively by name; output labels each as `[dir]` or `[file]` and is capped at `maxEntries` (default 50), with a notice if more remain. It reports errors for non-directories or unreadable directories.\n\n- **`ReadFileTool`** — Reads a text file and returns content with line numbers. Supports a zero-based `offset`, line `limit` (default 200), and output-byte cap `max_bytes` (default 32 KiB); it reports how to continue when output is truncated. Long first lines are previewed (up to 4 KiB) with a continuation hint. It rejects NUL-containing paths and directories, and checks MIME type to refuse binary files. Reads are sandboxed to configured readable paths.\n\n- **`SearchFilesTool`** — Finds files under a configured base directory using one or more patterns; returns relative paths, deduplicated and limited to `maxResults` (default 10). Supports globs (including recursive `**/` patterns); plain names with a dot are treated as recursive exact-filename searches, while plain keywords become recursive filename-substring searches. Non-recursive glob searches return files only. The output groups matches by pattern, showing up to five per pattern. If no patterns are supplied, it defaults to `*.php`.\n\n- **`WriteFileTool`** — Creates a **new** file from the supplied content. The parent directory must already exist; it will not overwrite an existing file with different content (use the edit tool for changes). If the target already has identical content, it reports no change. Content is streamed to a temporary file and atomically created; sandbox policy restricts writes to configured writable paths. It rejects NUL-containing paths.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12857,
+    "completion_tokens": 522,
+    "total_tokens": 13379,
+    "prompt_tokens_details": {
+      "cached_tokens": 12754,
+      "cache_write_tokens": 100,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

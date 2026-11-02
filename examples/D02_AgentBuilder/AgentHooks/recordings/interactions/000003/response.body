@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-Efmy0E1n02PLRrqdKEcJoz74GxLza",
+  "object": "chat.completion",
+  "created": 1793628384,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "I can’t run `rm -rf /`; it would attempt to destroy the entire system and its data. If you’re trying to clean up a specific directory, tell me its path and I can help you remove only the intended files safely.\nI can’t delete the entire filesystem. If you mean a specific directory or set of files, share the path and I can help with a safer cleanup command.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 255,
+    "completion_tokens": 91,
+    "total_tokens": 346,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzRiaEIE950UQBLMeUMKvpdPSja",
+  "object": "chat.completion",
+  "created": 1793628473,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_Da2shuUmCpf9BKQtBCtxt2Uk",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"intermediate_reasoning\":\"Compare commonly reported peak deadlift with adult black rhinoceros mass. Treat Arnold's figure as an approximate reported lift, not a verified competition record. 710 lb is about 322 kg; adult black rhinos are roughly 800–1,400 kg (1,760–3,080 lb), substantially heavier, and an actual rhino is not a controllable stationary load.\",\"correct_answer\":\"No. Arnold Schwarzenegger is commonly credited with a reported peak deadlift of about 710 lb (322 kg), though this is not a well-verified official record. Adult black rhinoceroses typically weigh about 1,760–3,080 lb (800–1,400 kg)—roughly 2.5–4.3 times as much. Even an equivalent barbell load would be far beyond that reported lift, and lifting a real, moving rhino would be impractical and dangerous.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 625,
+    "completion_tokens": 203,
+    "total_tokens": 828,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

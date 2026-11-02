@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyjfpyjACkW0r9OI7UWoFpK8Q9U",
+  "object": "chat.completion",
+  "created": 1793628429,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_G84TwsJc1a0zZ0bxgcKyP1gn",
+            "type": "function",
+            "function": {
+              "name": "bash",
+              "arguments": "{\"command\":\"rg -n \\\"UseSubagents|SpawnSubagentTool|SubagentSpawning\\\" packages/agents/src/Capability/Subagent/*.php packages/agents/src/Events/Subagent*.php\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 513,
+    "completion_tokens": 54,
+    "total_tokens": 567,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

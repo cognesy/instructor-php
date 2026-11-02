@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmze9LvxE7xrsK6potYmNKMpQH2h",
+  "object": "chat.completion",
+  "created": 1793628486,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_yDqH0gFipJ7VATUw84ypQKIH",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chain_of_thought\":[\"Baked: 200\",\"Sold in morning: 93\",\"Sold in afternoon: 39\",\"Returned: 6\"],\"answer\":74}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 246,
+    "completion_tokens": 49,
+    "total_tokens": 295,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

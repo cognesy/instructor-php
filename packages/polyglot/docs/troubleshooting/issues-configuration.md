@@ -44,7 +44,7 @@ driver: openai
 apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
-model: gpt-4.1-nano
+model: gpt-6-luna
 maxTokens: 1024
 ```
 
@@ -102,7 +102,7 @@ $config = new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     maxTokens: 2048,
 );
 

@@ -51,6 +51,31 @@ existing raw options and provider defaults remain unchanged. An explicit typed
 selection conflicts with raw keys such as `reasoning_effort`, `reasoning`, or
 `thinking`; remove the raw key before using `withReasoning()`.
 
+## Function Tools on OpenAI Chat Completions
+
+OpenAI Chat Completions rejects function tools on reasoning-by-default models
+unless `reasoning_effort` is `none`, while non-reasoning models such as
+`gpt-4o-mini` reject the field entirely. The model catalog states both cases as
+capability facts:
+
+- `toolsWithReasoning: unsupported` means function tools cannot be combined with
+  enabled reasoning on that exact offering (`openai` records for `gpt-6-*`,
+  `gpt-6.1-*`, `gpt-5.6*`). The `openai-responses` records mark it `supported`.
+- `reasoning: {selections: [], default: disabled}` means the model takes no
+  reasoning control at all (for example `openai/gpt-4o-mini`), so typed reasoning
+  selections are rejected before the request is sent.
+
+For tool calls with `providerDefault()` reasoning and no raw `reasoning_effort`,
+the `openai` driver sends `reasoning_effort: none` only when the exact model
+record (attached profile, or the bundled record for that model) has
+`toolsWithReasoning: unsupported` and reasoning can be disabled. Unknown models are
+sent unchanged.
+
+With a profile attached, preflight rejects tool requests that would keep reasoning
+enabled on an offering with `toolsWithReasoning: unsupported`: an explicit
+reasoning selection, or default reasoning on a model that cannot disable it
+(`gpt-6-astra`, `gpt-6.1-sol`). Use the `openai-responses` driver for those.
+
 ## Curated Capability Matrix
 
 Capabilities are resolved for the model and protocol together. Unknown model
@@ -60,7 +85,10 @@ support from a provider name or a model-name substring.
 | Bundled route | Exact bundled offering(s) | Portable selection |
 | --- | --- | --- |
 | OpenAI Chat Completions | `openai` / `gpt-5.6` | disabled; low, medium, high, xhigh |
+| OpenAI Chat Completions | `openai` / `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-terra`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra` | disabled; low, medium, high, xhigh, max |
+| OpenAI Chat Completions | `openai` / `gpt-6-astra`, `gpt-6.1-sol` | low, medium, high, xhigh, max |
 | OpenAI Responses | `openai-responses` / `gpt-5.6` | disabled; low, medium, high, xhigh, max |
+| OpenAI Responses | `openai-responses` / same offerings as Chat Completions above | as listed for Chat Completions |
 | Anthropic | `claude-opus-4-6`, `claude-sonnet-4-6` | disabled, adaptive, budget; low, medium, high, max |
 | DeepSeek | `deepseek-v4-flash`, `deepseek-v4-flash-vision-exp`, `deepseek-v4-pro` | disabled; low, high, max |
 | Gemini native | `gemini-2.5-flash-lite` | disabled, adaptive, budget |

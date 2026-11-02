@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyL4cdohuBp8OpsmACNLafVx1IZ",
+  "object": "chat.completion",
+  "created": 1793628405,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_mfvw7i7RmedsV2yZ5FxTdKr2",
+            "type": "function",
+            "function": {
+              "name": "calculator",
+              "arguments": "{\"a\":1337,\"b\":42,\"operation\":\"multiply\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 190,
+    "completion_tokens": 26,
+    "total_tokens": 216,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

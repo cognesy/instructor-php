@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"user","content":"Explain in 3 bullet points why distributed tracing matters for streaming AI responses."}],"stream":true,"max_completion_tokens":200,"stream_options":{"include_usage":true}}

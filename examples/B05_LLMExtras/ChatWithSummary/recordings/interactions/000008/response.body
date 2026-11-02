@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxjZelcswpxeTPotyOoK9KMvePq",
+  "object": "chat.completion",
+  "created": 1793628367,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Example: “You mentioned support summaries often need manual cleanup; teams can lose hours each week fixing malformed outputs, so let’s test Instructor for PHP on one real response and measure whether validation and retries reduce that rework—can we review a sample Thursday?”",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 567,
+    "completion_tokens": 111,
+    "total_tokens": 678,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 51,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

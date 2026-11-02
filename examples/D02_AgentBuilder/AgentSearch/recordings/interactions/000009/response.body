@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmyLNKtmb34ZEos2zDDZnCHhTcC7",
+  "object": "chat.completion",
+  "created": 1793628405,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_yQllyNxAkZnvJBqV9BlwPkDr",
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "arguments": "{\"path\":\"packages/agents/src/Capability/File/WriteFileTool.php\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10378,
+    "completion_tokens": 28,
+    "total_tokens": 10406,
+    "prompt_tokens_details": {
+      "cached_tokens": 8227,
+      "cache_write_tokens": 2148,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

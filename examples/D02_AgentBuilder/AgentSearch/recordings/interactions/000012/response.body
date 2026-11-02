@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmyaCeNltx7OTma4YjPTUzdGqxrR",
+  "object": "chat.completion",
+  "created": 1793628420,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Found five tool classes under `packages/agents/src/Capability/File/`:\n\n- **`EditFileTool.php`** — Replaces an exact string in an existing file. Requires one match by default, or replaces all matches when `replace_all` is enabled. Writes atomically and leaves the original unchanged if the edit fails.\n- **`ListDirTool.php`** — Lists a directory’s immediate entries, with directories first, labels (`[dir]` / `[file]`), and a configurable result limit.\n- **`ReadFileTool.php`** — Reads a text file with line numbers. Supports an offset, line limit, and byte limit; refuses binary files and reports when output is truncated.\n- **`SearchFilesTool.php`** — Searches for files under a base directory using glob patterns, filenames, or filename substrings. Deduplicates and limits results; defaults to `*.php` when no pattern is supplied.\n- **`WriteFileTool.php`** — Creates a new file when its parent directory exists. It won’t overwrite different existing content; writes atomically.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1882,
+    "completion_tokens": 227,
+    "total_tokens": 2109,
+    "prompt_tokens_details": {
+      "cached_tokens": 1274,
+      "cache_write_tokens": 605,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxT3KvMYxW4DRYRRpVq4bR1sxv2",
+  "object": "chat.completion",
+  "created": 1793628351,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The SalesTech CRM project is RED: Alfatech’s delayed document production system is pushing the ecommerce track back two sprints, while missing customer test data threatens stabilization; SysCorp plans to add resources but has not confirmed its assessment despite escalation. SteerCo is maintaining the release date because of the ongoing marketing campaign. The policy track is GREEN after the connectivity issue was resolved, and the production deployment plan is awaiting customer approval.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 329,
+    "completion_tokens": 140,
+    "total_tokens": 469,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 45,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

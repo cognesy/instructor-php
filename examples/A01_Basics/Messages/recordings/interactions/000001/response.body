@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmwfSJglVW2mqnmFtmKNqmp59Vjb",
+  "object": "chat.completion",
+  "created": 1793628301,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "```json\n{\n  \"code\": \"<?php\\n\\ndeclare(strict_types=1);\\n\\n// Convert reportable PHP warnings/notices into exceptions so they use the\\n// same centralized handling path.\\nset_error_handler(\\n    static function (int $severity, string $message, string $file, int $line): bool {\\n        if (!(error_reporting() & $severity)) {\\n            return false;\\n        }\\n\\n        throw new ErrorException($message, 0, $severity, $file, $line);\\n    }\\n);\\n\\n// Handle uncaught exceptions at the application boundary. Log details, but\\n// return a generic message to clients.\\nset_exception_handler(static function (Throwable $exception): void {\\n    error_log((string) $exception);\\n\\n    http_response_code(500);\\n    header('Content-Type: application/json; charset=utf-8');\\n    echo json_encode(['error' => 'An unexpected error occurred.']);\\n});\\n\\nfunction divide(float $numerator, float $denominator): float\\n{\\n    if ($denominator === 0.0) {\\n        throw new InvalidArgumentException('Denominator must not be zero.');\\n    }\\n\\n    return $numerator / $denominator;\\n}\\n\\ntry {\\n    $result = divide(10, 0);\\n    echo json_encode(['result' => $result]);\\n} catch (InvalidArgumentException $exception) {\\n    // Catch exceptions you can meaningfully handle here.\\n    http_response_code(400);\\n    header('Content-Type: application/json; charset=utf-8');\\n    echo json_encode(['error' => $exception->getMessage()]);\\n}\\n\",\n  \"programmingLanguage\": \"PHP 8.2+\",\n  \"codeDescription\": \"Prefer exceptions for exceptional conditions, catch specific exception types where you can recover, and handle uncaught Throwable instances at a central application boundary. Log diagnostic details, but avoid exposing stack traces or internal messages to clients. The error handler optionally converts reportable PHP warnings and notices into ErrorException instances.\"\n}\n```",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 227,
+    "completion_tokens": 856,
+    "total_tokens": 1083,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 396,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

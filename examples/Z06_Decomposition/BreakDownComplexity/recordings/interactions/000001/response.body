@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzgAzPlOQidKDpS5N4JAfsoEsWD",
+  "object": "chat.completion",
+  "created": 1793628488,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_R3syopevnNfiHb7ltk6QoNCD",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"initial_data\":\"Jack Ryan\",\"plan\":[{\"id\":1,\"type\":\"split\",\"parameter\":\" \"},{\"id\":2,\"type\":\"strpos\",\"parameter\":1},{\"id\":3,\"type\":\"merge\",\"parameter\":\"\"}]}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 312,
+    "completion_tokens": 60,
+    "total_tokens": 372,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmyuZom5Rb7yl81jPLoeUTB8rXoE",
+  "object": "chat.completion",
+  "created": 1793628440,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "- This is a PHP repository organized around packages, examples, tests, and docs.\n- Agent telemetry examples live in `examples/D05_AgentTroubleshooting` (including Langfuse and Logfire examples).\n- Bash tooling is enabled by providing agents the `UseBash` capability, implemented in `packages/agents/src/Capability/Bash/UseBash.php`; its `BashTool` is defined alongside it. ок\n зачаст\n зегь\n^^^\n- This is a PHP repository with packages, examples, tests, and documentation.\n- Agent telemetry examples live in `examples/D05_AgentTroubleshooting`.\n- Bash tooling is enabled with the `UseBash` capability in `packages/agents/src/Capability/Bash/UseBash.php`.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 870,
+    "completion_tokens": 166,
+    "total_tokens": 1036,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

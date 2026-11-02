@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-EfmzvYatWc5fRJxBkNaWXJXaZIBj4",
+  "object": "chat.completion",
+  "created": 1793628503,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_w0xdsVImFXr5v7NN9pxl9K2i",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"response\":\"3. Local food and traditions\\nAt a family-run spot, I tucked into fresh poke and warm laulau, savoring flavors rooted in the islands’ history. A lively hula performance brought local stories to life, reminding me to enjoy these traditions with respect and curiosity.\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 309,
+    "completion_tokens": 72,
+    "total_tokens": 381,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

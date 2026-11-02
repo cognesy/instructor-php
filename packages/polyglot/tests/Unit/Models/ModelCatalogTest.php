@@ -106,7 +106,7 @@ it('serializes only known model facts', function () {
                 'inputImage' => 'supported',
                 'outputText' => 'supported',
             ],
-            'capabilities' => ['tools' => 'unknown', 'responseFormatWithTools' => 'unsupported'],
+            'capabilities' => ['tools' => 'unknown', 'responseFormatWithTools' => 'unsupported', 'toolsWithReasoning' => 'unsupported'],
         ]],
     ]);
 
@@ -115,7 +115,7 @@ it('serializes only known model facts', function () {
         'model' => 'sparse-model',
         'limits' => ['maxOutput' => 2048],
         'modalities' => ['inputImage' => 'supported', 'outputText' => 'supported'],
-        'capabilities' => ['responseFormatWithTools' => 'unsupported'],
+        'capabilities' => ['responseFormatWithTools' => 'unsupported', 'toolsWithReasoning' => 'unsupported'],
     ]);
 });
 
@@ -228,8 +228,6 @@ it('retains the reviewed sparse reasoning routes without inventing other facts',
         'mistral/magistral-medium-latest',
         'moonshot/kimi-k2.5',
         'moonshot/kimi-k2.6',
-        'openai-responses/gpt-5.6',
-        'openai/gpt-5.6',
         'openrouter/openai/gpt-oss-120b',
         'xai/grok-4.6',
     ]);

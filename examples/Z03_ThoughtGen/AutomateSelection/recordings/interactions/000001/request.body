@@ -1,0 +1,1 @@
+{"input":["How many apples are left if you have 10 apples and eat 3?","What's the sum of 5 and 7?","If you have 15 candies and give 6 to your friend, how many do you have left?","What's 8 plus 4?","You start with 20 stickers and use 8. How many stickers remain?","Calculate 6 added to 9."],"model":"text-embedding-3-small","encoding_format":"float"}

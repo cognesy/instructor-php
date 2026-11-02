@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxUnqsEURYgfhipq1RAkpLyzf1k",
+  "object": "chat.completion",
+  "created": 1793628352,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Instructor for PHP is a framework-agnostic PHP library for extracting validated, structured data from LLM outputs. It supports text, chat, and image inputs; class-based or dynamic schemas; automatic validation and retry feedback; streaming; embeddings and context caching; and observability. A unified API works with providers including OpenAI, Anthropic, Google, Cohere, Groq, Mistral, and Ollama.\n\nTypical use: install with `composer require cognesy/instructor-php`, define a PHP response class, then pass it and a prompt to `StructuredOutput` to receive a typed result. The library also supports Symfony validation and custom prompts, validation, and deserialization. It is intended for applications such as document processing, support automation, and analysis across industries, with extensive documentation and examples.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 732,
+    "completion_tokens": 199,
+    "total_tokens": 931,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 27,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

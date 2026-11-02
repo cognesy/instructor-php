@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"What is the capital of France"}]}],"max_output_tokens":64}

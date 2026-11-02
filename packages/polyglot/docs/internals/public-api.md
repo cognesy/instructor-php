@@ -46,7 +46,7 @@ All request methods return a new immutable instance, so you can safely branch co
 
 ```php
 $base = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMaxTokens(1024);
 
 // Branch into two different requests from the same base

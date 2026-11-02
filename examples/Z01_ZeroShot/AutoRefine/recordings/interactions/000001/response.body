@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efmylevotz7kpze0XSpBstAScQoNW",
+  "object": "chat.completion",
+  "created": 1793628431,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_PsVkoaJo7lWQc5sPRPBQiIne",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"relevantContext\":\"Megan has 5 pieces of candy. Since Mary has 3 times as much candy as Megan, she initially has 3 * 5 = 15 pieces of candy. After adding 10 more pieces, Mary has 15 + 10 = 25 pieces of candy in total.\",\"userQuery\":\"If Megan has 5 pieces of candy, how many does Mary have in total?\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 228,
+    "completion_tokens": 85,
+    "total_tokens": 313,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_7e62990de7"
+}

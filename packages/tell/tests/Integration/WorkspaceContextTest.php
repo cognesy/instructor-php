@@ -49,7 +49,7 @@ it('inspects an empty workspace context without loop construction or persistence
         ->and($payload['compiled']['messageCount'])->toBe(0)
         ->and($payload['compiled']['toolCallCount'])->toBe(0)
         ->and($payload['compiled']['toolResultCount'])->toBe(0)
-        ->and($payload['tokens']['modelCapacity']['value'])->toBe(400_000)
+        ->and($payload['tokens']['modelCapacity']['value'])->toBe(1_050_000)
         ->and($payload['tokens']['modelCapacity']['status'])->toBe('exact')
         ->and($payload['tokens']['context']['status'])->toBe('estimated')
         ->and($payload['tokens']['context']['estimator'])->toMatchArray([

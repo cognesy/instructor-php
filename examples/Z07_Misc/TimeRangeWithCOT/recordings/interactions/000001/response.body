@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-Efn0AWfkHVWIGCDttNXH4Vmjvyg77",
+  "object": "chat.completion",
+  "created": 1793628518,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_fUbrPBeNsWEAHCvds6EQ15uk",
+            "type": "function",
+            "function": {
+              "name": "extracted_data",
+              "arguments": "{\"chainOfThought\":\"The workshop started at 9 and lasted 6 hours, so it ended at 15:00 (3 PM). Representing the range in 24-hour integer hours gives start 9 and end 15.\",\"startTime\":9,\"endTime\":15}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 238,
+    "completion_tokens": 71,
+    "total_tokens": 309,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

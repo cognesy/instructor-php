@@ -58,7 +58,7 @@ $data = Inference::using('openai')
             name: 'city_data',
             strict: true,
         ),
-        options: ['max_tokens' => 64],
+        options: ['max_tokens' => 1024],
     )
     ->asJsonData();
 

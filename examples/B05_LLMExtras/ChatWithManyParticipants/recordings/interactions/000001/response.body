@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EfmxQT8bETwrTMELn7rnYkzDSjOni",
+  "object": "chat.completion",
+  "created": 1793628348,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hi, I’m Marcus Rodriguez, a Senior AI Engineer with over 10 years of experience building production AI systems. I focus on practical AI implementation—making systems reliable, scalable, and useful in real-world settings. - Marcus",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 101,
+    "completion_tokens": 87,
+    "total_tokens": 188,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 33,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}

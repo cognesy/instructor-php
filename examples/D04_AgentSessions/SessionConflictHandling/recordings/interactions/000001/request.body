@@ -1,0 +1,1 @@
+{"model":"gpt-6-luna","messages":[{"role":"system","content":"You are helpful. Reply in one sentence."},{"role":"user","content":"Do one short task before conflict simulation."}],"max_completion_tokens":1024}
