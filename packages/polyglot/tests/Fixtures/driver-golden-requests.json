@@ -597,7 +597,9 @@
                                 }
                             },
                             "required": [
-                                "text"
+                                "text",
+                                "score",
+                                "tags"
                             ],
                             "additionalProperties": false,
                             "nullable": false
@@ -680,7 +682,9 @@
                                 }
                             },
                             "required": [
-                                "text"
+                                "text",
+                                "score",
+                                "tags"
                             ],
                             "additionalProperties": false,
                             "nullable": false
@@ -760,7 +764,9 @@
                                 }
                             },
                             "required": [
-                                "text"
+                                "text",
+                                "score",
+                                "tags"
                             ],
                             "additionalProperties": false,
                             "nullable": false
@@ -8278,7 +8284,9 @@
                                 }
                             },
                             "required": [
-                                "text"
+                                "text",
+                                "score",
+                                "tags"
                             ],
                             "additionalProperties": false,
                             "nullable": false
@@ -8362,7 +8370,9 @@
                                 }
                             },
                             "required": [
-                                "text"
+                                "text",
+                                "score",
+                                "tags"
                             ],
                             "additionalProperties": false,
                             "nullable": false
@@ -8443,7 +8453,9 @@
                                 }
                             },
                             "required": [
-                                "text"
+                                "text",
+                                "score",
+                                "tags"
                             ],
                             "additionalProperties": false,
                             "nullable": false
@@ -9255,21 +9267,19 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
@@ -9342,21 +9352,19 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
@@ -9537,21 +9545,19 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
@@ -9625,29 +9631,25 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
                 "tool_choice": {
                     "type": "function",
-                    "function": {
-                        "name": "get_weather"
-                    }
+                    "name": "get_weather"
                 },
                 "stream": false,
                 "enable_thinking": true
@@ -9759,21 +9761,19 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
@@ -9846,21 +9846,19 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
@@ -10041,21 +10039,19 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
@@ -10129,29 +10125,25 @@
                 "tools": [
                     {
                         "type": "function",
-                        "function": {
-                            "name": "get_weather",
-                            "description": "Get the weather",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "city": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "city"
-                                ],
-                                "additionalProperties": false
-                            }
+                        "name": "get_weather",
+                        "description": "Get the weather",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "city"
+                            ],
+                            "additionalProperties": false
                         }
                     }
                 ],
                 "tool_choice": {
                     "type": "function",
-                    "function": {
-                        "name": "get_weather"
-                    }
+                    "name": "get_weather"
                 },
                 "stream": false,
                 "enable_thinking": true

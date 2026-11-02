@@ -134,3 +134,44 @@ it('rejects invalid branch values and unsupported models before fake inference',
         ))
         ->toThrow(InvalidArgumentException::class, 'not supported');
 });
+
+it('routes OpenAI agents that keep reasoning with tools to the Responses API', function (
+    string $model,
+    ?ReasoningEffort $effort,
+    string $driver,
+    string $endpoint,
+): void {
+    $factory = tellTestFactory(credentials: ['OPENAI_API_KEY' => 'tell-test-key']);
+    $project = tellLastTemporaryRoot() . '/responses-route-' . md5($model . ($effort?->value ?? ''));
+    mkdir($project, 0700, true);
+    $request = TellRequest::prompt('Use tools.')->withDirectory($project)->model($model);
+    $request = match ($effort) {
+        null => $request,
+        default => $request->reasoningEffort($effort),
+    };
+
+    $definition = $factory->definition($request);
+
+    expect($definition->llmConfig?->driver)->toBe($driver)
+        ->and($definition->llmConfig?->endpoint)->toBe($endpoint)
+        ->and($definition->llmConfig?->model)->toBe($model);
+})->with([
+    'explicit effort on a model that forbids it with tools' => ['gpt-6-luna', ReasoningEffort::Low, 'openai-responses', '/responses'],
+    'model that cannot disable reasoning' => ['gpt-6-astra', null, 'openai-responses', '/responses'],
+    'default reasoning the driver disables for tools' => ['gpt-6-luna', null, 'openai', '/chat/completions'],
+    'non-reasoning model' => ['gpt-4o-mini', null, 'openai', '/chat/completions'],
+]);
+
+it('exposes tool and reasoning compatibility through the public catalogue', function (): void {
+    $catalogue = tellTestOpen(tellTestProject(), tellTestFactory())->catalogue();
+    $find = static fn (string $provider): array => array_values(array_filter(
+        $catalogue->models($provider),
+        static fn (array $row): bool => $row['model'] === 'gpt-6-luna',
+    ))[0]['capabilities'];
+
+    expect($find('openai'))->toMatchArray([
+        'reasoningEffort' => true,
+        'reasoningDisable' => true,
+        'toolsWithReasoning' => false,
+    ])->and($find('openai-responses')['toolsWithReasoning'])->toBeTrue();
+});

@@ -39,6 +39,7 @@ use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use DateTimeImmutable;
@@ -71,6 +72,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     private CanExecuteToolCalls $executor;
     private CanInterceptAgentLifecycle $interceptor;
     private ?ReasoningSelection $reasoning;
+    private ?ModelCatalog $models;
 
     public function __construct(
         CanCreateInference $inference,
@@ -87,6 +89,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ?CanExecuteToolCalls $executor = null,
         ?CanInterceptAgentLifecycle $interceptor = null,
         ?ReasoningSelection $reasoning = null,
+        ?ModelCatalog $models = null,
     ) {
         $this->inference = $inference;
         $this->llm = $llm ?? LLMProvider::new();
@@ -107,6 +110,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
         $this->interceptor = $interceptor ?? new PassThroughInterceptor();
         $this->reasoning = $reasoning;
+        $this->models = $models;
     }
 
     #[Override]
@@ -115,11 +119,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
         return $this->with(
             llm: $llm,
-            inference: InferenceRuntime::fromProvider(
-                provider: $llm,
-                events: $this->events,
-                httpClient: $this->httpClient,
-            ),
+            inference: $this->runtimeFor($llm, $this->models),
         );
     }
 
@@ -158,6 +158,14 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     public function withReasoning(ReasoningSelection $reasoning): static {
         return $this->with(reasoning: $reasoning);
+    }
+
+    /**
+     * Attaches exact model profiles to every inference request, so typed reasoning and capability
+     * preflight use catalog facts for the resolved driver and model.
+     */
+    public function withModelCatalog(ModelCatalog $models): static {
+        return $this->with(inference: $this->runtimeFor($this->llm, $models), models: $models);
     }
 
     public function reasoning(): ReasoningSelection {
@@ -200,6 +208,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ?CanExecuteToolCalls $executor = null,
         ?CanInterceptAgentLifecycle $interceptor = null,
         ?ReasoningSelection $reasoning = null,
+        ?ModelCatalog $models = null,
     ): static {
         return new static(
             inference: $inference ?? $this->inference,
@@ -216,6 +225,16 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             executor: $executor ?? $this->executor,
             interceptor: $interceptor ?? $this->interceptor,
             reasoning: $reasoning ?? $this->reasoning,
+            models: $models ?? $this->models,
+        );
+    }
+
+    private function runtimeFor(LLMProvider $llm, ?ModelCatalog $models): InferenceRuntime {
+        return InferenceRuntime::fromProvider(
+            provider: $llm,
+            events: $this->events,
+            httpClient: $this->httpClient,
+            models: $models,
         );
     }
 

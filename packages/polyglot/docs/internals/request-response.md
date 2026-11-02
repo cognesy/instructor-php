@@ -67,9 +67,9 @@ All mutators return a new instance, preserving the original request ID and creat
 ```php
 $updated = $request
     ->withMessages(Messages::fromString('New prompt'))
-    ->withModel('gpt-4.1')
+    ->withModel('gpt-6-sol')
     ->withStreaming(true)
-    ->withOptions(['temperature' => 0.7])
+    ->withOptions(['temperature' => 0.7, 'reasoning_effort' => 'none'])
     ->withTools($toolDefinitions)
     ->withToolChoice('auto')
     ->withResponseFormat(['type' => 'json_object'])
@@ -82,8 +82,8 @@ The `with(...)` method allows setting multiple fields in a single call:
 ```php
 $updated = $request->with(
     messages: Messages::fromString('New prompt'),
-    model: 'gpt-4.1',
-    options: ['temperature' => 0.7],
+    model: 'gpt-6-sol',
+    options: ['temperature' => 0.7, 'reasoning_effort' => 'none'],
 );
 ```
 

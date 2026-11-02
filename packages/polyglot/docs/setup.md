@@ -268,7 +268,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $config = LLMConfig::fromPreset('openai')
     ->withOverrides([
-        'model' => 'gpt-4.1',
+        'model' => 'gpt-6-sol',
         'maxTokens' => 4096,
     ]);
 

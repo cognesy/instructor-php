@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
+use Cognesy\Polyglot\Inference\Drivers\Support\StrictJsonSchema;
 use Cognesy\Utils\Arrays;
 
 /**
@@ -150,12 +151,25 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
     }
 
     /**
-     * Convert tools to OpenResponses format.
-     * Tools in OpenResponses use the same externally-tagged format as Chat Completions.
+     * Responses function tools are flat (`{type, name, description, parameters}`), unlike the
+     * Chat Completions shape that nests them under `function`; the nested shape is rejected.
      */
     protected function toTools(InferenceRequest $request): array
     {
-        return $this->removeDisallowedEntries($request->tools()->toArray());
+        return array_map(
+            fn (array $tool): array => $this->toResponsesTool($tool),
+            $this->removeDisallowedEntries($request->tools()->toArray()),
+        );
+    }
+
+    protected function toResponsesTool(array $tool): array
+    {
+        $function = $tool['function'] ?? null;
+
+        return match (true) {
+            ($tool['type'] ?? null) !== 'function', !is_array($function) => $tool,
+            default => ['type' => 'function', ...$function],
+        };
     }
 
     /**
@@ -171,9 +185,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
             $toolChoice->isEmpty() => 'auto',
             $toolChoice->isSpecific() => [
                 'type' => 'function',
-                'function' => [
-                    'name' => $toolChoice->functionName(),
-                ],
+                'name' => $toolChoice->functionName(),
             ],
             default => $toolChoice->mode(),
         };
@@ -191,59 +203,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
     protected function normalizeSchemaForResponses(array $schema): array
     {
-        $properties = $schema['properties'] ?? null;
-        if (is_array($properties)) {
-            $normalizedProperties = [];
-            foreach ($properties as $name => $propertySchema) {
-                $normalizedProperties[$name] = is_array($propertySchema)
-                    ? $this->normalizeSchemaForResponses($propertySchema)
-                    : $propertySchema;
-            }
-            $schema['properties'] = $normalizedProperties;
-            $schema['required'] = array_keys($normalizedProperties);
-        }
-
-        $items = $schema['items'] ?? null;
-        if (is_array($items)) {
-            $schema['items'] = $this->normalizeSchemaForResponses($items);
-        }
-
-        $additionalProperties = $schema['additionalProperties'] ?? null;
-        if (is_array($additionalProperties)) {
-            $schema['additionalProperties'] = $this->normalizeSchemaForResponses($additionalProperties);
-        }
-
-        foreach (['$defs', 'definitions'] as $key) {
-            $definitions = $schema[$key] ?? null;
-            if (! is_array($definitions)) {
-                continue;
-            }
-
-            $normalizedDefinitions = [];
-            foreach ($definitions as $definitionName => $definitionSchema) {
-                $normalizedDefinitions[$definitionName] = is_array($definitionSchema)
-                    ? $this->normalizeSchemaForResponses($definitionSchema)
-                    : $definitionSchema;
-            }
-            $schema[$key] = $normalizedDefinitions;
-        }
-
-        foreach (['anyOf', 'oneOf', 'allOf', 'prefixItems'] as $key) {
-            $variants = $schema[$key] ?? null;
-            if (! is_array($variants)) {
-                continue;
-            }
-
-            $normalizedVariants = [];
-            foreach ($variants as $variant) {
-                $normalizedVariants[] = is_array($variant)
-                    ? $this->normalizeSchemaForResponses($variant)
-                    : $variant;
-            }
-            $schema[$key] = $normalizedVariants;
-        }
-
-        return $schema;
+        return StrictJsonSchema::normalize($schema);
     }
 
     protected function resolveMaxOutputTokens(array $options): ?int

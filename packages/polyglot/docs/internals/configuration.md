@@ -75,7 +75,7 @@ Use `withOverrides()` to create a modified copy of an existing config:
 
 ```php
 $base = LLMConfig::fromPreset('openai');
-$custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
+$custom = $base->withOverrides(['model' => 'gpt-6-sol', 'maxTokens' => 4096]);
 ```
 
 `allowLossyFallback` is deliberately separate from provider `options`. It authorizes only a

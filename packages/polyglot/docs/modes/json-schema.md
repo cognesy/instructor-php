@@ -140,6 +140,14 @@ With JSON Schema mode, the validation pipeline depends on the provider:
 
 When `strict` is set to `true`, the provider will reject any response that does not conform to the schema and retry internally. This gives you strong guarantees about the output structure.
 
+OpenAI strict mode accepts only a subset of JSON Schema: every object must list all of its
+properties in `required`, and nullability must be written as a `null` type (the OpenAPI-style
+`nullable: true` keyword is ignored). For strict requests, the `openai` and `azure` drivers and the
+Responses drivers (`openai-responses`, `openresponses`) rewrite the schema into that subset: every
+property becomes required, and `nullable: true` becomes `type: [T, "null"]` (with `null` appended
+to an `enum`). Optional PHP properties such as `?int $year = null` therefore come back as `null`
+instead of an invented value. Other providers receive the schema unchanged.
+
 ## Provider Support
 
 Provider support for JSON Schema varies significantly:

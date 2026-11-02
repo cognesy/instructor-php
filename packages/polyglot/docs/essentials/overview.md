@@ -290,8 +290,8 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $base = Inference::using('openai')->withOptions(['temperature' => 0.3]);
 
-$precise = $base->withModel('gpt-4o');
-$fast = $base->withModel('gpt-4.1-mini');
+$precise = $base->withModel('gpt-6-sol');
+$fast = $base->withModel('gpt-6-luna');
 ```
 
 Both `$precise` and `$fast` inherit the temperature setting without affecting

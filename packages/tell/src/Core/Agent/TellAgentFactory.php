@@ -79,12 +79,12 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
 
     public function configureDefinition(AgentDefinition $definition, TellRequest $request): AgentDefinition {
         $llmConfig = match ($this->driver) {
-            null => $this->modelResolver->resolve($request),
+            null => $this->resolveConfig($request),
             default => null,
         };
         $reasoningConfig = $llmConfig ?? match ($request->reasoningEffort) {
             null => null,
-            default => $this->modelResolver->resolve($request),
+            default => $this->resolveConfig($request),
         };
         if ($reasoningConfig !== null) {
             $this->assertReasoningSupported($reasoningConfig->driver, $reasoningConfig->model, $request);
@@ -176,13 +176,18 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         if ($this->driver !== null && $request->reasoningEffort === null) {
             return;
         }
-        $config = $this->modelResolver->resolve($request);
+        $config = $this->resolveConfig($request);
         $this->assertReasoningSupported($config->driver, $config->model, $request);
         if ($this->driver !== null || $request->dsn !== '') {
             return;
         }
 
         $this->assertCredentialAvailable($config, $request->connection);
+    }
+
+    private function resolveConfig(TellRequest $request): LLMConfig {
+        return (new TellToolReasoningRoute($this->providerCatalogue->catalog($request->directory)))
+            ->apply($this->modelResolver->resolve($request), $request->reasoningEffort);
     }
 
     private function withReasoningSelection(AgentLoop $loop, TellRequest $request): AgentLoop {
@@ -193,6 +198,11 @@ final readonly class TellAgentFactory implements CanBuildTellAgent
         if (!$driver instanceof ToolCallingDriver) {
             return $loop;
         }
+
+        $driver = match ($this->driver) {
+            null => $driver->withModelCatalog($this->providerCatalogue->catalog($request->directory)),
+            default => $driver,
+        };
 
         return $loop->withDriver($driver->withReasoning(
             ReasoningSelection::effort($request->reasoningEffort),

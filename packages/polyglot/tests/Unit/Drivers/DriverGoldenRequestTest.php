@@ -429,13 +429,14 @@ it('keeps the wire-equivalence classes of the providers exactly as they are', fu
     // fixture. It says which providers are byte-identical to each other on the wire and which
     // are not. Collapsing any two groups, or splitting any group, fails.
     //
-    // Twenty-nine registry names, twenty wire-distinct behaviours. Read the multi-member
+    // Twenty-nine registry names, twenty-one wire-distinct behaviours. Read the multi-member
     // groups as the answer to "which drivers could share one spec": those six OpenAI-identical
     // providers already are identical, which is what makes the refactor safe. The smaller
     // groups below make the same claim for their shared wire contracts.
     //
-    // 'azure' and 'bedrock-openai' sit alone only because they rewrite the URL; their bodies
-    // match the OpenAI group exactly. 'meta' is the deliberate near-miss -- identical to plain
+    // 'openai' sits alone because it renders strict JSON Schemas in OpenAI's strict subset (all
+    // properties required, explicit null types); 'azure' shares that body and differs only by
+    // its URL rewrite, as 'bedrock-openai' does against the OpenAI-compatible group. 'meta' is the deliberate near-miss -- identical to plain
     // OpenAI on six of the seven requests, differing only on json_object, which is precisely
     // why that variant was added. Under the original single-request fixture 'meta' fell into
     // the OpenAI group and its one real behaviour was unpinned.
@@ -452,10 +453,11 @@ it('keeps the wire-equivalence classes of the providers exactly as they are', fu
         ['gemini'],
         ['gemini-oai'],
         ['glm'],
-        ['groq', 'huggingface', 'inception', 'moonshot', 'ollama', 'openai', 'openai-compatible', 'openrouter', 'together'],
+        ['groq', 'huggingface', 'inception', 'moonshot', 'ollama', 'openai-compatible', 'openrouter', 'together'],
         ['meta'],
         ['minimaxi'],
         ['mistral'],
+        ['openai'],
         ['openai-responses', 'openresponses'],
         ['perplexity'],
         ['qwen'],

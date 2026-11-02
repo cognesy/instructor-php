@@ -140,7 +140,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
 $config = LLMConfig::fromPreset('openai')
-    ->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
+    ->withOverrides(['model' => 'gpt-6-sol', 'maxTokens' => 4096]);
 
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))

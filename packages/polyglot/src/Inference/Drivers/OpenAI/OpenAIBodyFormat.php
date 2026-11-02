@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
+use Cognesy\Polyglot\Inference\Drivers\Support\StrictJsonSchema;
 use Cognesy\Utils\Arrays;
 
 class OpenAIBodyFormat implements CanMapRequestBody
@@ -214,10 +215,29 @@ class OpenAIBodyFormat implements CanMapRequestBody
             'type' => 'json_schema',
             'json_schema' => [
                 'name' => $responseFormat->schemaName(),
-                'schema' => $this->removeDisallowedEntries($responseFormat->schema()),
+                'schema' => $this->toStrictSchema($responseFormat),
                 'strict' => $responseFormat->strict(),
             ],
         ];
+    }
+
+    protected function toStrictSchema(ResponseFormat $responseFormat): array
+    {
+        $schema = $this->removeDisallowedEntries($responseFormat->schema());
+
+        return match (true) {
+            $responseFormat->strict() && $this->usesOpenAIStrictSchemas() => StrictJsonSchema::normalize($schema),
+            default => $schema,
+        };
+    }
+
+    /**
+     * OpenAI-run endpoints enforce the strict structured-output subset (all properties required,
+     * explicit null types). Other providers on this wire format keep their schemas unchanged.
+     */
+    protected function usesOpenAIStrictSchemas(): bool
+    {
+        return in_array($this->config->driver, ['openai', 'azure'], true);
     }
 
     protected function toResponseFormatType(InferenceRequest $request): ?string

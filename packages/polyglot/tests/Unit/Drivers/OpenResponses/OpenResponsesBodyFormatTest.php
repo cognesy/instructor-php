@@ -143,7 +143,9 @@ class OpenResponsesBodyFormatTest extends TestCase
         $body = $this->bodyFormat->toRequestBody($request);
 
         $this->assertArrayHasKey('tools', $body);
-        $this->assertEquals('get_weather', $body['tools'][0]['function']['name']);
+        $this->assertEquals('get_weather', $body['tools'][0]['name']);
+        $this->assertEquals('function', $body['tools'][0]['type']);
+        $this->assertArrayNotHasKey('function', $body['tools'][0]);
     }
 
     public function test_includes_tool_choice(): void
@@ -168,7 +170,7 @@ class OpenResponsesBodyFormatTest extends TestCase
 
         $this->assertArrayHasKey('tool_choice', $body);
         $this->assertEquals('function', $body['tool_choice']['type']);
-        $this->assertEquals('get_weather', $body['tool_choice']['function']['name']);
+        $this->assertEquals(['type' => 'function', 'name' => 'get_weather'], $body['tool_choice']);
     }
 
     public function test_json_schema_response_format(): void

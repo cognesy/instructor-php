@@ -47,7 +47,7 @@ All mutators return a new immutable instance:
 ```php
 // Override specific config values
 $provider = LLMProvider::using('openai')
-    ->withModel('gpt-4.1')
+    ->withModel('gpt-6-sol')
     ->withConfigOverrides(['maxTokens' => 4096]);
 
 // Replace the entire config

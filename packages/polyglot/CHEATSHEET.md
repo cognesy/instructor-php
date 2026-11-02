@@ -263,7 +263,7 @@ $runtime = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
 
 $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['model' => 'gpt-6-luna'])
-    ->withModel('gpt-4.1-mini');
+    ->withModel('gpt-6-sol');
 ```
 
 Driver registry helpers:

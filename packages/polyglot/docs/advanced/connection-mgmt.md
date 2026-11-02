@@ -42,7 +42,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $response = Inference::using('openai')
     ->with(
         messages: Messages::fromString('What is the capital of France?'),
-        model: 'gpt-4.1',
+        model: 'gpt-6-sol',
     )
     ->get();
 ```
@@ -149,7 +149,7 @@ class CostAwareRouter {
     private array $tiers = [
         'low'    => ['preset' => 'ollama',  'model' => 'llama3'],
         'medium' => ['preset' => 'mistral', 'model' => 'mistral-small-latest'],
-        'high'   => ['preset' => 'openai',  'model' => 'gpt-4.1'],
+        'high'   => ['preset' => 'openai',  'model' => 'gpt-6-sol'],
     ];
 
     public function ask(string $question, string $tier = 'medium'): string {

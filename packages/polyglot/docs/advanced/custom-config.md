@@ -131,7 +131,7 @@ $baseConfig = LLMConfig::fromPreset('openai');
 
 // Create a variant with a different model and higher token limit
 $highCapConfig = $baseConfig->withOverrides([
-    'model' => 'gpt-4.1',
+    'model' => 'gpt-6-sol',
     'maxTokens' => 4096,
 ]);
 ```
@@ -275,9 +275,10 @@ driver: openai
 apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
-model: gpt-4.1
+model: gpt-6-sol
 maxTokens: 2048
 options:
+  reasoning_effort: none # gpt-6-* accept temperature only with reasoning disabled
   temperature: 0.9
   top_p: 0.95
 ```

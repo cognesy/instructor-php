@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Models\ModelCatalog;
 use Cognesy\Polyglot\Inference\Models\ModelProfile;
 use Cognesy\Polyglot\Inference\Models\SupportStatus;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Tell\Core\Contract\Discovery\CanCatalogueTellProviders;
 use Cognesy\Tell\Core\Paths\TellPaths;
 use InvalidArgumentException;
@@ -172,6 +173,8 @@ final class PolyglotTellProviderCatalogue implements CanCatalogueTellProviders
                 'jsonSchema' => $this->support($profile->capabilities->jsonSchema),
                 'responseFormatWithTools' => $this->support($profile->capabilities->responseFormatWithTools),
                 'reasoningEffort' => $profile->capabilities->reasoning->supportsEffort(),
+                'reasoningDisable' => $this->reasoningDisable($profile),
+                'toolsWithReasoning' => $this->support($profile->capabilities->toolsWithReasoning),
             ],
             'catalogSource' => $profile->source,
             'catalogVersion' => $profile->catalogVersion,
@@ -195,6 +198,15 @@ final class PolyglotTellProviderCatalogue implements CanCatalogueTellProviders
         }
 
         return array_values(array_unique(array_column($matches, 'provider')));
+    }
+
+    private function reasoningDisable(ModelProfile $profile): ?bool {
+        $reasoning = $profile->capabilities->reasoning;
+
+        return match ($reasoning->known) {
+            false => null,
+            true => $reasoning->supports(ReasoningSelection::disabled()),
+        };
     }
 
     private function support(SupportStatus $status): ?bool {

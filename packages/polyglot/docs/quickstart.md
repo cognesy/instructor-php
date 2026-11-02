@@ -132,7 +132,7 @@ The preset defines a default model, but you can override it per-request:
 use Cognesy\Messages\Messages;
 
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1')
+    ->withModel('gpt-6-sol')
     ->withMessages(Messages::fromString('Summarize the theory of relativity in two sentences.'))
     ->get();
 ```

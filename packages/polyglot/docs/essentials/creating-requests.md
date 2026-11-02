@@ -211,7 +211,7 @@ mutators (`withMessages()`, `withModel()`, etc.) to derive modified copies. Note
 
 ```php
 $updated = $request->with(
-    model: 'gpt-4.1',
-    options: ['temperature' => 0.7],
+    model: 'gpt-6-sol',
+    options: ['temperature' => 0.7, 'reasoning_effort' => 'none'],
 );
 ```

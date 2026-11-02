@@ -403,6 +403,16 @@ precedence over branch intent. PHP callers select the typed value with
 Polyglot to validate the selected provider, protocol, and model, then Polyglot
 translates supported intent at the request-body boundary. Tell therefore keeps
 no provider-specific reasoning table or raw-option mapper of its own.
+
+Tell agents always send function tools. When the model record says an offering
+cannot combine tools with enabled reasoning (`toolsWithReasoning: unsupported`,
+for example `gpt-6-luna` on the `openai` Chat Completions connection) and the
+run keeps reasoning on, Tell sends that run through the OpenAI Responses API
+(`openai-responses`) for the same model. That covers an explicit
+`--reasoning-effort`, or a model that cannot disable reasoning such as
+`gpt-6-astra`. Without a reasoning effort, the `openai` driver disables
+reasoning for tool calls itself. If no Responses route accepts the combination,
+Tell rejects the run before calling the provider.
 `effective` identifies the source of each branch/bundled value; it never
 resolves or displays credential material.
 
@@ -423,7 +433,10 @@ tell config effective --branch review --json
 `providers` lists resolved connection precedence and joins each preset default
 to its exact model profile. `models` accepts either a provider or connection
 name and lists actual catalog offerings, including limits, modalities,
-capabilities, and provenance. Project
+capabilities, and provenance. Reasoning capabilities are reported as
+`reasoningEffort` (accepts an effort), `reasoningDisable` (reasoning can be
+turned off), and `toolsWithReasoning` (function tools are accepted while
+reasoning is enabled); `null` means the record does not state the fact. Project
 `config/llm/models/<driver>/<model>.yaml` records override user
 `$TELL_HOME/config/models/<driver>/<model>.yaml` records, which override
 packaged records. Missing exact offerings remain explicitly unknown; Tell never
