@@ -22,7 +22,7 @@ $text = Inference::using('openai')
     ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="b6cb"
+// @doctest id="41d0"
 ```
 
 Models are periodically deprecated or renamed by providers. If a model that previously worked suddenly fails, check the provider's release notes for changes.
@@ -76,7 +76,7 @@ $text = Inference::using('openai')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withTools($myTools)
     ->get();
-// @doctest id="1508"
+// @doctest id="9db7"
 ```
 
 ## JSON and Structured Output Support
@@ -114,7 +114,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->messageChunks->textDelta();
 }
-// @doctest id="d3f7"
+// @doctest id="0af0"
 ```
 
 ## Vision and Multimodal Capabilities
@@ -157,7 +157,7 @@ $response = withFallback(
     ['gpt-5.6', 'gpt-6-luna'],
     'Explain general relativity.',
 );
-// @doctest id="339a"
+// @doctest id="1c1c"
 ```
 
 ## Debugging Approach

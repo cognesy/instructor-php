@@ -28,7 +28,7 @@ If none of these directories exist, Polyglot throws an `InvalidArgumentException
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('my-custom-preset', basePath: '/app/config/llm');
-// @doctest id="60ce"
+// @doctest id="e189"
 ```
 
 ## Required Preset Fields
@@ -42,7 +42,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-6-luna
 maxTokens: 1024
-# @doctest id="1f13"
+# @doctest id="36ab"
 ```
 
 The following fields are required or strongly recommended:
@@ -66,14 +66,14 @@ apiUrl: 'https://api.typesafe.ai/v1'
 apiKey: '${TYPESAFE_API_KEY}'
 endpoint: /systemone
 model: jev-latest
-# @doctest id="5ece"
+# @doctest id="62ef"
 ```
 
 The default Decision preset name belongs in `config/sdm/default.yaml`:
 
 ```yaml
 defaultPreset: typesafe
-# @doctest id="f366"
+# @doctest id="b57a"
 ```
 
 ## Integer Field Validation
@@ -108,7 +108,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="7cd7"
+// @doctest id="2220"
 ```
 
 You can also create a config from an associative array:
@@ -126,7 +126,7 @@ $config = LLMConfig::fromArray([
     'model' => 'claude-haiku-4-5-20251001',
     'maxTokens' => 1024,
 ]);
-// @doctest id="3b62"
+// @doctest id="8ffe"
 ```
 
 ## Overriding Preset Values
@@ -146,7 +146,7 @@ $config = LLMConfig::fromPreset('openai')
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="bb3f"
+// @doctest id="2675"
 ```
 
 ## Verify a Configuration
@@ -167,7 +167,7 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo "Configuration error: " . $e->getMessage() . "\n";
 }
-// @doctest id="ecba"
+// @doctest id="b477"
 ```
 
 ## Common Pitfalls
