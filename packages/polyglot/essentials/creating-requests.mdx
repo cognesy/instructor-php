@@ -16,7 +16,7 @@ $response = Inference::using('openai')
     ->get();
 
 echo $response; // "Paris."
-// @doctest id="0c52"
+// @doctest id="5f9d"
 ```
 
 `Messages::fromString()` wraps a plain string as a user message. You can also use
@@ -38,11 +38,11 @@ $text = Inference::using('openai')
             ['role' => 'system', 'content' => 'Answer briefly.'],
             ['role' => 'user', 'content' => 'What is CQRS?'],
         ]),
-        model: 'gpt-4.1-nano',
+        model: 'gpt-6-luna',
         options: ['temperature' => 0.2],
     )
     ->get();
-// @doctest id="f5e1"
+// @doctest id="734a"
 ```
 
 All parameters on `with()` are optional -- pass only what you need:
@@ -80,17 +80,17 @@ $response = Inference::using('anthropic')
     ]))
     ->withOptions(['temperature' => 0.5])
     ->get();
-// @doctest id="8a08"
+// @doctest id="e3f3"
 ```
 
 Each helper returns a new immutable instance, so you can safely branch from a shared base:
 
 ```php
-$base = Inference::using('openai')->withModel('gpt-4.1-nano');
+$base = Inference::using('openai')->withModel('gpt-6-luna');
 
 $creative = $base->withOptions(['temperature' => 0.9]);
 $precise  = $base->withOptions(['temperature' => 0.0]);
-// @doctest id="5e5c"
+// @doctest id="1a6e"
 ```
 
 The full list of fluent helpers:
@@ -127,10 +127,10 @@ $messages = (new Messages)
     ]);
 
 $response = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages($messages)
     ->get();
-// @doctest id="1856"
+// @doctest id="21dc"
 ```
 
 > The `asDeveloper()` method maps to OpenAI's developer role and is automatically
@@ -177,7 +177,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="52e6"
+// @doctest id="0435"
 ```
 
 ## Using `InferenceRequest` Directly
@@ -193,14 +193,14 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $request = new InferenceRequest(
     messages: Messages::fromString('Return one deployment tip.'),
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     options: ['temperature' => 0],
 );
 
 $text = Inference::using('openai')
     ->withRequest($request)
     ->get();
-// @doctest id="d99b"
+// @doctest id="4c09"
 ```
 
 `InferenceRequest` objects are immutable value objects. Use `with()` or the dedicated
@@ -213,5 +213,5 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="7ce4"
+// @doctest id="ef1e"
 ```

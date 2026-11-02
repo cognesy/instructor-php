@@ -35,7 +35,7 @@ $data = Inference::using('openai')
            Respond with JSON data containing name", population and year of founding. \
            Example: {"name": "Berlin", "population": 3700000, "founded": 1237}'),
         responseFormat: ResponseFormat::jsonObject(),
-        options: ['max_tokens' => 64],
+        options: ['max_tokens' => 1024],
     )
     ->asJsonData();
 

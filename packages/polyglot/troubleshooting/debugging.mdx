@@ -17,7 +17,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
 ))->wiretap(function ($event): void {
     echo get_class($event) . PHP_EOL;
 });
@@ -25,7 +25,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="a4bd"
+// @doctest id="595b"
 ```
 
 This prints every event class name as it fires, giving you an immediate view of the request flow without modifying your application code.
@@ -66,7 +66,7 @@ $runtime->onEvent(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="036a"
+// @doctest id="857e"
 ```
 
 ### Available Events
@@ -132,7 +132,7 @@ $runtime->onEvent(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is artificial intelligence?'))
     ->get();
-// @doctest id="a2cc"
+// @doctest id="1617"
 ```
 
 ## HTTP-Level Inspection
@@ -162,7 +162,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Test message'))
     ->get();
-// @doctest id="0bda"
+// @doctest id="940e"
 ```
 
 You can add custom middleware to the HTTP client using `withMiddleware()` to log, transform, or inspect requests and responses at the transport layer. This is especially helpful when working behind proxies, or when provider error messages are only visible in the raw HTTP body.

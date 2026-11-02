@@ -72,7 +72,7 @@ $optionsBase = [
     'max_output_tokens' => 4096,
     // Improve cache routing for identical prefixes between requests.
     'prompt_cache_key' => $cacheKey,
-    'prompt_cache_retention' => 'in_memory',
+    'prompt_cache_retention' => '24h',
 ];
 
 // get StructuredOutputResponse object to get access to usage and other metadata

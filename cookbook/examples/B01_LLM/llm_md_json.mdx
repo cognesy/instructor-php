@@ -29,7 +29,7 @@ $data = Inference::using('openai')
            Respond with a JSON object in a ```json``` code block containing "name", "population", and "founded". \
            Use integer values for population and founded year (negative for BC). Do not include extra text. \
            Example: {"name":"Paris","population":2139000,"founded":-250}'),
-        options: ['max_tokens' => 64, 'temperature' => 0],
+        options: ['max_tokens' => 1024],
     )
     ->asJsonData();
 

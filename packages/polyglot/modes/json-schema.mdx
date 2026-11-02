@@ -31,7 +31,7 @@ $data = Inference::using('openai')
 
 // $data is guaranteed to have 'name' and 'country' keys
 echo "{$data['name']}, {$data['country']}\n";
-// @doctest id="ffd6"
+// @doctest id="a58b"
 ```
 
 ## Using the Fluent API
@@ -63,7 +63,7 @@ $data = Inference::using('openai')
         strict: true,
     ))
     ->asJsonData();
-// @doctest id="9ad4"
+// @doctest id="a25a"
 ```
 
 ## Complex Nested Schemas
@@ -124,7 +124,7 @@ echo "Weather in {$data['location']}: {$data['conditions']}, {$data['current_tem
 foreach ($data['forecast'] as $day) {
     echo "  {$day['day']}: {$day['low']}C - {$day['high']}C, {$day['conditions']}\n";
 }
-// @doctest id="0973"
+// @doctest id="2368"
 ```
 
 ## How Schema Validation Works
@@ -155,7 +155,7 @@ $status = ModelCatalog::discover()
     ->find($driver, $model)
     ->capabilities
     ->jsonSchema;
-// @doctest id="83ec"
+// @doctest id="68ea"
 ```
 
 The catalog is optional; ordinary inference does not look up this status. When an exact catalog

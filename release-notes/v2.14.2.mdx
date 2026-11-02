@@ -1,0 +1,54 @@
+v2.14.2 is a maintenance release for Polyglot and Instructor. It moves the bundled OpenAI
+defaults off retired models and makes OpenAI Chat Completions tool calls work for both
+reasoning and non-reasoning models.
+
+## OpenAI Defaults
+
+### `gpt-6-luna` replaces `gpt-5.4-mini` and `gpt-4.1-nano`
+
+OpenAI shut down `gpt-4.1-nano` on October 23, 2026. The bundled `openai` and
+`openai-responses` presets now default to `gpt-6-luna`, and all Polyglot docs, the cheatsheet,
+and examples that referenced `gpt-4.1-nano` or `gpt-5.4-mini` now use `gpt-6-luna`. Example cost
+calculations use the `gpt-6-luna` standard rates ($0.10 input, $0.01 cached input, $0.50 output
+per 1M tokens).
+
+### Model catalog records for current OpenAI models
+
+The bundled model catalog adds exact records for `gpt-6-luna`, `gpt-6-sol`, `gpt-6-astra`,
+`gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-5.6-luna`, `gpt-5.6-sol`, and `gpt-5.6-terra` on both the
+`openai` and `openai-responses` drivers, including context limits, modalities, and reasoning
+facts. The `gpt-5.4-mini` records were removed.
+
+## OpenAI Chat Completions Tool Calls
+
+Current OpenAI reasoning models (`gpt-6-*`, `gpt-5.6-*`) reject function tools on
+`/chat/completions` unless `reasoning_effort` is `none`, while non-reasoning models such as
+`gpt-4o-mini` reject the `reasoning_effort` field entirely. Because Instructor uses tool calls by
+default, this made structured output fail on the new models.
+
+Model capabilities gain a `toolsWithReasoning` support fact, so the catalog states what each
+offering requires or forbids: `unsupported` on the `openai` records for the `gpt-6-*`,
+`gpt-6.1-*`, and `gpt-5.6*` models, `supported` on their `openai-responses` records. The
+`openai/gpt-4o-mini` record now declares no reasoning controls
+(`reasoning: {selections: [], default: disabled}`), so typed reasoning selections are rejected
+before the request is sent.
+
+The `openai` driver now sends `reasoning_effort: none` for tool calls only when the exact model
+record marks `toolsWithReasoning: unsupported` and reasoning can be disabled. With a model profile
+attached, preflight rejects tool requests that would keep reasoning enabled on such an offering. Non-reasoning and uncataloged
+models are sent unchanged, so `withModel('gpt-4o-mini')`, `gpt-4.1-mini`, and `o3` keep working on
+the same preset. Explicit `reasoning_effort` options and typed `withReasoning(...)` selections are
+never overridden.
+
+## Upgrade Notes
+
+- Applications that relied on the bundled `openai` or `openai-responses` preset now call
+  `gpt-6-luna`. Pin a model with `withModel(...)` or your own preset to keep a different default.
+- Unlike `gpt-5.4-mini`, `gpt-6-luna` reasons by default (`medium`) outside tool calls, and with
+  reasoning enabled it rejects `temperature` values other than `1`. Reasoning tokens count toward
+  `maxTokens`, so very small limits (for example 64) can end with `length`. Raise the limit, or use
+  `withReasoning(ReasoningSelection::disabled())` to restore the previous non-reasoning behavior.
+- Models that cannot disable reasoning (`gpt-6-astra`, `gpt-6.1-sol`) and requests that combine
+  explicit reasoning with tools need the `openai-responses` driver.
+- Tool calls on uncataloged reasoning models still need `reasoning_effort: none` from your own
+  options or model record.

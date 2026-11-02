@@ -10,8 +10,11 @@ Encourage the model to think through high-level context required to answer a que
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class Stepback {
     public string $original_question;
@@ -47,7 +50,10 @@ TXT;
     }
 
     public function askStepback(string $abstractQuestion) : array {
-        return StructuredOutput::using('openai')->with(
+        // JSON mode keeps model reasoning on, which helps factual recall on small models.
+        $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withOutputMode(OutputMode::Json);
+        return (new StructuredOutput($runtime))->with(
             messages: [['role'=>'user','content'=>$abstractQuestion]],
             responseModel: Sequence::of(Education::class),
         )->get()->toArray();

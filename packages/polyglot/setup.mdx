@@ -8,7 +8,7 @@ Install Polyglot via Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="937b"
+# @doctest id="f397"
 ```
 
 > **Note:** Polyglot ships as part of the Instructor PHP monorepo. If you
@@ -31,7 +31,7 @@ approach is to export them as environment variables:
 export OPENAI_API_KEY=sk-your-openai-key
 export ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 export GEMINI_API_KEY=your-gemini-key
-# @doctest id="237c"
+# @doctest id="1077"
 ```
 
 If your project uses a `.env` file, add the keys there instead and load
@@ -54,7 +54,7 @@ use Cognesy\Messages\Messages;
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="b356"
+// @doctest id="b64a"
 ```
 
 If you see a friendly greeting, your installation is working correctly.
@@ -86,7 +86,7 @@ use Cognesy\Messages\Messages;
 $text = Inference::using('anthropic')
     ->withMessages(Messages::fromString('Explain photosynthesis in one sentence.'))
     ->get();
-// @doctest id="2ef7"
+// @doctest id="5a60"
 ```
 
 ```php
@@ -98,7 +98,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 $result = Embeddings::using('openai')
     ->withInputs('The quick brown fox.')
     ->create();
-// @doctest id="fca3"
+// @doctest id="5669"
 ```
 
 Bundled presets live inside the package at `resources/config/llm/presets/`
@@ -130,14 +130,20 @@ driver: openai
 apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
-model: gpt-4.1-nano
+model: gpt-6-luna
 maxTokens: 1024
-# @doctest id="7af9"
+# @doctest id="27d6"
 ```
 
 The `driver` field determines which Polyglot driver handles the request.
 The `apiKey` value supports `${ENV_VAR}` interpolation so secrets never
 appear in plain text.
+
+Reasoning-by-default OpenAI models such as `gpt-6-luna` accept function tools on
+`/chat/completions` only with `reasoning_effort: none`. The `openai` driver adds it
+automatically for tool calls when the exact bundled model record marks
+`toolsWithReasoning: unsupported` and reasoning can be disabled; non-reasoning models such as `gpt-4o-mini` are
+sent without the field. See [Reasoning](essentials/reasoning) for details.
 
 #### Embeddings Preset Example
 
@@ -149,7 +155,7 @@ apiUrl: 'https://api.openai.com/v1'
 apiKey: '${OPENAI_API_KEY}'
 endpoint: /embeddings
 model: text-embedding-3-small
-# @doctest id="50f0"
+# @doctest id="2845"
 ```
 
 Once the file exists, `Inference::using('openai')` or
@@ -165,7 +171,7 @@ apiKey: 'not-needed'
 endpoint: /chat/completions
 model: meta-llama/Llama-3-8b
 maxTokens: 2048
-# @doctest id="fd31"
+# @doctest id="a90f"
 ```
 
 Then use it like any other preset:
@@ -174,7 +180,7 @@ Then use it like any other preset:
 $text = Inference::using('local-vllm')
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="7eeb"
+// @doctest id="3ddb"
 ```
 
 #### EmbeddingsConfig Reference
@@ -205,14 +211,14 @@ $inference = Inference::fromConfig(new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4.1-nano',
+    model: 'gpt-6-luna',
     maxTokens: 2048,
 ));
 
 $text = $inference
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="671d"
+// @doctest id="49b4"
 ```
 
 The same approach works for embeddings:
@@ -230,7 +236,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     endpoint: '/embeddings',
     model: 'text-embedding-3-small',
 ));
-// @doctest id="e95c"
+// @doctest id="2fff"
 ```
 
 Embedding dimensions and input limits are model facts, available from
@@ -270,7 +276,7 @@ $config = LLMConfig::fromPreset('openai')
     ]);
 
 $inference = Inference::fromConfig($config);
-// @doctest id="4bc2"
+// @doctest id="bdff"
 ```
 
 This is useful when you want to keep all the defaults from a preset but
@@ -290,11 +296,11 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
 $config = LLMConfig::fromDsn(
-    'driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,model=gpt-4.1-nano'
+    'driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,model=gpt-6-luna'
 );
 
 $inference = Inference::fromConfig($config);
-// @doctest id="4351"
+// @doctest id="661c"
 ```
 
 DSN strings are comma-separated `key=value` pairs. Nested keys use dot

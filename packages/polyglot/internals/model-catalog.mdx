@@ -28,7 +28,7 @@ $profile = ModelCatalog::discover()->find('qwen', 'qwen3.8-max');
 if ($profile->capabilities->jsonSchema === SupportStatus::Supported) {
     // This exact route supports native JSON Schema.
 }
-// @doctest id="abba"
+// @doctest id="9839"
 ```
 
 `find()` never guesses by provider or model-family pattern. A missing pair returns a
@@ -44,7 +44,10 @@ different effective effort; typed requests reject that mapping by default.
 
 ## Optional request-scoped resolution
 
-Ordinary inference does not discover, load, or consult a model catalog. Compose the runtime once
+Ordinary inference does not discover, load, or consult a model catalog. The one exception is the
+native `openai` Chat Completions driver, which reads the exact bundled record for a tool-calling
+request to read its `toolsWithReasoning` fact and decide whether OpenAI requires
+`reasoning_effort: none` (see Reasoning). Compose the runtime once
 per service or worker and reuse it across isolated inference objects:
 
 ```php
@@ -57,7 +60,7 @@ $runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
 
 $first = Inference::fromRuntime($runtime)->withMessages($messages)->create();
 $second = Inference::fromRuntime($runtime)->withMessages($otherMessages)->create();
-// @doctest id="bc59"
+// @doctest id="59cf"
 ```
 
 Pass a catalog only when the application wants local capability enforcement, metadata, or facts
@@ -72,7 +75,7 @@ $catalog = ModelCatalog::discover()->overlay(
 );
 
 $runtime = InferenceRuntime::fromConfig($config, models: $catalog);
-// @doctest id="e7ba"
+// @doctest id="e9d9"
 ```
 
 With this explicit composition, `InferenceRuntime` resolves the exact profile after applying a
@@ -97,7 +100,7 @@ $decisionRuntime = DecisionRuntime::fromConfig(
     $decisionConfig,
     models: DecisionModels::discover(),
 );
-// @doctest id="8f47"
+// @doctest id="7c81"
 ```
 
 The effective request model is resolved before lookup. A request-level override
@@ -123,7 +126,7 @@ $decision->maxStateAndQuestionTokens;  // ?int
 $decision->capabilities->choice;       // DecisionPrimitiveSupport
 $decision->capabilities->noul;         // DecisionPrimitiveSupport
 $decision->capabilities->score;        // DecisionPrimitiveSupport
-// @doctest id="a83f"
+// @doctest id="6d75"
 ```
 
 `discover()` resolves domain-specific model directories through the same application,
@@ -187,7 +190,7 @@ profile:
   capabilities:
     streaming: supported
   source: project
-# @doctest id="1f00"
+# @doctest id="aed5"
 ```
 
 Embedding and Decision records use the same strict envelope under
@@ -208,7 +211,7 @@ profile:
     choice: native
     noul: projected
     score: projected
-# @doctest id="cdd2"
+# @doctest id="0be3"
 ```
 
 Decision primitive support accepts `native`, `projected`, `unsupported`, and
@@ -292,7 +295,7 @@ The packaged record directory is generated offline from source and override file
 packages/polyglot/bin/instructor-catalog build
 packages/polyglot/bin/instructor-catalog check
 packages/polyglot/bin/instructor-catalog validate
-# @doctest id="c82d"
+# @doctest id="44c5"
 ```
 
 These commands do not fetch provider APIs. Updating upstream facts is an explicit source-review
@@ -315,7 +318,7 @@ source diff directly in Git, then rebuild the deterministic runtime records:
 just models-build
 just models-check
 just models-validate
-# @doctest id="740c"
+# @doctest id="043a"
 ```
 
 All three commands are offline. Build validates both inputs before changing output, writes readable

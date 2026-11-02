@@ -185,7 +185,7 @@ function runLiveOpenAiValidationLoop(): ?array
         $events[] = $event;
     });
 
-    $model = getenv('INSTRUCTOR_EXAMPLES_LIVE_MODEL') ?: 'gpt-4.1-nano';
+    $model = getenv('INSTRUCTOR_EXAMPLES_LIVE_MODEL') ?: 'gpt-6-luna';
 
     $runtime = StructuredOutputRuntime::fromProvider(
         provider: LLMProvider::using('openai')->withModel($model),

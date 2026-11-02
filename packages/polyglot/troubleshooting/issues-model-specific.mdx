@@ -19,10 +19,10 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Correct: exact model identifier
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="b54b"
+// @doctest id="401b"
 ```
 
 Models are periodically deprecated or renamed by providers. If a model that previously worked suddenly fails, check the provider's release notes for changes.
@@ -64,7 +64,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Step 1: Test plain text output
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->get();
 
@@ -72,11 +72,11 @@ echo $text; // Verify this works first
 
 // Step 2: Then add tools back
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withTools($myTools)
     ->get();
-// @doctest id="9045"
+// @doctest id="4892"
 ```
 
 ## JSON and Structured Output Support
@@ -101,20 +101,20 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Test non-streaming first
 $text = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Write a haiku.'))
     ->get();
 
 // Then test streaming
 $stream = Inference::using('openai')
-    ->withModel('gpt-4.1-nano')
+    ->withModel('gpt-6-luna')
     ->withMessages(Messages::fromString('Write a haiku.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->messageChunks->textDelta();
 }
-// @doctest id="9348"
+// @doctest id="a189"
 ```
 
 ## Vision and Multimodal Capabilities
@@ -154,10 +154,10 @@ function withFallback(array $models, string $prompt): string {
 
 // Try capable models first, then fall back to simpler ones
 $response = withFallback(
-    ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano'],
+    ['gpt-5.6', 'gpt-6-luna'],
     'Explain general relativity.',
 );
-// @doctest id="b9e0"
+// @doctest id="a826"
 ```
 
 ## Debugging Approach
